@@ -1,0 +1,6 @@
+[submodule "submodules/doxygen-awesome"]
+	path = submodules/doxygen-awesome
+	url = https://github.com/jothepro/doxygen-awesome-css.git
+[submodule "submodules/cpp-utils"]
+	path = submodules/cpp-utils
+	url = https://gitlab.com/labrat.eu/standards/utils/cpp-utils.git

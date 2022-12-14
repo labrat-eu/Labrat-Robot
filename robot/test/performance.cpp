@@ -1,0 +1,74 @@
+#include <labrat/robot/manager.hpp>
+#include <labrat/robot/test/helper.hpp>
+
+#include <thread>
+
+#include <gtest/gtest.h>
+
+namespace labrat::robot::test {
+
+TEST(performance, put) {
+  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a"));
+  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b"));
+
+  TestNode::Sender<TestMessage>::Ptr sender = node_a->addTestSender<TestMessage>("/testing");
+  TestNode::Receiver<TestMessage>::Ptr receiver = node_b->addTestReceiver<TestMessage>("/testing");
+
+  const u64 limit = 10000000;
+
+  for (u64 i = 1; i <= limit; ++i) {
+    TestMessage message;
+    message.integral_field = i;
+
+    sender->put(message);
+  }
+
+  TestMessage message = receiver->latest();
+
+  EXPECT_EQ(message.integral_field, limit);
+}
+
+TEST(performance, latest) {
+  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a"));
+  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b"));
+
+  TestNode::Sender<TestMessage>::Ptr sender = node_a->addTestSender<TestMessage>("/testing");
+  TestNode::Receiver<TestMessage>::Ptr receiver = node_b->addTestReceiver<TestMessage>("/testing");
+
+  TestMessage message_a;
+  message_a.integral_field = 42;
+
+  sender->put(message_a);
+
+  const u64 limit = 10000000;
+  TestMessage message_b;
+
+  for (u64 i = 0; i < limit; ++i) {
+    message_b = receiver->latest();
+  }
+
+  EXPECT_EQ(message_a, message_b);
+}
+
+TEST(performance, next) {
+  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a"));
+  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b"));
+
+  TestNode::Sender<TestMessage>::Ptr sender = node_a->addTestSender<TestMessage>("/testing");
+  TestNode::Receiver<TestMessage>::Ptr receiver = node_b->addTestReceiver<TestMessage>("/testing");
+
+  TestMessage message_a;
+  message_a.integral_field = 42;
+
+  const u64 limit = 10000000;
+  TestMessage message_b;
+
+  for (u64 i = 0; i < limit; ++i) {
+    sender->put(message_a);
+    message_b = receiver->latest();
+  }
+
+  EXPECT_EQ(message_a, message_b);
+}
+
+}  // namespace labrat::robot::test

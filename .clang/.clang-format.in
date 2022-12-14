@@ -1,0 +1,135 @@
+# Format file for clang-format.
+
+# This config is applicable to C/C++20 files.
+Language: Cpp
+Standard: c++20
+
+# General options
+DeriveLineEnding: false
+DerivePointerAlignment: false
+UseCRLF: false
+UseTab: Never
+
+# Line width rules.
+ColumnLimit: 140
+
+# Indentation rules.
+IndentWidth: 2
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
+IndentAccessModifiers: false
+IndentCaseBlocks: false
+IndentCaseLabels: true
+IndentExternBlock: NoIndent
+IndentGotoLabels: true
+IndentRequires: false
+IndentWrappedFunctionNames: false
+LambdaBodyIndentation: OuterScope
+NamespaceIndentation: None
+
+# Brace rules.
+BreakBeforeBraces: Attach
+
+# Function signature line brake rules.
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AlwaysBreakAfterReturnType: None
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: true
+BinPackParameters: true
+BreakBeforeBinaryOperators: NonAssignment
+
+# Block line break rules.
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: Empty
+AllowShortLoopsOnASingleLine: false
+CompactNamespaces: false
+
+# Other line break rules.
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AlwaysBreakBeforeMultilineStrings: false
+BreakBeforeConceptDeclarations: true
+BreakBeforeTernaryOperators: false
+BreakConstructorInitializers: AfterColon
+BreakInheritanceList: AfterColon
+BreakStringLiterals: true
+Cpp11BracedListStyle: true
+ReflowComments: true
+
+# Alignment rules.
+AlignAfterOpenBracket: DontAlign
+AlignArrayOfStructures: None
+AlignConsecutiveAssignments: None
+AlignConsecutiveBitFields: None
+AlignConsecutiveDeclarations: None
+AlignConsecutiveMacros: None
+AlignEscapedNewlines: DontAlign
+AlignOperands: DontAlign
+AlignTrailingComments: false
+
+# Line spacing rules.
+EmptyLineAfterAccessModifier: Never
+EmptyLineBeforeAccessModifier: Always
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+
+# In-line spacing and alignment rules.
+BitFieldColonSpacing: Both
+PointerAlignment: Right
+QualifierAlignment: Left
+ReferenceAlignment: Right
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: true
+SpaceAroundPointerQualifiers: Default
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyBlock: false
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInConditionalStatement: false
+SpacesInContainerLiterals: false
+SpacesInLineCommentPrefix:
+  Minimum: 1
+  Maximum: 1
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+# Comment rules.
+FixNamespaceComments: true
+
+# Preprocessor rules.
+IncludeBlocks: Regroup
+IncludeCategories:
+  # Local header
+  - Regex: '^<@LOCAL_PROJECT_PATH@\/.*>$'
+    Priority: 1
+    SortPriority: 1
+    CaseSensitive: true
+  # C library header
+  - Regex: '^<.*\.h>$'
+    Priority: 2
+    SortPriority: 3
+    CaseSensitive: true
+  # C++ library header
+  - Regex: '^<.*\.hpp>$'
+    Priority: 3
+    SortPriority: 4
+    CaseSensitive: true
+  # C++ system header
+  - Regex: '^<.*>$'
+    Priority: 4
+    SortPriority: 2
+    CaseSensitive: true
+IndentPPDirectives: None
+SortIncludes: true

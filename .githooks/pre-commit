@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Hook script to check for the correct format of the branch name.
+
+# Format regex.
+format="^(main|development|hotfix-\d+|release-\d(\.\d+){2}(-\w+)?|feature(-\w+)+)$"
+
+# Parse the branch name.
+git rev-parse --abbrev-ref HEAD | grep -Pqe "$format"
+
+if [ $? -ne 0 ]; then
+  # Handle an invalid branch name.
+  echo "The branch name does not follow the naming convention. Possible branch types are listed below."
+  echo "main"
+  echo "development"
+  echo "hotfix-<issue id>"
+  echo "release-<version string>"
+  echo "feature-<feature name>"
+  # Do not allow the commit to continue.
+  exit 1
+fi
+
+# Allow the commit to continue.
+exit 0

@@ -1,0 +1,28 @@
+# Directories
+build/
+bin/
+docs/
+
+include/
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+.netrwhist
+*~
+tags
+[._]*.un~
+
+# Visual Studio Code
+.vscode/*
+
+# Clang
+.clang-format
+.clang-tidy
+
+# Docker
+docker-compose.yml
