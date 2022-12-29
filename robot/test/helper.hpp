@@ -1,35 +1,47 @@
-#include <labrat/robot/node.hpp>
 #include <labrat/robot/message.hpp>
-
-#include <gtest/gtest.h>
+#include <labrat/robot/msg/test.pb.h>
+#include <labrat/robot/node.hpp>
 
 #include <atomic>
 
+#include <gtest/gtest.h>
+
 namespace labrat::robot::test {
 
-class TestNode : public labrat::robot::Node {
-public:
-  TestNode(const std::string &name, TopicMap &topic_map) : labrat::robot::Node(name, topic_map) {}
+using TestMessage = labrat::robot::Message<Test>;
 
-  template<typename MessageType, typename... Args>
-  std::unique_ptr<Sender<MessageType>> addTestSender(const std::string &topic_name, Args &&... args) {
-    return addSender<MessageType>(topic_name, std::forward<Args>(args)...);
+class TestContainer {
+public:
+  using MessageType = TestMessage;
+
+  u64 integral_field = 0;
+  double float_field = 0;
+
+  static inline void toMessage(const TestContainer &source, TestMessage &destination) {
+    destination().set_integral_field(source.integral_field);
+    destination().set_float_field(source.float_field);
   }
 
-  template<typename MessageType, typename... Args>
-  std::unique_ptr<Receiver<MessageType>> addTestReceiver(const std::string &topic_name, Args &&... args) {
-    return addReceiver<MessageType>(topic_name, std::forward<Args>(args)...);
+  static inline void fromMessage(const TestMessage &source, TestContainer &destination) {
+    destination.integral_field = source().integral_field();
+    destination.float_field = source().float_field();
+  }
+
+  bool operator==(const TestContainer &rhs) const {
+    return (integral_field == rhs.integral_field) && (float_field == rhs.float_field);
   }
 };
 
-class TestMessage : public labrat::robot::Message {
+class TestNode : public labrat::robot::Node {
 public:
-  u64 integral_field = 0;
-  f64 float_field = 0;
-
-  bool operator==(const TestMessage& rhs) const {
-    return (integral_field == rhs.integral_field) && (float_field == rhs.float_field);
+  TestNode(const std::string &name, TopicMap &topic_map, const std::string &sender_topic, const std::string &receiver_topic) :
+    labrat::robot::Node(name, topic_map) {
+    sender = addSender<TestContainer>(sender_topic);
+    receiver = addReceiver<TestContainer>(receiver_topic, 10);
   }
+
+  std::unique_ptr<ContainerSender<TestContainer>> sender;
+  std::unique_ptr<ContainerReceiver<TestContainer>> receiver;
 };
 
 }  // namespace labrat::robot::test

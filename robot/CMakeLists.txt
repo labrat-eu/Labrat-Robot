@@ -10,7 +10,6 @@ set(TARGET_PATH ${LOCAL_PROJECT_PATH}/${TARGET_RELATIVE_PATH})
 
 set(TARGET_SOURCES
   manager.cpp
-  message.cpp
   topic.cpp
   logger.cpp
   exception.cpp
@@ -41,7 +40,7 @@ add_subdirectory(msg)
 # Link external libraries to the library target.
 target_link_libraries(${TARGET_NAME} PRIVATE pthread)
 # Link internal libraries to the library target.
-target_link_libraries(${TARGET_NAME} PRIVATE msg-network)
+target_link_libraries(${TARGET_NAME} PRIVATE msg)
 
 
 # Add public header install target.

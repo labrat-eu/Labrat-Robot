@@ -39,10 +39,5 @@ set(CMAKE_ASM_FLAGS_RELEASE "-Wall -Wextra -Werror -O3" CACHE STRING "" FORCE)
 # Enable most warnings, enable debug symbols and disable optimization.
 set(CMAKE_ASM_FLAGS_DEBUG "-Wall -Wextra -g -O0 -fstandalone-debug" CACHE STRING "" FORCE)
 
-# Linker flags.
-set(CMAKE_EXE_LINKER_FLAGS_INIT "-fuse-ld=lld-14" CACHE STRING "" FORCE)
-set(CMAKE_MODULE_LINKER_FLAGS_INIT "-fuse-ld=lld-14" CACHE STRING "" FORCE)
-set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=lld-14" CACHE STRING "" FORCE)
-
 # Add library locations.
 link_directories("/usr/local/lib")

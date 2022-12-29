@@ -1,49 +1,38 @@
 #pragma once
 
-#include <labrat/robot/logger.hpp>
 #include <labrat/robot/exception.hpp>
-#include <labrat/robot/topic.hpp>
+#include <labrat/robot/logger.hpp>
 #include <labrat/robot/message.hpp>
-#include <labrat/robot/utils/types.hpp>
+#include <labrat/robot/topic.hpp>
 #include <labrat/robot/utils/fifo.hpp>
+#include <labrat/robot/utils/types.hpp>
 
-#include <string>
-#include <mutex>
 #include <atomic>
-#include <vector>
 #include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
 
 namespace labrat::robot {
 
 class Manager;
 
-namespace test {
-  class TestMessage;
-}
-
-
 class Node {
 public:
   ~Node() = default;
 
-  template<typename OriginalType, typename ConvertedType>
-  using ConversionFunction = void (*)(const OriginalType &, ConvertedType &);
-
-  template<typename OriginalType>
-  static inline void defaultConversionFunction(const OriginalType &source, OriginalType &destination) {
-    destination = source;
-  }
-
-  template<typename MessageType, typename ContainerType = MessageType, ConversionFunction<ContainerType, MessageType> conversion_function = defaultConversionFunction<MessageType>>
-  requires std::is_base_of_v<Message, MessageType>
+  template <typename MessageType, typename ContainerType = MessageType,
+    ConversionFunction<ContainerType, MessageType> conversion_function = defaultSenderConversionFunction<MessageType, ContainerType>>
+  requires is_message<MessageType>
   class Sender {
   private:
-    Sender(const std::string &topic_name, Node &node) : topic_name(topic_name), node(node), topic(node.topic_map.addSender<MessageType>(topic_name, this)) {}
+    Sender(const std::string &topic_name, Node &node) :
+      topic_name(topic_name), node(node), topic(node.topic_map.addSender<MessageType>(topic_name, this)) {}
 
     friend class Node;
 
     const std::string topic_name;
-    
+
     Node &node;
     TopicMap::Topic &topic;
 
@@ -58,8 +47,8 @@ public:
 
     void put(const ContainerType &container) {
       for (void *pointer : topic.getReceivers()) {
-        Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType, ContainerType, conversion_function> *>(pointer);
-        
+        Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
+
         const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
         const std::size_t index = count & receiver->index_mask;
 
@@ -76,7 +65,7 @@ public:
 
     void flush() {
       for (void *pointer : topic.getReceivers()) {
-        Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType, ContainerType, conversion_function> *>(pointer);
+        Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
         const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
         const std::size_t index = count & receiver->index_mask;
@@ -98,10 +87,18 @@ public:
     }
   };
 
-  template<typename MessageType, typename ContainerType = MessageType, ConversionFunction<MessageType, ContainerType> conversion_function = defaultConversionFunction<MessageType>>  requires std::is_base_of_v<Message, MessageType>
+  template <typename ContainerType>
+  requires is_container<ContainerType>
+  using ContainerSender = Sender<typename ContainerType::MessageType, ContainerType>;
+
+  template <typename MessageType, typename ContainerType = MessageType,
+    ConversionFunction<MessageType, ContainerType> conversion_function = defaultReceiverConversionFunction<MessageType, ContainerType>>
+  requires is_message<MessageType>
   class Receiver {
   private:
-    Receiver(const std::string &topic_name, Node &node, std::size_t buffer_size = 4) : topic_name(topic_name), index_mask(calculateBufferMask(buffer_size)), message_buffer(calculateBufferSize(buffer_size)), write_count(0), read_count(index_mask), node(node), topic(node.topic_map.addReceiver<MessageType>(topic_name, this)) {
+    Receiver(const std::string &topic_name, Node &node, std::size_t buffer_size = 4) :
+      topic_name(topic_name), index_mask(calculateBufferMask(buffer_size)), message_buffer(calculateBufferSize(buffer_size)),
+      write_count(0), read_count(index_mask), node(node), topic(node.topic_map.addReceiver<MessageType>(topic_name, this)) {
       next_count = index_mask;
     }
 
@@ -130,7 +127,7 @@ public:
     }
 
     friend class Node;
-    friend class Sender<MessageType, ContainerType, conversion_function>;
+    friend class Sender<MessageType>;
 
     const std::string topic_name;
     const std::size_t index_mask;
@@ -225,6 +222,10 @@ public:
     }
   };
 
+  template <typename ContainerType>
+  requires is_container<ContainerType>
+  using ContainerReceiver = Receiver<typename ContainerType::MessageType, ContainerType>;
+
   const std::string &getName() {
     return name;
   }
@@ -236,14 +237,36 @@ protected:
     return Logger(name);
   }
 
-  template<typename MessageType, typename... Args>
-  Sender<MessageType>::Ptr addSender(const std::string &topic_name, Args &&... args) requires std::is_base_of_v<Message, MessageType> {
-    return std::unique_ptr<Sender<MessageType>>(new Sender<MessageType>(topic_name, *this, std::forward<Args>(args)...));
+  template <typename MessageType, typename ContainerType = MessageType,
+    ConversionFunction<ContainerType, MessageType> conversion_function = defaultSenderConversionFunction<MessageType, ContainerType>,
+    typename... Args>
+  typename Sender<MessageType, ContainerType, conversion_function>::Ptr addSender(const std::string &topic_name,
+    Args &&...args) requires is_message<MessageType> {
+    return std::unique_ptr<Sender<MessageType, ContainerType, conversion_function>>(
+      new Sender<MessageType, ContainerType, conversion_function>(topic_name, *this, std::forward<Args>(args)...));
   }
 
-  template<typename MessageType, typename... Args>
-  Receiver<MessageType>::Ptr addReceiver(const std::string &topic_name, Args &&... args) requires std::is_base_of_v<Message, MessageType> {
-    return std::unique_ptr<Receiver<MessageType>>(new Receiver<MessageType>(topic_name, *this, std::forward<Args>(args)...));
+  template <typename ContainerType, typename... Args>
+  typename ContainerSender<ContainerType>::Ptr addSender(const std::string &topic_name,
+    Args &&...args) requires is_container<ContainerType> {
+    return std::unique_ptr<ContainerSender<ContainerType>>(
+      new ContainerSender<ContainerType>(topic_name, *this, std::forward<Args>(args)...));
+  }
+
+  template <typename MessageType, typename ContainerType = MessageType,
+    ConversionFunction<MessageType, ContainerType> conversion_function = defaultReceiverConversionFunction<MessageType, ContainerType>,
+    typename... Args>
+  typename Receiver<MessageType, ContainerType, conversion_function>::Ptr addReceiver(const std::string &topic_name,
+    Args &&...args) requires is_message<MessageType> {
+    return std::unique_ptr<Receiver<MessageType, ContainerType, conversion_function>>(
+      new Receiver<MessageType, ContainerType, conversion_function>(topic_name, *this, std::forward<Args>(args)...));
+  }
+
+  template <typename ContainerType, typename... Args>
+  typename ContainerReceiver<ContainerType>::Ptr addReceiver(const std::string &topic_name,
+    Args &&...args) requires is_container<ContainerType> {
+    return std::unique_ptr<ContainerReceiver<ContainerType>>(
+      new ContainerReceiver<ContainerType>(topic_name, *this, std::forward<Args>(args)...));
   }
 
   friend class Manager;

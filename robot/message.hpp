@@ -1,31 +1,73 @@
 #pragma once
 
-#include <labrat/robot/utils/types.hpp>
+#include <labrat/robot/utils/concepts.hpp>
 
-#include <string>
-#include <vector>
+#include <concepts>
+#include <utility>
+
+#include <google/protobuf/message.h>
 
 namespace labrat::robot {
 
+template <typename Content>
+requires std::is_base_of_v<google::protobuf::Message, Content>
 class Message {
 public:
-  Message(bool string_convertable = false, bool serial_convertable = false) : string_convertable(string_convertable), serial_convertable(serial_convertable) {};
-  ~Message() = default;
+  Message() {}
+  Message(Content &content) : content(content) {}
+  Message(Content &&content) : content(std::forward(content)) {}
 
-  inline bool isStringConvertable() const {
-    return string_convertable;
-  }
+  inline Content &get() {
+    return content;
+  };
 
-  inline bool isSerialConvertable() const {
-    return serial_convertable;
-  }
+  inline const Content &get() const {
+    return content;
+  };
 
-  virtual void toString(std::string &result);
-  virtual void toSerial(std::vector<u8> &result);
+  inline Content &operator()() {
+    return get();
+  };
+
+  inline const Content &operator()() const {
+    return get();
+  };
 
 private:
-  bool string_convertable;
-  bool serial_convertable;
+  Content content;
 };
+
+template <typename T>
+concept is_message = utils::is_specialization_of_v<T, Message>;
+
+template <typename T>
+concept is_container = requires {
+  typename T::MessageType;
+};
+
+template <typename OriginalType, typename ConvertedType>
+using ConversionFunction = void (*)(const OriginalType &, ConvertedType &);
+
+template <typename OriginalType, typename ConvertedType>
+inline void defaultSenderConversionFunction(const ConvertedType &source,
+  OriginalType &destination) requires std::is_same_v<OriginalType, ConvertedType> {
+  destination = source;
+}
+
+template <typename OriginalType, typename ConvertedType>
+inline void defaultSenderConversionFunction(const ConvertedType &source, OriginalType &destination) {
+  ConvertedType::toMessage(source, destination);
+}
+
+template <typename OriginalType, typename ConvertedType>
+inline void defaultReceiverConversionFunction(const OriginalType &source,
+  ConvertedType &destination) requires std::is_same_v<OriginalType, ConvertedType> {
+  destination = source;
+}
+
+template <typename OriginalType, typename ConvertedType>
+inline void defaultReceiverConversionFunction(const OriginalType &source, ConvertedType &destination) {
+  ConvertedType::fromMessage(source, destination);
+}
 
 }  // namespace labrat::robot

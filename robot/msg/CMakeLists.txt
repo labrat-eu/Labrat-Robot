@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20.0)
 
 
+find_package(Protobuf MODULE REQUIRED)
+
 # Set the target name from the path.
 get_filename_component(TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
@@ -8,17 +10,23 @@ get_filename_component(TARGET_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 file(RELATIVE_PATH TARGET_RELATIVE_PATH ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 set(TARGET_PATH ${LOCAL_PROJECT_PATH}/${TARGET_RELATIVE_PATH})
 
-
-set(TARGET_SOURCES_NETWORK
-  network.cpp
+set(TARGET_MESSAGES
+  test.proto
+  log.proto
 )
 
-set(TARGET_HEADERS_NETWORK
-  network.hpp
-)
+# Generate protobug code.
+protobuf_generate_cpp(TARGET_SOURCES TARGET_HEADERS ${TARGET_MESSAGES})
 
-# Create library target.
-add_library(${TARGET_NAME}-network STATIC ${TARGET_HEADERS_NETWORK} ${TARGET_SOURCES_NETWORK})
+add_library(${TARGET_NAME} ${TARGET_HEADERS} ${TARGET_SOURCES})
+
+# Set library properties.
+set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
+target_include_directories(${TARGET_NAME} PRIVATE ${Protobuf_INCLUDE_DIRS})
+target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+
+target_link_libraries(${TARGET_NAME} PRIVATE ${Protobuf_LIBRARIES})
 
 # Add public header install target.
-install(FILES ${TARGET_HEADERS_NETWORK} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_PATH})
+install(FILES ${TARGET_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_PATH})

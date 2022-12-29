@@ -2,7 +2,7 @@
 
 inline namespace utils {
 
-class FlagGuard  {
+class FlagGuard {
 public:
   inline FlagGuard(std::atomic_flag &flag) : flag(flag) {
     while (flag.test_and_set()) {
@@ -19,8 +19,8 @@ private:
   std::atomic_flag &flag;
 };
 
-template<bool RequiredValue = true>
-class FlagBlock  {
+template <bool RequiredValue = true>
+class FlagBlock {
 public:
   inline FlagBlock(std::atomic_flag &flag) : flag(flag) {
     while (flag.test() != RequiredValue) {
@@ -32,8 +32,8 @@ private:
   std::atomic_flag &flag;
 };
 
-template<typename T>
-class WaitUntil  {
+template <typename T>
+class WaitUntil {
 public:
   inline WaitUntil(std::atomic<T> &value, T required) {
     while (true) {
@@ -48,8 +48,8 @@ public:
   }
 };
 
-template<typename T>
-class SpinUntil  {
+template <typename T>
+class SpinUntil {
 public:
   inline SpinUntil(std::atomic<T> &value, T required) {
     while (true) {
@@ -62,4 +62,4 @@ public:
   }
 };
 
-}
+}  // namespace utils

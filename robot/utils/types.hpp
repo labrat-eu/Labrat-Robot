@@ -20,5 +20,5 @@ using f32 = float;
 using f64 = double;
 using f128 = long double;
 
-}
+}  // namespace utils
 // NOLINTEND

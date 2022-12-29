@@ -1,9 +1,8 @@
 #pragma once
 
-#include <exception>
-
 #include <labrat/robot/logger.hpp>
 
+#include <exception>
 
 namespace labrat::robot {
 
@@ -72,4 +71,4 @@ protected:
   const std::string message;
 };
 
-}
+}  // namespace labrat::robot

@@ -15,7 +15,6 @@ set(TARGET_TEST_SOURCES
   setup.cpp
   performance.cpp
   stress.cpp
-  network.cpp
 )
 
 # Build unit tests if they are enabled.
@@ -27,11 +26,5 @@ if(${PRJ_OPT_ENABLE_TESTS})
   # Make tests available to ctest
   gtest_discover_tests(${TARGET_NAME} DISCOVERY_MODE PRE_TEST)
 
-  target_include_directories(${TARGET_NAME} PRIVATE ${Protobuf_INCLUDE_DIRS})
-  protobuf_generate_cpp(PROTO_SRC PROTO_HEADER protobuf/test.proto)
-  add_library(${TARGET_NAME}_protobuf ${PROTO_HEADER} ${PROTO_SRC})
-  target_include_directories(${TARGET_NAME}_protobuf PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
-  target_link_libraries(${TARGET_NAME}_protobuf PRIVATE ${Protobuf_LIBRARIES})
-
-  target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_protobuf)
+  target_link_libraries(${TARGET_NAME} PRIVATE msg)
 endif()

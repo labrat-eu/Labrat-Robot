@@ -8,64 +8,55 @@
 namespace labrat::robot::test {
 
 TEST(performance, put) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b"));
-
-  TestNode::Sender<TestMessage>::Ptr sender = node_a->addTestSender<TestMessage>("/testing");
-  TestNode::Receiver<TestMessage>::Ptr receiver = node_b->addTestReceiver<TestMessage>("/testing");
+  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
 
   const u64 limit = 10000000;
 
   for (u64 i = 1; i <= limit; ++i) {
-    TestMessage message;
+    TestContainer message;
     message.integral_field = i;
 
-    sender->put(message);
+    node_a->sender->put(message);
   }
 
-  TestMessage message = receiver->latest();
+  TestContainer message = node_b->receiver->latest();
 
   EXPECT_EQ(message.integral_field, limit);
 }
 
 TEST(performance, latest) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b"));
+  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
 
-  TestNode::Sender<TestMessage>::Ptr sender = node_a->addTestSender<TestMessage>("/testing");
-  TestNode::Receiver<TestMessage>::Ptr receiver = node_b->addTestReceiver<TestMessage>("/testing");
-
-  TestMessage message_a;
+  TestContainer message_a;
   message_a.integral_field = 42;
 
-  sender->put(message_a);
+  node_a->sender->put(message_a);
 
   const u64 limit = 10000000;
-  TestMessage message_b;
+  TestContainer message_b;
 
   for (u64 i = 0; i < limit; ++i) {
-    message_b = receiver->latest();
+    message_b = node_b->receiver->latest();
   }
 
   EXPECT_EQ(message_a, message_b);
 }
 
 TEST(performance, next) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b"));
+  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
 
-  TestNode::Sender<TestMessage>::Ptr sender = node_a->addTestSender<TestMessage>("/testing");
-  TestNode::Receiver<TestMessage>::Ptr receiver = node_b->addTestReceiver<TestMessage>("/testing");
-
-  TestMessage message_a;
+  TestContainer message_a;
   message_a.integral_field = 42;
 
   const u64 limit = 10000000;
-  TestMessage message_b;
+  TestContainer message_b;
 
   for (u64 i = 0; i < limit; ++i) {
-    sender->put(message_a);
-    message_b = receiver->latest();
+    node_a->sender->put(message_a);
+    message_b = node_b->receiver->latest();
   }
 
   EXPECT_EQ(message_a, message_b);

@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message Test {
+  uint64 integral_field = 1;
+  float float_field = 2;
+}

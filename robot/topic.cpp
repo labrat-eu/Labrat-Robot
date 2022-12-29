@@ -1,3 +1,4 @@
+#include <labrat/robot/exception.hpp>
 #include <labrat/robot/topic.hpp>
 
 namespace labrat::robot {
@@ -12,7 +13,7 @@ TopicMap::Topic &TopicMap::getTopic(const std::string &topic) {
   const std::unordered_map<std::string, Topic>::iterator iterator = map.find(topic);
 
   if (iterator == map.end()) {
-    // throw
+    throw Exception("Topic '" + topic + "' not found.");
   }
 
   return iterator->second;
@@ -22,7 +23,7 @@ TopicMap::Topic &TopicMap::getTopic(const std::string &topic, Topic::Handle hand
   TopicMap::Topic &result = map.emplace(topic, handle).first->second;
 
   if (handle != result.handle) {
-    // throw
+    throw Exception("Topic '" + topic + "' does not match the provided handle.");
   }
 
   return result;
@@ -34,7 +35,7 @@ void *TopicMap::Topic::getSender() const {
 
 void TopicMap::Topic::addSender(void *new_sender) {
   if (sender != nullptr) {
-    // throw
+    throw Exception("A sender has already been registered for this topic.");
   }
 
   sender = new_sender;
@@ -42,7 +43,7 @@ void TopicMap::Topic::addSender(void *new_sender) {
 
 void TopicMap::Topic::removeSender(void *old_sender) {
   if (sender != old_sender) {
-    // throw
+    throw Exception("The sender to be removed does not match the existing sender.");
   }
 
   sender = nullptr;
@@ -62,7 +63,7 @@ void TopicMap::Topic::removeReceiver(void *old_receiver) {
   std::vector<void *>::iterator iterator = std::find(receivers.begin(), receivers.end(), old_receiver);
 
   if (iterator == receivers.end()) {
-    // throw
+    throw Exception("Receiver to be removed not found.");
   }
 
   receivers.erase(iterator);

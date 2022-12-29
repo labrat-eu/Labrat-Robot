@@ -1,7 +1,7 @@
 #include <labrat/robot/logger.hpp>
-#include <labrat/robot/node.hpp>
 #include <labrat/robot/manager.hpp>
-#include <labrat/robot/msg/log.hpp>
+#include <labrat/robot/msg/log.pb.h>
+#include <labrat/robot/node.hpp>
 
 #include <iostream>
 
@@ -9,14 +9,14 @@ namespace labrat::robot {
 
 class LoggerNode : public Node {
 private:
-  std::unique_ptr<Sender<msg::Log>> sender;
+  std::unique_ptr<Sender<Message<Log>, Logger::Entry>> sender;
 
 public:
   LoggerNode(const std::string &name, TopicMap &topic_map) : Node(name, topic_map) {
-    sender = addSender<msg::Log>("/log");
+    sender = addSender<Message<Log>, Logger::Entry>("/log");
   }
 
-  void send(const msg::Log &message) {
+  void send(const Logger::Entry &message) {
     sender->put(message);
   }
 };
@@ -37,9 +37,9 @@ public:
 
   Color(Code code = Code::normal, bool enable_color = true) : code(code), enable_color(enable_color) {}
 
-  friend std::ostream&
+  friend std::ostream &
 
-  operator<<(std::ostream& stream, const Color& color) {
+  operator<<(std::ostream &stream, const Color &color) {
     if (color.enable_color) {
       return stream << "\033[" << static_cast<i16>(color.code) << "m";
     } else {
@@ -52,69 +52,71 @@ private:
   const bool enable_color;
 };
 
-const std::string getVerbosityLong(Logger::LogStream::Verbosity verbosity);
-const std::string getVerbosityShort(Logger::LogStream::Verbosity verbosity);
-const Color getVerbosityColor(Logger::LogStream::Verbosity verbosity);
+const std::string getVerbosityLong(Logger::Verbosity verbosity);
+const std::string getVerbosityShort(Logger::Verbosity verbosity);
+const Color getVerbosityColor(Logger::Verbosity verbosity);
 
 std::shared_ptr<LoggerNode> Logger::node(Manager::get().addNode<LoggerNode>("logger"));
 
 Logger::Logger(const std::string &name) : name(std::move(name)) {}
 
 Logger::LogStream Logger::critical() {
-  return LogStream(*this, LogStream::Verbosity::critical);
+  return LogStream(*this, Verbosity::critical);
 }
 
 Logger::LogStream Logger::warning() {
-  return LogStream(*this, LogStream::Verbosity::warning);
+  return LogStream(*this, Verbosity::warning);
 }
 
 Logger::LogStream Logger::info() {
-  return LogStream(*this, LogStream::Verbosity::info);
+  return LogStream(*this, Verbosity::info);
 }
 
 Logger::LogStream Logger::debug() {
-  return LogStream(*this, LogStream::Verbosity::debug);
+  return LogStream(*this, Verbosity::debug);
 }
 
-void Logger::send(const msg::Log &message) {
+void Logger::send(const Entry &message) {
   node->send(message);
 }
 
-Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity) :logger(logger), verbosity(verbosity) {}
+Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity) : logger(logger), verbosity(verbosity) {}
 
 Logger::LogStream::~LogStream() {
-  std::cout << getVerbosityColor(verbosity) << "[" << getVerbosityShort(verbosity) << "]" << Color() << " (" << logger.name << " @ " << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count() << "): ";
+  std::cout << getVerbosityColor(verbosity) << "[" << getVerbosityShort(verbosity) << "]" << Color() << " (" << logger.name << " @ "
+            << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count() << "): ";
   std::cout << line.str() << std::endl;
 
-  msg::Log log_message;
-  log_message.logger_name = logger.name;
-  log_message.timestamp = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
-  log_message.message = line.str();
+  Entry entry;
+  entry.verbosity = verbosity;
+  entry.timestamp = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+  entry.logger_name = logger.name;
+  entry.message = line.str();
 
-  logger.send(log_message);
+  logger.send(entry);
 }
 
-Logger::LogStream &Logger::LogStream::operator<<(std::ostream& (*func)(std::ostream&)) {
+Logger::LogStream &Logger::LogStream::operator<<(std::ostream &(*func)(std::ostream &)) {
   line << func;
 
   return *this;
 }
 
-const std::string getVerbosityLong(Logger::LogStream::Verbosity verbosity) {
+const std::string getVerbosityLong(Logger::Verbosity verbosity) {
   switch (verbosity) {
-    case (Logger::LogStream::Verbosity::critical): {
+    case (Logger::Verbosity::critical): {
       return "critical";
     }
 
-    case (Logger::LogStream::Verbosity::warning): {
+    case (Logger::Verbosity::warning): {
       return "warning";
     }
 
-    case (Logger::LogStream::Verbosity::info): {
+    case (Logger::Verbosity::info): {
       return "info";
     }
 
-    case (Logger::LogStream::Verbosity::debug): {
+    case (Logger::Verbosity::debug): {
       return "debug";
     }
 
@@ -124,21 +126,21 @@ const std::string getVerbosityLong(Logger::LogStream::Verbosity verbosity) {
   }
 }
 
-const std::string getVerbosityShort(Logger::LogStream::Verbosity verbosity) {
+const std::string getVerbosityShort(Logger::Verbosity verbosity) {
   switch (verbosity) {
-    case (Logger::LogStream::Verbosity::critical): {
+    case (Logger::Verbosity::critical): {
       return "CRIT";
     }
 
-    case (Logger::LogStream::Verbosity::warning): {
+    case (Logger::Verbosity::warning): {
       return "WARN";
     }
 
-    case (Logger::LogStream::Verbosity::info): {
+    case (Logger::Verbosity::info): {
       return "INFO";
     }
 
-    case (Logger::LogStream::Verbosity::debug): {
+    case (Logger::Verbosity::debug): {
       return "DBUG";
     }
 
@@ -148,21 +150,21 @@ const std::string getVerbosityShort(Logger::LogStream::Verbosity verbosity) {
   }
 }
 
-const Color getVerbosityColor(Logger::LogStream::Verbosity verbosity) {
+const Color getVerbosityColor(Logger::Verbosity verbosity) {
   switch (verbosity) {
-    case (Logger::LogStream::Verbosity::critical): {
+    case (Logger::Verbosity::critical): {
       return Color(Color::Code::red);
     }
-  
-    case (Logger::LogStream::Verbosity::warning): {
+
+    case (Logger::Verbosity::warning): {
       return Color(Color::Code::yellow);
     }
 
-    case (Logger::LogStream::Verbosity::info): {
+    case (Logger::Verbosity::info): {
       return Color(Color::Code::cyan);
     }
 
-    case (Logger::LogStream::Verbosity::debug): {
+    case (Logger::Verbosity::debug): {
       return Color(Color::Code::magenta);
     }
 

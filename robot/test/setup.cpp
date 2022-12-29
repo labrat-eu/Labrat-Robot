@@ -8,35 +8,32 @@
 namespace labrat::robot::test {
 
 TEST(setup, latest) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b"));
+  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
 
-  TestNode::Sender<TestMessage>::Ptr sender = node_a->addTestSender<TestMessage>("/testing");
-  TestNode::Receiver<TestMessage>::Ptr receiver = node_b->addTestReceiver<TestMessage>("/testing", 10);
-
-  TestMessage message_a;
+  TestContainer message_a;
   message_a.integral_field = 10;
   message_a.float_field = 5.0;
 
-  sender->put(message_a);
+  node_a->sender->put(message_a);
 
-  TestMessage message_b = receiver->latest();
+  TestContainer message_b = node_b->receiver->latest();
 
   ASSERT_EQ(message_a, message_b);
 
-  TestMessage message_c;
+  TestContainer message_c;
   message_c.integral_field = 5;
   message_c.float_field = 10.0;
 
-  TestMessage message_d = receiver->latest();
+  TestContainer message_d = node_b->receiver->latest();
 
-  sender->put(message_c);
+  node_a->sender->put(message_c);
 
   ASSERT_EQ(message_a, message_d);
   ASSERT_EQ(message_b, message_d);
   ASSERT_NE(message_c, message_d);
 
-  TestMessage message_e = receiver->latest();
+  TestContainer message_e = node_b->receiver->latest();
 
   ASSERT_NE(message_a, message_e);
   ASSERT_NE(message_b, message_e);
@@ -44,34 +41,31 @@ TEST(setup, latest) {
 }
 
 TEST(setup, next) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b"));
+  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
 
-  TestNode::Sender<TestMessage>::Ptr sender = node_a->addTestSender<TestMessage>("/testing");
-  TestNode::Receiver<TestMessage>::Ptr receiver = node_b->addTestReceiver<TestMessage>("/testing", 10);
-
-  TestMessage message_a;
+  TestContainer message_a;
   message_a.integral_field = 10;
   message_a.float_field = 5.0;
 
-  sender->put(message_a);
+  node_a->sender->put(message_a);
 
-  TestMessage message_b = receiver->next();
+  TestContainer message_b = node_b->receiver->next();
 
   ASSERT_EQ(message_a, message_b);
 
-  TestMessage message_c;
+  TestContainer message_c;
   message_c.integral_field = 5;
   message_c.float_field = 10.0;
 
-  TestMessage message_d;
-  auto receiver_lambda = [&message_d, &receiver]() {
-    message_d = receiver->next();
+  TestContainer message_d;
+  auto receiver_lambda = [&message_d, &node_b]() {
+    message_d = node_b->receiver->next();
   };
 
   std::thread receiver_thread(receiver_lambda);
 
-  sender->put(message_c);
+  node_a->sender->put(message_c);
 
   receiver_thread.join();
 
@@ -79,24 +73,18 @@ TEST(setup, next) {
   ASSERT_NE(message_b, message_d);
   ASSERT_EQ(message_c, message_d);
 
-  TestMessage message_e;
+  TestContainer message_e;
   message_e.integral_field = 100;
-  sender->put(message_e);
+  node_a->sender->put(message_e);
 
-  TestMessage message_f;
+  TestContainer message_f;
   message_f.integral_field = 101;
-  sender->put(message_f);
+  node_a->sender->put(message_f);
 
-  TestMessage message_g = receiver->next();
+  TestContainer message_g = node_b->receiver->next();
 
   ASSERT_NE(message_e, message_g);
   ASSERT_EQ(message_f, message_g);
-}
-
-TEST(setup, buffer_size) {
-  std::shared_ptr<TestNode> node(labrat::robot::Manager::get().addNode<TestNode>("node_a"));
-
-  ASSERT_THROW(node->addTestReceiver<TestMessage>("/testing", 1), labrat::robot::Exception);
 }
 
 }  // namespace labrat::robot::test

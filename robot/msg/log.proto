@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+message Log {
+  enum Verbosity {
+    critical = 0;
+    warning = 1;
+    info = 2;
+    debug = 3;
+  }
+
+  Verbosity verbosity = 1;
+  uint64 timestamp = 2;
+  string logger_name = 3;
+  string message = 4;
+}

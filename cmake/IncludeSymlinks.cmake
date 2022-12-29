@@ -9,4 +9,8 @@ function(prj_add_include_symlink)
   # Create a symbolic link from the include directory path to the passed target.
   file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/include/${INT_NAMESPACE})
   file(CREATE_LINK ${PROJECT_SOURCE_DIR}/${INT_TARGET} ${PROJECT_SOURCE_DIR}/include/${INT_NAMESPACE}/${INT_NAME} SYMBOLIC)
+
+  # Create a symbolic link from the include directory path to the passed target.
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${INT_NAMESPACE})
+  file(CREATE_LINK ${CMAKE_BINARY_DIR}/${INT_TARGET} ${CMAKE_BINARY_DIR}/${INT_NAMESPACE}/${INT_NAME} SYMBOLIC)
 endfunction(prj_add_include_symlink)

@@ -1,18 +1,17 @@
 #pragma once
 
 #include <labrat/robot/message.hpp>
-#include <labrat/robot/utils/types.hpp>
 #include <labrat/robot/utils/atomic.hpp>
+#include <labrat/robot/utils/types.hpp>
 
-#include <unordered_map>
-#include <string>
-#include <vector>
-#include <memory>
 #include <algorithm>
 #include <atomic>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace labrat::robot {
-
 
 class TopicMap {
 public:
@@ -83,8 +82,8 @@ public:
   TopicMap();
   ~TopicMap() = default;
 
-  template<typename T>
-  Topic &addSender(const std::string &topic_name, void *sender) requires std::is_base_of_v<Message, T> {
+  template <typename T>
+  Topic &addSender(const std::string &topic_name, void *sender) {
     Topic &topic = getTopic(topic_name, typeid(T).hash_code());
 
     topic.addSender(sender);
@@ -100,8 +99,8 @@ public:
     return topic;
   }
 
-  template<typename T>
-  Topic &addReceiver(const std::string &topic_name, void *receiver) requires std::is_base_of_v<Message, T> {
+  template <typename T>
+  Topic &addReceiver(const std::string &topic_name, void *receiver) {
     Topic &topic = getTopic(topic_name, typeid(T).hash_code());
 
     topic.addReceiver(receiver);

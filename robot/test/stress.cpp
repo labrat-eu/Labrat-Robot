@@ -8,20 +8,17 @@
 namespace labrat::robot::test {
 
 TEST(stress, latest) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b"));
-
-  TestNode::Sender<TestMessage>::Ptr sender = node_a->addTestSender<TestMessage>("/testing");
-  TestNode::Receiver<TestMessage>::Ptr receiver = node_b->addTestReceiver<TestMessage>("/testing");
+  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
 
   const u64 limit = 1000000;
 
-  auto sender_lambda = [&sender]() {
+  auto sender_lambda = [&node_a]() {
     for (u64 i = 1; i <= limit; ++i) {
-      TestMessage message;
+      TestContainer message;
       message.integral_field = i;
 
-      sender->put(message);
+      node_a->sender->put(message);
     }
   };
 
@@ -29,7 +26,7 @@ TEST(stress, latest) {
 
   u64 last_integral = 0;
   while (last_integral < limit) {
-    TestMessage message = receiver->latest();
+    TestContainer message = node_b->receiver->latest();
 
     EXPECT_GE(message.integral_field, last_integral);
 
@@ -40,25 +37,22 @@ TEST(stress, latest) {
 }
 
 TEST(stress, next) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b"));
-
-  TestNode::Sender<TestMessage>::Ptr sender = node_a->addTestSender<TestMessage>("/testing");
-  TestNode::Receiver<TestMessage>::Ptr receiver = node_b->addTestReceiver<TestMessage>("/testing");
+  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
 
   const u64 limit = 1000000;
   std::atomic_flag done;
 
-  auto sender_lambda = [&sender, &done]() {
+  auto sender_lambda = [&node_a, &done]() {
     for (u64 i = 1; i <= limit; ++i) {
-      TestMessage message;
+      TestContainer message;
       message.integral_field = i;
 
-      sender->put(message);
+      node_a->sender->put(message);
     }
 
     while (!done.test()) {
-      sender->flush();
+      node_a->sender->flush();
     }
   };
 
@@ -66,7 +60,7 @@ TEST(stress, next) {
 
   u64 last_integral = 0;
   while (last_integral < limit) {
-    TestMessage message = receiver->next();
+    TestContainer message = node_b->receiver->next();
 
     EXPECT_GT(message.integral_field, last_integral);
 

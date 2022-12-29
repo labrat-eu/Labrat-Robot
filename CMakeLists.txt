@@ -159,8 +159,9 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 # TODO: add description
 prj_add_include_symlink(TARGET ${LOCAL_PROJECT_NAME} NAME ${LOCAL_PROJECT_NAME} NAMESPACE ${LOCAL_PROJECT_NAMESPACE})
 
-# Add the project root directory to the include path.
+# Add the project root and build directory to the include path.
 include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/include)
+include_directories(BEFORE ${CMAKE_BINARY_DIR})
 
 # Add header libraries to the include path.
 include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/submodules/cpp-utils)

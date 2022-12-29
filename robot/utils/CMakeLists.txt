@@ -13,6 +13,7 @@ set(TARGET_HEADERS
   fifo.hpp
   flag_guard.hpp
   final_ptr.hpp
+  concepts.hpp
 )
 
 # Add public header install target.
