@@ -40,6 +40,10 @@ public:
     receiver = addReceiver<TestContainer>(receiver_topic, 10);
   }
 
+  inline Logger getLogger() const {
+    return labrat::robot::Node::getLogger();
+  }
+
   std::unique_ptr<ContainerSender<TestContainer>> sender;
   std::unique_ptr<ContainerReceiver<TestContainer>> receiver;
 };

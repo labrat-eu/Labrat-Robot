@@ -15,10 +15,7 @@ public:
   ~McapRecorder();
 
 private:
-  static void topicCallback(void *user_ptr, const Plugin::TopicInfo &info);
-  static void messageCallback(void *user_ptr, const Plugin::MessageInfo &info);
-
-  std::unordered_map<std::size_t, mcap::Schema> schema_map;
+  using SchemaMap = std::unordered_map<std::size_t, mcap::Schema>;
 
   struct ChannelInfo {
     mcap::Channel channel;
@@ -28,7 +25,16 @@ private:
       channel(topic, encoding, schema), index(0) {}
   };
 
-  std::unordered_map<std::size_t, ChannelInfo> channel_map;
+  using ChannelMap = std::unordered_map<std::size_t, ChannelInfo>;
+
+  static void topicCallback(void *user_ptr, const Plugin::TopicInfo &info);
+  static void messageCallback(void *user_ptr, const Plugin::MessageInfo &info);
+
+  ChannelMap::iterator handleTopic(const Plugin::TopicInfo &info);
+  ChannelMap::iterator handleMessage(const Plugin::MessageInfo &info);
+
+  SchemaMap schema_map;
+  ChannelMap channel_map;
 
   mcap::McapWriter writer;
 };

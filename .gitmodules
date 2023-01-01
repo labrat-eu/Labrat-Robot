@@ -7,3 +7,6 @@
 [submodule "submodules/mcap"]
 	path = submodules/mcap
 	url = https://github.com/foxglove/mcap.git
+[submodule "submodules/mavlink"]
+	path = submodules/mavlink
+	url = https://github.com/mavlink/c_library_v2.git

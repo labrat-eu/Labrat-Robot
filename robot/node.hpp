@@ -19,6 +19,20 @@ namespace labrat::robot {
 class Manager;
 
 class Node {
+private:
+  template <typename MessageType>
+  requires is_message<MessageType>
+  static Plugin::TopicInfo getTopicInfo(const std::string &topic_name) {
+    const Plugin::TopicInfo result = {
+      .type_hash = typeid(MessageType).hash_code(),
+      .topic_hash = std::hash<std::string>()(topic_name),
+      .topic_name = topic_name,
+      .type_descriptor = MessageType::Content::descriptor(),
+    };
+
+    return result;
+  }
+
 public:
   struct Environment {
     const std::string name;
@@ -35,15 +49,8 @@ public:
   class Sender {
   private:
     Sender(const std::string &topic_name, Node &node) :
-      topic_hash(std::hash<std::string>()(topic_name)), topic_name(topic_name), node(node),
+      topic_info(Node::getTopicInfo<MessageType>(topic_name)), node(node),
       topic(node.environment.topic_map.addSender<MessageType>(topic_name, this)) {
-      const Plugin::TopicInfo topic_info = {
-        .type_hash = typeid(MessageType).hash_code(),
-        .topic_hash = topic_hash,
-        .topic_name = topic_name,
-        .type_descriptor = MessageType::Content::descriptor(),
-      };
-
       for (const Plugin &plugin : node.environment.plugin_list) {
         plugin.topic_callback(plugin.user_ptr, topic_info);
       }
@@ -51,8 +58,7 @@ public:
 
     friend class Node;
 
-    const std::size_t topic_hash;
-    const std::string topic_name;
+    const Plugin::TopicInfo topic_info;
 
     Node &node;
     TopicMap::Topic &topic;
@@ -63,7 +69,7 @@ public:
     ~Sender() {
       flush();
 
-      node.environment.topic_map.removeSender(topic_name, this);
+      node.environment.topic_map.removeSender(topic_info.topic_name, this);
     }
 
     void put(const ContainerType &container) {
@@ -114,7 +120,7 @@ public:
       conversion_function(container, message);
 
       Plugin::MessageInfo message_info = {
-        .topic_hash = topic_hash,
+        .topic_info = topic_info,
         .timestamp = message.getTimestamp(),
       };
 
@@ -128,7 +134,7 @@ public:
     }
 
     const std::string &getTopicName() {
-      return topic_name;
+      return topic_info.topic_name;
     }
   };
 
@@ -142,8 +148,9 @@ public:
   class Receiver {
   private:
     Receiver(const std::string &topic_name, Node &node, std::size_t buffer_size = 4) :
-      topic_name(topic_name), index_mask(calculateBufferMask(buffer_size)), message_buffer(calculateBufferSize(buffer_size)),
-      write_count(0), read_count(index_mask), node(node), topic(node.environment.topic_map.addReceiver<MessageType>(topic_name, this)) {
+      topic_info(Node::getTopicInfo<MessageType>(topic_name)), index_mask(calculateBufferMask(buffer_size)),
+      message_buffer(calculateBufferSize(buffer_size)), write_count(0), read_count(index_mask), node(node),
+      topic(node.environment.topic_map.addReceiver<MessageType>(topic_info.topic_name, this)) {
       next_count = index_mask;
     }
 
@@ -174,7 +181,8 @@ public:
     friend class Node;
     friend class Sender<MessageType>;
 
-    const std::string topic_name;
+    const Plugin::TopicInfo topic_info;
+
     const std::size_t index_mask;
 
     class MessageBuffer {
@@ -226,7 +234,7 @@ public:
     using Ptr = std::unique_ptr<Receiver<MessageType, ContainerType, conversion_function>>;
 
     ~Receiver() {
-      node.environment.topic_map.removeReceiver(topic_name, this);
+      node.environment.topic_map.removeReceiver(topic_info.topic_name, this);
     }
 
     ContainerType latest() {
@@ -263,7 +271,7 @@ public:
     }
 
     const std::string &getTopicName() {
-      return topic_name;
+      return topic_info.topic_name;
     }
   };
 

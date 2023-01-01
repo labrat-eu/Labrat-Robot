@@ -26,7 +26,7 @@ public:
   void (*topic_callback)(void *user_ptr, const TopicInfo &info);
 
   struct MessageInfo {
-    const std::size_t topic_hash;
+    const TopicInfo &topic_info;
     const std::chrono::nanoseconds timestamp;
     std::string serialized_message;
   };

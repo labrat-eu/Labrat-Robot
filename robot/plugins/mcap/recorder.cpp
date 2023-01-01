@@ -39,29 +39,39 @@ McapRecorder::~McapRecorder() {
 void McapRecorder::topicCallback(void *user_ptr, const Plugin::TopicInfo &info) {
   McapRecorder *self = reinterpret_cast<McapRecorder *>(user_ptr);
 
-  auto schema_iterator = self->schema_map.find(info.type_hash);
-  if (schema_iterator == self->schema_map.end()) {
-    schema_iterator = self->schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
-      std::forward_as_tuple(info.type_descriptor->full_name(), "protobuf",
-        buildFileDescriptorSet(info.type_descriptor).SerializeAsString()));
-
-    self->writer.addSchema(schema_iterator->second);
-  }
-
-  const auto channel_iterator = self->channel_map.emplace(std::piecewise_construct, std::forward_as_tuple(info.topic_hash),
-    std::forward_as_tuple(info.topic_name, "protobuf", schema_iterator->second.id));
-
-  if (channel_iterator.second) {
-    self->writer.addChannel(channel_iterator.first->second.channel);
-  }
+  (void)self->handleTopic(info);
 }
 
 void McapRecorder::messageCallback(void *user_ptr, const Plugin::MessageInfo &info) {
   McapRecorder *self = reinterpret_cast<McapRecorder *>(user_ptr);
 
-  const auto channel_iterator = self->channel_map.find(info.topic_hash);
-  if (channel_iterator == self->channel_map.end()) {
-    throw Exception("Unknown topic.");
+  (void)self->handleMessage(info);
+}
+
+McapRecorder::ChannelMap::iterator McapRecorder::handleTopic(const Plugin::TopicInfo &info) {
+  SchemaMap::iterator schema_iterator = schema_map.find(info.type_hash);
+  if (schema_iterator == schema_map.end()) {
+    schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
+      std::forward_as_tuple(info.type_descriptor->full_name(), "protobuf",
+        buildFileDescriptorSet(info.type_descriptor).SerializeAsString()));
+
+    writer.addSchema(schema_iterator->second);
+  }
+
+  const std::pair<ChannelMap::iterator, bool> result = channel_map.emplace(std::piecewise_construct, std::forward_as_tuple(info.topic_hash),
+    std::forward_as_tuple(info.topic_name, "protobuf", schema_iterator->second.id));
+
+  if (result.second) {
+    writer.addChannel(result.first->second.channel);
+  }
+
+  return result.first;
+}
+
+inline McapRecorder::ChannelMap::iterator McapRecorder::handleMessage(const Plugin::MessageInfo &info) {
+  ChannelMap::iterator channel_iterator = channel_map.find(info.topic_info.topic_hash);
+  if (channel_iterator == channel_map.end()) {
+    channel_iterator = handleTopic(info.topic_info);
   }
 
   mcap::Message message;
@@ -72,13 +82,15 @@ void McapRecorder::messageCallback(void *user_ptr, const Plugin::MessageInfo &in
   message.data = reinterpret_cast<const std::byte *>(info.serialized_message.data());
   message.dataSize = info.serialized_message.size();
 
-  const mcap::Status result = self->writer.write(message);
+  const mcap::Status result = writer.write(message);
   if (!result.ok()) {
-    self->writer.terminate();
-    self->writer.close();
+    writer.terminate();
+    writer.close();
 
     throw Exception("Failed to write message.");
   }
+
+  return channel_iterator;
 }
 
 google::protobuf::FileDescriptorSet buildFileDescriptorSet(const google::protobuf::Descriptor *top_descriptor) {
