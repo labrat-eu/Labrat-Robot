@@ -53,25 +53,25 @@ public:
     std::string logger_name;
     std::string message;
 
-    static inline void toMessage(const Entry &source, Message<Log> &destination) {
+    static inline void toMessage(const Entry &source, Message<msg::Log> &destination) {
       switch (source.verbosity) {
         case (Verbosity::critical): {
-          destination().set_verbosity(Log_Verbosity::Log_Verbosity_critical);
+          destination().set_verbosity(msg::Log_Verbosity::Log_Verbosity_critical);
           break;
         }
 
         case (Verbosity::warning): {
-          destination().set_verbosity(Log_Verbosity::Log_Verbosity_warning);
+          destination().set_verbosity(msg::Log_Verbosity::Log_Verbosity_warning);
           break;
         }
 
         case (Verbosity::info): {
-          destination().set_verbosity(Log_Verbosity::Log_Verbosity_info);
+          destination().set_verbosity(msg::Log_Verbosity::Log_Verbosity_info);
           break;
         }
 
         case (Verbosity::debug): {
-          destination().set_verbosity(Log_Verbosity::Log_Verbosity_debug);
+          destination().set_verbosity(msg::Log_Verbosity::Log_Verbosity_debug);
           break;
         }
       }

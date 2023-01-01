@@ -3,6 +3,7 @@
 #include <labrat/robot/exception.hpp>
 #include <labrat/robot/message.hpp>
 #include <labrat/robot/node.hpp>
+#include <labrat/robot/plugin.hpp>
 #include <labrat/robot/topic.hpp>
 #include <labrat/robot/utils/final_ptr.hpp>
 #include <labrat/robot/utils/types.hpp>
@@ -23,6 +24,7 @@ private:
 
   std::unordered_map<std::string, utils::FinalPtr<Node>> node_map;
   TopicMap topic_map;
+  Plugin::List plugin_list;
 
 public:
   ~Manager();
@@ -31,8 +33,14 @@ public:
 
   template <typename T, typename... Args>
   std::weak_ptr<T> addNode(const std::string &name, Args &&...args) requires std::is_base_of_v<Node, T> {
+    const Node::Environment environment = {
+      .name = name,
+      .topic_map = topic_map,
+      .plugin_list = plugin_list,
+    };
+
     const std::pair<std::unordered_map<std::string, utils::FinalPtr<Node>>::iterator, bool> result =
-      node_map.emplace(name, std::make_shared<T>(name, topic_map, std::forward<Args>(args)...));
+      node_map.emplace(name, std::make_shared<T>(environment, std::forward<Args>(args)...));
 
     if (!result.second) {
       throw Exception("Node not added.");
@@ -50,6 +58,12 @@ public:
     }
 
     node_map.erase(iterator);
+  }
+
+  void addPlugin(const Plugin &Plugin);
+
+  inline const Plugin::List &getPlugins() const {
+    return plugin_list;
   }
 };
 

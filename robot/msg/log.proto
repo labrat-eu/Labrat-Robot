@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package labrat.robot.msg;
+
 message Log {
   enum Verbosity {
     critical = 0;

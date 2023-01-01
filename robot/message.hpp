@@ -2,20 +2,31 @@
 
 #include <labrat/robot/utils/concepts.hpp>
 
+#include <chrono>
 #include <concepts>
 #include <utility>
 
-#include <google/protobuf/message.h>
+#include <google/protobuf/message_lite.h>
 
 namespace labrat::robot {
 
-template <typename Content>
-requires std::is_base_of_v<google::protobuf::Message, Content>
+template <typename T>
+requires std::is_base_of_v<google::protobuf::Message, T>
 class Message {
 public:
-  Message() {}
-  Message(Content &content) : content(content) {}
-  Message(Content &&content) : content(std::forward(content)) {}
+  using Content = T;
+
+  Message() {
+    timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
+  }
+
+  Message(const Content &content) : content(content) {
+    timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
+  }
+
+  Message(Content &&content) : content(std::forward(content)) {
+    timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
+  }
 
   inline Content &get() {
     return content;
@@ -33,7 +44,12 @@ public:
     return get();
   };
 
+  inline std::chrono::nanoseconds getTimestamp() const {
+    return timestamp;
+  }
+
 private:
+  std::chrono::nanoseconds timestamp;
   Content content;
 };
 
@@ -56,6 +72,7 @@ inline void defaultSenderConversionFunction(const ConvertedType &source,
 
 template <typename OriginalType, typename ConvertedType>
 inline void defaultSenderConversionFunction(const ConvertedType &source, OriginalType &destination) {
+  destination = OriginalType();
   ConvertedType::toMessage(source, destination);
 }
 

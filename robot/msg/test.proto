@@ -1,5 +1,8 @@
 syntax = "proto3";
 
+package labrat.robot.msg;
+
+
 message Test {
   uint64 integral_field = 1;
   float float_field = 2;

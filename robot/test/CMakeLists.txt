@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.20.0)
 
-find_package(Protobuf MODULE REQUIRED)
-
 
 # Set the target name from the path.
 set(TARGET_NAME ${LOCAL_PROJECT_NAME_FULL}_test)
@@ -15,6 +13,7 @@ set(TARGET_TEST_SOURCES
   setup.cpp
   performance.cpp
   stress.cpp
+  mcap.cpp
 )
 
 # Build unit tests if they are enabled.
@@ -26,5 +25,5 @@ if(${PRJ_OPT_ENABLE_TESTS})
   # Make tests available to ctest
   gtest_discover_tests(${TARGET_NAME} DISCOVERY_MODE PRE_TEST)
 
-  target_link_libraries(${TARGET_NAME} PRIVATE msg)
+  target_link_libraries(${TARGET_NAME} PRIVATE msg mcap)
 endif()

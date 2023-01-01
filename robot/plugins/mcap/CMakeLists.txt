@@ -9,12 +9,21 @@ file(RELATIVE_PATH TARGET_RELATIVE_PATH ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SO
 set(TARGET_PATH ${LOCAL_PROJECT_PATH}/${TARGET_RELATIVE_PATH})
 
 set(TARGET_HEADERS
-  atomic.hpp
-  types.hpp
-  fifo.hpp
-  final_ptr.hpp
-  concepts.hpp
+  recorder.hpp
 )
+
+set(TARGET_SOURCES
+  recorder.cpp
+)
+
+add_library(${TARGET_NAME} ${TARGET_HEADERS} ${TARGET_SOURCES})
+
+# Set library properties.
+set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
+target_include_directories(${TARGET_NAME} PRIVATE ${Protobuf_INCLUDE_DIRS})
+
+target_link_libraries(${TARGET_NAME} PRIVATE ${Protobuf_LIBRARIES} zstd lz4)
 
 # Add public header install target.
 install(FILES ${TARGET_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_PATH})

@@ -3,6 +3,7 @@
 #include <labrat/robot/exception.hpp>
 #include <labrat/robot/logger.hpp>
 #include <labrat/robot/message.hpp>
+#include <labrat/robot/plugin.hpp>
 #include <labrat/robot/topic.hpp>
 #include <labrat/robot/utils/fifo.hpp>
 #include <labrat/robot/utils/types.hpp>
@@ -19,6 +20,13 @@ class Manager;
 
 class Node {
 public:
+  struct Environment {
+    const std::string name;
+
+    TopicMap &topic_map;
+    const Plugin::List &plugin_list;
+  };
+
   ~Node() = default;
 
   template <typename MessageType, typename ContainerType = MessageType,
@@ -27,10 +35,23 @@ public:
   class Sender {
   private:
     Sender(const std::string &topic_name, Node &node) :
-      topic_name(topic_name), node(node), topic(node.topic_map.addSender<MessageType>(topic_name, this)) {}
+      topic_hash(std::hash<std::string>()(topic_name)), topic_name(topic_name), node(node),
+      topic(node.environment.topic_map.addSender<MessageType>(topic_name, this)) {
+      const Plugin::TopicInfo topic_info = {
+        .type_hash = typeid(MessageType).hash_code(),
+        .topic_hash = topic_hash,
+        .topic_name = topic_name,
+        .type_descriptor = MessageType::Content::descriptor(),
+      };
+
+      for (const Plugin &plugin : node.environment.plugin_list) {
+        plugin.topic_callback(plugin.user_ptr, topic_info);
+      }
+    }
 
     friend class Node;
 
+    const std::size_t topic_hash;
     const std::string topic_name;
 
     Node &node;
@@ -42,7 +63,7 @@ public:
     ~Sender() {
       flush();
 
-      node.topic_map.removeSender(topic_name, this);
+      node.environment.topic_map.removeSender(topic_name, this);
     }
 
     void put(const ContainerType &container) {
@@ -61,6 +82,8 @@ public:
 
         receiver->read_count.notify_one();
       }
+
+      log(container);
     }
 
     void flush() {
@@ -82,6 +105,28 @@ public:
       }
     }
 
+    void log(const ContainerType &container) {
+      if (node.environment.plugin_list.empty()) {
+        return;
+      }
+
+      MessageType message;
+      conversion_function(container, message);
+
+      Plugin::MessageInfo message_info = {
+        .topic_hash = topic_hash,
+        .timestamp = message.getTimestamp(),
+      };
+
+      if (!message().SerializeToString(&message_info.serialized_message)) {
+        throw Exception("Failure during message serialization.");
+      }
+
+      for (const Plugin &plugin : node.environment.plugin_list) {
+        plugin.message_callback(plugin.user_ptr, message_info);
+      }
+    }
+
     const std::string &getTopicName() {
       return topic_name;
     }
@@ -98,7 +143,7 @@ public:
   private:
     Receiver(const std::string &topic_name, Node &node, std::size_t buffer_size = 4) :
       topic_name(topic_name), index_mask(calculateBufferMask(buffer_size)), message_buffer(calculateBufferSize(buffer_size)),
-      write_count(0), read_count(index_mask), node(node), topic(node.topic_map.addReceiver<MessageType>(topic_name, this)) {
+      write_count(0), read_count(index_mask), node(node), topic(node.environment.topic_map.addReceiver<MessageType>(topic_name, this)) {
       next_count = index_mask;
     }
 
@@ -181,7 +226,7 @@ public:
     using Ptr = std::unique_ptr<Receiver<MessageType, ContainerType, conversion_function>>;
 
     ~Receiver() {
-      node.topic_map.removeReceiver(topic_name, this);
+      node.environment.topic_map.removeReceiver(topic_name, this);
     }
 
     ContainerType latest() {
@@ -227,14 +272,14 @@ public:
   using ContainerReceiver = Receiver<typename ContainerType::MessageType, ContainerType>;
 
   const std::string &getName() {
-    return name;
+    return environment.name;
   }
 
 protected:
-  Node(const std::string &name, TopicMap &topic_map) : name(name), topic_map(topic_map) {}
+  Node(const Environment &environment) : environment(environment) {}
 
   inline Logger getLogger() const {
-    return Logger(name);
+    return Logger(environment.name);
   }
 
   template <typename MessageType, typename ContainerType = MessageType,
@@ -272,9 +317,7 @@ protected:
   friend class Manager;
 
 private:
-  const std::string name;
-
-  TopicMap &topic_map;
+  const Environment environment;
 };
 
 }  // namespace labrat::robot

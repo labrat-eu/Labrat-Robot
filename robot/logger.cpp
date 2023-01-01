@@ -9,11 +9,11 @@ namespace labrat::robot {
 
 class LoggerNode : public Node {
 private:
-  std::unique_ptr<Sender<Message<Log>, Logger::Entry>> sender;
+  std::unique_ptr<Sender<Message<msg::Log>, Logger::Entry>> sender;
 
 public:
-  LoggerNode(const std::string &name, TopicMap &topic_map) : Node(name, topic_map) {
-    sender = addSender<Message<Log>, Logger::Entry>("/log");
+  LoggerNode(const Node::Environment environment) : Node(environment) {
+    sender = addSender<Message<msg::Log>, Logger::Entry>("/log");
   }
 
   void send(const Logger::Entry &message) {

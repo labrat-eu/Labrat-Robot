@@ -8,7 +8,7 @@
 
 namespace labrat::robot::test {
 
-using TestMessage = labrat::robot::Message<Test>;
+using TestMessage = labrat::robot::Message<msg::Test>;
 
 class TestContainer {
 public:
@@ -34,8 +34,8 @@ public:
 
 class TestNode : public labrat::robot::Node {
 public:
-  TestNode(const std::string &name, TopicMap &topic_map, const std::string &sender_topic, const std::string &receiver_topic) :
-    labrat::robot::Node(name, topic_map) {
+  TestNode(const Node::Environment environment, const std::string &sender_topic, const std::string &receiver_topic) :
+    labrat::robot::Node(environment) {
     sender = addSender<TestContainer>(sender_topic);
     receiver = addReceiver<TestContainer>(receiver_topic, 10);
   }

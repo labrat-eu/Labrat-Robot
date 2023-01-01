@@ -18,4 +18,8 @@ Manager &Manager::get() {
   return *instance;
 }
 
+void Manager::addPlugin(const Plugin &plugin) {
+  plugin_list.emplace_back(plugin);
+}
+
 }  // namespace labrat::robot

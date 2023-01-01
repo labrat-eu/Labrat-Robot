@@ -4,3 +4,6 @@
 [submodule "submodules/cpp-utils"]
 	path = submodules/cpp-utils
 	url = https://gitlab.com/labrat.eu/standards/utils/cpp-utils.git
+[submodule "submodules/mcap"]
+	path = submodules/mcap
+	url = https://github.com/foxglove/mcap.git

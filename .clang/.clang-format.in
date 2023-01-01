@@ -122,7 +122,7 @@ IncludeCategories:
     SortPriority: 3
     CaseSensitive: true
   # C++ library header
-  - Regex: '^<.*\.hpp>$'
+  - Regex: '^<.*\.(hpp|inl)>$'
     Priority: 3
     SortPriority: 4
     CaseSensitive: true
