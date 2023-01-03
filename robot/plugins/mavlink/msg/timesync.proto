@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message Timesync {
+  sint64 tc1 = 1; /*< [ns] Time sync timestamp 1 Syncing: 0. Responding: Timestamp of responding component.*/
+  sint64 ts1 = 2; /*< [ns] Time sync timestamp 2 Timestamp of syncing component (mirrored in response).*/
+  uint32 target_system = 3; /*<  Target system id Request: 0 (broadcast) or id of specific system. Response must contain system id of the requesting component.*/
+  uint32 target_component = 4; /*<  Target component id Request: 0 (broadcast) or id of specific component. Response must contain component id of the requesting component.*/
+}
+

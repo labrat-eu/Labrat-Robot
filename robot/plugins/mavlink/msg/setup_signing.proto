@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message SetupSigning {
+  uint64 initial_timestamp = 1; /*<  initial timestamp*/
+  uint32 target_system = 2; /*<  system id of the target*/
+  uint32 target_component = 3; /*<  component ID of the target*/
+  bytes secret_key = 4; /*<  signing key*/
+}
+

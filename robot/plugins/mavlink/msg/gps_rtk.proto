@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message GpsRtk {
+  uint32 time_last_baseline_ms = 1; /*< [ms] Time since boot of last baseline message received*/
+  uint32 tow = 2; /*< [ms] GPS Time of Week of last baseline*/
+  sint32 baseline_a_mm = 3; /*< [mm] Current baseline in ECEF x or NED north component*/
+  sint32 baseline_b_mm = 4; /*< [mm] Current baseline in ECEF y or NED east component*/
+  sint32 baseline_c_mm = 5; /*< [mm] Current baseline in ECEF z or NED down component*/
+  uint32 accuracy = 6; /*<  Current estimate of baseline accuracy*/
+  sint32 iar_num_hypotheses = 7; /*<  Current number of integer ambiguity hypotheses*/
+  uint32 wn = 8; /*<  GPS Week Number of last baseline*/
+  uint32 rtk_receiver_id = 9; /*<  Identification of connected RTK receiver*/
+  uint32 rtk_health = 10; /*<  GPS-specific health report for RTK data*/
+  uint32 rtk_rate = 11; /*< [Hz] Rate of baseline messages being received by GPS*/
+  uint32 nsats = 12; /*<  Current number of sats used for RTK calculation*/
+  uint32 baseline_coords_type = 13; /*<  Coordinate system of baseline*/
+}
+

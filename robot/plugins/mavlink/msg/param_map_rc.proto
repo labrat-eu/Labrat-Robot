@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message ParamMapRc {
+  float param_value0 = 1; /*<  Initial parameter value*/
+  float scale = 2; /*<  Scale, maps the RC range [-1, 1] to a parameter value*/
+  float param_value_min = 3; /*<  Minimum param value The protocol does not define if this overwrites an onboard minimum value. (Depends on implementation)*/
+  float param_value_max = 4; /*<  Maximum param value The protocol does not define if this overwrites an onboard maximum value. (Depends on implementation)*/
+  sint32 param_index = 5; /*<  Parameter index Send -1 to use the param ID field as identifier (else the param id will be ignored), send -2 to disable any existing map for this rc_channel_index.*/
+  uint32 target_system = 6; /*<  System ID*/
+  uint32 target_component = 7; /*<  Component ID*/
+  string param_id = 8; /*<  Onboard parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string*/
+  uint32 parameter_rc_channel_index = 9; /*<  Index of parameter RC channel Not equal to the RC channel id. Typically corresponds to a potentiometer-knob on the RC.*/
+}
+

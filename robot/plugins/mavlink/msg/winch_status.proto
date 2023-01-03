@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message WinchStatus {
+  uint64 time_usec = 1; /*< [us] Timestamp (synced to UNIX time or since system boot)*/
+  float line_length = 2; /*< [m] Length of line released NaN if unknown*/
+  float speed = 3; /*< [m/s] Speed line is being released or retracted Positive values if being released, negative values if being retracted, NaN if unknown*/
+  float tension = 4; /*< [kg] Tension on the line NaN if unknown*/
+  float voltage = 5; /*< [V] Voltage of the battery supplying the winch NaN if unknown*/
+  float current = 6; /*< [A] Current draw from the winch NaN if unknown*/
+  uint32 status = 7; /*<  Status flags*/
+  sint32 temperature = 8; /*< [degC] Temperature of the motor INT16_MAX if unknown*/
+}
+

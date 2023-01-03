@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message DataTransmissionHandshake {
+  uint32 size = 1; /*< [bytes] total data size (set on ACK only)*/
+  uint32 width = 2; /*<  Width of a matrix or image*/
+  uint32 height = 3; /*<  Height of a matrix or image*/
+  uint32 packets = 4; /*<  Number of packets being sent (set on ACK only)*/
+  uint32 type = 5; /*<  Type of requested/acknowledged data*/
+  uint32 payload = 6; /*< [bytes] Payload size per packet (normally 253 byte, see DATA field size in message ENCAPSULATED_DATA) (set on ACK only)*/
+  uint32 jpg_quality = 7; /*< [%] JPEG quality Values: [1-100].*/
+}
+

@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message LogRequestData {
+  uint32 ofs = 1; /*<  Offset into the log*/
+  uint32 count = 2; /*< [bytes] Number of bytes*/
+  uint32 id = 3; /*<  Log id (from LOG_ENTRY reply)*/
+  uint32 target_system = 4; /*<  System ID*/
+  uint32 target_component = 5; /*<  Component ID*/
+}
+

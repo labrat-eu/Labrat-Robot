@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message PlayTuneV2 {
+  uint32 format = 1; /*<  Tune format*/
+  uint32 target_system = 2; /*<  System ID*/
+  uint32 target_component = 3; /*<  Component ID*/
+  string tune = 4; /*<  Tune definition as a NULL-terminated string*/
+}
+

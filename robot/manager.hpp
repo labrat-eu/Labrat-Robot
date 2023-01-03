@@ -60,7 +60,8 @@ public:
     node_map.erase(iterator);
   }
 
-  void addPlugin(const Plugin &Plugin);
+  Plugin::List::iterator addPlugin(const Plugin &Plugin);
+  void removePlugin(Plugin::List::iterator iterator);
 
   inline const Plugin::List &getPlugins() const {
     return plugin_list;

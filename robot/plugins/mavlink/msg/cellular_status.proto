@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message CellularStatus {
+  uint32 mcc = 1; /*<  Mobile country code If unknown, set to UINT16_MAX*/
+  uint32 mnc = 2; /*<  Mobile network code If unknown, set to UINT16_MAX*/
+  uint32 lac = 3; /*<  Location area code If unknown, set to 0*/
+  uint32 status = 4; /*<  Cellular modem status*/
+  uint32 failure_reason = 5; /*<  Failure reason when status in in CELLULAR_STATUS_FLAG_FAILED*/
+  uint32 type = 6; /*<  Cellular network radio type: gsm, cdma, lte..*/
+  uint32 quality = 7; /*<  Signal quality in percent If unknown, set to UINT8_MAX*/
+}
+

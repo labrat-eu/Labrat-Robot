@@ -34,15 +34,16 @@ set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
 
 
 # Add subtarget source directory.
-add_subdirectory(test)
 add_subdirectory(msg)
 add_subdirectory(plugins)
+add_subdirectory(test)
+add_subdirectory(examples)
 
 
 # Link external libraries to the library target.
 target_link_libraries(${TARGET_NAME} PRIVATE pthread)
 # Link internal libraries to the library target.
-target_link_libraries(${TARGET_NAME} PRIVATE msg)
+target_link_libraries(${TARGET_NAME} PRIVATE robot_msg)
 
 
 # Add public header install target.

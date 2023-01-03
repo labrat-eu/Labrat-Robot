@@ -2,7 +2,10 @@ cmake_minimum_required(VERSION 3.20.0)
 
 
 # Set the target name from the path.
-set(TARGET_NAME ${LOCAL_PROJECT_NAME_FULL}_test)
+get_filename_component(TARGET_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+get_filename_component(TARGET_NAME_PRIMARY ${TARGET_DIR} NAME)
+get_filename_component(TARGET_NAME_SECONDARY ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+set(TARGET_NAME ${TARGET_NAME_PRIMARY}_${TARGET_NAME_SECONDARY})
 
 # Get the install path.
 file(RELATIVE_PATH TARGET_RELATIVE_PATH ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -25,5 +28,5 @@ if(${PRJ_OPT_ENABLE_TESTS})
   # Make tests available to ctest
   gtest_discover_tests(${TARGET_NAME} DISCOVERY_MODE PRE_TEST)
 
-  target_link_libraries(${TARGET_NAME} PRIVATE msg mcap)
+  target_link_libraries(${TARGET_NAME} PRIVATE robot_msg plugins_mcap)
 endif()

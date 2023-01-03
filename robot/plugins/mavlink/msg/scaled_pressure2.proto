@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message ScaledPressure2 {
+  uint32 time_boot_ms = 1; /*< [ms] Timestamp (time since system boot)*/
+  float press_abs = 2; /*< [hPa] Absolute pressure*/
+  float press_diff = 3; /*< [hPa] Differential pressure*/
+  sint32 temperature = 4; /*< [cdegC] Absolute pressure temperature*/
+  sint32 temperature_press_diff = 5; /*< [cdegC] Differential pressure temperature (0, if not available) Report values of 0 (or 1) as 1 cdegC.*/
+}
+

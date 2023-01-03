@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message MissionItem {
+  float param1 = 1; /*<  PARAM1, see MAV_CMD enum*/
+  float param2 = 2; /*<  PARAM2, see MAV_CMD enum*/
+  float param3 = 3; /*<  PARAM3, see MAV_CMD enum*/
+  float param4 = 4; /*<  PARAM4, see MAV_CMD enum*/
+  float x = 5; /*<  PARAM5 / local: X coordinate, global: latitude*/
+  float y = 6; /*<  PARAM6 / local: Y coordinate, global: longitude*/
+  float z = 7; /*<  PARAM7 / local: Z coordinate, global: altitude (relative or absolute, depending on frame)*/
+  uint32 seq = 8; /*<  Sequence*/
+  uint32 command = 9; /*<  The scheduled action for the waypoint*/
+  uint32 target_system = 10; /*<  System ID*/
+  uint32 target_component = 11; /*<  Component ID*/
+  uint32 frame = 12; /*<  The coordinate system of the waypoint*/
+  uint32 current = 13; /*<  false:0, true:1*/
+  uint32 autocontinue = 14; /*<  Autocontinue to next waypoint 0: false, 1: true. Set false to pause mission after the item completes.*/
+  uint32 mission_type = 15; /*<  Mission type*/
+}
+

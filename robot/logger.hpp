@@ -27,7 +27,7 @@ public:
     ~LogStream();
 
     template <typename T>
-    inline LogStream &operator<<(T &message) {
+    inline LogStream &operator<<(const T &message) {
       line << message;
 
       return *this;
@@ -94,6 +94,10 @@ public:
   LogStream info();
   LogStream debug();
 
+  static void setLogLevel(Verbosity level) {
+    log_level = level;
+  }
+
 private:
   static void send(const Entry &message);
 
@@ -102,6 +106,8 @@ private:
   const std::string name;
 
   static std::shared_ptr<LoggerNode> node;
+
+  static Verbosity log_level;
 };
 
 }  // namespace labrat::robot

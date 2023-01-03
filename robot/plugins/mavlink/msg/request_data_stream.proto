@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message RequestDataStream {
+  uint32 req_message_rate = 1; /*< [Hz] The requested message rate*/
+  uint32 target_system = 2; /*<  The target requested to send the message stream*/
+  uint32 target_component = 3; /*<  The target requested to send the message stream*/
+  uint32 req_stream_id = 4; /*<  The ID of the requested data stream*/
+  uint32 start_stop = 5; /*<  1 to start sending, 0 to stop sending*/
+}
+

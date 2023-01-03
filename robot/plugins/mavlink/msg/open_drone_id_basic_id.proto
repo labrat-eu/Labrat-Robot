@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message OpenDroneIdBasicId {
+  uint32 target_system = 1; /*<  System ID (0 for broadcast)*/
+  uint32 target_component = 2; /*<  Component ID (0 for broadcast)*/
+  bytes id_or_mac = 3; /*<  Only used for drone ID data received from other UAs See detailed description at https://mavlink.io/en/services/opendroneid.html. */
+  uint32 id_type = 4; /*<  Indicates the format for the uas_id field of this message*/
+  uint32 ua_type = 5; /*<  Indicates the type of UA (Unmanned Aircraft)*/
+  bytes uas_id = 6; /*<  UAS (Unmanned Aircraft System) ID following the format specified by id_type Shall be filled with nulls in the unused portion of the field.*/
+}
+

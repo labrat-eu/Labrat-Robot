@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message ParamExtSet {
+  uint32 target_system = 1; /*<  System ID*/
+  uint32 target_component = 2; /*<  Component ID*/
+  string param_id = 3; /*<  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string*/
+  string param_value = 4; /*<  Parameter value*/
+  uint32 param_type = 5; /*<  Parameter type*/
+}
+

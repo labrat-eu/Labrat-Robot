@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message ProtocolVersion {
+  uint32 version = 1; /*<  Currently active MAVLink version number * 100: v1.0 is 100, v2.0 is 200, etc.*/
+  uint32 min_version = 2; /*<  Minimum MAVLink version supported*/
+  uint32 max_version = 3; /*<  Maximum MAVLink version supported (set to the same value as version by default)*/
+  bytes spec_version_hash = 4; /*<  The first 8 bytes (not characters printed in hex!) of the git hash.*/
+  bytes library_version_hash = 5; /*<  The first 8 bytes (not characters printed in hex!) of the git hash.*/
+};
+

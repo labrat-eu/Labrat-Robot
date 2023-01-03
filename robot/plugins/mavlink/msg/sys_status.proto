@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message SysStatus {
+  uint32 onboard_control_sensors_present = 1; /*<  Bitmap showing which onboard controllers and sensors are present Value of 0: not present. Value of 1: present.*/
+  uint32 onboard_control_sensors_enabled = 2; /*<  Bitmap showing which onboard controllers and sensors are enabled:  Value of 0: not enabled Value of 1: enabled.*/
+  uint32 onboard_control_sensors_health = 3; /*<  Bitmap showing which onboard controllers and sensors have an error (or are operational) Value of 0: error. Value of 1: healthy.*/
+  uint32 load = 4; /*< [d%] Maximum usage in percent of the mainloop time Values: [0-1000] - should always be below 1000*/
+  uint32 voltage_battery = 5; /*< [mV] Battery voltage, UINT16_MAX: Voltage not sent by autopilot*/
+  sint32 current_battery = 6; /*< [cA] Battery current, -1: Current not sent by autopilot*/
+  uint32 drop_rate_comm = 7; /*< [c%] Communication drop rate, (UART, I2C, SPI, CAN), dropped packets on all links (packets that were corrupted on reception on the MAV)*/
+  uint32 errors_comm = 8; /*<  Communication errors (UART, I2C, SPI, CAN), dropped packets on all links (packets that were corrupted on reception on the MAV)*/
+  uint32 errors_count1 = 9; /*<  Autopilot-specific errors*/
+  uint32 errors_count2 = 10; /*<  Autopilot-specific errors*/
+  uint32 errors_count3 = 11; /*<  Autopilot-specific errors*/
+  uint32 errors_count4 = 12; /*<  Autopilot-specific errors*/
+  sint32 battery_remaining = 13; /*< [%] Battery energy remaining, -1: Battery remaining energy not sent by autopilot*/
+  uint32 onboard_control_sensors_present_extended = 14; /*<  Bitmap showing which onboard controllers and sensors are present Value of 0: not present. Value of 1: present.*/
+  uint32 onboard_control_sensors_enabled_extended = 15; /*<  Bitmap showing which onboard controllers and sensors are enabled:  Value of 0: not enabled Value of 1: enabled.*/
+  uint32 onboard_control_sensors_health_extended = 16; /*<  Bitmap showing which onboard controllers and sensors have an error (or are operational) Value of 0: error. Value of 1: healthy.*/
+}
+

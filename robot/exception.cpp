@@ -19,7 +19,7 @@ Exception::Exception(std::string message, int code) : Exception(message, code, L
 Exception::Exception(std::string message, int code, Logger &logger) : Exception(message + " (" + strerror(code) + ")", logger) {}
 
 Exception::Exception(std::string message, int code, Logger &&logger) :
-  Exception(message + " (" + strerror(code) + ")", std::forward<Logger &>(logger)) {}
+  Exception(message + " (" + std::to_string(code) + ": " + strerror(code) + ")", std::forward<Logger &>(logger)) {}
 
 const char *Exception::what() const noexcept {
   return message.c_str();

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message TrajectoryRepresentationWaypoints {
+  uint64 time_usec = 1; /*< [us] Timestamp (UNIX Epoch time or time since system boot) The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.*/
+  repeated float pos_x = 2; /*< [m] X-coordinate of waypoint, set to NaN if not being used*/
+  repeated float pos_y = 3; /*< [m] Y-coordinate of waypoint, set to NaN if not being used*/
+  repeated float pos_z = 4; /*< [m] Z-coordinate of waypoint, set to NaN if not being used*/
+  repeated float vel_x = 5; /*< [m/s] X-velocity of waypoint, set to NaN if not being used*/
+  repeated float vel_y = 6; /*< [m/s] Y-velocity of waypoint, set to NaN if not being used*/
+  repeated float vel_z = 7; /*< [m/s] Z-velocity of waypoint, set to NaN if not being used*/
+  repeated float acc_x = 8; /*< [m/s/s] X-acceleration of waypoint, set to NaN if not being used*/
+  repeated float acc_y = 9; /*< [m/s/s] Y-acceleration of waypoint, set to NaN if not being used*/
+  repeated float acc_z = 10; /*< [m/s/s] Z-acceleration of waypoint, set to NaN if not being used*/
+  repeated float pos_yaw = 11; /*< [rad] Yaw angle, set to NaN if not being used*/
+  repeated float vel_yaw = 12; /*< [rad/s] Yaw rate, set to NaN if not being used*/
+  repeated uint32 command = 13; /*<  MAV_CMD command id of waypoint, set to UINT16_MAX if not being used*/
+  uint32 valid_points = 14; /*<  Number of valid points (up-to 5 waypoints are possible)*/
+}
+

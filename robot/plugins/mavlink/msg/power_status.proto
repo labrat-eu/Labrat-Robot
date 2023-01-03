@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message PowerStatus {
+  uint32 vcc = 1; /*< [mV] 5V rail voltage*/
+  uint32 vservo = 2; /*< [mV] Servo rail voltage*/
+  uint32 flags = 3; /*<  Bitmap of power supply status flags*/
+}
+

@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message CameraTrackingGeoStatus {
+  sint32 lat = 1; /*< [degE7] Latitude of tracked object*/
+  sint32 lon = 2; /*< [degE7] Longitude of tracked object*/
+  float alt = 3; /*< [m] Altitude of tracked object(AMSL, WGS84)*/
+  float h_acc = 4; /*< [m] Horizontal accuracy NAN if unknown*/
+  float v_acc = 5; /*< [m] Vertical accuracy NAN if unknown*/
+  float vel_n = 6; /*< [m/s] North velocity of tracked object NAN if unknown*/
+  float vel_e = 7; /*< [m/s] East velocity of tracked object NAN if unknown*/
+  float vel_d = 8; /*< [m/s] Down velocity of tracked object NAN if unknown*/
+  float vel_acc = 9; /*< [m/s] Velocity accuracy NAN if unknown*/
+  float dist = 10; /*< [m] Distance between camera and tracked object NAN if unknown*/
+  float hdg = 11; /*< [rad] Heading in radians, in NED NAN if unknown*/
+  float hdg_acc = 12; /*< [rad] Accuracy of heading, in NED NAN if unknown*/
+  uint32 tracking_status = 13; /*<  Current tracking status*/
+}
+

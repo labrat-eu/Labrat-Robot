@@ -23,16 +23,16 @@ McapRecorder::McapRecorder(const std::string &filename) {
     throw Exception("Failed to open '" + filename + "'.");
   }
 
-  const Plugin plugin_info = {
-    .user_ptr = reinterpret_cast<void *>(this),
-    .topic_callback = McapRecorder::topicCallback,
-    .message_callback = McapRecorder::messageCallback,
-  };
+  Plugin plugin_info;
+  plugin_info.user_ptr = reinterpret_cast<void *>(this);
+  plugin_info.topic_callback = McapRecorder::topicCallback;
+  plugin_info.message_callback = McapRecorder::messageCallback;
 
-  Manager::get().addPlugin(plugin_info);
+  self_reference = Manager::get().addPlugin(plugin_info);
 }
 
 McapRecorder::~McapRecorder() {
+  Manager::get().removePlugin(self_reference);
   writer.close();
 }
 
@@ -55,6 +55,7 @@ McapRecorder::ChannelMap::iterator McapRecorder::handleTopic(const Plugin::Topic
       std::forward_as_tuple(info.type_descriptor->full_name(), "protobuf",
         buildFileDescriptorSet(info.type_descriptor).SerializeAsString()));
 
+    std::lock_guard guard(mutex);
     writer.addSchema(schema_iterator->second);
   }
 
@@ -62,6 +63,7 @@ McapRecorder::ChannelMap::iterator McapRecorder::handleTopic(const Plugin::Topic
     std::forward_as_tuple(info.topic_name, "protobuf", schema_iterator->second.id));
 
   if (result.second) {
+    std::lock_guard guard(mutex);
     writer.addChannel(result.first->second.channel);
   }
 
@@ -82,6 +84,7 @@ inline McapRecorder::ChannelMap::iterator McapRecorder::handleMessage(const Plug
   message.data = reinterpret_cast<const std::byte *>(info.serialized_message.data());
   message.dataSize = info.serialized_message.size();
 
+  std::lock_guard guard(mutex);
   const mcap::Status result = writer.write(message);
   if (!result.ok()) {
     writer.terminate();

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message VisionPositionEstimate {
+  uint64 usec = 1; /*< [us] Timestamp (UNIX time or time since system boot)*/
+  float x = 2; /*< [m] Local X position*/
+  float y = 3; /*< [m] Local Y position*/
+  float z = 4; /*< [m] Local Z position*/
+  float roll = 5; /*< [rad] Roll angle*/
+  float pitch = 6; /*< [rad] Pitch angle*/
+  float yaw = 7; /*< [rad] Yaw angle*/
+  repeated float covariance = 8; /*<  Row-major representation of pose 6x6 cross-covariance matrix upper right triangle (states: x, y, z, roll, pitch, yaw; first six entries are the first ROW, next five entries are the second ROW, etc). If unknown, assign NaN value to first element in the array.*/
+  uint32 reset_counter = 9; /*<  Estimate reset counter This should be incremented when the estimate resets in any of the dimensions (position, velocity, attitude, angular speed). This is designed to be used when e.g an external SLAM system detects a loop-closure and the estimate jumps.*/
+}
+

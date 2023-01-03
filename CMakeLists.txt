@@ -164,6 +164,7 @@ include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/include)
 include_directories(BEFORE ${CMAKE_BINARY_DIR})
 
 # Add header libraries to the include path.
+include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/submodules)
 include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/submodules/cpp-utils)
 include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/submodules/mcap/cpp/mcap/include)
 

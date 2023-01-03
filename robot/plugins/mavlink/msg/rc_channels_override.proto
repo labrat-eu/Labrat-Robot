@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message RcChannelsOverride {
+  uint32 chan1_raw = 1; /*< [us] RC channel 1 value A value of UINT16_MAX means to ignore this field. A value of 0 means to release this channel back to the RC radio.*/
+  uint32 chan2_raw = 2; /*< [us] RC channel 2 value A value of UINT16_MAX means to ignore this field. A value of 0 means to release this channel back to the RC radio.*/
+  uint32 chan3_raw = 3; /*< [us] RC channel 3 value A value of UINT16_MAX means to ignore this field. A value of 0 means to release this channel back to the RC radio.*/
+  uint32 chan4_raw = 4; /*< [us] RC channel 4 value A value of UINT16_MAX means to ignore this field. A value of 0 means to release this channel back to the RC radio.*/
+  uint32 chan5_raw = 5; /*< [us] RC channel 5 value A value of UINT16_MAX means to ignore this field. A value of 0 means to release this channel back to the RC radio.*/
+  uint32 chan6_raw = 6; /*< [us] RC channel 6 value A value of UINT16_MAX means to ignore this field. A value of 0 means to release this channel back to the RC radio.*/
+  uint32 chan7_raw = 7; /*< [us] RC channel 7 value A value of UINT16_MAX means to ignore this field. A value of 0 means to release this channel back to the RC radio.*/
+  uint32 chan8_raw = 8; /*< [us] RC channel 8 value A value of UINT16_MAX means to ignore this field. A value of 0 means to release this channel back to the RC radio.*/
+  uint32 target_system = 9; /*<  System ID*/
+  uint32 target_component = 10; /*<  Component ID*/
+  uint32 chan9_raw = 11; /*< [us] RC channel 9 value A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.*/
+  uint32 chan10_raw = 12; /*< [us] RC channel 10 value A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.*/
+  uint32 chan11_raw = 13; /*< [us] RC channel 11 value A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.*/
+  uint32 chan12_raw = 14; /*< [us] RC channel 12 value A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.*/
+  uint32 chan13_raw = 15; /*< [us] RC channel 13 value A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.*/
+  uint32 chan14_raw = 16; /*< [us] RC channel 14 value A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.*/
+  uint32 chan15_raw = 17; /*< [us] RC channel 15 value A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.*/
+  uint32 chan16_raw = 18; /*< [us] RC channel 16 value A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.*/
+  uint32 chan17_raw = 19; /*< [us] RC channel 17 value A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.*/
+  uint32 chan18_raw = 20; /*< [us] RC channel 18 value A value of 0 or UINT16_MAX means to ignore this field. A value of UINT16_MAX-1 means to release this channel back to the RC radio.*/
+}
+

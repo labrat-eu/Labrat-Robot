@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message VisionSpeedEstimate {
+  uint64 usec = 1; /*< [us] Timestamp (UNIX time or time since system boot)*/
+  float x = 2; /*< [m/s] Global X speed*/
+  float y = 3; /*< [m/s] Global Y speed*/
+  float z = 4; /*< [m/s] Global Z speed*/
+  repeated float covariance = 5; /*<  Row-major representation of 3x3 linear velocity covariance matrix (states: vx, vy, vz; 1st three entries - 1st row, etc). If unknown, assign NaN value to first element in the array.*/
+  uint32 reset_counter = 6; /*<  Estimate reset counter This should be incremented when the estimate resets in any of the dimensions (position, velocity, attitude, angular speed). This is designed to be used when e.g an external SLAM system detects a loop-closure and the estimate jumps.*/
+}
+

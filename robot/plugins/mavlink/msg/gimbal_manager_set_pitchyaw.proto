@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message GimbalManagerSetPitchyaw {
+  fixed32 flags = 1; /*<  High level gimbal manager flags to use*/
+  float pitch = 2; /*< [rad] Pitch angle (positive: up, negative: down, NaN to be ignored)*/
+  float yaw = 3; /*< [rad] Yaw angle (positive: to the right, negative: to the left, NaN to be ignored)*/
+  float pitch_rate = 4; /*< [rad/s] Pitch angular rate (positive: up, negative: down, NaN to be ignored)*/
+  float yaw_rate = 5; /*< [rad/s] Yaw angular rate (positive: to the right, negative: to the left, NaN to be ignored)*/
+  uint32 target_system = 6; /*<  System ID*/
+  uint32 target_component = 7; /*<  Component ID*/
+  uint32 gimbal_device_id = 8; /*<  Component ID of gimbal device to address (or 1-6 for non-MAVLink gimbal), 0 for all gimbal device components Send command multiple times for more than one gimbal (but not all gimbals).*/
+}
+

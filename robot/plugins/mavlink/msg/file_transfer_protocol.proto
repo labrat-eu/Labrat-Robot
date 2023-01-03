@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message FileTransferProtocol {
+  uint32 target_network = 1; /*<  Network ID (0 for broadcast)*/
+  uint32 target_system = 2; /*<  System ID (0 for broadcast)*/
+  uint32 target_component = 3; /*<  Component ID (0 for broadcast)*/
+  bytes payload = 4; /*<  Variable length payload The length is defined by the remaining message length when subtracting the header and other fields. The content/format of this block is defined in https://mavlink.io/en/services/ftp.html.*/
+}
+

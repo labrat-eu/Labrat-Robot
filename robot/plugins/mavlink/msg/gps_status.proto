@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message GpsStatus {
+  uint32 satellites_visible = 1; /*<  Number of satellites visible*/
+  bytes satellite_prn = 2; /*<  Global satellite ID*/
+  bytes satellite_used = 3; /*<  0: Satellite not used, 1: used for localization*/
+  bytes satellite_elevation = 4; /*< [deg] Elevation (0: right on top of receiver, 90: on the horizon) of satellite*/
+  bytes satellite_azimuth = 5; /*< [deg] Direction of satellite, 0: 0 deg, 255: 360 deg*/
+  bytes satellite_snr = 6; /*< [dB] Signal to noise ratio of satellite*/
+}
+

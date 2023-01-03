@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message MountOrientation {
+  uint32 time_boot_ms = 1; /*< [ms] Timestamp (time since system boot)*/
+  float roll = 2; /*< [deg] Roll in global frame (set to NaN for invalid)*/
+  float pitch = 3; /*< [deg] Pitch in global frame (set to NaN for invalid)*/
+  float yaw = 4; /*< [deg] Yaw relative to vehicle (set to NaN for invalid)*/
+  float yaw_absolute = 5; /*< [deg] Yaw in absolute frame relative to Earth's North, north is 0 (set to NaN for invalid)*/
+}
+

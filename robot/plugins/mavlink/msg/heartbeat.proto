@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message Heartbeat {
+  uint32 custom_mode = 1; /*<  A bitfield for use for autopilot-specific flags*/
+  uint32 type = 2; /*<  Vehicle or component type. For a flight controller component the vehicle type (quadrotor, helicopter, etc.). For other components the component type (e.g. camera, gimbal, etc.). This should be used in preference to component id for identifying the component type.*/
+  uint32 autopilot = 3; /*<  Autopilot type / class. Use MAV_AUTOPILOT_INVALID for components that are not flight controllers.*/
+  uint32 base_mode = 4; /*<  System mode bitmap.*/
+  uint32 system_status = 5; /*<  System status flag.*/
+  uint32 mavlink_version = 6; /*<  MAVLink version, not writable by user, gets added by protocol because of magic data type: uint8_t_mavlink_version*/
+}

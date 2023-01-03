@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message GimbalDeviceAttitudeStatus {
+  uint32 time_boot_ms = 1; /*< [ms] Timestamp (time since system boot)*/
+  repeated float q = 2; /*<  Quaternion components, w, x, y, z (1 0 0 0 is the null-rotation) The frame is described in the message description.*/
+  float angular_velocity_x = 3; /*< [rad/s] X component of angular velocity (positive: rolling to the right) The frame is described in the message description. NaN if unknown.*/
+  float angular_velocity_y = 4; /*< [rad/s] Y component of angular velocity (positive: pitching up) The frame is described in the message description. NaN if unknown.*/
+  float angular_velocity_z = 5; /*< [rad/s] Z component of angular velocity (positive: yawing to the right) The frame is described in the message description. NaN if unknown.*/
+  uint32 failure_flags = 6; /*<  Failure flags (0 for no failure)*/
+  uint32 flags = 7; /*<  Current gimbal flags set*/
+  uint32 target_system = 8; /*<  System ID*/
+  uint32 target_component = 9; /*<  Component ID*/
+  float delta_yaw = 10; /*< [rad] Yaw angle relating the quaternions in earth and body frames (see message description) NaN if unknown.*/
+  float delta_yaw_velocity = 11; /*< [rad/s] Yaw angular velocity relating the angular velocities in earth and body frames (see message description) NaN if unknown.*/
+}
+

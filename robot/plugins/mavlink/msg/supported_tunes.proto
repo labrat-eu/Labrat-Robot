@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message SupportedTunes {
+  uint32 format = 1; /*<  Bitfield of supported tune formats*/
+  uint32 target_system = 2; /*<  System ID*/
+  uint32 target_component = 3; /*<  Component ID*/
+}
+

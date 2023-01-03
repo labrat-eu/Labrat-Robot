@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message OrbitExecutionStatus {
+  uint64 time_usec = 1; /*< [us] Timestamp (UNIX Epoch time or time since system boot) The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.*/
+  float radius = 2; /*< [m] Radius of the orbit circle Positive values orbit clockwise, negative values orbit counter-clockwise.*/
+  sint32 x = 3; /*<  X coordinate of center point Coordinate system depends on frame field: local = x position in meters * 1e4, global = latitude in degrees * 1e7.*/
+  sint32 y = 4; /*<  Y coordinate of center point  Coordinate system depends on frame field: local = x position in meters * 1e4, global = latitude in degrees * 1e7.*/
+  float z = 5; /*< [m] Altitude of center point Coordinate system depends on frame field.*/
+  uint32 frame = 6; /*<  The coordinate system of the fields: x, y, z*/
+}
+

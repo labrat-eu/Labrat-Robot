@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message MissionRequestPartialList {
+  sint32 start_index = 1; /*<  Start index*/
+  sint32 end_index = 2; /*<  End index, -1 by default (-1: send list to end) Else a valid index of the list*/
+  uint32 target_system = 3; /*<  System ID*/
+  uint32 target_component = 4; /*<  Component ID*/
+  uint32 mission_type = 5; /*<  Mission type*/
+}
+

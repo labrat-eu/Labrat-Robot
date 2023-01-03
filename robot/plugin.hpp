@@ -2,9 +2,10 @@
 
 #include <labrat/robot/utils/types.hpp>
 
+#include <atomic>
 #include <chrono>
+#include <list>
 #include <string>
-#include <vector>
 
 #include <google/protobuf/descriptor.h>
 
@@ -12,7 +13,15 @@ namespace labrat::robot {
 
 class Plugin {
 public:
-  using List = std::vector<Plugin>;
+  using List = std::list<Plugin>;
+
+  inline Plugin() {
+    use_count = 0;
+  }
+
+  inline Plugin(const Plugin &rhs) : user_ptr(rhs.user_ptr), topic_callback(rhs.topic_callback), message_callback(rhs.message_callback) {
+    use_count = 0;
+  }
 
   void *user_ptr;
 
@@ -32,6 +41,13 @@ public:
   };
 
   void (*message_callback)(void *user_ptr, const MessageInfo &info);
+
+private:
+  std::atomic_flag delete_flag;
+  std::atomic<u32> use_count;
+
+  friend class Manager;
+  friend class Node;
 };
 
 }  // namespace labrat::robot

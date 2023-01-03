@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message MissionCurrent {
+  uint32 seq = 1; /*<  Sequence*/
+  uint32 total = 2; /*<  Total number of mission items 0: Not supported, UINT16_MAX if no mission is present on the vehicle.*/
+  uint32 mission_state = 3; /*<  Mission state machine state MISSION_STATE_UNKNOWN if state reporting not supported.*/
+  uint32 mission_mode = 4; /*<  Vehicle is in a mode that can execute mission items or suspended 0: Unknown, 1: In mission mode, 2: Suspended (not in mission mode).*/
+}
+

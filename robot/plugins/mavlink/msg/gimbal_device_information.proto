@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message GimbalDeviceInformation {
+  uint64 uid = 1; /*<  UID of gimbal hardware (0 if unknown)*/
+  uint32 time_boot_ms = 2; /*< [ms] Timestamp (time since system boot)*/
+  uint32 firmware_version = 3; /*<  Version of the gimbal firmware, encoded as: (Dev & 0xff) << 24 | (Patch & 0xff) << 16 | (Minor & 0xff) << 8 | (Major & 0xff)*/
+  uint32 hardware_version = 4; /*<  Version of the gimbal hardware, encoded as: (Dev & 0xff) << 24 | (Patch & 0xff) << 16 | (Minor & 0xff) << 8 | (Major & 0xff)*/
+  float roll_min = 5; /*< [rad] Minimum hardware roll angle (positive: rolling to the right, negative: rolling to the left) NAN if unknown.*/
+  float roll_max = 6; /*< [rad] Maximum hardware roll angle (positive: rolling to the right, negative: rolling to the left) NAN if unknown.*/
+  float pitch_min = 7; /*< [rad] Minimum hardware pitch angle (positive: up, negative: down) NAN if unknown.*/
+  float pitch_max = 8; /*< [rad] Maximum hardware pitch angle (positive: up, negative: down) NAN if unknown.*/
+  float yaw_min = 9; /*< [rad] Minimum hardware yaw angle (positive: to the right, negative: to the left) NAN if unknown.*/
+  float yaw_max = 10; /*< [rad] Maximum hardware yaw angle (positive: to the right, negative: to the left) NAN if unknown.*/
+  uint32 cap_flags = 11; /*<  Bitmap of gimbal capability flags*/
+  uint32 custom_cap_flags = 12; /*<  Bitmap for use for gimbal-specific capability flags*/
+  string vendor_name = 13; /*<  Name of the gimbal vendor*/
+  string model_name = 14; /*<  Name of the gimbal model*/
+  string custom_name = 15; /*<  Custom name of the gimbal given to it by the user*/
+}
+

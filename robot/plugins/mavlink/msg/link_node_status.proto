@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message LinkNodeStatus {
+  uint64 timestamp = 1; /*< [ms] Timestamp (time since system boot)*/
+  uint32 tx_rate = 2; /*< [bytes/s] Transmit rate*/
+  uint32 rx_rate = 3; /*< [bytes/s] Receive rate*/
+  uint32 messages_sent = 4; /*<  Messages sent*/
+  uint32 messages_received = 5; /*<  Messages received (estimated from counting seq)*/
+  uint32 messages_lost = 6; /*<  Messages lost (estimated from counting seq)*/
+  uint32 rx_parse_err = 7; /*< [bytes] Number of bytes that could not be parsed correctly*/
+  uint32 tx_overflows = 8; /*< [bytes] Transmit buffer overflows This number wraps around as it reaches UINT16_MAX*/
+  uint32 rx_overflows = 9; /*< [bytes] Receive buffer overflows This number wraps around as it reaches UINT16_MAX*/
+  uint32 tx_buf = 10; /*< [%] Remaining free transmit buffer space*/
+  uint32 rx_buf = 11; /*< [%] Remaining free receive buffer space*/
+}
+

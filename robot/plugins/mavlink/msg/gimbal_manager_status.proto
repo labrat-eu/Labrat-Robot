@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message GimbalManagerStatus {
+  uint32 time_boot_ms = 1; /*< [ms] Timestamp (time since system boot)*/
+  fixed32 flags = 2; /*<  High level gimbal manager flags currently applied*/
+  uint32 gimbal_device_id = 3; /*<  Gimbal device ID that this gimbal manager is responsible for*/
+  uint32 primary_control_sysid = 4; /*<  System ID of MAVLink component with primary control, 0 for none*/
+  uint32 primary_control_compid = 5; /*<  Component ID of MAVLink component with primary control, 0 for none*/
+  uint32 secondary_control_sysid = 6; /*<  System ID of MAVLink component with secondary control, 0 for none*/
+  uint32 secondary_control_compid = 7; /*<  Component ID of MAVLink component with secondary control, 0 for none*/
+}
+

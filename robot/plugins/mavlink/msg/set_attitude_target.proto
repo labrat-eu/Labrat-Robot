@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message SetAttitudeTarget {
+  uint32 time_boot_ms = 1; /*< [ms] Timestamp (time since system boot)*/
+  repeated float q = 2; /*<  Attitude quaternion (w, x, y, z order, zero-rotation is 1, 0, 0, 0)*/
+  float body_roll_rate = 3; /*< [rad/s] Body roll rate*/
+  float body_pitch_rate = 4; /*< [rad/s] Body pitch rate*/
+  float body_yaw_rate = 5; /*< [rad/s] Body yaw rate*/
+  float thrust = 6; /*<  Collective thrust, normalized to 0 . 1 (-1 .. 1 for vehicles capable of reverse trust)*/
+  uint32 target_system = 7; /*<  System ID*/
+  uint32 target_component = 8; /*<  Component ID*/
+  uint32 type_mask = 9; /*<  Bitmap to indicate which dimensions should be ignored by the vehicle*/
+  repeated float thrust_body = 10; /*<  3D thrust setpoint in the body NED frame, normalized to -1 . 1*/
+}
+

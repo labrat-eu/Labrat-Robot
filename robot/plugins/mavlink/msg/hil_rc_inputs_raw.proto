@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message HilRcInputsRaw {
+  uint64 time_usec = 1; /*< [us] Timestamp (UNIX Epoch time or time since system boot) The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.*/
+  uint32 chan1_raw = 2; /*< [us] RC channel 1 value*/
+  uint32 chan2_raw = 3; /*< [us] RC channel 2 value*/
+  uint32 chan3_raw = 4; /*< [us] RC channel 3 value*/
+  uint32 chan4_raw = 5; /*< [us] RC channel 4 value*/
+  uint32 chan5_raw = 6; /*< [us] RC channel 5 value*/
+  uint32 chan6_raw = 7; /*< [us] RC channel 6 value*/
+  uint32 chan7_raw = 8; /*< [us] RC channel 7 value*/
+  uint32 chan8_raw = 9; /*< [us] RC channel 8 value*/
+  uint32 chan9_raw = 10; /*< [us] RC channel 9 value*/
+  uint32 chan10_raw = 11; /*< [us] RC channel 10 value*/
+  uint32 chan11_raw = 12; /*< [us] RC channel 11 value*/
+  uint32 chan12_raw = 13; /*< [us] RC channel 12 value*/
+  uint32 rssi = 14; /*<  Receive signal strength indicator in device-dependent units/scale Values: [0-254], UINT8_MAX: invalid/unknown.*/
+}
+

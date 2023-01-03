@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message MissionRequest {
+  uint32 seq = 1; /*<  Sequence*/
+  uint32 target_system = 2; /*<  System ID*/
+  uint32 target_component = 3; /*<  Component ID*/
+  uint32 mission_type = 4; /*<  Mission type*/
+}
+

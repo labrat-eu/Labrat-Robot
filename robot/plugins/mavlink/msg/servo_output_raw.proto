@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message ServoOutputRaw {
+  uint32 time_usec = 1; /*< [us] Timestamp (UNIX Epoch time or time since system boot) The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.*/
+  uint32 servo1_raw = 2; /*< [us] Servo output 1 value*/
+  uint32 servo2_raw = 3; /*< [us] Servo output 2 value*/
+  uint32 servo3_raw = 4; /*< [us] Servo output 3 value*/
+  uint32 servo4_raw = 5; /*< [us] Servo output 4 value*/
+  uint32 servo5_raw = 6; /*< [us] Servo output 5 value*/
+  uint32 servo6_raw = 7; /*< [us] Servo output 6 value*/
+  uint32 servo7_raw = 8; /*< [us] Servo output 7 value*/
+  uint32 servo8_raw = 9; /*< [us] Servo output 8 value*/
+  uint32 port = 10; /*<  Servo output port (set of 8 outputs = 1 port) Flight stacks running on Pixhawk should use: 0 = MAIN, 1 = AUX.*/
+  uint32 servo9_raw = 11; /*< [us] Servo output 9 value*/
+  uint32 servo10_raw = 12; /*< [us] Servo output 10 value*/
+  uint32 servo11_raw = 13; /*< [us] Servo output 11 value*/
+  uint32 servo12_raw = 14; /*< [us] Servo output 12 value*/
+  uint32 servo13_raw = 15; /*< [us] Servo output 13 value*/
+  uint32 servo14_raw = 16; /*< [us] Servo output 14 value*/
+  uint32 servo15_raw = 17; /*< [us] Servo output 15 value*/
+  uint32 servo16_raw = 18; /*< [us] Servo output 16 value*/
+}
+

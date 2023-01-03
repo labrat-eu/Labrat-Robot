@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message CellularConfig {
+  uint32 enable_lte = 1; /*<  Enable/disable LTE 0: setting unchanged, 1: disabled, 2: enabled. Current setting when sent back as a response.*/
+  uint32 enable_pin = 2; /*<  Enable/disable PIN on the SIM card 0: setting unchanged, 1: disabled, 2: enabled. Current setting when sent back as a response.*/
+  string pin = 3; /*<  PIN sent to the SIM card Blank when PIN is disabled. Empty when message is sent back as a response.*/
+  string new_pin = 4; /*<  New PIN when changing the PIN Blank to leave it unchanged. Empty when message is sent back as a response.*/
+  string apn = 5; /*<  Name of the cellular APN Blank to leave it unchanged. Current APN when sent back as a response.*/
+  string puk = 6; /*<  Required PUK code in case the user failed to authenticate 3 times with the PIN Empty when message is sent back as a response.*/
+  uint32 roaming = 7; /*<  Enable/disable roaming 0: setting unchanged, 1: disabled, 2: enabled. Current setting when sent back as a response.*/
+  uint32 response = 8; /*<  Message acceptance response (sent back to GS)*/
+}
+

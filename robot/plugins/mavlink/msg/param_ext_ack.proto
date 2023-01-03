@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message ParamExtAck {
+  string param_id = 1; /*<  Parameter id, terminated by NULL if the length is less than 16 human-readable chars and WITHOUT null termination (NULL) byte if the length is exactly 16 chars - applications have to provide 16+1 bytes storage if the ID is stored as string*/
+  string param_value = 2; /*<  Parameter value (new value if PARAM_ACK_ACCEPTED, current value otherwise)*/
+  uint32 param_type = 3; /*<  Parameter type*/
+  uint32 param_result = 4; /*<  Result code*/
+}
+

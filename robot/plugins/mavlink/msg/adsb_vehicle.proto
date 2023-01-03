@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message AdsbVehicle {
+  uint32 icao_address = 1; /*<  ICAO address*/
+  sint32 lat = 2; /*< [degE7] Latitude*/
+  sint32 lon = 3; /*< [degE7] Longitude*/
+  sint32 altitude = 4; /*< [mm] Altitude(ASL)*/
+  uint32 heading = 5; /*< [cdeg] Course over ground*/
+  uint32 hor_velocity = 6; /*< [cm/s] The horizontal velocity*/
+  sint32 ver_velocity = 7; /*< [cm/s] The vertical velocity Positive is up*/
+  uint32 flags = 8; /*<  Bitmap to indicate various statuses including valid data fields*/
+  uint32 squawk = 9; /*<  Squawk code*/
+  uint32 altitude_type = 10; /*<  ADSB altitude type*/
+  string callsign = 11; /*<  The callsign, 8+null*/
+  uint32 emitter_type = 12; /*<  ADSB emitter type*/
+  uint32 tslc = 13; /*< [s] Time since last communication in seconds*/
+}
+

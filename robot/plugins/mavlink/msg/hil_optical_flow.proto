@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message HilOpticalFlow {
+  uint64 time_usec = 1; /*< [us] Timestamp (UNIX Epoch time or time since system boot) The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.*/
+  uint32 integration_time_us = 2; /*< [us] Integration time Divide integrated_x and integrated_y by the integration time to obtain average flow. The integration time also indicates the.*/
+  float integrated_x = 3; /*< [rad] Flow in radians around X axis (Sensor RH rotation about the X axis induces a positive flow Sensor linear motion along the positive Y axis induces a negative flow.)*/
+  float integrated_y = 4; /*< [rad] Flow in radians around Y axis (Sensor RH rotation about the Y axis induces a positive flow Sensor linear motion along the positive X axis induces a positive flow.)*/
+  float integrated_xgyro = 5; /*< [rad] RH rotation around X axis*/
+  float integrated_ygyro = 6; /*< [rad] RH rotation around Y axis*/
+  float integrated_zgyro = 7; /*< [rad] RH rotation around Z axis*/
+  uint32 time_delta_distance_us = 8; /*< [us] Time since the distance was sampled*/
+  float distance = 9; /*< [m] Distance to the center of the flow field Positive value (including zero): distance known. Negative value: Unknown distance.*/
+  sint32 temperature = 10; /*< [cdegC] Temperature*/
+  uint32 sensor_id = 11; /*<  Sensor ID*/
+  uint32 quality = 12; /*<  Optical flow quality / confidence 0: no valid flow, 255: maximum quality*/
+}
+

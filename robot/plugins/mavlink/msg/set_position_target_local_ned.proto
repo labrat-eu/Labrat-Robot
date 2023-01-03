@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message SetPositionTargetLocalNed {
+  uint32 time_boot_ms = 1; /*< [ms] Timestamp (time since system boot)*/
+  float x = 2; /*< [m] X Position in NED frame*/
+  float y = 3; /*< [m] Y Position in NED frame*/
+  float z = 4; /*< [m] Z Position in NED frame (note, altitude is negative in NED)*/
+  float vx = 5; /*< [m/s] X velocity in NED frame*/
+  float vy = 6; /*< [m/s] Y velocity in NED frame*/
+  float vz = 7; /*< [m/s] Z velocity in NED frame*/
+  float afx = 8; /*< [m/s/s] X acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N*/
+  float afy = 9; /*< [m/s/s] Y acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N*/
+  float afz = 10; /*< [m/s/s] Z acceleration or force (if bit 10 of type_mask is set) in NED frame in meter / s^2 or N*/
+  float yaw = 11; /*< [rad] yaw setpoint*/
+  float yaw_rate = 12; /*< [rad/s] yaw rate setpoint*/
+  uint32 type_mask = 13; /*<  Bitmap to indicate which dimensions should be ignored by the vehicle*/
+  uint32 target_system = 14; /*<  System ID*/
+  uint32 target_component = 15; /*<  Component ID*/
+  uint32 coordinate_frame = 16; /*<  Valid options are: MAV_FRAME_LOCAL_NED = 1, MAV_FRAME_LOCAL_OFFSET_NED = 7, MAV_FRAME_BODY_NED = 8, MAV_FRAME_BODY_OFFSET_NED = 9*/
+}
+

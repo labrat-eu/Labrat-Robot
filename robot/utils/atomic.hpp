@@ -1,6 +1,24 @@
+#pragma once
+
 #include <atomic>
 
 inline namespace utils {
+
+template <typename T>
+class Guard {
+public:
+  inline Guard(std::atomic<T> &object) : object(object) {
+    ++object;
+  }
+
+  inline ~Guard() {
+    --object;
+    object.notify_all();
+  }
+
+private:
+  std::atomic<T> &object;
+};
 
 class FlagGuard {
 public:

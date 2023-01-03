@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message NavControllerOutput {
+  float nav_roll = 1; /*< [deg] Current desired roll*/
+  float nav_pitch = 2; /*< [deg] Current desired pitch*/
+  float alt_error = 3; /*< [m] Current altitude error*/
+  float aspd_error = 4; /*< [m/s] Current airspeed error*/
+  float xtrack_error = 5; /*< [m] Current crosstrack error on x-y plane*/
+  sint32 nav_bearing = 6; /*< [deg] Current desired heading*/
+  sint32 target_bearing = 7; /*< [deg] Bearing to current waypoint/target*/
+  uint32 wp_dist = 8; /*< [m] Distance to active waypoint*/
+}
+

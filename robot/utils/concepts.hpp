@@ -1,3 +1,5 @@
+#pragma once
+
 #include <concepts>
 
 inline namespace utils {

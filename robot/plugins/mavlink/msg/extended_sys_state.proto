@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message ExtendedSysState {
+  uint32 vtol_state = 1; /*<  The VTOL state if applicable Is set to MAV_VTOL_STATE_UNDEFINED if UAV is not in VTOL configuration.*/
+  uint32 landed_state = 2; /*<  The landed state Is set to MAV_LANDED_STATE_UNDEFINED if landed state is unknown.*/
+}
+

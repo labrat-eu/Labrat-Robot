@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message Attitude {
+  uint32 time_boot_ms = 1; /*< [ms] Timestamp (time since system boot)*/
+  float roll = 2; /*< [rad] Roll angle (-pi.+pi)*/
+  float pitch = 3; /*< [rad] Pitch angle (-pi.+pi)*/
+  float yaw = 4; /*< [rad] Yaw angle (-pi.+pi)*/
+  float rollspeed = 5; /*< [rad/s] Roll angular speed*/
+  float pitchspeed = 6; /*< [rad/s] Pitch angular speed*/
+  float yawspeed = 7; /*< [rad/s] Yaw angular speed*/
+}
+

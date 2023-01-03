@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message VideoStreamInformation {
+  float framerate = 1; /*< [Hz] Frame rate*/
+  uint32 bitrate = 2; /*< [bits/s] Bit rate*/
+  uint32 flags = 3; /*<  Bitmap of stream status flags*/
+  uint32 resolution_h = 4; /*< [pix] Horizontal resolution*/
+  uint32 resolution_v = 5; /*< [pix] Vertical resolution*/
+  uint32 rotation = 6; /*< [deg] Video image rotation clockwise*/
+  uint32 hfov = 7; /*< [deg] Horizontal Field of view*/
+  uint32 stream_id = 8; /*<  Video Stream ID (1 for first, 2 for second, etc)*/
+  uint32 count = 9; /*<  Number of streams available*/
+  uint32 type = 10; /*<  Type of stream*/
+  string name = 11; /*<  Stream name*/
+  string uri = 12; /*<  Video stream URI (TCP or RTSP URI ground station should connect to) or port number (UDP port ground station should listen to)*/
+}
+

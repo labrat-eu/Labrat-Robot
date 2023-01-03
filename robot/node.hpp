@@ -38,7 +38,7 @@ public:
     const std::string name;
 
     TopicMap &topic_map;
-    const Plugin::List &plugin_list;
+    Plugin::List &plugin_list;
   };
 
   ~Node() = default;
@@ -51,7 +51,13 @@ public:
     Sender(const std::string &topic_name, Node &node) :
       topic_info(Node::getTopicInfo<MessageType>(topic_name)), node(node),
       topic(node.environment.topic_map.addSender<MessageType>(topic_name, this)) {
-      for (const Plugin &plugin : node.environment.plugin_list) {
+      for (Plugin &plugin : node.environment.plugin_list) {
+        if (plugin.delete_flag.test()) {
+          continue;
+        }
+
+        utils::Guard<u32> guard(plugin.use_count);
+
         plugin.topic_callback(plugin.user_ptr, topic_info);
       }
     }
@@ -128,7 +134,13 @@ public:
         throw Exception("Failure during message serialization.");
       }
 
-      for (const Plugin &plugin : node.environment.plugin_list) {
+      for (Plugin &plugin : node.environment.plugin_list) {
+        if (plugin.delete_flag.test()) {
+          continue;
+        }
+
+        utils::Guard<u32> guard(plugin.use_count);
+
         plugin.message_callback(plugin.user_ptr, message_info);
       }
     }

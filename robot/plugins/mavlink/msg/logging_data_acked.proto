@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message LoggingDataAcked {
+  uint32 sequence = 1; /*<  sequence number (can wrap)*/
+  uint32 target_system = 2; /*<  system ID of the target*/
+  uint32 target_component = 3; /*<  component ID of the target*/
+  uint32 length = 4; /*< [bytes] data length*/
+  uint32 first_message_offset = 5; /*< [bytes] offset into data where first message starts This can be used for recovery, when a previous message got lost (set to UINT8_MAX if no start exists).*/
+  bytes data = 6; /*<  logged data*/
+}
+

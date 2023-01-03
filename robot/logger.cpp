@@ -7,6 +7,8 @@
 
 namespace labrat::robot {
 
+Logger::Verbosity Logger::log_level = Verbosity::info;
+
 class LoggerNode : public Node {
 private:
   std::unique_ptr<Sender<Message<msg::Log>, Logger::Entry>> sender;
@@ -83,17 +85,21 @@ void Logger::send(const Entry &message) {
 Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity) : logger(logger), verbosity(verbosity) {}
 
 Logger::LogStream::~LogStream() {
-  std::cout << getVerbosityColor(verbosity) << "[" << getVerbosityShort(verbosity) << "]" << Color() << " (" << logger.name << " @ "
-            << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count() << "): ";
-  std::cout << line.str() << std::endl;
+  if (verbosity <= Logger::log_level) {
+    std::cout << getVerbosityColor(verbosity) << "[" << getVerbosityShort(verbosity) << "]" << Color() << " (" << logger.name << " @ "
+              << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count() << "): ";
+    std::cout << line.str() << std::endl;
+  }
 
-  Entry entry;
-  entry.verbosity = verbosity;
-  entry.timestamp = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
-  entry.logger_name = logger.name;
-  entry.message = line.str();
+  if (verbosity <= Verbosity::info) {
+    Entry entry;
+    entry.verbosity = verbosity;
+    entry.timestamp = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch());
+    entry.logger_name = logger.name;
+    entry.message = line.str();
 
-  logger.send(entry);
+    logger.send(entry);
+  }
 }
 
 Logger::LogStream &Logger::LogStream::operator<<(std::ostream &(*func)(std::ostream &)) {

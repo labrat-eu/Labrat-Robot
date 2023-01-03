@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message AutopilotVersion {
+  uint64 capabilities = 1; /*<  Bitmap of capabilities*/
+  uint64 uid = 2; /*<  UID if provided by hardware (see uid2)*/
+  uint32 flight_sw_version = 3; /*<  Firmware version number*/
+  uint32 middleware_sw_version = 4; /*<  Middleware version number*/
+  uint32 os_sw_version = 5; /*<  Operating system version number*/
+  uint32 board_version = 6; /*<  HW / board version (last 8 bits should be silicon ID, if any) The first 16 bits of this field specify https://github.com/PX4/PX4-Bootloader/blob/master/board_types.txt*/
+  uint32 vendor_id = 7; /*<  ID of the board vendor*/
+  uint32 product_id = 8; /*<  ID of the product*/
+  bytes flight_custom_version = 9; /*<  Custom version field, commonly the first 8 bytes of the git hash This is not an unique identifier, but should allow to identify the commit using the main version number even for very large code bases.*/
+  bytes middleware_custom_version = 10; /*<  Custom version field, commonly the first 8 bytes of the git hash This is not an unique identifier, but should allow to identify the commit using the main version number even for very large code bases.*/
+  bytes os_custom_version = 11; /*<  Custom version field, commonly the first 8 bytes of the git hash This is not an unique identifier, but should allow to identify the commit using the main version number even for very large code bases.*/
+  bytes uid2 = 12; /*<  UID if provided by hardware (supersedes the uid field If this is non-zero, use this field, otherwise use uid)*/
+}
+

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message LoggingAck {
+  uint32 sequence = 1; /*<  sequence number (must match the one in LOGGING_DATA_ACKED)*/
+  uint32 target_system = 2; /*<  system ID of the target*/
+  uint32 target_component = 3; /*<  component ID of the target*/
+}
+

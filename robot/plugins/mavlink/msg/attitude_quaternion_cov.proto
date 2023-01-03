@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message AttitudeQuaternionCov {
+  uint64 time_usec = 1; /*< [us] Timestamp (UNIX Epoch time or time since system boot) The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.*/
+  repeated float q = 2; /*<  Quaternion components, w, x, y, z (1 0 0 0 is the null-rotation)*/
+  float rollspeed = 3; /*< [rad/s] Roll angular speed*/
+  float pitchspeed = 4; /*< [rad/s] Pitch angular speed*/
+  float yawspeed = 5; /*< [rad/s] Yaw angular speed*/
+  repeated float covariance = 6; /*<  Row-major representation of a 3x3 attitude covariance matrix (states: roll, pitch, yaw; first three entries are the first ROW, next three entries are the second row, etc). If unknown, assign NaN value to first element in the array.*/
+}
+

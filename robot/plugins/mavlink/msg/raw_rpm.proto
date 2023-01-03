@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message RawRpm {
+  float frequency = 1; /*< [rpm] Indicated rate*/
+  uint32 index = 2; /*<  Index of this RPM sensor (0-indexed)*/
+}
+

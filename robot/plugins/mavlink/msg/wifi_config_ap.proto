@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message WifiConfigAp {
+  string ssid = 1; /*<  Name of Wi-Fi network (SSID) Blank to leave it unchanged when setting. Current SSID when sent back as a response.*/
+  string password = 2; /*<  Password Blank for an open AP. MD5 hash when message is sent back as a response.*/
+  sint32 mode = 3; /*<  WiFi Mode*/
+  sint32 response = 4; /*<  Message acceptance response (sent back to GS)*/
+}
+

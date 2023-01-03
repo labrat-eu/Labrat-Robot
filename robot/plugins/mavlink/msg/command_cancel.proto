@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message CommandCancel {
+  uint32 command = 1; /*<  Command ID (of command to cancel)*/
+  uint32 target_system = 2; /*<  System executing long running command Should not be broadcast (0).*/
+  uint32 target_component = 3; /*<  Component executing long running command*/
+}
+

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message EstimatorStatus {
+  uint64 time_usec = 1; /*< [us] Timestamp (UNIX Epoch time or time since system boot) The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.*/
+  float vel_ratio = 2; /*<  Velocity innovation test ratio*/
+  float pos_horiz_ratio = 3; /*<  Horizontal position innovation test ratio*/
+  float pos_vert_ratio = 4; /*<  Vertical position innovation test ratio*/
+  float mag_ratio = 5; /*<  Magnetometer innovation test ratio*/
+  float hagl_ratio = 6; /*<  Height above terrain innovation test ratio*/
+  float tas_ratio = 7; /*<  True airspeed innovation test ratio*/
+  float pos_horiz_accuracy = 8; /*< [m] Horizontal position 1-STD accuracy relative to the EKF local origin*/
+  float pos_vert_accuracy = 9; /*< [m] Vertical position 1-STD accuracy relative to the EKF local origin*/
+  uint32 flags = 10; /*<  Bitmap indicating which EKF outputs are valid*/
+}
+

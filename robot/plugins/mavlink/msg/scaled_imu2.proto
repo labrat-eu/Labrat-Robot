@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message ScaledImu2 {
+  uint32 time_boot_ms = 1; /*< [ms] Timestamp (time since system boot)*/
+  sint32 xacc = 2; /*< [mG] X acceleration*/
+  sint32 yacc = 3; /*< [mG] Y acceleration*/
+  sint32 zacc = 4; /*< [mG] Z acceleration*/
+  sint32 xgyro = 5; /*< [mrad/s] Angular speed around X axis*/
+  sint32 ygyro = 6; /*< [mrad/s] Angular speed around Y axis*/
+  sint32 zgyro = 7; /*< [mrad/s] Angular speed around Z axis*/
+  sint32 xmag = 8; /*< [mgauss] X Magnetic field*/
+  sint32 ymag = 9; /*< [mgauss] Y Magnetic field*/
+  sint32 zmag = 10; /*< [mgauss] Z Magnetic field*/
+  sint32 temperature = 11; /*< [cdegC] Temperature, 0: IMU does not provide temperature values If the IMU is at 0C it must send 1 (0.01C).*/
+}
+

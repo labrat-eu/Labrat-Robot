@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message EfiStatus {
+  float ecu_index = 1; /*<  ECU index*/
+  float rpm = 2; /*<  RPM*/
+  float fuel_consumed = 3; /*< [cm^3] Fuel consumed*/
+  float fuel_flow = 4; /*< [cm^3/min] Fuel flow rate*/
+  float engine_load = 5; /*< [%] Engine load*/
+  float throttle_position = 6; /*< [%] Throttle position*/
+  float spark_dwell_time = 7; /*< [ms] Spark dwell time*/
+  float barometric_pressure = 8; /*< [kPa] Barometric pressure*/
+  float intake_manifold_pressure = 9; /*< [kPa] Intake manifold pressure(*/
+  float intake_manifold_temperature = 10; /*< [degC] Intake manifold temperature*/
+  float cylinder_head_temperature = 11; /*< [degC] Cylinder head temperature*/
+  float ignition_timing = 12; /*< [deg] Ignition timing (Crank angle degrees)*/
+  float injection_time = 13; /*< [ms] Injection time*/
+  float exhaust_gas_temperature = 14; /*< [degC] Exhaust gas temperature*/
+  float throttle_out = 15; /*< [%] Output throttle*/
+  float pt_compensation = 16; /*<  Pressure/temperature compensation*/
+  uint32 health = 17; /*<  EFI health status*/
+  float ignition_voltage = 18; /*< [V] Supply voltage to EFI sparking system  Zero in this value means "unknown", so if the supply voltage really is zero volts use 0.0001 instead.*/
+}
+

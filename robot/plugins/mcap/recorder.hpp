@@ -2,6 +2,7 @@
 
 #include <labrat/robot/plugin.hpp>
 
+#include <mutex>
 #include <string>
 #include <unordered_map>
 
@@ -31,12 +32,15 @@ private:
   static void messageCallback(void *user_ptr, const Plugin::MessageInfo &info);
 
   ChannelMap::iterator handleTopic(const Plugin::TopicInfo &info);
-  ChannelMap::iterator handleMessage(const Plugin::MessageInfo &info);
+  inline ChannelMap::iterator handleMessage(const Plugin::MessageInfo &info);
 
   SchemaMap schema_map;
   ChannelMap channel_map;
 
   mcap::McapWriter writer;
+  std::mutex mutex;
+
+  Plugin::List::iterator self_reference;
 };
 
 }  // namespace labrat::robot::plugins

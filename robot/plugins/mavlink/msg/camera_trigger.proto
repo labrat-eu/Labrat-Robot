@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message CameraTrigger {
+  uint64 time_usec = 1; /*< [us] Timestamp for image frame (UNIX Epoch time or time since system boot) The receiving end can infer timestamp format (since 1.1.1970 or since system boot) by checking for the magnitude of the number.*/
+  uint32 seq = 2; /*<  Image frame sequence*/
+}
+

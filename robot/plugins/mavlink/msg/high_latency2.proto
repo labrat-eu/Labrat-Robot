@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package mavlink.msg.common;
+
+message HighLatency2 {
+  uint32 timestamp = 1; /*< [ms] Timestamp (milliseconds since boot or Unix epoch)*/
+  sint32 latitude = 2; /*< [degE7] Latitude*/
+  sint32 longitude = 3; /*< [degE7] Longitude*/
+  uint32 custom_mode = 4; /*<  A bitfield for use for autopilot-specific flags (2 byte version)*/
+  sint32 altitude = 5; /*< [m] Altitude above mean sea level*/
+  sint32 target_altitude = 6; /*< [m] Altitude setpoint*/
+  uint32 target_distance = 7; /*< [dam] Distance to target waypoint or position*/
+  uint32 wp_num = 8; /*<  Current waypoint number*/
+  uint32 failure_flags = 9; /*<  Bitmap of failure flags*/
+  uint32 type = 10; /*<  Type of the MAV (quadrotor, helicopter, etc)*/
+  uint32 autopilot = 11; /*<  Autopilot type / class Use MAV_AUTOPILOT_INVALID for components that are not flight controllers.*/
+  uint32 heading = 12; /*< [deg/2] Heading*/
+  uint32 target_heading = 13; /*< [deg/2] Heading setpoint*/
+  uint32 throttle = 14; /*< [%] Throttle*/
+  uint32 airspeed = 15; /*< [m/s*5] Airspeed*/
+  uint32 airspeed_sp = 16; /*< [m/s*5] Airspeed setpoint*/
+  uint32 groundspeed = 17; /*< [m/s*5] Groundspeed*/
+  uint32 windspeed = 18; /*< [m/s*5] Windspeed*/
+  uint32 wind_heading = 19; /*< [deg/2] Wind heading*/
+  uint32 eph = 20; /*< [dm] Maximum error horizontal position since last message*/
+  uint32 epv = 21; /*< [dm] Maximum error vertical position since last message*/
+  sint32 temperature_air = 22; /*< [degC] Air temperature from airspeed sensor*/
+  sint32 climb_rate = 23; /*< [dm/s] Maximum climb rate magnitude since last message*/
+  sint32 battery = 24; /*< [%] Battery level (-1 if field not provided)*/
+  sint32 custom0 = 25; /*<  Field for custom payload*/
+  sint32 custom1 = 26; /*<  Field for custom payload*/
+  sint32 custom2 = 27; /*<  Field for custom payload*/
+}
+
