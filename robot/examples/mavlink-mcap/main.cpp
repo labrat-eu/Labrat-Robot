@@ -1,11 +1,65 @@
 #include <labrat/robot/logger.hpp>
 #include <labrat/robot/manager.hpp>
+#include <labrat/robot/node.hpp>
 #include <labrat/robot/plugins/foxglove-ws/server.hpp>
+#include <labrat/robot/plugins/mavlink/msg/set_position_target_local_ned.pb.h>
 #include <labrat/robot/plugins/mavlink/node.hpp>
 #include <labrat/robot/plugins/mavlink/udp_connection.hpp>
 #include <labrat/robot/plugins/mcap/recorder.hpp>
 
+#include <atomic>
+#include <thread>
+
 #include <signal.h>
+
+class OffboardNode : public labrat::robot::Node {
+public:
+  OffboardNode(const Node::Environment &environment) : Node(environment) {
+    sender =
+      addSender<labrat::robot::Message<mavlink::msg::common::SetPositionTargetLocalNed>>("/mavlink/out/set_position_target_local_ned");
+
+    run_thread = std::thread([this]() {
+      u64 i = 0;
+
+      while (!exit_flag.test()) {
+        labrat::robot::Message<mavlink::msg::common::SetPositionTargetLocalNed> message;
+
+        message().set_time_boot_ms(i);
+        message().set_target_system(1);
+        message().set_target_component(1);
+        message().set_coordinate_frame(8);
+        message().set_type_mask(~0x838);
+        message().set_x(0);
+        message().set_y(0);
+        message().set_z(0);
+        message().set_vx(1.5);
+        message().set_vy(1.5);
+        message().set_vz(0);
+        message().set_afx(0);
+        message().set_afy(0);
+        message().set_afz(0);
+        message().set_yaw(0);
+        message().set_yaw_rate(0.1);
+
+        sender->put(message);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        i += 100;
+      }
+    });
+  }
+
+  ~OffboardNode() {
+    exit_flag.test_and_set();
+    run_thread.join();
+  }
+
+private:
+  Node::Sender<labrat::robot::Message<mavlink::msg::common::SetPositionTargetLocalNed>>::Ptr sender;
+
+  std::thread run_thread;
+  std::atomic_flag exit_flag;
+};
 
 int main(/*int argc, char **argv*/) {
   labrat::robot::Logger logger("main");
@@ -21,6 +75,9 @@ int main(/*int argc, char **argv*/) {
   labrat::robot::Manager::get().addNode<labrat::robot::plugins::MavlinkNode>("mavlink",
     std::make_unique<labrat::robot::plugins::MavlinkUdpConnection>());
   logger() << "Mavlink node connected.";
+
+  labrat::robot::Manager::get().addNode<OffboardNode>("offboard");
+  logger() << "Offboard node connected.";
 
   sigset_t signal_mask;
   sigemptyset(&signal_mask);

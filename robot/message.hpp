@@ -61,29 +61,29 @@ concept is_container = requires {
   typename T::MessageType;
 };
 
-template <typename OriginalType, typename ConvertedType>
-using ConversionFunction = void (*)(const OriginalType &, ConvertedType &);
+template <typename OriginalType, typename ConvertedType, typename DataType = void>
+using ConversionFunction = void (*)(const OriginalType &, ConvertedType &, const DataType *);
 
 template <typename OriginalType, typename ConvertedType>
-inline void defaultSenderConversionFunction(const ConvertedType &source,
-  OriginalType &destination) requires std::is_same_v<OriginalType, ConvertedType> {
+inline void defaultSenderConversionFunction(const ConvertedType &source, OriginalType &destination,
+  const void *) requires std::is_same_v<OriginalType, ConvertedType> {
   destination = source;
 }
 
 template <typename OriginalType, typename ConvertedType>
-inline void defaultSenderConversionFunction(const ConvertedType &source, OriginalType &destination) {
+inline void defaultSenderConversionFunction(const ConvertedType &source, OriginalType &destination, const void *) {
   destination = OriginalType();
   ConvertedType::toMessage(source, destination);
 }
 
 template <typename OriginalType, typename ConvertedType>
-inline void defaultReceiverConversionFunction(const OriginalType &source,
-  ConvertedType &destination) requires std::is_same_v<OriginalType, ConvertedType> {
+inline void defaultReceiverConversionFunction(const OriginalType &source, ConvertedType &destination,
+  const void *) requires std::is_same_v<OriginalType, ConvertedType> {
   destination = source;
 }
 
 template <typename OriginalType, typename ConvertedType>
-inline void defaultReceiverConversionFunction(const OriginalType &source, ConvertedType &destination) {
+inline void defaultReceiverConversionFunction(const OriginalType &source, ConvertedType &destination, const void *) {
   ConvertedType::fromMessage(source, destination);
 }
 

@@ -12,29 +12,38 @@ typedef struct __mavlink_message mavlink_message_t;
 namespace labrat::robot::plugins {
 
 struct MavlinkSender;
+struct MavlinkReceiver;
 
 class MavlinkNode : public Node {
 public:
   MavlinkNode(const Node::Environment &environment, MavlinkConnection::Ptr &&connection);
   ~MavlinkNode();
 
+  struct SystemInfo {
+    u8 channel_id;
+    u8 system_id;
+    u8 component_id;
+  };
+
 private:
-  void receiveLoop();
+  void readLoop();
+  void writeLoop();
   void heartbeatLoop();
 
-  void receiveMessage(mavlink_message_t &message);
+  void readMessage(const mavlink_message_t &message);
+  void writeMessage(const mavlink_message_t &message);
 
   MavlinkConnection::Ptr connection;
 
-  std::thread receive_thread;
+  std::thread read_thread;
+  std::thread write_thread;
   std::thread heartbeat_thread;
   std::atomic_flag exit_flag;
 
   MavlinkSender *sender;
+  MavlinkReceiver *receiver;
 
-  u8 channel_id;
-  u8 system_id;
-  u8 component_id;
+  SystemInfo system_info;
 
   static constexpr std::size_t buffer_size = 1024;
 };
