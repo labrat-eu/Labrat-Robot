@@ -533,7 +533,7 @@ struct MavlinkSender {
     destination().set_energy_consumed(mavlink_msg_battery_status_get_energy_consumed(&source));
     destination().set_temperature(mavlink_msg_battery_status_get_temperature(&source));
 
-    std::array<u16, 4> voltages;
+    std::array<u16, 10> voltages;
     mavlink_msg_battery_status_get_voltages(&source, voltages.data());
     for (const u16 value : voltages) {
       destination().add_voltages(value);

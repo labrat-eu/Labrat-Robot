@@ -11,11 +11,22 @@ set(TARGET_NAME ${TARGET_NAME_PRIMARY}_${TARGET_NAME_SECONDARY})
 file(RELATIVE_PATH TARGET_RELATIVE_PATH ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 set(TARGET_PATH ${LOCAL_PROJECT_PATH}/${TARGET_RELATIVE_PATH})
 
-set(TARGET_SOURCES
-  main.cpp
+set(TARGET_HEADERS
+  server.hpp
 )
 
-# Create executable target for the unit test.
-add_executable(${TARGET_NAME} ${TARGET_SOURCES})
+set(TARGET_SOURCES
+  server.cpp
+)
 
-target_link_libraries(${TARGET_NAME} PRIVATE labrat_robot plugins_mavlink plugins_mcap plugins_foxglove-ws)
+add_library(${TARGET_NAME} ${TARGET_HEADERS} ${TARGET_SOURCES})
+
+# Set library properties.
+set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
+target_include_directories(${TARGET_NAME} PRIVATE ${Protobuf_INCLUDE_DIRS})
+
+target_link_libraries(${TARGET_NAME} PRIVATE ${Protobuf_LIBRARIES} zstd lz4)
+
+# Add public header install target.
+install(FILES ${TARGET_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_PATH})

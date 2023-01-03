@@ -13,7 +13,7 @@
 
 namespace labrat::robot::plugins {
 
-google::protobuf::FileDescriptorSet buildFileDescriptorSet(const google::protobuf::Descriptor *top_descriptor);
+static google::protobuf::FileDescriptorSet buildFileDescriptorSet(const google::protobuf::Descriptor *top_descriptor);
 
 McapRecorder::McapRecorder(const std::string &filename) {
   const mcap::McapWriterOptions options("");
@@ -96,7 +96,7 @@ inline McapRecorder::ChannelMap::iterator McapRecorder::handleMessage(const Plug
   return channel_iterator;
 }
 
-google::protobuf::FileDescriptorSet buildFileDescriptorSet(const google::protobuf::Descriptor *top_descriptor) {
+static google::protobuf::FileDescriptorSet buildFileDescriptorSet(const google::protobuf::Descriptor *top_descriptor) {
   google::protobuf::FileDescriptorSet result;
   std::queue<const google::protobuf::FileDescriptor *> queue;
 

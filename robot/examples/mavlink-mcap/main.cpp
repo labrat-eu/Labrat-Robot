@@ -1,5 +1,6 @@
 #include <labrat/robot/logger.hpp>
 #include <labrat/robot/manager.hpp>
+#include <labrat/robot/plugins/foxglove-ws/server.hpp>
 #include <labrat/robot/plugins/mavlink/node.hpp>
 #include <labrat/robot/plugins/mavlink/udp_connection.hpp>
 #include <labrat/robot/plugins/mcap/recorder.hpp>
@@ -13,6 +14,9 @@ int main(/*int argc, char **argv*/) {
 
   labrat::robot::plugins::McapRecorder recorder("example_mavlink.mcap");
   logger() << "Recording started.";
+
+  labrat::robot::plugins::FoxgloveServer server("Test Server");
+  logger() << "Server started.";
 
   labrat::robot::Manager::get().addNode<labrat::robot::plugins::MavlinkNode>("mavlink",
     std::make_unique<labrat::robot::plugins::MavlinkUdpConnection>());
