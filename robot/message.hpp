@@ -61,8 +61,22 @@ concept is_container = requires {
   typename T::MessageType;
 };
 
-template <typename OriginalType, typename ConvertedType, typename DataType = void>
-using ConversionFunction = void (*)(const OriginalType &, ConvertedType &, const DataType *);
+template <typename OriginalType, typename ConvertedType>
+class ConversionFunction {
+public:
+  template <typename DataType = void>
+  using Function = void (*)(const OriginalType &, ConvertedType &, const DataType *);
+
+  template <typename DataType = void>
+  ConversionFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
+
+  inline void operator()(const OriginalType &source, ConvertedType &destination, const void *user_ptr) const {
+    function(source, destination, user_ptr);
+  }
+
+private:
+  Function<void> function;
+};
 
 template <typename OriginalType, typename ConvertedType>
 inline void defaultSenderConversionFunction(const ConvertedType &source, OriginalType &destination,

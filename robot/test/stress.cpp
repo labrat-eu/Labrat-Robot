@@ -34,6 +34,9 @@ TEST(stress, latest) {
   }
 
   sender_thread.join();
+
+  labrat::robot::Manager::get().removeNode("node_a");
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
 TEST(stress, next) {
@@ -70,6 +73,9 @@ TEST(stress, next) {
   done.test_and_set();
 
   sender_thread.join();
+
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
 }  // namespace labrat::robot::test

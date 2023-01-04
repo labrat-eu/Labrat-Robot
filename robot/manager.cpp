@@ -25,6 +25,16 @@ Manager &Manager::get() {
   return *instance;
 }
 
+void Manager::removeNode(const std::string &name) {
+  const std::unordered_map<std::string, utils::FinalPtr<Node>>::iterator iterator = node_map.find(name);
+
+  if (iterator == node_map.end()) {
+    throw Exception("Node not found.");
+  }
+
+  node_map.erase(iterator);
+}
+
 Plugin::List::iterator Manager::addPlugin(const Plugin &plugin) {
   return plugin_list.emplace(plugin_list.begin(), plugin);
 }

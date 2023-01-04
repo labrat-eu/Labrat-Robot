@@ -43,14 +43,15 @@ public:
 
   ~Node() = default;
 
-  template <typename MessageType, typename ContainerType = MessageType, typename DataType = void,
-    ConversionFunction<ContainerType, MessageType, DataType> conversion_function =
-      defaultSenderConversionFunction<MessageType, ContainerType>>
+  template <typename MessageType, typename ContainerType = MessageType>
   requires is_message<MessageType>
   class Sender {
   private:
-    Sender(const std::string &topic_name, Node &node, const DataType *user_ptr = nullptr) :
-      topic_info(Node::getTopicInfo<MessageType>(topic_name)), node(node), user_ptr(user_ptr),
+    Sender(const std::string &topic_name, Node &node,
+      ConversionFunction<ContainerType, MessageType> conversion_function = defaultSenderConversionFunction<MessageType, ContainerType>,
+      const void *user_ptr = nullptr) :
+      topic_info(Node::getTopicInfo<MessageType>(topic_name)),
+      node(node), conversion_function(conversion_function), user_ptr(user_ptr),
       topic(node.environment.topic_map.addSender<MessageType>(topic_name, this)) {
       for (Plugin &plugin : node.environment.plugin_list) {
         if (plugin.delete_flag.test()) {
@@ -61,6 +62,8 @@ public:
 
         plugin.topic_callback(plugin.user_ptr, topic_info);
       }
+
+      callback_flag = false;
     }
 
     friend class Node;
@@ -68,11 +71,14 @@ public:
     const Plugin::TopicInfo topic_info;
 
     Node &node;
-    const DataType *user_ptr;
+    const ConversionFunction<ContainerType, MessageType> conversion_function;
+    const void *user_ptr;
     TopicMap::Topic &topic;
 
+    bool callback_flag;
+
   public:
-    using Ptr = std::unique_ptr<Sender<MessageType, ContainerType, DataType, conversion_function>>;
+    using Ptr = std::unique_ptr<Sender<MessageType, ContainerType>>;
 
     ~Sender() {
       flush();
@@ -95,6 +101,16 @@ public:
         }
 
         receiver->read_count.notify_one();
+
+        if (receiver->callback.valid()) {
+          if (callback_flag) {
+            throw Exception("Callback recursion detected.");
+          }
+
+          callback_flag = true;
+          receiver->callback(*receiver, receiver->callback_ptr);
+          callback_flag = false;
+        }
       }
 
       log(container);
@@ -156,15 +172,16 @@ public:
   requires is_container<ContainerType>
   using ContainerSender = Sender<typename ContainerType::MessageType, ContainerType>;
 
-  template <typename MessageType, typename ContainerType = MessageType, typename DataType = void,
-    ConversionFunction<MessageType, ContainerType, DataType> conversion_function =
-      defaultReceiverConversionFunction<MessageType, ContainerType>>
+  template <typename MessageType, typename ContainerType = MessageType>
   requires is_message<MessageType>
   class Receiver {
   private:
-    Receiver(const std::string &topic_name, Node &node, const DataType *user_ptr = nullptr, std::size_t buffer_size = 4) :
-      topic_info(Node::getTopicInfo<MessageType>(topic_name)), index_mask(calculateBufferMask(buffer_size)),
-      message_buffer(calculateBufferSize(buffer_size)), write_count(0), read_count(index_mask), node(node), user_ptr(user_ptr),
+    Receiver(const std::string &topic_name, Node &node,
+      ConversionFunction<MessageType, ContainerType> conversion_function = defaultReceiverConversionFunction<MessageType, ContainerType>,
+      const void *user_ptr = nullptr, std::size_t buffer_size = 4) :
+      topic_info(Node::getTopicInfo<MessageType>(topic_name)),
+      index_mask(calculateBufferMask(buffer_size)), message_buffer(calculateBufferSize(buffer_size)), write_count(0),
+      read_count(index_mask), node(node), conversion_function(conversion_function), user_ptr(user_ptr),
       topic(node.environment.topic_map.addReceiver<MessageType>(topic_info.topic_name, this)) {
       next_count = index_mask;
     }
@@ -241,13 +258,34 @@ public:
     std::size_t next_count;
 
     Node &node;
-    const DataType *user_ptr;
+    const ConversionFunction<MessageType, ContainerType> conversion_function;
+    const void *user_ptr;
     TopicMap::Topic &topic;
 
-    ContainerType latest_result;
-
   public:
-    using Ptr = std::unique_ptr<Receiver<MessageType, ContainerType, DataType, conversion_function>>;
+    using Ptr = std::unique_ptr<Receiver<MessageType, ContainerType>>;
+
+    class CallbackFunction {
+    public:
+      template <typename DataType = void>
+      using Function = void (*)(Receiver<MessageType, ContainerType> &, DataType *);
+
+      CallbackFunction() : function(nullptr) {}
+
+      template <typename DataType = void>
+      CallbackFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
+
+      inline void operator()(Receiver<MessageType, ContainerType> &receiver, void *user_ptr) const {
+        function(receiver, user_ptr);
+      }
+
+      inline bool valid() {
+        return function != nullptr;
+      }
+
+    private:
+      Function<void> function;
+    };
 
     ~Receiver() {
       node.environment.topic_map.removeReceiver(topic_info.topic_name, this);
@@ -282,6 +320,11 @@ public:
       return result;
     };
 
+    void setCallback(CallbackFunction function, void *ptr = nullptr) {
+      callback = function;
+      callback_ptr = ptr;
+    }
+
     inline bool newDataAvailable() {
       return (read_count.load() != next_count);
     }
@@ -293,6 +336,10 @@ public:
     inline const std::string &getTopicName() {
       return topic_info.topic_name;
     }
+
+  private:
+    CallbackFunction callback;
+    void *callback_ptr;
   };
 
   template <typename ContainerType>
@@ -310,38 +357,32 @@ protected:
     return Logger(environment.name);
   }
 
-  template <typename MessageType, typename ContainerType = MessageType, typename DataType = void,
-    ConversionFunction<ContainerType, MessageType, DataType> conversion_function =
-      defaultSenderConversionFunction<MessageType, ContainerType>,
-    typename... Args>
-  typename Sender<MessageType, ContainerType, DataType, conversion_function>::Ptr addSender(const std::string &topic_name,
+  template <typename MessageType, typename ContainerType = MessageType, typename... Args>
+  typename Sender<MessageType, ContainerType>::Ptr addSender(const std::string &topic_name,
     Args &&...args) requires is_message<MessageType> {
-    return std::unique_ptr<Sender<MessageType, ContainerType, DataType, conversion_function>>(
-      new Sender<MessageType, ContainerType, DataType, conversion_function>(topic_name, *this, std::forward<Args>(args)...));
+    return std::unique_ptr<Sender<MessageType, ContainerType>>(
+      new Sender<MessageType, ContainerType>(topic_name, *this, std::forward<Args>(args)...));
   }
 
   template <typename ContainerType, typename... Args>
   typename ContainerSender<ContainerType>::Ptr addSender(const std::string &topic_name,
     Args &&...args) requires is_container<ContainerType> {
     return std::unique_ptr<ContainerSender<ContainerType>>(
-      new ContainerSender<ContainerType>(topic_name, *this, nullptr, std::forward<Args>(args)...));
+      new ContainerSender<ContainerType>(topic_name, *this, ContainerType::toMessage, std::forward<Args>(args)...));
   }
 
-  template <typename MessageType, typename ContainerType = MessageType, typename DataType = void,
-    ConversionFunction<MessageType, ContainerType, DataType> conversion_function =
-      defaultReceiverConversionFunction<MessageType, ContainerType>,
-    typename... Args>
-  typename Receiver<MessageType, ContainerType, DataType, conversion_function>::Ptr addReceiver(const std::string &topic_name,
+  template <typename MessageType, typename ContainerType = MessageType, typename... Args>
+  typename Receiver<MessageType, ContainerType>::Ptr addReceiver(const std::string &topic_name,
     Args &&...args) requires is_message<MessageType> {
-    return std::unique_ptr<Receiver<MessageType, ContainerType, DataType, conversion_function>>(
-      new Receiver<MessageType, ContainerType, DataType, conversion_function>(topic_name, *this, std::forward<Args>(args)...));
+    return std::unique_ptr<Receiver<MessageType, ContainerType>>(
+      new Receiver<MessageType, ContainerType>(topic_name, *this, std::forward<Args>(args)...));
   }
 
   template <typename ContainerType, typename... Args>
   typename ContainerReceiver<ContainerType>::Ptr addReceiver(const std::string &topic_name,
     Args &&...args) requires is_container<ContainerType> {
     return std::unique_ptr<ContainerReceiver<ContainerType>>(
-      new ContainerReceiver<ContainerType>(topic_name, *this, nullptr, std::forward<Args>(args)...));
+      new ContainerReceiver<ContainerType>(topic_name, *this, ContainerType::fromMessage, std::forward<Args>(args)...));
   }
 
   friend class Manager;

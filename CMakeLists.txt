@@ -84,10 +84,10 @@ project(${LOCAL_PROJECT_NAME} VERSION ${GIT_VERSION} DESCRIPTION ${LOCAL_PROJECT
 
 # Define variables and options here.
 prj_register_var(DOCKER_IMAGE "Name of the docker image to be built." ${PROJECT_NAME})
-prj_register_option(ENABLE_TESTS "Enable the building of unit tests." OFF)
+prj_register_option(ENABLE_TESTS "Enable the building of unit tests." ON)
 prj_register_option(ENABLE_COVERAGE "Enable generation of code coverage information once the application is run." OFF)
 prj_register_option(ENABLE_PROFILING "Enable generation of profiling information once the application is run." OFF)
-prj_register_option(DISABLE_LINTING "Disable the use of various linters (e.g. clang-tidy etc.)." OFF)
+prj_register_option(ENABLE_LINTING "Enable the use of various linters (e.g. clang-tidy etc.)." OFF)
 prj_register_option(INSTALL_DOCS "Enable installation of man pages on make install." OFF)
 
 # Print enabled variables and options.
@@ -125,7 +125,7 @@ if(${PRJ_OPT_ENABLE_PROFILING})
 endif()
 
 # Handle enabled linting option.
-if(NOT ${PRJ_OPT_DISABLE_LINTING})
+if(${PRJ_OPT_ENABLE_LINTING})
   if(CMAKE_BUILD_TYPE MATCHES Debug)
     prj_add_clang_tidy()
   else()

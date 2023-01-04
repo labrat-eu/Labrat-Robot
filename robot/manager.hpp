@@ -49,16 +49,7 @@ public:
     return std::weak_ptr<T>(reinterpret_pointer_cast<T>(result.first->second));
   }
 
-  template <typename T>
-  void removeNode(const std::string &name) requires std::is_base_of_v<Node, T> {
-    const std::unordered_map<std::string, utils::FinalPtr<Node>>::iterator iterator = node_map.find(name);
-
-    if (iterator == node_map.end()) {
-      throw Exception("Node not found.");
-    }
-
-    node_map.erase(iterator);
-  }
+  void removeNode(const std::string &name);
 
   Plugin::List::iterator addPlugin(const Plugin &Plugin);
   void removePlugin(Plugin::List::iterator iterator);

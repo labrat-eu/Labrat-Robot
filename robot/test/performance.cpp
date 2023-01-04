@@ -23,6 +23,9 @@ TEST(performance, put) {
   TestContainer message = node_b->receiver->latest();
 
   EXPECT_EQ(message.integral_field, limit);
+
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
 TEST(performance, latest) {
@@ -42,6 +45,9 @@ TEST(performance, latest) {
   }
 
   EXPECT_EQ(message_a, message_b);
+
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
 TEST(performance, next) {
@@ -60,6 +66,9 @@ TEST(performance, next) {
   }
 
   EXPECT_EQ(message_a, message_b);
+
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
 }  // namespace labrat::robot::test

@@ -38,6 +38,9 @@ TEST(mcap, recorder) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
+
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
 }  // namespace labrat::robot::test

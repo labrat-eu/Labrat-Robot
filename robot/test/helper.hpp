@@ -17,12 +17,12 @@ public:
   u64 integral_field = 0;
   double float_field = 0;
 
-  static inline void toMessage(const TestContainer &source, TestMessage &destination) {
+  static inline void toMessage(const TestContainer &source, TestMessage &destination, const void *) {
     destination().set_integral_field(source.integral_field);
     destination().set_float_field(source.float_field);
   }
 
-  static inline void fromMessage(const TestMessage &source, TestContainer &destination) {
+  static inline void fromMessage(const TestMessage &source, TestContainer &destination, const void *) {
     destination.integral_field = source().integral_field();
     destination.float_field = source().float_field();
   }
@@ -37,7 +37,7 @@ public:
   TestNode(const Node::Environment environment, const std::string &sender_topic, const std::string &receiver_topic) :
     labrat::robot::Node(environment) {
     sender = addSender<TestContainer>(sender_topic);
-    receiver = addReceiver<TestContainer>(receiver_topic, 10);
+    receiver = addReceiver<TestContainer>(receiver_topic, nullptr, 10);
   }
 
   inline Logger getLogger() const {

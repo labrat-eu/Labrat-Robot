@@ -29,16 +29,9 @@ public:
         message().set_target_component(1);
         message().set_coordinate_frame(8);
         message().set_type_mask(~0x838);
-        message().set_x(0);
-        message().set_y(0);
-        message().set_z(0);
         message().set_vx(1.5);
         message().set_vy(1.5);
         message().set_vz(0);
-        message().set_afx(0);
-        message().set_afy(0);
-        message().set_afz(0);
-        message().set_yaw(0);
         message().set_yaw_rate(0.1);
 
         sender->put(message);
