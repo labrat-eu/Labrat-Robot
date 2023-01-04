@@ -103,10 +103,9 @@ TEST(setup, callback) {
     *message = receiver.next();
   };
 
-  void (*ptr)(TestNode::ContainerReceiver<TestContainer> & receiver, TestContainer * message) = callback;
-  Node::Receiver<labrat::robot::Message<labrat::robot::msg::Test>, labrat::robot::test::TestContainer>::CallbackFunction func(ptr);
+  void (*ptr)(TestNode::ContainerReceiver<TestContainer> &, TestContainer *) = callback;
 
-  node_b->receiver->setCallback(func, &message_b);
+  node_b->receiver->setCallback(ptr, &message_b);
 
   TestContainer message_a;
   message_a.integral_field = 10;

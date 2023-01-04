@@ -5,6 +5,7 @@
 #include <labrat/robot/plugins/mavlink/connection.hpp>
 
 #include <atomic>
+#include <mutex>
 #include <thread>
 
 typedef struct __mavlink_message mavlink_message_t;
@@ -27,7 +28,6 @@ public:
 
 private:
   void readLoop();
-  void writeLoop();
   void heartbeatLoop();
 
   void readMessage(const mavlink_message_t &message);
@@ -43,9 +43,14 @@ private:
   MavlinkSender *sender;
   MavlinkReceiver *receiver;
 
+  std::mutex mutex;
+
   SystemInfo system_info;
 
   static constexpr std::size_t buffer_size = 1024;
+
+  friend MavlinkSender;
+  friend MavlinkReceiver;
 };
 
 }  // namespace labrat::robot::plugins

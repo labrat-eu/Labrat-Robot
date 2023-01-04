@@ -914,6 +914,11 @@ struct MavlinkReceiver {
       source().yaw(), source().yaw_rate());
   }
 
+  template <typename T>
+  static void callback(Node::Receiver<Message<T>, mavlink_message_t> &receiver, MavlinkNode *node) {
+    node->writeMessage(receiver.latest());
+  }
+
   Node::Receiver<Message<mavlink::msg::common::SetPositionTargetLocalNed>, mavlink_message_t>::Ptr set_position_target_local_ned;
 };
 
@@ -1022,9 +1027,10 @@ MavlinkNode::MavlinkNode(const Node::Environment &environment, MavlinkConnection
   receiver->set_position_target_local_ned = addReceiver<Message<mavlink::msg::common::SetPositionTargetLocalNed>, mavlink_message_t>(
     "/mavlink/out/set_position_target_local_ned", MavlinkReceiver::convert<mavlink::msg::common::SetPositionTargetLocalNed>, &system_info);
 
+  receiver->set_position_target_local_ned->setCallback(MavlinkReceiver::callback<mavlink::msg::common::SetPositionTargetLocalNed>, this);
+
   exit_flag.clear();
   read_thread = std::thread(&MavlinkNode::readLoop, this);
-  write_thread = std::thread(&MavlinkNode::writeLoop, this);
   heartbeat_thread = std::thread(&MavlinkNode::heartbeatLoop, this);
 }
 
@@ -1054,27 +1060,13 @@ void MavlinkNode::readLoop() {
   }
 }
 
-void MavlinkNode::writeLoop() {
-  while (!exit_flag.test()) {
-    if (receiver->set_position_target_local_ned->newDataAvailable()) {
-      const mavlink_message_t message = receiver->set_position_target_local_ned->latest();
-      writeMessage(message);
-    }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  }
-}
-
 void MavlinkNode::heartbeatLoop() {
   mavlink_message_t message;
   mavlink_msg_heartbeat_pack_chan(system_info.system_id, system_info.component_id, system_info.channel_id, &message,
     MAV_TYPE_ONBOARD_CONTROLLER, MAV_AUTOPILOT_INVALID, 0, 0, MAV_STATE_ACTIVE);
 
-  std::array<u8, buffer_size> buffer;
-  const std::size_t size = mavlink_msg_to_send_buffer(buffer.data(), &message);
-
   while (!exit_flag.test()) {
-    connection->write(buffer.data(), size);
+    writeMessage(message);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
@@ -1317,6 +1309,8 @@ void MavlinkNode::readMessage(const mavlink_message_t &message) {
 void MavlinkNode::writeMessage(const mavlink_message_t &message) {
   std::array<u8, MAVLINK_MAX_PACKET_LEN> buffer;
   const std::size_t number_bytes = mavlink_msg_to_send_buffer(buffer.data(), &message);
+
+  std::lock_guard guard(mutex);
 
   connection->write(buffer.data(), number_bytes);
 }
