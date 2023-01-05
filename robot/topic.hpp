@@ -63,7 +63,7 @@ public:
       Topic &topic;
     };
 
-    Topic(Handle handle);
+    Topic(Handle handle, const std::string &name);
 
     void *getSender() const;
     void addSender(void *new_sender);
@@ -77,6 +77,7 @@ public:
     void removeReceiver(void *old_receiver);
 
     const Handle handle;
+    const std::string name;
   };
 
   TopicMap();
@@ -84,7 +85,7 @@ public:
 
   template <typename T>
   Topic &addSender(const std::string &topic_name, void *sender) {
-    Topic &topic = getTopic(topic_name, typeid(T).hash_code());
+    Topic &topic = getTopicInternal(topic_name, typeid(T).hash_code());
 
     topic.addSender(sender);
 
@@ -92,7 +93,7 @@ public:
   }
 
   Topic &removeSender(const std::string &topic_name, void *sender) {
-    Topic &topic = getTopic(topic_name);
+    Topic &topic = getTopicInternal(topic_name);
 
     topic.removeSender(sender);
 
@@ -101,7 +102,7 @@ public:
 
   template <typename T>
   Topic &addReceiver(const std::string &topic_name, void *receiver) {
-    Topic &topic = getTopic(topic_name, typeid(T).hash_code());
+    Topic &topic = getTopicInternal(topic_name, typeid(T).hash_code());
 
     topic.addReceiver(receiver);
 
@@ -109,7 +110,7 @@ public:
   }
 
   Topic &removeReceiver(const std::string &topic_name, void *receiver) {
-    Topic &topic = getTopic(topic_name);
+    Topic &topic = getTopicInternal(topic_name);
 
     topic.removeReceiver(receiver);
 
@@ -117,8 +118,8 @@ public:
   }
 
 private:
-  Topic &getTopic(const std::string &topic);
-  Topic &getTopic(const std::string &topic, std::size_t handle);
+  Topic &getTopicInternal(const std::string &topic);
+  Topic &getTopicInternal(const std::string &topic, std::size_t handle);
 
   std::unordered_map<std::string, Topic> map;
 };

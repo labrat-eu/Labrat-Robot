@@ -119,4 +119,31 @@ TEST(setup, callback) {
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
+TEST(setup, server) {
+  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
+
+  u64 result = 0;
+  u64 counter = 0;
+
+  auto handler = [](const double &request, u64 *user_ptr) -> u64 {
+    ++(*user_ptr);
+
+    return 10 * request;
+  };
+
+  u64 (*ptr)(const double &, u64 *) = handler;
+
+  Node::Server<double, u64>::Ptr server = node_a->addTestServer<double, u64>("test_service", ptr, &counter);
+  Node::Client<double, u64>::Ptr client = node_b->addTestClient<double, u64>("test_service");
+
+  result = client->call(10.5);
+
+  ASSERT_EQ(result, 105);
+  ASSERT_EQ(counter, 1);
+
+  server.reset(nullptr);
+  ASSERT_THROW(client->call(10.5), labrat::robot::Exception);
+}
+
 }  // namespace labrat::robot::test

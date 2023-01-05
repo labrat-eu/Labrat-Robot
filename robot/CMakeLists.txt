@@ -11,6 +11,7 @@ set(TARGET_PATH ${LOCAL_PROJECT_PATH}/${TARGET_RELATIVE_PATH})
 set(TARGET_SOURCES
   manager.cpp
   topic.cpp
+  service.cpp
   logger.cpp
   exception.cpp
 )
@@ -20,6 +21,7 @@ set(TARGET_HEADERS
   message.hpp
   node.hpp
   topic.hpp
+  service.hpp
   logger.hpp
   exception.hpp
   plugin.hpp

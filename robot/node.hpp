@@ -4,6 +4,7 @@
 #include <labrat/robot/logger.hpp>
 #include <labrat/robot/message.hpp>
 #include <labrat/robot/plugin.hpp>
+#include <labrat/robot/service.hpp>
 #include <labrat/robot/topic.hpp>
 #include <labrat/robot/utils/fifo.hpp>
 #include <labrat/robot/utils/types.hpp>
@@ -38,6 +39,7 @@ public:
     const std::string name;
 
     TopicMap &topic_map;
+    ServiceMap &service_map;
     Plugin::List &plugin_list;
   };
 
@@ -72,7 +74,7 @@ public:
 
     Node &node;
     const ConversionFunction<ContainerType, MessageType> conversion_function;
-    const void *user_ptr;
+    const void *const user_ptr;
     TopicMap::Topic &topic;
 
     bool callback_flag;
@@ -83,7 +85,7 @@ public:
     ~Sender() {
       flush();
 
-      node.environment.topic_map.removeSender(topic_info.topic_name, this);
+      node.environment.topic_map.removeSender(topic.name, this);
     }
 
     void put(const ContainerType &container) {
@@ -163,8 +165,8 @@ public:
       }
     }
 
-    inline const std::string &getTopicName() {
-      return topic_info.topic_name;
+    inline const std::string &getTopicName() const {
+      return topic.name;
     }
   };
 
@@ -182,7 +184,7 @@ public:
       topic_info(Node::getTopicInfo<MessageType>(topic_name)),
       index_mask(calculateBufferMask(buffer_size)), message_buffer(calculateBufferSize(buffer_size)), write_count(0),
       read_count(index_mask), node(node), conversion_function(conversion_function), user_ptr(user_ptr),
-      topic(node.environment.topic_map.addReceiver<MessageType>(topic_info.topic_name, this)) {
+      topic(node.environment.topic_map.addReceiver<MessageType>(topic_name, this)) {
       next_count = index_mask;
     }
 
@@ -288,7 +290,7 @@ public:
     };
 
     ~Receiver() {
-      node.environment.topic_map.removeReceiver(topic_info.topic_name, this);
+      node.environment.topic_map.removeReceiver(topic.name, this);
     }
 
     ContainerType latest() {
@@ -333,8 +335,8 @@ public:
       return index_mask + 1;
     }
 
-    inline const std::string &getTopicName() {
-      return topic_info.topic_name;
+    inline const std::string &getTopicName() const {
+      return topic.name;
     }
 
   private:
@@ -345,6 +347,81 @@ public:
   template <typename ContainerType>
   requires is_container<ContainerType>
   using ContainerReceiver = Receiver<typename ContainerType::MessageType, ContainerType>;
+
+  template <typename RequestType, typename ResponseType>
+  class Server {
+  public:
+    class HandlerFunction {
+    public:
+      template <typename DataType = void>
+      using Function = ResponseType (*)(const RequestType &, DataType *);
+
+      template <typename DataType = void>
+      HandlerFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
+
+      inline ResponseType operator()(const RequestType &request, void *user_ptr) const {
+        return function(request, user_ptr);
+      }
+
+    private:
+      Function<void> function;
+    };
+
+  private:
+    Server(const std::string &service_name, Node &node, HandlerFunction handler_function, void *user_ptr = nullptr) :
+      node(node), handler_function(handler_function), user_ptr(user_ptr),
+      service(node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this)) {}
+
+    friend class Node;
+    friend class Client;
+
+    Node &node;
+    const HandlerFunction handler_function;
+    void *const user_ptr;
+    ServiceMap::Service &service;
+
+  public:
+    using Ptr = std::unique_ptr<Server<RequestType, ResponseType>>;
+
+    ~Server() {
+      node.environment.service_map.removeServer(service.name, this);
+    }
+
+    inline const std::string &getServiceName() const {
+      return service.name;
+    }
+  };
+
+  template <typename RequestType, typename ResponseType>
+  class Client {
+  private:
+    Client(const std::string &service_name, Node &node) :
+      node(node), service(node.environment.service_map.getService<RequestType, ResponseType>(service_name)) {}
+
+    friend class Node;
+
+    Node &node;
+    ServiceMap::Service &service;
+
+  public:
+    using Ptr = std::unique_ptr<Client<RequestType, ResponseType>>;
+
+    ~Client() = default;
+
+    ResponseType call(const RequestType &request) {
+      Server<RequestType, ResponseType> *server = reinterpret_cast<Server<RequestType, ResponseType> *>(service.getServer());
+
+      if (server == nullptr) {
+        throw Exception("Service is no longer available.");
+      }
+
+      return server->handler_function(request, server->user_ptr);
+    }
+
+    inline const std::string &getServiceName() const {
+      return service.name;
+    }
+  };
 
   const std::string &getName() {
     return environment.name;
@@ -383,6 +460,18 @@ protected:
     Args &&...args) requires is_container<ContainerType> {
     return std::unique_ptr<ContainerReceiver<ContainerType>>(
       new ContainerReceiver<ContainerType>(topic_name, *this, ContainerType::fromMessage, std::forward<Args>(args)...));
+  }
+
+  template <typename RequestType, typename ResponseType, typename... Args>
+  typename Server<RequestType, ResponseType>::Ptr addServer(const std::string &service_name, Args &&...args) {
+    return std::unique_ptr<Server<RequestType, ResponseType>>(
+      new Server<RequestType, ResponseType>(service_name, *this, std::forward<Args>(args)...));
+  }
+
+  template <typename RequestType, typename ResponseType, typename... Args>
+  typename Client<RequestType, ResponseType>::Ptr addClient(const std::string &service_name, Args &&...args) {
+    return std::unique_ptr<Client<RequestType, ResponseType>>(
+      new Client<RequestType, ResponseType>(service_name, *this, std::forward<Args>(args)...));
   }
 
   friend class Manager;

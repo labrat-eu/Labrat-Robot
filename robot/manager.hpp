@@ -4,6 +4,7 @@
 #include <labrat/robot/message.hpp>
 #include <labrat/robot/node.hpp>
 #include <labrat/robot/plugin.hpp>
+#include <labrat/robot/service.hpp>
 #include <labrat/robot/topic.hpp>
 #include <labrat/robot/utils/final_ptr.hpp>
 #include <labrat/robot/utils/types.hpp>
@@ -24,6 +25,7 @@ private:
 
   std::unordered_map<std::string, utils::FinalPtr<Node>> node_map;
   TopicMap topic_map;
+  ServiceMap service_map;
   Plugin::List plugin_list;
 
 public:
@@ -36,6 +38,7 @@ public:
     const Node::Environment environment = {
       .name = name,
       .topic_map = topic_map,
+      .service_map = service_map,
       .plugin_list = plugin_list,
     };
 

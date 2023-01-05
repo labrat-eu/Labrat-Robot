@@ -40,6 +40,16 @@ public:
     receiver = addReceiver<TestContainer>(receiver_topic, nullptr, 10);
   }
 
+  template <typename RequestType, typename ResponseType, typename... Args>
+  typename Server<RequestType, ResponseType>::Ptr addTestServer(Args &&...args) {
+    return addServer<RequestType, ResponseType>(std::forward<Args>(args)...);
+  }
+
+  template <typename RequestType, typename ResponseType, typename... Args>
+  typename Client<RequestType, ResponseType>::Ptr addTestClient(Args &&...args) {
+    return addClient<RequestType, ResponseType>(std::forward<Args>(args)...);
+  }
+
   inline Logger getLogger() const {
     return labrat::robot::Node::getLogger();
   }

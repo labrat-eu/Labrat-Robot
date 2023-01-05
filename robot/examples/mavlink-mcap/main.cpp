@@ -2,6 +2,8 @@
 #include <labrat/robot/manager.hpp>
 #include <labrat/robot/node.hpp>
 #include <labrat/robot/plugins/foxglove-ws/server.hpp>
+#include <labrat/robot/plugins/mavlink/msg/command_ack.pb.h>
+#include <labrat/robot/plugins/mavlink/msg/command_long.pb.h>
 #include <labrat/robot/plugins/mavlink/msg/set_position_target_local_ned.pb.h>
 #include <labrat/robot/plugins/mavlink/node.hpp>
 #include <labrat/robot/plugins/mavlink/udp_connection.hpp>
@@ -17,6 +19,9 @@ public:
   OffboardNode(const Node::Environment &environment) : Node(environment) {
     sender =
       addSender<labrat::robot::Message<mavlink::msg::common::SetPositionTargetLocalNed>>("/mavlink/out/set_position_target_local_ned");
+
+    client = addClient<labrat::robot::Message<mavlink::msg::common::CommandLong>, labrat::robot::Message<mavlink::msg::common::CommandAck>>(
+      "/mavlink/cmd/command_long");
 
     run_thread = std::thread([this]() {
       u64 i = 0;
@@ -40,17 +45,48 @@ public:
         i += 100;
       }
     });
+
+    cmd_thread = std::thread([this]() {
+      while (!exit_flag.test()) {
+        labrat::robot::Message<mavlink::msg::common::CommandLong> request;
+
+        request().set_target_system(1);
+        request().set_target_component(1);
+        request().set_command(24);
+        request().set_param1(0);
+        request().set_param3(1.5);
+        request().set_param4(0.5);
+        request().set_param5(0);
+        request().set_param6(0);
+        request().set_param7(-15);
+
+        labrat::robot::Message<mavlink::msg::common::CommandAck> response = client->call(request);
+
+        if (response().result() == 0) {
+          getLogger()() << "Takeoff engaged.";
+          break;
+        } else {
+          getLogger().warning() << "Command failed, trying again.";
+        }
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+      }
+    });
   }
 
   ~OffboardNode() {
     exit_flag.test_and_set();
     run_thread.join();
+    cmd_thread.join();
   }
 
 private:
   Node::Sender<labrat::robot::Message<mavlink::msg::common::SetPositionTargetLocalNed>>::Ptr sender;
+  Node::Client<labrat::robot::Message<mavlink::msg::common::CommandLong>, labrat::robot::Message<mavlink::msg::common::CommandAck>>::Ptr
+    client;
 
   std::thread run_thread;
+  std::thread cmd_thread;
   std::atomic_flag exit_flag;
 };
 

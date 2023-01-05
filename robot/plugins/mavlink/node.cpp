@@ -914,18 +914,92 @@ struct MavlinkReceiver {
       source().yaw(), source().yaw_rate());
   }
 
+  template <>
+  void convert<mavlink::msg::common::CommandInt>(const Message<mavlink::msg::common::CommandInt> &source, mavlink_message_t &destination,
+    const MavlinkNode::SystemInfo *info) {
+    mavlink_msg_command_int_pack_chan(info->system_id, info->component_id, info->channel_id, &destination, source().target_system(),
+      source().target_component(), source().frame(), source().command(), source().current(), source().autocontinue(), source().param1(),
+      source().param2(), source().param3(), source().param4(), source().x(), source().y(), source().z());
+  }
+
+  template <>
+  void convert<mavlink::msg::common::CommandLong>(const Message<mavlink::msg::common::CommandLong> &source, mavlink_message_t &destination,
+    const MavlinkNode::SystemInfo *info) {
+    mavlink_msg_command_long_pack_chan(info->system_id, info->component_id, info->channel_id, &destination, source().target_system(),
+      source().target_component(), source().command(), source().confirmation(), source().param1(), source().param2(), source().param3(),
+      source().param4(), source().param5(), source().param6(), source().param7());
+  }
+
   template <typename T>
   static void callback(Node::Receiver<Message<T>, mavlink_message_t> &receiver, MavlinkNode *node) {
     node->writeMessage(receiver.latest());
   }
 
   Node::Receiver<Message<mavlink::msg::common::SetPositionTargetLocalNed>, mavlink_message_t>::Ptr set_position_target_local_ned;
+  Node::Receiver<Message<mavlink::msg::common::CommandInt>, mavlink_message_t>::Ptr command_int;
+  Node::Receiver<Message<mavlink::msg::common::CommandLong>, mavlink_message_t>::Ptr command_long;
+};
+
+struct MavlinkServer {
+  template <typename T, typename U>
+  struct ServerInfo {
+    using Ptr = std::unique_ptr<ServerInfo<T, U>>;
+
+    template <typename FakeT = T, typename FakeU = U>
+    static Message<FakeU> handle(const Message<FakeT> &request, ServerInfo<FakeT, FakeU> *info);
+
+    template <>
+    static Message<mavlink::msg::common::CommandAck> handle<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>(
+      const Message<mavlink::msg::common::CommandInt> &request,
+      ServerInfo<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck> *info) {
+      info->sender->put(request);
+
+      Message<mavlink::msg::common::CommandAck> result;
+
+      do {
+        result = info->receiver->next();
+      } while (result().command() != request().command());
+
+      return result;
+    }
+
+    template <>
+    static Message<mavlink::msg::common::CommandAck> handle<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>(
+      const Message<mavlink::msg::common::CommandLong> &request,
+      ServerInfo<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck> *info) {
+      info->sender->put(request);
+
+      Message<mavlink::msg::common::CommandAck> result;
+
+      do {
+        result = info->receiver->next();
+      } while (result().command() != request().command());
+
+      return result;
+    }
+
+    typename Node::Server<Message<T>, Message<U>>::Ptr server;
+    typename Node::Sender<Message<T>>::Ptr sender;
+    typename Node::Receiver<Message<U>>::Ptr receiver;
+
+    ServerInfo(MavlinkNode *node, const std::string &service, const std::string &sender_topic, const std::string &receiver_topic) {
+      sender = node->addSender<Message<T>>(sender_topic);
+      receiver = node->addReceiver<Message<U>>(receiver_topic);
+
+      Message<U> (*ptr)(const Message<T> &, ServerInfo<T, U> *) = handle;
+      server = node->addServer<Message<T>, Message<U>>(service, ptr, this);
+    }
+  };
+
+  ServerInfo<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>::Ptr command_int;
+  ServerInfo<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>::Ptr command_long;
 };
 
 MavlinkNode::MavlinkNode(const Node::Environment &environment, MavlinkConnection::Ptr &&connection) :
   Node(environment), connection(std::forward<MavlinkConnection::Ptr>(connection)) {
   sender = new MavlinkSender;
   receiver = new MavlinkReceiver;
+  server = new MavlinkServer;
 
   system_info.channel_id = MAVLINK_COMM_0;
   system_info.system_id = 0xf0;
@@ -1026,8 +1100,19 @@ MavlinkNode::MavlinkNode(const Node::Environment &environment, MavlinkConnection
 
   receiver->set_position_target_local_ned = addReceiver<Message<mavlink::msg::common::SetPositionTargetLocalNed>, mavlink_message_t>(
     "/mavlink/out/set_position_target_local_ned", MavlinkReceiver::convert<mavlink::msg::common::SetPositionTargetLocalNed>, &system_info);
+  receiver->command_int = addReceiver<Message<mavlink::msg::common::CommandInt>, mavlink_message_t>("/mavlink/out/command_int",
+    MavlinkReceiver::convert<mavlink::msg::common::CommandInt>, &system_info);
+  receiver->command_long = addReceiver<Message<mavlink::msg::common::CommandLong>, mavlink_message_t>("/mavlink/out/command_long",
+    MavlinkReceiver::convert<mavlink::msg::common::CommandLong>, &system_info);
 
   receiver->set_position_target_local_ned->setCallback(MavlinkReceiver::callback<mavlink::msg::common::SetPositionTargetLocalNed>, this);
+  receiver->command_int->setCallback(MavlinkReceiver::callback<mavlink::msg::common::CommandInt>, this);
+  receiver->command_long->setCallback(MavlinkReceiver::callback<mavlink::msg::common::CommandLong>, this);
+
+  server->command_int = std::make_unique<MavlinkServer::ServerInfo<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>>(
+    this, "/mavlink/cmd/command_int", "/mavlink/out/command_int", "/mavlink/in/command_ack");
+  server->command_long = std::make_unique<MavlinkServer::ServerInfo<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>>(
+    this, "/mavlink/cmd/command_long", "/mavlink/out/command_long", "/mavlink/in/command_ack");
 
   exit_flag.clear();
   read_thread = std::thread(&MavlinkNode::readLoop, this);
@@ -1041,6 +1126,8 @@ MavlinkNode::~MavlinkNode() {
   heartbeat_thread.join();
 
   delete sender;
+  delete receiver;
+  delete server;
 }
 
 void MavlinkNode::readLoop() {

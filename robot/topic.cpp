@@ -5,11 +5,11 @@ namespace labrat::robot {
 
 TopicMap::TopicMap() {}
 
-TopicMap::Topic::Topic(Handle handle) : handle(handle) {
+TopicMap::Topic::Topic(Handle handle, const std::string &name) : handle(handle), name(name) {
   sender = nullptr;
 }
 
-TopicMap::Topic &TopicMap::getTopic(const std::string &topic) {
+TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic) {
   const std::unordered_map<std::string, Topic>::iterator iterator = map.find(topic);
 
   if (iterator == map.end()) {
@@ -19,8 +19,9 @@ TopicMap::Topic &TopicMap::getTopic(const std::string &topic) {
   return iterator->second;
 }
 
-TopicMap::Topic &TopicMap::getTopic(const std::string &topic, Topic::Handle handle) {
-  TopicMap::Topic &result = map.emplace(topic, handle).first->second;
+TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic, Topic::Handle handle) {
+  TopicMap::Topic &result =
+    map.emplace(std::piecewise_construct, std::forward_as_tuple(topic), std::forward_as_tuple(handle, topic)).first->second;
 
   if (handle != result.handle) {
     throw Exception("Topic '" + topic + "' does not match the provided handle.");

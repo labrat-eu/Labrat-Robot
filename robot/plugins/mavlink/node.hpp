@@ -14,6 +14,7 @@ namespace labrat::robot::plugins {
 
 struct MavlinkSender;
 struct MavlinkReceiver;
+struct MavlinkServer;
 
 class MavlinkNode : public Node {
 public:
@@ -42,6 +43,7 @@ private:
 
   MavlinkSender *sender;
   MavlinkReceiver *receiver;
+  MavlinkServer *server;
 
   std::mutex mutex;
 
@@ -51,6 +53,7 @@ private:
 
   friend MavlinkSender;
   friend MavlinkReceiver;
+  friend MavlinkServer;
 };
 
 }  // namespace labrat::robot::plugins
