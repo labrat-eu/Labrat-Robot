@@ -15,8 +15,6 @@ TEST(mcap, recorder) {
   std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "/topic_a", "/topic_b"));
   std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "/topic_b", "/topic_a"));
 
-  node_a->getLogger().info() << "Node is publishing.";
-
   for (u64 i = 0; i < 1000; ++i) {
     TestContainer message;
     message.integral_field = i;

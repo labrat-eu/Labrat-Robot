@@ -106,7 +106,7 @@ public:
 
         if (receiver->callback.valid()) {
           if (callback_flag) {
-            throw Exception("Callback recursion detected.");
+            throw RuntimeRecursionException("Callback recursion detected.");
           }
 
           callback_flag = true;
@@ -133,6 +133,7 @@ public:
           receiver->read_count.store(count);
         }
 
+        receiver->flush_flag.clear();
         receiver->read_count.notify_one();
       }
     }
@@ -151,7 +152,7 @@ public:
       };
 
       if (!message().SerializeToString(&message_info.serialized_message)) {
-        throw Exception("Failure during message serialization.");
+        throw SerializationException("Failure during message serialization.");
       }
 
       for (Plugin &plugin : node.environment.plugin_list) {
@@ -186,11 +187,12 @@ public:
       read_count(index_mask), node(node), conversion_function(conversion_function), user_ptr(user_ptr),
       topic(node.environment.topic_map.addReceiver<MessageType>(topic_name, this)) {
       next_count = index_mask;
+      flush_flag.test_and_set();
     }
 
     static constexpr std::size_t calculateBufferSize(std::size_t buffer_size) {
       if (buffer_size < 4) {
-        throw Exception("The buffer size for a Receiver must be at least 4.");
+        throw InvalidArgumentException("The buffer size for a Receiver must be at least 4.");
       }
 
       std::size_t mask = std::size_t(1) << ((sizeof(std::size_t) * 8) - 1);
@@ -214,6 +216,7 @@ public:
 
     friend class Node;
     friend class Sender<MessageType>;
+    friend class TopicMap;
 
     const Plugin::TopicInfo topic_info;
 
@@ -258,6 +261,7 @@ public:
     std::atomic<std::size_t> write_count;
     std::atomic<std::size_t> read_count;
     std::size_t next_count;
+    std::atomic_flag flush_flag;
 
     Node &node;
     const ConversionFunction<MessageType, ContainerType> conversion_function;
@@ -310,6 +314,11 @@ public:
       ContainerType result;
 
       read_count.wait(next_count);
+
+      if (!flush_flag.test_and_set()) {
+        throw TopicFlushException("Topic was flushed.");
+      }
+
       const std::size_t index = read_count.load() & index_mask;
 
       {
@@ -412,7 +421,7 @@ public:
       Server<RequestType, ResponseType> *server = reinterpret_cast<Server<RequestType, ResponseType> *>(service.getServer());
 
       if (server == nullptr) {
-        throw Exception("Service is no longer available.");
+        throw ServiceUnavailableException("Service is no longer available.");
       }
 
       return server->handler_function(request, server->user_ptr);

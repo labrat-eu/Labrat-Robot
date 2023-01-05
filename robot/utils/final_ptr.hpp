@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <memory>
 
 inline namespace utils {
@@ -11,7 +12,7 @@ public:
 
   ~FinalPtr() {
     if (std::shared_ptr<T>::use_count() > 1) {
-      // The use count of a final pointer is greater than one on destruction.
+      std::cerr << "The use count of a final pointer is greater than one upon destruction." << std::endl;
     }
   }
 };

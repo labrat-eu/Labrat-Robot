@@ -1,4 +1,6 @@
 #include <labrat/robot/exception.hpp>
+#include <labrat/robot/message.hpp>
+#include <labrat/robot/node.hpp>
 #include <labrat/robot/topic.hpp>
 
 namespace labrat::robot {
@@ -9,11 +11,27 @@ TopicMap::Topic::Topic(Handle handle, const std::string &name) : handle(handle),
   sender = nullptr;
 }
 
+void TopicMap::forceFlush() {
+  for (std::pair<const std::string, Topic> &entry : map) {
+    for (void *pointer : entry.second.getReceivers()) {
+      Node::Receiver<Message<google::protobuf::Message>> *receiver =
+        reinterpret_cast<Node::Receiver<Message<google::protobuf::Message>> *>(pointer);
+
+      const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
+
+      receiver->read_count.store(count);
+
+      receiver->flush_flag.clear();
+      receiver->read_count.notify_one();
+    }
+  }
+}
+
 TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic) {
   const std::unordered_map<std::string, Topic>::iterator iterator = map.find(topic);
 
   if (iterator == map.end()) {
-    throw Exception("Topic '" + topic + "' not found.");
+    throw ManagementException("Topic '" + topic + "' not found.");
   }
 
   return iterator->second;
@@ -24,7 +42,7 @@ TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic, Topic::Han
     map.emplace(std::piecewise_construct, std::forward_as_tuple(topic), std::forward_as_tuple(handle, topic)).first->second;
 
   if (handle != result.handle) {
-    throw Exception("Topic '" + topic + "' does not match the provided handle.");
+    throw ManagementException("Topic '" + topic + "' does not match the provided handle.");
   }
 
   return result;
@@ -36,7 +54,7 @@ void *TopicMap::Topic::getSender() const {
 
 void TopicMap::Topic::addSender(void *new_sender) {
   if (sender != nullptr) {
-    throw Exception("A sender has already been registered for this topic.");
+    throw ManagementException("A sender has already been registered for this topic.");
   }
 
   sender = new_sender;
@@ -44,7 +62,7 @@ void TopicMap::Topic::addSender(void *new_sender) {
 
 void TopicMap::Topic::removeSender(void *old_sender) {
   if (sender != old_sender) {
-    throw Exception("The sender to be removed does not match the existing sender.");
+    throw ManagementException("The sender to be removed does not match the existing sender.");
   }
 
   sender = nullptr;
@@ -64,7 +82,7 @@ void TopicMap::Topic::removeReceiver(void *old_receiver) {
   std::vector<void *>::iterator iterator = std::find(receivers.begin(), receivers.end(), old_receiver);
 
   if (iterator == receivers.end()) {
-    throw Exception("Receiver to be removed not found.");
+    throw ManagementException("Receiver to be removed not found.");
   }
 
   receivers.erase(iterator);

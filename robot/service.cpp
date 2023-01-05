@@ -13,7 +13,7 @@ ServiceMap::Service &ServiceMap::getServiceInternal(const std::string &service) 
   const std::unordered_map<std::string, Service>::iterator iterator = map.find(service);
 
   if (iterator == map.end()) {
-    throw Exception("Service '" + service + "' not found.");
+    throw ManagementException("Service '" + service + "' not found.");
   }
 
   return iterator->second;
@@ -24,7 +24,7 @@ ServiceMap::Service &ServiceMap::getServiceInternal(const std::string &service, 
     map.emplace(std::piecewise_construct, std::forward_as_tuple(service), std::forward_as_tuple(handle, service)).first->second;
 
   if (handle != result.handle) {
-    throw Exception("Service '" + service + "' does not match the provided handle.");
+    throw ManagementException("Service '" + service + "' does not match the provided handle.");
   }
 
   return result;
@@ -36,7 +36,7 @@ void *ServiceMap::Service::getServer() const {
 
 void ServiceMap::Service::addServer(void *new_server) {
   if (server != nullptr) {
-    throw Exception("A server has already been registered for this service.");
+    throw ManagementException("A server has already been registered for this service.");
   }
 
   server = new_server;
@@ -44,7 +44,7 @@ void ServiceMap::Service::addServer(void *new_server) {
 
 void ServiceMap::Service::removeServer(void *old_server) {
   if (server != old_server) {
-    throw Exception("The server to be removed does not match the existing server.");
+    throw ManagementException("The server to be removed does not match the existing server.");
   }
 
   server = nullptr;

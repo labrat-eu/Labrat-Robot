@@ -52,21 +52,19 @@ public:
 
         request().set_target_system(1);
         request().set_target_component(1);
-        request().set_command(24);
-        request().set_param1(0);
-        request().set_param3(1.5);
-        request().set_param4(0.5);
-        request().set_param5(0);
-        request().set_param6(0);
-        request().set_param7(-15);
+        request().set_command(400);
+        request().set_param1(1);
 
-        labrat::robot::Message<mavlink::msg::common::CommandAck> response = client->call(request);
+        try {
+          labrat::robot::Message<mavlink::msg::common::CommandAck> response = client->call(request);
 
-        if (response().result() == 0) {
-          getLogger()() << "Takeoff engaged.";
-          break;
-        } else {
-          getLogger().warning() << "Command failed, trying again.";
+          if (response().result() == 0) {
+            getLogger()() << "Vehicle armed.";
+            break;
+          } else {
+            getLogger().warning() << "Command failed, trying again.";
+          }
+        } catch (labrat::robot::ServiceUnavailableException &) {
         }
 
         std::this_thread::sleep_for(std::chrono::seconds(1));

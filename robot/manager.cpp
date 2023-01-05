@@ -12,6 +12,7 @@ Manager::Manager() {
 }
 
 Manager::~Manager() {
+  topic_map.forceFlush();
   node_map.clear();
 
   google::protobuf::ShutdownProtobufLibrary();
@@ -29,7 +30,7 @@ void Manager::removeNode(const std::string &name) {
   const std::unordered_map<std::string, utils::FinalPtr<Node>>::iterator iterator = node_map.find(name);
 
   if (iterator == node_map.end()) {
-    throw Exception("Node not found.");
+    throw ManagementException("Node not found.");
   }
 
   node_map.erase(iterator);

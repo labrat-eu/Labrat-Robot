@@ -942,54 +942,78 @@ struct MavlinkReceiver {
 
 struct MavlinkServer {
   template <typename T, typename U>
+  struct ServerInfo;
+
+  template <typename T, typename U>
+  static Message<U> handle(const Message<T> &request, ServerInfo<T, U> *info);
+
+  template <typename T, typename U>
   struct ServerInfo {
     using Ptr = std::unique_ptr<ServerInfo<T, U>>;
 
-    template <typename FakeT = T, typename FakeU = U>
-    static Message<FakeU> handle(const Message<FakeT> &request, ServerInfo<FakeT, FakeU> *info);
-
-    template <>
-    static Message<mavlink::msg::common::CommandAck> handle<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>(
-      const Message<mavlink::msg::common::CommandInt> &request,
-      ServerInfo<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck> *info) {
-      info->sender->put(request);
-
-      Message<mavlink::msg::common::CommandAck> result;
-
-      do {
-        result = info->receiver->next();
-      } while (result().command() != request().command());
-
-      return result;
-    }
-
-    template <>
-    static Message<mavlink::msg::common::CommandAck> handle<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>(
-      const Message<mavlink::msg::common::CommandLong> &request,
-      ServerInfo<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck> *info) {
-      info->sender->put(request);
-
-      Message<mavlink::msg::common::CommandAck> result;
-
-      do {
-        result = info->receiver->next();
-      } while (result().command() != request().command());
-
-      return result;
-    }
+    MavlinkNode *const node;
 
     typename Node::Server<Message<T>, Message<U>>::Ptr server;
     typename Node::Sender<Message<T>>::Ptr sender;
     typename Node::Receiver<Message<U>>::Ptr receiver;
 
-    ServerInfo(MavlinkNode *node, const std::string &service, const std::string &sender_topic, const std::string &receiver_topic) {
+    ServerInfo(MavlinkNode *node, const std::string &service, const std::string &sender_topic, const std::string &receiver_topic) :
+      node(node) {
       sender = node->addSender<Message<T>>(sender_topic);
       receiver = node->addReceiver<Message<U>>(receiver_topic);
 
-      Message<U> (*ptr)(const Message<T> &, ServerInfo<T, U> *) = handle;
+      Message<U> (*ptr)(const Message<T> &, ServerInfo<T, U> *) = handle<T, U>;
       server = node->addServer<Message<T>, Message<U>>(service, ptr, this);
     }
   };
+
+  template <>
+  Message<mavlink::msg::common::CommandAck> handle<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>(
+    const Message<mavlink::msg::common::CommandInt> &request,
+    ServerInfo<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck> *info) {
+    if (!info->node->peer_active) {
+      throw ServiceUnavailableException("MAVLink peer is not active yet.");
+    }
+
+    Message<mavlink::msg::common::CommandAck> result;
+
+    do {
+      info->sender->put(request);
+
+      try {
+        result = info->receiver->next();
+
+      } catch (TopicFlushException &) {
+        throw ServiceUnavailableException("MAVLink command failed due to flushed topic.");
+      }
+    } while (result().command() != request().command());
+
+    return result;
+  }
+
+  template <>
+  Message<mavlink::msg::common::CommandAck> handle<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>(
+    const Message<mavlink::msg::common::CommandLong> &request,
+    ServerInfo<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck> *info) {
+    if (!info->node->peer_active) {
+      throw ServiceUnavailableException("MAVLink peer is not active yet.");
+    }
+
+    Message<mavlink::msg::common::CommandAck> result;
+
+    do {
+      info->sender->put(request);
+
+      try {
+        result = info->receiver->next();
+
+      } catch (TopicFlushException &) {
+        throw ServiceUnavailableException("MAVLink command failed due to flushed topic.");
+      }
+    } while (result().command() != request().command());
+
+    return result;
+  }
 
   ServerInfo<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>::Ptr command_int;
   ServerInfo<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>::Ptr command_long;
@@ -1004,6 +1028,8 @@ MavlinkNode::MavlinkNode(const Node::Environment &environment, MavlinkConnection
   system_info.channel_id = MAVLINK_COMM_0;
   system_info.system_id = 0xf0;
   system_info.component_id = MAV_COMP_ID_ONBOARD_COMPUTER;
+
+  peer_active = false;
 
   sender->heartbeat = addSender<Message<mavlink::msg::common::Heartbeat>, mavlink_message_t>("/mavlink/in/heartbeat",
     MavlinkSender::convert<mavlink::msg::common::Heartbeat>);
@@ -1122,7 +1148,6 @@ MavlinkNode::MavlinkNode(const Node::Environment &environment, MavlinkConnection
 MavlinkNode::~MavlinkNode() {
   exit_flag.test_and_set();
   read_thread.join();
-  write_thread.join();
   heartbeat_thread.join();
 
   delete sender;
@@ -1160,6 +1185,8 @@ void MavlinkNode::heartbeatLoop() {
 }
 
 void MavlinkNode::readMessage(const mavlink_message_t &message) {
+  peer_active = true;
+
   switch (message.msgid) {
     case (MAVLINK_MSG_ID_HEARTBEAT): {
       sender->heartbeat->put(message);

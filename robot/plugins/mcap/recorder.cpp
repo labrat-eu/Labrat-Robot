@@ -20,7 +20,7 @@ McapRecorder::McapRecorder(const std::string &filename) {
   const mcap::Status result = writer.open(filename, options);
 
   if (!result.ok()) {
-    throw Exception("Failed to open '" + filename + "'.");
+    throw IoException("Failed to open '" + filename + "'.");
   }
 
   Plugin plugin_info;
@@ -90,7 +90,7 @@ inline McapRecorder::ChannelMap::iterator McapRecorder::handleMessage(const Plug
     writer.terminate();
     writer.close();
 
-    throw Exception("Failed to write message.");
+    throw IoException("Failed to write message.");
   }
 
   return channel_iterator;

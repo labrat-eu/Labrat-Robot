@@ -19,11 +19,11 @@ MavlinkUdpConnection::MavlinkUdpConnection(const std::string &address, u16 port,
   local_address.sin_port = htons(local_port);
 
   if (bind(file_descriptor, (struct sockaddr *)&local_address, sizeof(struct sockaddr)) == -1) {
-    throw Exception("Failed to bind to address.", errno);
+    throw IoException("Failed to bind to address.", errno);
   }
 
   if (fcntl(file_descriptor, F_SETFL, O_NONBLOCK | O_ASYNC) < 0) {
-    throw Exception("Failed to set socket options.", errno);
+    throw IoException("Failed to set socket options.", errno);
   }
 
   memset(&remote_address, 0, sizeof(remote_address));
@@ -37,7 +37,7 @@ MavlinkUdpConnection::MavlinkUdpConnection(const std::string &address, u16 port,
   event.events = EPOLLIN;
 
   if (epoll_ctl(epoll_handle, EPOLL_CTL_ADD, file_descriptor, &event) != 0) {
-    throw Exception("Failed to create epoll instance.", errno);
+    throw IoException("Failed to create epoll instance.", errno);
   }
 
   sigemptyset(&signal_mask);
@@ -53,7 +53,7 @@ std::size_t MavlinkUdpConnection::write(const u8 *buffer, std::size_t size) {
   const ssize_t result = sendto(file_descriptor, buffer, size, 0, reinterpret_cast<sockaddr *>(&remote_address), sizeof(sockaddr_in));
 
   if (result < 0) {
-    throw Exception("Failed to write to socket.", errno);
+    throw IoException("Failed to write to socket.", errno);
   }
 
   return result;
@@ -66,7 +66,7 @@ std::size_t MavlinkUdpConnection::read(u8 *buffer, std::size_t size) {
 
     if (result <= 0) {
       if ((result == -1) && (errno != EINTR)) {
-        throw Exception("Failure suring epoll wait.", errno);
+        throw IoException("Failure suring epoll wait.", errno);
       }
 
       return 0;
@@ -78,7 +78,7 @@ std::size_t MavlinkUdpConnection::read(u8 *buffer, std::size_t size) {
     recvfrom(file_descriptor, reinterpret_cast<void *>(buffer), size, 0, reinterpret_cast<sockaddr *>(&remote_address), &address_length);
 
   if (result < 0) {
-    throw Exception("Failed to read from socket.", errno);
+    throw IoException("Failed to read from socket.", errno);
   }
 
   return result;

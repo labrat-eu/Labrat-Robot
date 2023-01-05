@@ -117,6 +117,8 @@ public:
     return topic;
   }
 
+  void forceFlush();
+
 private:
   Topic &getTopicInternal(const std::string &topic);
   Topic &getTopicInternal(const std::string &topic, std::size_t handle);

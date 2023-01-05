@@ -46,7 +46,7 @@ public:
       node_map.emplace(name, std::make_shared<T>(environment, std::forward<Args>(args)...));
 
     if (!result.second) {
-      throw Exception("Node not added.");
+      throw ManagementException("Node not added.");
     }
 
     return std::weak_ptr<T>(reinterpret_pointer_cast<T>(result.first->second));
@@ -60,6 +60,8 @@ public:
   inline const Plugin::List &getPlugins() const {
     return plugin_list;
   }
+
+  void flushAllTopics();
 };
 
 }  // namespace labrat::robot

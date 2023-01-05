@@ -37,9 +37,10 @@ private:
   MavlinkConnection::Ptr connection;
 
   std::thread read_thread;
-  std::thread write_thread;
   std::thread heartbeat_thread;
   std::atomic_flag exit_flag;
+
+  bool peer_active;
 
   MavlinkSender *sender;
   MavlinkReceiver *receiver;

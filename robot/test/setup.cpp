@@ -86,6 +86,9 @@ TEST(setup, next) {
 
   TestContainer message_g = node_b->receiver->next();
 
+  node_a->sender->flush();
+  ASSERT_THROW(node_b->receiver->next(), labrat::robot::TopicFlushException);
+
   ASSERT_NE(message_e, message_g);
   ASSERT_EQ(message_f, message_g);
 
@@ -144,6 +147,9 @@ TEST(setup, server) {
 
   server.reset(nullptr);
   ASSERT_THROW(client->call(10.5), labrat::robot::Exception);
+
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
 }  // namespace labrat::robot::test

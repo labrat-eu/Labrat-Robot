@@ -71,4 +71,32 @@ protected:
   const std::string message;
 };
 
+class IoException : public Exception {
+  using Exception::Exception;
+};
+
+class RuntimeRecursionException : public Exception {
+  using Exception::Exception;
+};
+
+class InvalidArgumentException : public Exception {
+  using Exception::Exception;
+};
+
+class ManagementException : public Exception {
+  using Exception::Exception;
+};
+
+class TopicFlushException : public Exception {
+  using Exception::Exception;
+};
+
+class ServiceUnavailableException : public Exception {
+  using Exception::Exception;
+};
+
+class SerializationException : public Exception {
+  using Exception::Exception;
+};
+
 }  // namespace labrat::robot
