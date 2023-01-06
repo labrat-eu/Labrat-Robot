@@ -157,7 +157,7 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 
 
 # TODO: add description
-prj_add_include_symlink(TARGET ${LOCAL_PROJECT_NAME} NAME ${LOCAL_PROJECT_NAME} NAMESPACE ${LOCAL_PROJECT_NAMESPACE})
+prj_add_include_symlink(TARGET src NAME ${LOCAL_PROJECT_NAME} NAMESPACE ${LOCAL_PROJECT_NAMESPACE})
 
 # Add the project root and build directory to the include path.
 include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/include)
@@ -170,10 +170,10 @@ include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/submodules/mcap/cpp/mcap/in
 include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/submodules/foxglove-ws/cpp/foxglove-websocket/include)
 
 # Add main source directory.
-add_subdirectory(${LOCAL_PROJECT_NAME})
+add_subdirectory(src)
 
 # Add clang format targets.
-prj_add_clang_format_targets(SOURCEPATH ${CMAKE_CURRENT_LIST_DIR}/${LOCAL_PROJECT_NAME})
+prj_add_clang_format_targets(SOURCEPATH ${CMAKE_CURRENT_LIST_DIR}/src)
 
 # Add doxygen targets.
 prj_add_doxygen_targets()

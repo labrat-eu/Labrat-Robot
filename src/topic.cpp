@@ -19,7 +19,7 @@ void TopicMap::forceFlush() {
 
       const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
 
-      receiver->flush_flag.test_and_set();
+      receiver->flush_flag = true;
       receiver->read_count.store(count);
       receiver->read_count.notify_one();
     }

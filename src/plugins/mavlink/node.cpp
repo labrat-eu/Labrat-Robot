@@ -980,7 +980,7 @@ struct MavlinkServer {
         result = info->receiver->next();
 
       } catch (TopicNoDataAvailableException &) {
-        throw ServiceUnavailableException("MAVLink command failed due to flushed topic.");
+        throw ServiceUnavailableException("MAVLink command failed due to flushed topic.", info->node->getLogger());
       }
     } while (result().command() != request().command());
 
@@ -1000,7 +1000,7 @@ struct MavlinkServer {
         result = info->receiver->next();
 
       } catch (TopicNoDataAvailableException &) {
-        throw ServiceUnavailableException("MAVLink command failed due to flushed topic.");
+        throw ServiceUnavailableException("MAVLink command failed due to flushed topic.", info->node->getLogger());
       }
     } while (result().command() != request().command());
 

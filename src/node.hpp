@@ -99,7 +99,7 @@ public:
           receiver->read_count.store(count);
         }
 
-        receiver->flush_flag.clear();
+        receiver->flush_flag = false;
         receiver->read_count.notify_one();
 
         if (receiver->callback.valid()) {
@@ -116,7 +116,7 @@ public:
 
         const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
 
-        receiver->flush_flag.test_and_set();
+        receiver->flush_flag = true;
         receiver->read_count.store(count);
         receiver->read_count.notify_one();
       }
@@ -136,7 +136,7 @@ public:
       };
 
       if (!message().SerializeToString(&message_info.serialized_message)) {
-        throw SerializationException("Failure during message serialization.");
+        throw SerializationException("Failure during message serialization.", node.getLogger());
       }
 
       for (Plugin &plugin : node.environment.plugin_list) {
@@ -167,16 +167,16 @@ public:
       ConversionFunction<MessageType, ContainerType> conversion_function = defaultReceiverConversionFunction<MessageType, ContainerType>,
       const void *user_ptr = nullptr, std::size_t buffer_size = 4) :
       topic_info(Node::getTopicInfo<MessageType>(topic_name)),
-      index_mask(calculateBufferMask(buffer_size)), message_buffer(calculateBufferSize(buffer_size)), write_count(0),
-      read_count(index_mask), node(node), conversion_function(conversion_function), user_ptr(user_ptr),
-      topic(node.environment.topic_map.addReceiver<MessageType>(topic_name, this)) {
+      node(node), conversion_function(conversion_function), user_ptr(user_ptr),
+      topic(node.environment.topic_map.addReceiver<MessageType>(topic_name, this)), index_mask(calculateBufferMask(buffer_size)),
+      message_buffer(calculateBufferSize(buffer_size)), write_count(0), read_count(index_mask) {
       next_count = index_mask;
-      flush_flag.test_and_set();
+      flush_flag = true;
     }
 
-    static constexpr std::size_t calculateBufferSize(std::size_t buffer_size) {
+    std::size_t calculateBufferSize(std::size_t buffer_size) {
       if (buffer_size < 4) {
-        throw InvalidArgumentException("The buffer size for a Receiver must be at least 4.");
+        throw InvalidArgumentException("The buffer size for a Receiver must be at least 4.", node.getLogger());
       }
 
       std::size_t mask = std::size_t(1) << ((sizeof(std::size_t) * 8) - 1);
@@ -194,17 +194,13 @@ public:
       }
     }
 
-    static constexpr std::size_t calculateBufferMask(std::size_t buffer_size) {
+    std::size_t calculateBufferMask(std::size_t buffer_size) {
       return calculateBufferSize(buffer_size) - 1;
     }
 
     friend class Node;
     friend class Sender<MessageType>;
     friend class TopicMap;
-
-    const Plugin::TopicInfo topic_info;
-
-    const std::size_t index_mask;
 
     class MessageBuffer {
     public:
@@ -240,17 +236,20 @@ public:
       const std::size_t size;
     };
 
-    volatile MessageBuffer message_buffer;
-
-    std::atomic<std::size_t> write_count;
-    std::atomic<std::size_t> read_count;
-    std::size_t next_count;
-    std::atomic_flag flush_flag;
+    const Plugin::TopicInfo topic_info;
 
     Node &node;
     const ConversionFunction<MessageType, ContainerType> conversion_function;
     const void *user_ptr;
     TopicMap::Topic &topic;
+
+    const std::size_t index_mask;
+    volatile MessageBuffer message_buffer;
+
+    std::atomic<std::size_t> write_count;
+    std::atomic<std::size_t> read_count;
+    std::size_t next_count;
+    volatile bool flush_flag;
 
   public:
     using Ptr = std::unique_ptr<Receiver<MessageType, ContainerType>>;
@@ -286,8 +285,8 @@ public:
 
       const std::size_t index = read_count.load() & index_mask;
 
-      if (flush_flag.test()) {
-        throw TopicNoDataAvailableException("Topic was flushed.");
+      if (flush_flag) {
+        throw TopicNoDataAvailableException("Topic was flushed.", node.getLogger());
       }
 
       {
@@ -299,16 +298,16 @@ public:
     };
 
     ContainerType next() {
-      if (flush_flag.test()) {
-        throw TopicNoDataAvailableException("Topic was flushed.");
+      if (flush_flag) {
+        throw TopicNoDataAvailableException("Topic was flushed.", node.getLogger());
       }
 
       ContainerType result;
 
       read_count.wait(next_count);
 
-      if (flush_flag.test()) {
-        throw TopicNoDataAvailableException("Topic was flushed.");
+      if (flush_flag) {
+        throw TopicNoDataAvailableException("Topic was flushed during wait operation.", node.getLogger());
       }
 
       const std::size_t index = read_count.load() & index_mask;
@@ -418,10 +417,10 @@ public:
         [this](std::promise<ResponseType> promise, const RequestType request) {
         try {
           ServiceMap::Service::ServerReference reference = service.getServer();
-          Server<RequestType, ResponseType> *server = reinterpret_cast<Server<RequestType, ResponseType> *>((void *)reference);
+          Server<RequestType, ResponseType> *server = reference;
 
           if (server == nullptr) {
-            throw ServiceUnavailableException("Service is no longer available.");
+            throw ServiceUnavailableException("Service is no longer available.", node.getLogger());
           }
 
           promise.set_value(server->handler_function(request, server->user_ptr));
@@ -446,7 +445,7 @@ public:
       Future future = callAsync(request);
 
       if (future.wait_for(timeout_duration) != std::future_status::ready) {
-        throw ServiceTimeoutException("Service took too long to respond.");
+        throw ServiceTimeoutException("Service took too long to respond.", node.getLogger());
       }
 
       return future.get();

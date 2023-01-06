@@ -38,8 +38,9 @@ public:
         service.use_count.notify_all();
       }
 
-      inline operator void *() {
-        return service.server;
+      template <typename T>
+      inline operator T *() {
+        return reinterpret_cast<T *>(service.server);
       }
 
     private:
