@@ -10,6 +10,7 @@
 #include <labrat/robot/utils/types.hpp>
 
 #include <atomic>
+#include <future>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -64,8 +65,6 @@ public:
 
         plugin.topic_callback(plugin.user_ptr, topic_info);
       }
-
-      callback_flag = false;
     }
 
     friend class Node;
@@ -76,8 +75,6 @@ public:
     const ConversionFunction<ContainerType, MessageType> conversion_function;
     const void *const user_ptr;
     TopicMap::Topic &topic;
-
-    bool callback_flag;
 
   public:
     using Ptr = std::unique_ptr<Sender<MessageType, ContainerType>>;
@@ -102,16 +99,11 @@ public:
           receiver->read_count.store(count);
         }
 
+        receiver->flush_flag.clear();
         receiver->read_count.notify_one();
 
         if (receiver->callback.valid()) {
-          if (callback_flag) {
-            throw RuntimeRecursionException("Callback recursion detected.");
-          }
-
-          callback_flag = true;
           receiver->callback(*receiver, receiver->callback_ptr);
-          callback_flag = false;
         }
       }
 
@@ -123,17 +115,9 @@ public:
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
         const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
-        const std::size_t index = count & receiver->index_mask;
-        const std::size_t last_index = (count - 1) & receiver->index_mask;
 
-        {
-          std::lock_guard guard(receiver->message_buffer[index].mutex);
-          receiver->message_buffer[index].message = receiver->message_buffer[last_index].message;
-
-          receiver->read_count.store(count);
-        }
-
-        receiver->flush_flag.clear();
+        receiver->flush_flag.test_and_set();
+        receiver->read_count.store(count);
         receiver->read_count.notify_one();
       }
     }
@@ -302,6 +286,10 @@ public:
 
       const std::size_t index = read_count.load() & index_mask;
 
+      if (flush_flag.test()) {
+        throw TopicNoDataAvailableException("Topic was flushed.");
+      }
+
       {
         std::lock_guard guard(message_buffer[index].mutex);
         conversion_function(message_buffer[index].message, result, user_ptr);
@@ -311,12 +299,16 @@ public:
     };
 
     ContainerType next() {
+      if (flush_flag.test()) {
+        throw TopicNoDataAvailableException("Topic was flushed.");
+      }
+
       ContainerType result;
 
       read_count.wait(next_count);
 
-      if (!flush_flag.test_and_set()) {
-        throw TopicFlushException("Topic was flushed.");
+      if (flush_flag.test()) {
+        throw TopicNoDataAvailableException("Topic was flushed.");
       }
 
       const std::size_t index = read_count.load() & index_mask;
@@ -393,7 +385,7 @@ public:
     using Ptr = std::unique_ptr<Server<RequestType, ResponseType>>;
 
     ~Server() {
-      node.environment.service_map.removeServer(service.name, this);
+      service.removeServer(this);
     }
 
     inline const std::string &getServiceName() const {
@@ -414,17 +406,50 @@ public:
 
   public:
     using Ptr = std::unique_ptr<Client<RequestType, ResponseType>>;
+    using Future = std::shared_future<ResponseType>;
 
     ~Client() = default;
 
-    ResponseType call(const RequestType &request) {
-      Server<RequestType, ResponseType> *server = reinterpret_cast<Server<RequestType, ResponseType> *>(service.getServer());
+    Future callAsync(const RequestType &request) {
+      std::promise<ResponseType> promise;
+      Future future = promise.get_future();
 
-      if (server == nullptr) {
-        throw ServiceUnavailableException("Service is no longer available.");
+      std::thread(
+        [this](std::promise<ResponseType> promise, const RequestType request) {
+        try {
+          ServiceMap::Service::ServerReference reference = service.getServer();
+          Server<RequestType, ResponseType> *server = reinterpret_cast<Server<RequestType, ResponseType> *>((void *)reference);
+
+          if (server == nullptr) {
+            throw ServiceUnavailableException("Service is no longer available.");
+          }
+
+          promise.set_value(server->handler_function(request, server->user_ptr));
+        } catch (...) {
+          promise.set_exception(std::current_exception());
+        }
+        },
+        std::move(promise), request)
+        .detach();
+
+      return future;
+    }
+
+    ResponseType callSync(const RequestType &request) {
+      Future future = callAsync(request);
+
+      return future.get();
+    }
+
+    template <class R, class P>
+    ResponseType callSync(const RequestType &request, const std::chrono::duration<R, P> &timeout_duration) {
+      Future future = callAsync(request);
+
+      if (future.wait_for(timeout_duration) != std::future_status::ready) {
+        throw ServiceTimeoutException("Service took too long to respond.");
       }
 
-      return server->handler_function(request, server->user_ptr);
+      return future.get();
     }
 
     inline const std::string &getServiceName() const {

@@ -87,11 +87,15 @@ class ManagementException : public Exception {
   using Exception::Exception;
 };
 
-class TopicFlushException : public Exception {
+class TopicNoDataAvailableException : public Exception {
   using Exception::Exception;
 };
 
 class ServiceUnavailableException : public Exception {
+  using Exception::Exception;
+};
+
+class ServiceTimeoutException : public Exception {
   using Exception::Exception;
 };
 

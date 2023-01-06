@@ -30,11 +30,9 @@ ServiceMap::Service &ServiceMap::getServiceInternal(const std::string &service, 
   return result;
 }
 
-void *ServiceMap::Service::getServer() const {
-  return server;
-}
-
 void ServiceMap::Service::addServer(void *new_server) {
+  utils::WaitUntil<std::size_t>(use_count, 0);
+
   if (server != nullptr) {
     throw ManagementException("A server has already been registered for this service.");
   }
@@ -43,6 +41,8 @@ void ServiceMap::Service::addServer(void *new_server) {
 }
 
 void ServiceMap::Service::removeServer(void *old_server) {
+  utils::WaitUntil<std::size_t>(use_count, 0);
+
   if (server != old_server) {
     throw ManagementException("The server to be removed does not match the existing server.");
   }

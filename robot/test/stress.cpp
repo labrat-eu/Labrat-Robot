@@ -26,16 +26,24 @@ TEST(stress, latest) {
 
   u64 last_integral = 0;
   while (last_integral < limit) {
-    TestContainer message = node_b->receiver->latest();
+    try {
+      TestContainer message = node_b->receiver->latest();
 
-    EXPECT_GE(message.integral_field, last_integral);
+      EXPECT_GE(message.integral_field, last_integral);
 
-    last_integral = message.integral_field;
+      last_integral = message.integral_field;
+    } catch (TopicNoDataAvailableException &e) {
+      if (last_integral != 0) {
+        throw e;
+      }
+    }
   }
 
   sender_thread.join();
 
-  labrat::robot::Manager::get().removeNode("node_a");
+  node_a = std::shared_ptr<TestNode>();
+  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
@@ -63,18 +71,26 @@ TEST(stress, next) {
 
   u64 last_integral = 0;
   while (last_integral < limit) {
-    TestContainer message = node_b->receiver->next();
+    try {
+      TestContainer message = node_b->receiver->next();
 
-    EXPECT_GT(message.integral_field, last_integral);
+      EXPECT_GT(message.integral_field, last_integral);
 
-    last_integral = message.integral_field;
+      last_integral = message.integral_field;
+    } catch (TopicNoDataAvailableException &) {
+      if (last_integral != 0) {
+        break;
+      }
+    }
   }
 
   done.test_and_set();
 
   sender_thread.join();
 
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 

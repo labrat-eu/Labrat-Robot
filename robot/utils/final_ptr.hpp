@@ -1,6 +1,6 @@
 #pragma once
 
-#include <iostream>
+#include <cassert>
 #include <memory>
 
 inline namespace utils {
@@ -11,9 +11,9 @@ public:
   FinalPtr(std::shared_ptr<T> &&ptr) noexcept : std::shared_ptr<T>(std::forward<std::shared_ptr<T> &&>(ptr)) {}
 
   ~FinalPtr() {
-    if (std::shared_ptr<T>::use_count() > 1) {
-      std::cerr << "The use count of a final pointer is greater than one upon destruction." << std::endl;
-    }
+    // The use count of a final pointer shall not be greater than one upon destruction as this instance should be the last one to own the
+    // managed object.
+    assert(std::shared_ptr<T>::use_count() == 1);
   }
 };
 

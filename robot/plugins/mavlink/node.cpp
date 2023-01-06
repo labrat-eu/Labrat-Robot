@@ -953,9 +953,9 @@ struct MavlinkServer {
 
     MavlinkNode *const node;
 
-    typename Node::Server<Message<T>, Message<U>>::Ptr server;
     typename Node::Sender<Message<T>>::Ptr sender;
     typename Node::Receiver<Message<U>>::Ptr receiver;
+    typename Node::Server<Message<T>, Message<U>>::Ptr server;
 
     ServerInfo(MavlinkNode *node, const std::string &service, const std::string &sender_topic, const std::string &receiver_topic) :
       node(node) {
@@ -971,10 +971,6 @@ struct MavlinkServer {
   Message<mavlink::msg::common::CommandAck> handle<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>(
     const Message<mavlink::msg::common::CommandInt> &request,
     ServerInfo<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck> *info) {
-    if (!info->node->peer_active) {
-      throw ServiceUnavailableException("MAVLink peer is not active yet.");
-    }
-
     Message<mavlink::msg::common::CommandAck> result;
 
     do {
@@ -983,7 +979,7 @@ struct MavlinkServer {
       try {
         result = info->receiver->next();
 
-      } catch (TopicFlushException &) {
+      } catch (TopicNoDataAvailableException &) {
         throw ServiceUnavailableException("MAVLink command failed due to flushed topic.");
       }
     } while (result().command() != request().command());
@@ -995,10 +991,6 @@ struct MavlinkServer {
   Message<mavlink::msg::common::CommandAck> handle<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>(
     const Message<mavlink::msg::common::CommandLong> &request,
     ServerInfo<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck> *info) {
-    if (!info->node->peer_active) {
-      throw ServiceUnavailableException("MAVLink peer is not active yet.");
-    }
-
     Message<mavlink::msg::common::CommandAck> result;
 
     do {
@@ -1007,7 +999,7 @@ struct MavlinkServer {
       try {
         result = info->receiver->next();
 
-      } catch (TopicFlushException &) {
+      } catch (TopicNoDataAvailableException &) {
         throw ServiceUnavailableException("MAVLink command failed due to flushed topic.");
       }
     } while (result().command() != request().command());
@@ -1028,8 +1020,6 @@ MavlinkNode::MavlinkNode(const Node::Environment &environment, MavlinkConnection
   system_info.channel_id = MAVLINK_COMM_0;
   system_info.system_id = 0xf0;
   system_info.component_id = MAV_COMP_ID_ONBOARD_COMPUTER;
-
-  peer_active = false;
 
   sender->heartbeat = addSender<Message<mavlink::msg::common::Heartbeat>, mavlink_message_t>("/mavlink/in/heartbeat",
     MavlinkSender::convert<mavlink::msg::common::Heartbeat>);
@@ -1185,8 +1175,6 @@ void MavlinkNode::heartbeatLoop() {
 }
 
 void MavlinkNode::readMessage(const mavlink_message_t &message) {
-  peer_active = true;
-
   switch (message.msgid) {
     case (MAVLINK_MSG_ID_HEARTBEAT): {
       sender->heartbeat->put(message);

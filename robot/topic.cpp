@@ -19,9 +19,8 @@ void TopicMap::forceFlush() {
 
       const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
 
+      receiver->flush_flag.test_and_set();
       receiver->read_count.store(count);
-
-      receiver->flush_flag.clear();
       receiver->read_count.notify_one();
     }
   }
@@ -70,14 +69,14 @@ void TopicMap::Topic::removeSender(void *old_sender) {
 
 void TopicMap::Topic::addReceiver(void *new_receiver) {
   utils::FlagGuard guard(change_flag);
-  utils::SpinUntil<std::size_t>(use_count, 0);
+  utils::WaitUntil<std::size_t>(use_count, 0);
 
   receivers.emplace_back(new_receiver);
 }
 
 void TopicMap::Topic::removeReceiver(void *old_receiver) {
   utils::FlagGuard guard(change_flag);
-  utils::SpinUntil<std::size_t>(use_count, 0);
+  utils::WaitUntil<std::size_t>(use_count, 0);
 
   std::vector<void *>::iterator iterator = std::find(receivers.begin(), receivers.end(), old_receiver);
 

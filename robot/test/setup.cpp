@@ -39,7 +39,12 @@ TEST(setup, latest) {
   ASSERT_NE(message_b, message_e);
   ASSERT_EQ(message_c, message_e);
 
+  node_a->sender->flush();
+  ASSERT_THROW(node_b->receiver->latest(), labrat::robot::TopicNoDataAvailableException);
+
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
@@ -86,13 +91,15 @@ TEST(setup, next) {
 
   TestContainer message_g = node_b->receiver->next();
 
-  node_a->sender->flush();
-  ASSERT_THROW(node_b->receiver->next(), labrat::robot::TopicFlushException);
-
   ASSERT_NE(message_e, message_g);
   ASSERT_EQ(message_f, message_g);
 
+  node_a->sender->flush();
+  ASSERT_THROW(node_b->receiver->next(), labrat::robot::TopicNoDataAvailableException);
+
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
@@ -118,7 +125,9 @@ TEST(setup, callback) {
 
   ASSERT_EQ(message_a, message_b);
 
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
@@ -140,15 +149,17 @@ TEST(setup, server) {
   Node::Server<double, u64>::Ptr server = node_a->addTestServer<double, u64>("test_service", ptr, &counter);
   Node::Client<double, u64>::Ptr client = node_b->addTestClient<double, u64>("test_service");
 
-  result = client->call(10.5);
+  result = client->callSync(10.5);
 
   ASSERT_EQ(result, 105);
   ASSERT_EQ(counter, 1);
 
   server.reset(nullptr);
-  ASSERT_THROW(client->call(10.5), labrat::robot::Exception);
+  ASSERT_THROW(client->callSync(10.5), labrat::robot::ServiceUnavailableException);
 
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 

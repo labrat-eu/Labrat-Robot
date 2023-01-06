@@ -36,7 +36,7 @@ public:
         message().set_type_mask(~0x838);
         message().set_vx(1.5);
         message().set_vy(1.5);
-        message().set_vz(0);
+        message().set_vz(-1);
         message().set_yaw_rate(0.1);
 
         sender->put(message);
@@ -46,8 +46,10 @@ public:
       }
     });
 
-    cmd_thread = std::thread([this]() {
+    arm_thread = std::thread([this]() {
       while (!exit_flag.test()) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
         labrat::robot::Message<mavlink::msg::common::CommandLong> request;
 
         request().set_target_system(1);
@@ -56,7 +58,7 @@ public:
         request().set_param1(1);
 
         try {
-          labrat::robot::Message<mavlink::msg::common::CommandAck> response = client->call(request);
+          labrat::robot::Message<mavlink::msg::common::CommandAck> response = client->callSync(request, std::chrono::seconds(1));
 
           if (response().result() == 0) {
             getLogger()() << "Vehicle armed.";
@@ -65,9 +67,52 @@ public:
             getLogger().warning() << "Command failed, trying again.";
           }
         } catch (labrat::robot::ServiceUnavailableException &) {
+        } catch (labrat::robot::ServiceTimeoutException &) {
+          getLogger().warning() << "Command did not respond, trying again.";
         }
+      }
+    });
 
+    mode_thread = std::thread([this]() {
+      while (!exit_flag.test()) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        labrat::robot::Message<mavlink::msg::common::CommandLong> request;
+
+        union Param {
+          float raw;
+          u32 data;
+        };
+
+        Param param1;
+        param1.data = 0x81;  // MAV_MODE_FLAG_SAFETY_ARMED ^ MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
+
+        Param param2;
+        param2.data = 6;
+
+        Param param3;
+        param3.data = 0;
+
+        request().set_target_system(1);
+        request().set_target_component(1);
+        request().set_command(176);
+        request().set_param1(param1.raw);
+        request().set_param2(param2.raw);
+        request().set_param3(param3.raw);
+
+        try {
+          labrat::robot::Message<mavlink::msg::common::CommandAck> response = client->callSync(request, std::chrono::seconds(1));
+
+          if (response().result() == 0) {
+            getLogger()() << "Offboard mode engaged.";
+            break;
+          } else {
+            getLogger().warning() << "Command failed, trying again.";
+          }
+        } catch (labrat::robot::ServiceUnavailableException &) {
+        } catch (labrat::robot::ServiceTimeoutException &) {
+          getLogger().warning() << "Command did not respond, trying again.";
+        }
       }
     });
   }
@@ -75,7 +120,8 @@ public:
   ~OffboardNode() {
     exit_flag.test_and_set();
     run_thread.join();
-    cmd_thread.join();
+    arm_thread.join();
+    mode_thread.join();
   }
 
 private:
@@ -84,7 +130,8 @@ private:
     client;
 
   std::thread run_thread;
-  std::thread cmd_thread;
+  std::thread arm_thread;
+  std::thread mode_thread;
   std::atomic_flag exit_flag;
 };
 

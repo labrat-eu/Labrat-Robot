@@ -37,7 +37,9 @@ TEST(mcap, recorder) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 

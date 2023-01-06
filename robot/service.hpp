@@ -18,12 +18,40 @@ public:
   private:
     void *server;
 
+    std::atomic<std::size_t> use_count;
+
   public:
     using Handle = std::size_t;
 
+    class ServerReference {
+    public:
+      inline ServerReference(Service &service) : service(service) {
+        service.use_count.fetch_add(1);
+      }
+
+      inline ServerReference(ServerReference &&rhs) : service(rhs.service) {
+        service.use_count.fetch_add(1);
+      }
+
+      inline ~ServerReference() {
+        service.use_count.fetch_sub(1);
+        service.use_count.notify_all();
+      }
+
+      inline operator void *() {
+        return service.server;
+      }
+
+    private:
+      Service &service;
+    };
+
     Service(Handle handle, const std::string &name);
 
-    void *getServer() const;
+    ServerReference getServer() {
+      return ServerReference(*this);
+    }
+
     void addServer(void *new_server);
     void removeServer(void *old_server);
 

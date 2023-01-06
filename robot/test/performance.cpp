@@ -24,7 +24,9 @@ TEST(performance, put) {
 
   EXPECT_EQ(message.integral_field, limit);
 
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
@@ -46,7 +48,9 @@ TEST(performance, latest) {
 
   EXPECT_EQ(message_a, message_b);
 
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 
@@ -67,7 +71,9 @@ TEST(performance, next) {
 
   EXPECT_EQ(message_a, message_b);
 
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
 }
 

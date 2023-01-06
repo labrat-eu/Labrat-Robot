@@ -39,6 +39,7 @@ public:
           }
 
           topic.use_count.fetch_sub(1);
+          topic.use_count.notify_all();
           topic.change_flag.wait(true);
         }
       }
@@ -49,6 +50,7 @@ public:
 
       inline ~ReceiverList() {
         topic.use_count.fetch_sub(1);
+        topic.use_count.notify_all();
       }
 
       inline std::vector<void *>::iterator begin() const {
