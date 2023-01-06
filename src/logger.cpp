@@ -4,10 +4,12 @@
 #include <labrat/robot/node.hpp>
 
 #include <iostream>
+#include <mutex>
 
 namespace labrat::robot {
 
 Logger::Verbosity Logger::log_level = Verbosity::info;
+static std::mutex io_mutex;
 
 class LoggerNode : public Node {
 private:
@@ -86,6 +88,8 @@ Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity) : logger
 
 Logger::LogStream::~LogStream() {
   if (verbosity <= Logger::log_level) {
+    std::lock_guard guard(io_mutex);
+
     std::cout << getVerbosityColor(verbosity) << "[" << getVerbosityShort(verbosity) << "]" << Color() << " (" << logger.name << " @ "
               << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count() << "): ";
     std::cout << line.str() << std::endl;
