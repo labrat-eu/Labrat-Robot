@@ -440,7 +440,7 @@ public:
       return future.get();
     }
 
-    template <class R, class P>
+    template <typename R, typename P>
     ResponseType callSync(const RequestType &request, const std::chrono::duration<R, P> &timeout_duration) {
       Future future = callAsync(request);
 
