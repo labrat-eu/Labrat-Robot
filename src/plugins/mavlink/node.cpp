@@ -1,9 +1,9 @@
 /**
  * @file node.cpp
  * @author Max Yvon Zimmermann
- * 
+ *
  * @copyright GNU Lesser General Public License v3.0 (LGPL-3.0-or-later)
- * 
+ *
  */
 
 #include <labrat/robot/message.hpp>
@@ -36,6 +36,7 @@
 #include <labrat/robot/plugins/mavlink/msg/odometry.pb.h>
 #include <labrat/robot/plugins/mavlink/msg/open_drone_id_location.pb.h>
 #include <labrat/robot/plugins/mavlink/msg/open_drone_id_system.pb.h>
+#include <labrat/robot/plugins/mavlink/msg/param_request_read.pb.h>
 #include <labrat/robot/plugins/mavlink/msg/param_set.pb.h>
 #include <labrat/robot/plugins/mavlink/msg/param_value.pb.h>
 #include <labrat/robot/plugins/mavlink/msg/ping.pb.h>
@@ -914,6 +915,17 @@ struct MavlinkReceiver {
   static void convert(const Message<T> &source, mavlink_message_t &destination, const MavlinkNode::SystemInfo *info);
 
   template <>
+  void convert<mavlink::msg::common::ParamRequestRead>(const Message<mavlink::msg::common::ParamRequestRead> &source,
+    mavlink_message_t &destination, const MavlinkNode::SystemInfo *info) {
+    if (source().param_id().size() > 16) {
+      throw ConversionException("The parameter ID string must not be larger than 16 characters.");
+    }
+
+    mavlink_msg_param_request_read_pack_chan(info->system_id, info->component_id, info->channel_id, &destination, source().target_system(),
+      source().target_component(), source().param_id().c_str(), source().param_index());
+  }
+
+  template <>
   void convert<mavlink::msg::common::SetPositionTargetLocalNed>(const Message<mavlink::msg::common::SetPositionTargetLocalNed> &source,
     mavlink_message_t &destination, const MavlinkNode::SystemInfo *info) {
     mavlink_msg_set_position_target_local_ned_pack_chan(info->system_id, info->component_id, info->channel_id, &destination,
@@ -943,6 +955,7 @@ struct MavlinkReceiver {
     node->writeMessage(receiver.latest());
   }
 
+  Node::Receiver<Message<mavlink::msg::common::ParamRequestRead>, mavlink_message_t>::Ptr param_request_read;
   Node::Receiver<Message<mavlink::msg::common::SetPositionTargetLocalNed>, mavlink_message_t>::Ptr set_position_target_local_ned;
   Node::Receiver<Message<mavlink::msg::common::CommandInt>, mavlink_message_t>::Ptr command_int;
   Node::Receiver<Message<mavlink::msg::common::CommandLong>, mavlink_message_t>::Ptr command_long;
@@ -974,6 +987,26 @@ struct MavlinkServer {
       server = node->addServer<Message<T>, Message<U>>(service, ptr, this);
     }
   };
+
+  template <>
+  Message<mavlink::msg::common::ParamValue> handle<mavlink::msg::common::ParamRequestRead, mavlink::msg::common::ParamValue>(
+    const Message<mavlink::msg::common::ParamRequestRead> &request,
+    ServerInfo<mavlink::msg::common::ParamRequestRead, mavlink::msg::common::ParamValue> *info) {
+    Message<mavlink::msg::common::ParamValue> result;
+
+    do {
+      info->sender->put(request);
+
+      try {
+        result = info->receiver->next();
+
+      } catch (TopicNoDataAvailableException &) {
+        throw ServiceUnavailableException("MAVLink parameter request failed due to flushed topic.", info->node->getLogger());
+      }
+    } while (result().param_id() != request().param_id());
+
+    return result;
+  }
 
   template <>
   Message<mavlink::msg::common::CommandAck> handle<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>(
@@ -1015,6 +1048,7 @@ struct MavlinkServer {
     return result;
   }
 
+  ServerInfo<mavlink::msg::common::ParamRequestRead, mavlink::msg::common::ParamValue>::Ptr param_request_read;
   ServerInfo<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>::Ptr command_int;
   ServerInfo<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>::Ptr command_long;
 };
@@ -1122,6 +1156,8 @@ MavlinkNode::MavlinkNode(const Node::Environment &environment, MavlinkConnection
   sender->open_drone_id_system = addSender<Message<mavlink::msg::common::OpenDroneIdSystem>, mavlink_message_t>(
     "/mavlink/in/open_drone_id_system", MavlinkSender::convert<mavlink::msg::common::OpenDroneIdSystem>);
 
+  receiver->param_request_read = addReceiver<Message<mavlink::msg::common::ParamRequestRead>, mavlink_message_t>(
+    "/mavlink/out/param_request_read", MavlinkReceiver::convert<mavlink::msg::common::ParamRequestRead>, &system_info);
   receiver->set_position_target_local_ned = addReceiver<Message<mavlink::msg::common::SetPositionTargetLocalNed>, mavlink_message_t>(
     "/mavlink/out/set_position_target_local_ned", MavlinkReceiver::convert<mavlink::msg::common::SetPositionTargetLocalNed>, &system_info);
   receiver->command_int = addReceiver<Message<mavlink::msg::common::CommandInt>, mavlink_message_t>("/mavlink/out/command_int",
@@ -1129,14 +1165,18 @@ MavlinkNode::MavlinkNode(const Node::Environment &environment, MavlinkConnection
   receiver->command_long = addReceiver<Message<mavlink::msg::common::CommandLong>, mavlink_message_t>("/mavlink/out/command_long",
     MavlinkReceiver::convert<mavlink::msg::common::CommandLong>, &system_info);
 
+  receiver->param_request_read->setCallback(MavlinkReceiver::callback<mavlink::msg::common::ParamRequestRead>, this);
   receiver->set_position_target_local_ned->setCallback(MavlinkReceiver::callback<mavlink::msg::common::SetPositionTargetLocalNed>, this);
   receiver->command_int->setCallback(MavlinkReceiver::callback<mavlink::msg::common::CommandInt>, this);
   receiver->command_long->setCallback(MavlinkReceiver::callback<mavlink::msg::common::CommandLong>, this);
 
+  server->param_request_read =
+    std::make_unique<MavlinkServer::ServerInfo<mavlink::msg::common::ParamRequestRead, mavlink::msg::common::ParamValue>>(this,
+      "/mavlink/srv/param_request_read", "/mavlink/out/param_request_read", "/mavlink/in/param_value");
   server->command_int = std::make_unique<MavlinkServer::ServerInfo<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>>(
-    this, "/mavlink/cmd/command_int", "/mavlink/out/command_int", "/mavlink/in/command_ack");
+    this, "/mavlink/srv/command_int", "/mavlink/out/command_int", "/mavlink/in/command_ack");
   server->command_long = std::make_unique<MavlinkServer::ServerInfo<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>>(
-    this, "/mavlink/cmd/command_long", "/mavlink/out/command_long", "/mavlink/in/command_ack");
+    this, "/mavlink/srv/command_long", "/mavlink/out/command_long", "/mavlink/in/command_ack");
 
   exit_flag.clear();
   read_thread = std::thread(&MavlinkNode::readLoop, this);

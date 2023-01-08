@@ -1,9 +1,9 @@
 /**
  * @file service.cpp
  * @author Max Yvon Zimmermann
- * 
+ *
  * @copyright GNU Lesser General Public License v3.0 (LGPL-3.0-or-later)
- * 
+ *
  */
 
 #include <labrat/robot/exception.hpp>

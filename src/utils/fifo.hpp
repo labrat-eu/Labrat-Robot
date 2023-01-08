@@ -1,9 +1,9 @@
 /**
  * @file fifo.hpp
  * @author Max Yvon Zimmermann
- * 
+ *
  * @copyright GNU Lesser General Public License v3.0 (LGPL-3.0-or-later)
- * 
+ *
  */
 
 #pragma once
