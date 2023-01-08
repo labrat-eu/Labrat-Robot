@@ -1,3 +1,11 @@
+/**
+ * @file udp_connection.cpp
+ * @author Max Yvon Zimmermann
+ * 
+ * @copyright GNU Lesser General Public License v3.0 (LGPL-3.0-or-later)
+ * 
+ */
+
 #include <labrat/robot/exception.hpp>
 #include <labrat/robot/plugins/mavlink/udp_connection.hpp>
 
