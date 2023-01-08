@@ -20,8 +20,8 @@ public:
     sender = addSender<Message<msg::Log>, Logger::Entry>("/log");
   }
 
-  void send(const Logger::Entry &message) {
-    sender->put(message);
+  void send(const Logger::Entry &entry) {
+    sender->put(entry);
   }
 };
 

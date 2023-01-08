@@ -16,8 +16,21 @@ struct MavlinkSender;
 struct MavlinkReceiver;
 struct MavlinkServer;
 
+/**
+ * @brief Node to connect itself to a MAVLink network.
+ * It will publish messages received from peer systems to specific topics.
+ * It will also receive specific topics and forward their contents to its peer systems via MAVLink.
+ * In addition, servers are provided to issue commands and read out parameters.
+ *
+ */
 class MavlinkNode : public Node {
 public:
+  /**
+   * @brief Construct a new Mavlink Node object
+   *
+   * @param environment Node environment.
+   * @param connection MavlinkConnection to be used by this instance.
+   */
   MavlinkNode(const Node::Environment &environment, MavlinkConnection::Ptr &&connection);
   ~MavlinkNode();
 

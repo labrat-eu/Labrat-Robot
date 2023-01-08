@@ -20,8 +20,20 @@ namespace labrat::robot {
 
 class Manager;
 
+/**
+ * @brief Base class for all nodes. A node should perform a specific task within the application.
+ *
+ */
 class Node {
 private:
+  /**
+   * @brief Get information about a topic by name.
+   * This will not lookup any data
+   *
+   * @tparam MessageType Type of the message sent over the relevant topic.
+   * @param topic_name Name of the topic.
+   * @return Plugin::TopicInfo Information about the topic.
+   */
   template <typename MessageType>
   requires is_message<MessageType>
   static Plugin::TopicInfo getTopicInfo(const std::string &topic_name) {
@@ -36,6 +48,11 @@ private:
   }
 
 public:
+  /**
+   * @brief Information on the environment in which the node is created.
+   * This data will be copied by a node upon construction.
+   *
+   */
   struct Environment {
     const std::string name;
 
@@ -44,12 +61,30 @@ public:
     Plugin::List &plugin_list;
   };
 
+  /**
+   * @brief Destroy the Node object.
+   *
+   */
   ~Node() = default;
 
+  /**
+   * @brief Generic class to send out messages over a topic.
+   *
+   * @tparam MessageType Type of the messages sent over the topic.
+   * @tparam ContainerType Type of the objects provided by the user to be accepted by the sender.
+   */
   template <typename MessageType, typename ContainerType = MessageType>
   requires is_message<MessageType>
   class Sender {
   private:
+    /**
+     * @brief Construct a new Sender object.
+     *
+     * @param topic_name Name of the topic.
+     * @param node Reference to the parent node.
+     * @param conversion_function Conversion function convert from ContainerType to MessageType.
+     * @param user_ptr User pointer to be used by the conversion function.
+     */
     Sender(const std::string &topic_name, Node &node,
       ConversionFunction<ContainerType, MessageType> conversion_function = defaultSenderConversionFunction<MessageType, ContainerType>,
       const void *user_ptr = nullptr) :
@@ -61,7 +96,7 @@ public:
           continue;
         }
 
-        utils::Guard<u32> guard(plugin.use_count);
+        utils::ConsumerGuard<u32> guard(plugin.use_count);
 
         plugin.topic_callback(plugin.user_ptr, topic_info);
       }
@@ -79,12 +114,21 @@ public:
   public:
     using Ptr = std::unique_ptr<Sender<MessageType, ContainerType>>;
 
+    /**
+     * @brief Destroy the Sender object.
+     *
+     */
     ~Sender() {
       flush();
 
       node.environment.topic_map.removeSender(topic.name, this);
     }
 
+    /**
+     * @brief Send out a message onto the topic.
+     *
+     * @param container Object caintaining the data to be sent out.
+     */
     void put(const ContainerType &container) {
       for (void *pointer : topic.getReceivers()) {
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
@@ -110,6 +154,11 @@ public:
       log(container);
     }
 
+    /**
+     * @brief Flush all receivers of the relevant topic.
+     * This will unblock any waiting receivers calling the next() function and will invalidate the data stored in their buffers.
+     *
+     */
     void flush() {
       for (void *pointer : topic.getReceivers()) {
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
@@ -122,6 +171,11 @@ public:
       }
     }
 
+    /**
+     * @brief Provide a message to the active plugins without actually send out any data over the topic.
+     *
+     * @param container Object caintaining the data to be sent out.
+     */
     void log(const ContainerType &container) {
       if (node.environment.plugin_list.empty()) {
         return;
@@ -144,25 +198,51 @@ public:
           continue;
         }
 
-        utils::Guard<u32> guard(plugin.use_count);
+        utils::ConsumerGuard<u32> guard(plugin.use_count);
 
         plugin.message_callback(plugin.user_ptr, message_info);
       }
     }
 
+    /**
+     * @brief Get the name of the relevant topic.
+     *
+     * @return const std::string& Name of the topic.
+     */
     inline const std::string &getTopicName() const {
       return topic.name;
     }
   };
 
+  /**
+   * @brief Alias of the Sender class with only the ContainerType template parameter provided that the relevant type satisfies the
+   * is_container concept.
+   *
+   * @tparam ContainerType Type of the objects provided by the user to be accepted by the sender.
+   */
   template <typename ContainerType>
   requires is_container<ContainerType>
   using ContainerSender = Sender<typename ContainerType::MessageType, ContainerType>;
 
+  /**
+   * @brief Generic class to receive messages from a topic.
+   *
+   * @tparam MessageType Type of the messages sent over the topic.
+   * @tparam ContainerType Type of the objects provided by the receiver to be used by the user.
+   */
   template <typename MessageType, typename ContainerType = MessageType>
   requires is_message<MessageType>
   class Receiver {
   private:
+    /**
+     * @brief Construct a new Receiver object.
+     *
+     * @param topic_name Name of the topic.
+     * @param node Reference to the parent node.
+     * @param conversion_function Conversion function convert from MessageType to ContainerType.
+     * @param user_ptr User pointer to be used by the conversion function.
+     * @param buffer_size Size of the internal receiver buffer. It must be at least 4 and should ideally be a power of 2.
+     */
     Receiver(const std::string &topic_name, Node &node,
       ConversionFunction<MessageType, ContainerType> conversion_function = defaultReceiverConversionFunction<MessageType, ContainerType>,
       const void *user_ptr = nullptr, std::size_t buffer_size = 4) :
@@ -174,6 +254,13 @@ public:
       flush_flag = true;
     }
 
+    /**
+     * @brief Calculate the internal buffer size required to satisfy the provided buffer size.
+     * This will either be the provided buffer size itself or the next power of 2.
+     *
+     * @param buffer_size Provided buffer size of the receiver.
+     * @return std::size_t Internal buffer size.
+     */
     std::size_t calculateBufferSize(std::size_t buffer_size) {
       if (buffer_size < 4) {
         throw InvalidArgumentException("The buffer size for a Receiver must be at least 4.", node.getLogger());
@@ -194,6 +281,12 @@ public:
       }
     }
 
+    /**
+     * @brief Calculate the buffer mask used internally to compute a buffer index from a receive count.
+     *
+     * @param buffer_size Provided buffer size of the receiver.
+     * @return std::size_t Internal buffer mask.
+     */
     std::size_t calculateBufferMask(std::size_t buffer_size) {
       return calculateBufferSize(buffer_size) - 1;
     }
@@ -202,6 +295,10 @@ public:
     friend class Sender<MessageType>;
     friend class TopicMap;
 
+    /**
+     * @brief Internal message buffer.
+     *
+     */
     class MessageBuffer {
     public:
       struct MessageData {
@@ -209,6 +306,11 @@ public:
         std::mutex mutex;
       };
 
+      /**
+       * @brief Construct a new Message Buffer object given its size.
+       *
+       * @param size Size of the message buffer.
+       */
       MessageBuffer(std::size_t size) : size(size) {
         buffer = allocator.allocate(size);
 
@@ -217,6 +319,10 @@ public:
         }
       }
 
+      /**
+       * @brief Destroy the Message Buffer object.
+       *
+       */
       ~MessageBuffer() {
         for (std::size_t i = 0; i < size; ++i) {
           std::destroy_at<MessageData>(buffer + i);
@@ -225,6 +331,12 @@ public:
         allocator.deallocate(buffer, size);
       }
 
+      /**
+       * @brief Access elements in the buffer.
+       *
+       * @param index Index of the requested element.
+       * @return MessageData& Reference to the requested element.
+       */
       MessageData &operator[](std::size_t index) volatile {
         return buffer[index];
       }
@@ -254,20 +366,46 @@ public:
   public:
     using Ptr = std::unique_ptr<Receiver<MessageType, ContainerType>>;
 
+    /**
+     * @brief Callback function to be called by the corresponding sender on each put operation.
+     *
+     */
     class CallbackFunction {
     public:
       template <typename DataType = void>
       using Function = void (*)(Receiver<MessageType, ContainerType> &, DataType *);
 
+      /**
+       * @brief Default constructor invalidating the object.
+       *
+       */
       CallbackFunction() : function(nullptr) {}
 
+      /**
+       * @brief Construct a new Callback Function object by providing a function and user pointer.
+       *
+       * @tparam DataType Type of the data pointed to by the user pointer.
+       * @param function Function to be used as a callback function.
+       */
       template <typename DataType = void>
       CallbackFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
 
+      /**
+       * @brief Call the stored callback function.
+       *
+       * @param receiver Reference to the relevant receiver instance.
+       * @param user_ptr User pointer to access generic external data.
+       */
       inline void operator()(Receiver<MessageType, ContainerType> &receiver, void *user_ptr) const {
         function(receiver, user_ptr);
       }
 
+      /**
+       * @brief Validate that a function is stored in this instance.
+       *
+       * @return true A function is stored.
+       * @return false A function is not stored.
+       */
       inline bool valid() {
         return function != nullptr;
       }
@@ -276,10 +414,21 @@ public:
       Function<void> function;
     };
 
+    /**
+     * @brief Destroy the Receiver object.
+     *
+     */
     ~Receiver() {
       node.environment.topic_map.removeReceiver(topic.name, this);
     }
 
+    /**
+     * @brief Get the lastest message sent over the topic.
+     * This call is guaranteed to not block.
+     *
+     * @return ContainerType The latest message sent over the topic.
+     * @throw TopicNoDataAvailableException When the topic has no valid data available.
+     */
     ContainerType latest() {
       ContainerType result;
 
@@ -297,6 +446,13 @@ public:
       return result;
     };
 
+    /**
+     * @brief Get the next message sent over the topic.
+     * This call might block. However, it guaranteed that successive calls will yield different messages.
+     *
+     * @return ContainerType The next message sent over the topic.
+     * @throw TopicNoDataAvailableException When the topic has no valid data available.
+     */
     ContainerType next() {
       if (flush_flag) {
         throw TopicNoDataAvailableException("Topic was flushed.", node.getLogger());
@@ -322,19 +478,41 @@ public:
       return result;
     };
 
+    /**
+     * @brief Register a callback function.
+     *
+     * @param function Callback function to be registered.
+     * @param ptr User pointer to access generic external data.
+     */
     void setCallback(CallbackFunction function, void *ptr = nullptr) {
       callback = function;
       callback_ptr = ptr;
     }
 
+    /**
+     * @brief Check whether new data is available on the topic and a call to next() will not block.
+     *
+     * @return true New data is availabe, a call to next() will not block.
+     * @return false No new data is availabe, a call to next() will block.
+     */
     inline bool newDataAvailable() {
       return (read_count.load() != next_count);
     }
 
+    /**
+     * @brief Get the internal buffer size.
+     *
+     * @return std::size_t
+     */
     inline std::size_t getBufferSize() const {
       return index_mask + 1;
     }
 
+    /**
+     * @brief Get the name of the relevant topic.
+     *
+     * @return const std::string& Name of the topic.
+     */
     inline const std::string &getTopicName() const {
       return topic.name;
     }
@@ -344,21 +522,50 @@ public:
     void *callback_ptr;
   };
 
+  /**
+   * @brief Alias of the Receiver class with only the ContainerType template parameter provided that the relevant type satisfies the
+   * is_container concept.
+   *
+   * @tparam ContainerType Type of the objects provided by the receiver to be used by the user.
+   */
   template <typename ContainerType>
   requires is_container<ContainerType>
   using ContainerReceiver = Receiver<typename ContainerType::MessageType, ContainerType>;
 
+  /**
+   * @brief Generic class to handle requests made to a service.
+   *
+   * @tparam RequestType Type of the request made to a service.
+   * @tparam ResponseType Type of the response made to by a service.
+   */
   template <typename RequestType, typename ResponseType>
   class Server {
   public:
+    /**
+     * @brief Handler function to handle requests made to a service.
+     *
+     */
     class HandlerFunction {
     public:
       template <typename DataType = void>
       using Function = ResponseType (*)(const RequestType &, DataType *);
 
+      /**
+       * @brief Construct a new handler function.
+       *
+       * @tparam DataType Type of the data pointed to by the user pointer.
+       * @param function Function to be used as a handler function.
+       */
       template <typename DataType = void>
       HandlerFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
 
+      /**
+       * @brief Call the stored conversion function.
+       *
+       * @param request Request sent by the client.
+       * @param user_ptr User pointer to access generic external data.
+       * @return ResponseType Response to be sent to the client.
+       */
       inline ResponseType operator()(const RequestType &request, void *user_ptr) const {
         return function(request, user_ptr);
       }
@@ -368,6 +575,14 @@ public:
     };
 
   private:
+    /**
+     * @brief Construct a new Server object
+     *
+     * @param service_name Name of the service.
+     * @param node Reference to the parent node.
+     * @param handler_function Handler function to handle requests made to a service.
+     * @param user_ptr User pointer to be used by the handler function.
+     */
     Server(const std::string &service_name, Node &node, HandlerFunction handler_function, void *user_ptr = nullptr) :
       node(node), handler_function(handler_function), user_ptr(user_ptr),
       service(node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this)) {}
@@ -383,18 +598,39 @@ public:
   public:
     using Ptr = std::unique_ptr<Server<RequestType, ResponseType>>;
 
+    /**
+     * @brief Destroy the Server object.
+     *
+     */
     ~Server() {
       service.removeServer(this);
     }
 
+    /**
+     * @brief Get the name of the relevant service.
+     *
+     * @return const std::string& Name of the service.
+     */
     inline const std::string &getServiceName() const {
       return service.name;
     }
   };
 
+  /**
+   * @brief Generic class to perform requests to a service.
+   *
+   * @tparam RequestType Type of the request made to a service.
+   * @tparam ResponseType Type of the response made to by a service.
+   */
   template <typename RequestType, typename ResponseType>
   class Client {
   private:
+    /**
+     * @brief Construct a new Client object.
+     *
+     * @param service_name Name of the service.
+     * @param node Reference to the parent node.
+     */
     Client(const std::string &service_name, Node &node) :
       node(node), service(node.environment.service_map.getService<RequestType, ResponseType>(service_name)) {}
 
@@ -407,8 +643,20 @@ public:
     using Ptr = std::unique_ptr<Client<RequestType, ResponseType>>;
     using Future = std::shared_future<ResponseType>;
 
+    /**
+     * @brief Destroy the Client object.
+     *
+     */
     ~Client() = default;
 
+    /**
+     * @brief Make a request to a service asynchronously.
+     * A call to this function will not block.
+     *
+     * @param request Object containing the data to be processed by the corresponding server.
+     * @return Future Future to be completed by the server.
+     * @throw ServiceUnavailableException When no server is handling requests to the relevant service.
+     */
     Future callAsync(const RequestType &request) {
       std::promise<ResponseType> promise;
       Future future = promise.get_future();
@@ -420,7 +668,7 @@ public:
           Server<RequestType, ResponseType> *server = reference;
 
           if (server == nullptr) {
-            throw ServiceUnavailableException("Service is no longer available.", node.getLogger());
+            throw ServiceUnavailableException("Service is not available.", node.getLogger());
           }
 
           promise.set_value(server->handler_function(request, server->user_ptr));
@@ -434,12 +682,30 @@ public:
       return future;
     }
 
+    /**
+     * @brief Make a request to a service synchronously.
+     * A call to this function will block.
+     *
+     * @param request Object containing the data to be processed by the corresponding server.
+     * @return ResponseType Response from the server.
+     * @throw ServiceUnavailableException When no server is handling requests to the relevant service.
+     */
     ResponseType callSync(const RequestType &request) {
       Future future = callAsync(request);
 
       return future.get();
     }
 
+    /**
+     * @brief Make a request to a service synchronously.
+     * A call to this function will block but is guaranteed to not exceed the specified timeout.
+     *
+     * @param request Object containing the data to be processed by the corresponding server.
+     * @param timeout_duration Duration of the timeout after which an exception will be thrown.
+     * @return ResponseType Response from the server.
+     * @throw ServiceUnavailableException When no server is handling requests to the relevant service.
+     * @throw ServiceTimeoutException When the timeout is exceeded.
+     */
     template <typename R, typename P>
     ResponseType callSync(const RequestType &request, const std::chrono::duration<R, P> &timeout_duration) {
       Future future = callAsync(request);
@@ -451,22 +717,51 @@ public:
       return future.get();
     }
 
+    /**
+     * @brief Get the name of the relevant service.
+     *
+     * @return const std::string& Name of the service.
+     */
     inline const std::string &getServiceName() const {
       return service.name;
     }
   };
 
+  /**
+   * @brief Get the name of the node.
+   *
+   * @return const std::string& Name of the node.
+   */
   const std::string &getName() {
     return environment.name;
   }
 
 protected:
+  /**
+   * @brief Construct a new Node object.
+   *
+   * @param environment Node environment data for the node to copy internally.
+   */
   Node(const Environment &environment) : environment(environment) {}
 
+  /**
+   * @brief Get a logger with the name of the node.
+   *
+   * @return Logger A logger with the name of the node.
+   */
   inline Logger getLogger() const {
     return Logger(environment.name);
   }
 
+  /**
+   * @brief Construct and add a sender to the node.
+   *
+   * @tparam MessageType Type of the messages sent over the topic.
+   * @tparam ContainerType Type of the objects provided by the user to be accepted by the sender.
+   * @tparam Args Types of the arguments to be forwarded to the sender specific constructor.
+   * @param args Arguments to be forwarded to the sender specific constructor.
+   * @return Sender<MessageType, ContainerType>::Ptr Pointer to the sender.
+   */
   template <typename MessageType, typename ContainerType = MessageType, typename... Args>
   typename Sender<MessageType, ContainerType>::Ptr addSender(const std::string &topic_name,
     Args &&...args) requires is_message<MessageType> {
@@ -474,6 +769,14 @@ protected:
       new Sender<MessageType, ContainerType>(topic_name, *this, std::forward<Args>(args)...));
   }
 
+  /**
+   * @brief Construct and add a sender to the node, provided that the ContainerType satisfies the is_container concept.
+   *
+   * @tparam ContainerType Type of the objects provided by the user to be accepted by the sender.
+   * @tparam Args Types of the arguments to be forwarded to the sender specific constructor.
+   * @param args Arguments to be forwarded to the sender specific constructor.
+   * @return Sender<MessageType, ContainerType>::Ptr Pointer to the sender.
+   */
   template <typename ContainerType, typename... Args>
   typename ContainerSender<ContainerType>::Ptr addSender(const std::string &topic_name,
     Args &&...args) requires is_container<ContainerType> {
@@ -481,6 +784,15 @@ protected:
       new ContainerSender<ContainerType>(topic_name, *this, ContainerType::toMessage, std::forward<Args>(args)...));
   }
 
+  /**
+   * @brief Construct and add a receiver to the node.
+   *
+   * @tparam MessageType Type of the messages sent over the topic.
+   * @tparam ContainerType Type of the objects provided by the receiver to be used by the user.
+   * @tparam Args Types of the arguments to be forwarded to the receiver specific constructor.
+   * @param args Arguments to be forwarded to the receiver specific constructor.
+   * @return Receiver<MessageType, ContainerType>::Ptr Pointer to the receiver.
+   */
   template <typename MessageType, typename ContainerType = MessageType, typename... Args>
   typename Receiver<MessageType, ContainerType>::Ptr addReceiver(const std::string &topic_name,
     Args &&...args) requires is_message<MessageType> {
@@ -488,6 +800,14 @@ protected:
       new Receiver<MessageType, ContainerType>(topic_name, *this, std::forward<Args>(args)...));
   }
 
+  /**
+   * @brief Construct and add a receiver to the node, provided that the ContainerType satisfies the is_container concept.
+   *
+   * @tparam ContainerType Type of the objects provided by the receiver to be used by the user.
+   * @tparam Args Types of the arguments to be forwarded to the receiver specific constructor.
+   * @param args Arguments to be forwarded to the receiver specific constructor.
+   * @return Receiver<MessageType, ContainerType>::Ptr Pointer to the receiver.
+   */
   template <typename ContainerType, typename... Args>
   typename ContainerReceiver<ContainerType>::Ptr addReceiver(const std::string &topic_name,
     Args &&...args) requires is_container<ContainerType> {
@@ -495,12 +815,28 @@ protected:
       new ContainerReceiver<ContainerType>(topic_name, *this, ContainerType::fromMessage, std::forward<Args>(args)...));
   }
 
+  /**
+   * @brief Construct and add a server to the node.
+   *
+   * @tparam RequestType Type of the request made to a service.
+   * @tparam ResponseType Type of the response made to by a service.
+   * @param args Arguments to be forwarded to the server specific constructor.
+   * @return Receiver<MessageType, ContainerType>::Ptr Pointer to the server.
+   */
   template <typename RequestType, typename ResponseType, typename... Args>
   typename Server<RequestType, ResponseType>::Ptr addServer(const std::string &service_name, Args &&...args) {
     return std::unique_ptr<Server<RequestType, ResponseType>>(
       new Server<RequestType, ResponseType>(service_name, *this, std::forward<Args>(args)...));
   }
 
+  /**
+   * @brief Construct and add a client to the node.
+   *
+   * @tparam RequestType Type of the request made to a service.
+   * @tparam ResponseType Type of the response made to by a service.
+   * @param args Arguments to be forwarded to the client specific constructor.
+   * @return Receiver<MessageType, ContainerType>::Ptr Pointer to the client.
+   */
   template <typename RequestType, typename ResponseType, typename... Args>
   typename Client<RequestType, ResponseType>::Ptr addClient(const std::string &service_name, Args &&...args) {
     return std::unique_ptr<Client<RequestType, ResponseType>>(

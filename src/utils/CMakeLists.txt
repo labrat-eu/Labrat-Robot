@@ -16,7 +16,7 @@ set(TARGET_HEADERS
   types.hpp
   fifo.hpp
   final_ptr.hpp
-  timer_thread.hpp
+  thread.hpp
   concepts.hpp
 )
 

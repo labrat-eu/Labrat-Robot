@@ -42,7 +42,7 @@ Plugin::List::iterator Manager::addPlugin(const Plugin &plugin) {
 
 void Manager::removePlugin(Plugin::List::iterator iterator) {
   iterator->delete_flag.test_and_set();
-  utils::WaitUntil(iterator->use_count, 0U);
+  utils::waitUntil(iterator->use_count, 0U);
 
   plugin_list.erase(iterator);
 }

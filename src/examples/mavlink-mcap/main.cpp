@@ -8,7 +8,7 @@
 #include <labrat/robot/plugins/mavlink/node.hpp>
 #include <labrat/robot/plugins/mavlink/udp_connection.hpp>
 #include <labrat/robot/plugins/mcap/recorder.hpp>
-#include <labrat/robot/utils/timer_thread.hpp>
+#include <labrat/robot/utils/thread.hpp>
 
 #include <atomic>
 #include <thread>

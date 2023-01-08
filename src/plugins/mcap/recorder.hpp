@@ -10,9 +10,23 @@
 
 namespace labrat::robot::plugins {
 
+/**
+ * @brief Class to register a plugin to the manager that will record messages into an MCAP file.
+ *
+ */
 class McapRecorder {
 public:
+  /**
+   * @brief Construct a new Mcap Recorder object.
+   *
+   * @param filename Path of the output MCAP file.
+   */
   McapRecorder(const std::string &filename);
+
+  /**
+   * @brief Destroy the Mcap Recorder object.
+   *
+   */
   ~McapRecorder();
 
 private:
