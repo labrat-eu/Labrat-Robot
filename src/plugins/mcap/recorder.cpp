@@ -15,48 +15,87 @@
 
 #include <google/protobuf/descriptor.pb.h>
 
+#include <mcap/writer.hpp>
 #include <mcap/internal.hpp>
 #include <mcap/types.inl>
 #include <mcap/writer.inl>
 
 namespace labrat::robot::plugins {
 
+class McapRecorderPrivate {
+public:
+  McapRecorderPrivate(const std::string &filename) {
+    const mcap::McapWriterOptions options("");
+    const mcap::Status result = writer.open(filename, options);
+
+    if (!result.ok()) {
+      throw IoException("Failed to open '" + filename + "'.");
+    }
+
+    Plugin plugin_info;
+    plugin_info.user_ptr = reinterpret_cast<void *>(this);
+    plugin_info.topic_callback = McapRecorderPrivate::topicCallback;
+    plugin_info.message_callback = McapRecorderPrivate::messageCallback;
+
+    self_reference = Manager::get().addPlugin(plugin_info);
+  }
+
+  ~McapRecorderPrivate() {
+    Manager::get().removePlugin(self_reference);
+    writer.close();
+  }
+
+private:
+  using SchemaMap = std::unordered_map<std::size_t, mcap::Schema>;
+
+  struct ChannelInfo {
+    mcap::Channel channel;
+    u64 index;
+
+    ChannelInfo(const std::string_view topic, const std::string_view encoding, mcap::SchemaId schema) :
+      channel(topic, encoding, schema), index(0) {}
+  };
+
+  using ChannelMap = std::unordered_map<std::size_t, ChannelInfo>;
+
+  static void topicCallback(void *user_ptr, const Plugin::TopicInfo &info);
+  static void messageCallback(void *user_ptr, const Plugin::MessageInfo &info);
+
+  ChannelMap::iterator handleTopic(const Plugin::TopicInfo &info);
+  inline ChannelMap::iterator handleMessage(const Plugin::MessageInfo &info);
+
+  SchemaMap schema_map;
+  ChannelMap channel_map;
+
+  mcap::McapWriter writer;
+  std::mutex mutex;
+
+  Plugin::List::iterator self_reference;
+};
+
 static google::protobuf::FileDescriptorSet buildFileDescriptorSet(const google::protobuf::Descriptor *top_descriptor);
 
 McapRecorder::McapRecorder(const std::string &filename) {
-  const mcap::McapWriterOptions options("");
-  const mcap::Status result = writer.open(filename, options);
-
-  if (!result.ok()) {
-    throw IoException("Failed to open '" + filename + "'.");
-  }
-
-  Plugin plugin_info;
-  plugin_info.user_ptr = reinterpret_cast<void *>(this);
-  plugin_info.topic_callback = McapRecorder::topicCallback;
-  plugin_info.message_callback = McapRecorder::messageCallback;
-
-  self_reference = Manager::get().addPlugin(plugin_info);
+  priv = new McapRecorderPrivate(filename);
 }
 
 McapRecorder::~McapRecorder() {
-  Manager::get().removePlugin(self_reference);
-  writer.close();
+  delete priv;
 }
 
-void McapRecorder::topicCallback(void *user_ptr, const Plugin::TopicInfo &info) {
-  McapRecorder *self = reinterpret_cast<McapRecorder *>(user_ptr);
+void McapRecorderPrivate::topicCallback(void *user_ptr, const Plugin::TopicInfo &info) {
+  McapRecorderPrivate *self = reinterpret_cast<McapRecorderPrivate *>(user_ptr);
 
   (void)self->handleTopic(info);
 }
 
-void McapRecorder::messageCallback(void *user_ptr, const Plugin::MessageInfo &info) {
-  McapRecorder *self = reinterpret_cast<McapRecorder *>(user_ptr);
+void McapRecorderPrivate::messageCallback(void *user_ptr, const Plugin::MessageInfo &info) {
+  McapRecorderPrivate *self = reinterpret_cast<McapRecorderPrivate *>(user_ptr);
 
   (void)self->handleMessage(info);
 }
 
-McapRecorder::ChannelMap::iterator McapRecorder::handleTopic(const Plugin::TopicInfo &info) {
+McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleTopic(const Plugin::TopicInfo &info) {
   SchemaMap::iterator schema_iterator = schema_map.find(info.type_hash);
   if (schema_iterator == schema_map.end()) {
     schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
@@ -78,7 +117,7 @@ McapRecorder::ChannelMap::iterator McapRecorder::handleTopic(const Plugin::Topic
   return result.first;
 }
 
-inline McapRecorder::ChannelMap::iterator McapRecorder::handleMessage(const Plugin::MessageInfo &info) {
+inline McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleMessage(const Plugin::MessageInfo &info) {
   ChannelMap::iterator channel_iterator = channel_map.find(info.topic_info.topic_hash);
   if (channel_iterator == channel_map.end()) {
     channel_iterator = handleTopic(info.topic_info);

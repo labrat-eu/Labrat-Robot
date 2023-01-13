@@ -1,5 +1,5 @@
 /**
- * @file udp_connection.hpp
+ * @file serial_connection.hpp
  * @author Max Yvon Zimmermann
  *
  * @copyright GNU Lesser General Public License v3.0 (LGPL-3.0-or-later)
@@ -19,28 +19,26 @@
 namespace labrat::robot::plugins {
 
 /**
- * @brief MavlinkConnection implementation for UDP sockets.
+ * @brief MavlinkConnection implementation for serial ports.
  *
  */
-class MavlinkUdpConnection : public MavlinkConnection {
+class MavlinkSerialConnection : public MavlinkConnection {
 public:
   /**
-   * @brief Construct a new Mavlink Udp Connection object.
+   * @brief Construct a new Mavlink Serial Connection object.
    *
-   * @param address Remote address of the socket.
-   * @param port Remote port of the socket.
-   * @param local_port Local port of the socket.
+   * @param port Path to the serial port.
    */
-  MavlinkUdpConnection(const std::string &address = "127.0.0.1", u16 port = 14580, u16 local_port = 14540);
+  MavlinkSerialConnection(const std::string &port = "/dev/ttyUSB0", u64 baud_rate = 921600);
 
   /**
-   * @brief Destroy the Mavlink Udp Connection object.
+   * @brief Destroy the Mavlink Serial Connection object.
    *
    */
-  virtual ~MavlinkUdpConnection();
+  virtual ~MavlinkSerialConnection();
 
   /**
-   * @brief Write bytes to the UDP socket.
+   * @brief Write bytes to the serial port.
    *
    * @param buffer Buffer to be read from.
    * @param size Size of the buffer.
@@ -49,7 +47,7 @@ public:
   virtual std::size_t write(const u8 *buffer, std::size_t size);
 
   /**
-   * @brief Read bytes from the UDP socket.
+   * @brief Read bytes from the serial port.
    *
    * @param buffer Buffer to be written to.
    * @param size Size of the buffer.
@@ -60,10 +58,7 @@ public:
 private:
   ssize_t file_descriptor;
   ssize_t epoll_handle;
-
-  sockaddr_in local_address;
-  sockaddr_in remote_address;
-
+  
   static constexpr i32 timeout = 1000;
   sigset_t signal_mask;
 };

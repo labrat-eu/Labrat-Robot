@@ -8,8 +8,7 @@ get_filename_component(TARGET_NAME_SECONDARY ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 set(TARGET_NAME ${TARGET_NAME_PRIMARY}_${TARGET_NAME_SECONDARY})
 
 # Get the install path.
-file(RELATIVE_PATH TARGET_RELATIVE_PATH ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-set(TARGET_PATH ${LOCAL_PROJECT_PATH}/${TARGET_RELATIVE_PATH})
+file(RELATIVE_PATH TARGET_RELATIVE_PATH ${PROJECT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(TARGET_SOURCES
   main.cpp
@@ -18,4 +17,4 @@ set(TARGET_SOURCES
 # Create executable target for the unit test.
 add_executable(${TARGET_NAME} ${TARGET_SOURCES})
 
-target_link_libraries(${TARGET_NAME} PRIVATE labrat_robot plugins_mavlink plugins_mcap plugins_foxglove-ws)
+target_link_libraries(${TARGET_NAME} PRIVATE plugins_foxglove-ws plugins_mavlink plugins_mcap)

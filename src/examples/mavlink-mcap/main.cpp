@@ -8,6 +8,7 @@
 #include <labrat/robot/plugins/mavlink/msg/param_value.pb.h>
 #include <labrat/robot/plugins/mavlink/msg/set_position_target_local_ned.pb.h>
 #include <labrat/robot/plugins/mavlink/node.hpp>
+#include <labrat/robot/plugins/mavlink/serial_connection.hpp>
 #include <labrat/robot/plugins/mavlink/udp_connection.hpp>
 #include <labrat/robot/plugins/mcap/recorder.hpp>
 #include <labrat/robot/utils/thread.hpp>
@@ -109,7 +110,26 @@ private:
   utils::TimerThread arm_thread;
 };
 
-int main(/*int argc, char **argv*/) {
+void usage() {
+  std::cerr << "Usage: ./example serial|udp" << std::endl;
+  exit(1);
+}
+
+int main(int argc, char **argv) {
+  if (argc < 2) {
+    usage();
+  }
+
+  bool use_serial = false;
+
+  if (std::string(argv[1]) == "serial") {
+    use_serial = true;
+  } else if (std::string(argv[1]) == "udp") {
+    use_serial = false;
+  } else {
+    usage();
+  }
+
   labrat::robot::Logger logger("main");
   labrat::robot::Logger::setLogLevel(labrat::robot::Logger::Verbosity::debug);
   logger() << "Starting application.";
@@ -120,8 +140,14 @@ int main(/*int argc, char **argv*/) {
   labrat::robot::plugins::FoxgloveServer server("Test Server");
   logger() << "Server started.";
 
-  labrat::robot::Manager::get().addNode<labrat::robot::plugins::MavlinkNode>("mavlink",
-    std::make_unique<labrat::robot::plugins::MavlinkUdpConnection>());
+  labrat::robot::plugins::MavlinkConnection::Ptr connection;
+  if (use_serial) {
+    connection = std::make_unique<labrat::robot::plugins::MavlinkSerialConnection>();
+  } else {
+    connection = std::make_unique<labrat::robot::plugins::MavlinkUdpConnection>();
+  }
+
+  labrat::robot::Manager::get().addNode<labrat::robot::plugins::MavlinkNode>("mavlink", std::move(connection));
   logger() << "Mavlink node connected.";
 
   labrat::robot::Manager::get().addNode<OffboardNode>("offboard");

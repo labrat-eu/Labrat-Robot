@@ -14,58 +14,97 @@
 #include <chrono>
 #include <queue>
 
+#include <foxglove/websocket/server.hpp>
 #include <base64/Base64.h>
 #include <google/protobuf/descriptor.pb.h>
 
 namespace labrat::robot::plugins {
 
+class FoxgloveServerPrivate {
+public:
+  FoxgloveServerPrivate(const std::string &name, u16 port) : server(port, name) {
+    server.setSubscribeHandler([](foxglove::websocket::ChannelId channel_id) {
+      Logger("foxglove-ws")() << "First client subscribed to " << channel_id;
+    });
+
+    server.setUnsubscribeHandler([](foxglove::websocket::ChannelId channel_id) {
+      Logger("foxglove-ws")() << "Last client unsubscribed from " << channel_id;
+    });
+
+    Plugin plugin_info;
+    plugin_info.user_ptr = reinterpret_cast<void *>(this);
+    plugin_info.topic_callback = FoxgloveServerPrivate::topicCallback;
+    plugin_info.message_callback = FoxgloveServerPrivate::messageCallback;
+
+    self_reference = Manager::get().addPlugin(plugin_info);
+
+    run_thread = std::thread([this]() {
+      server.run();
+    });
+  }
+
+  ~FoxgloveServerPrivate() {
+    Manager::get().removePlugin(self_reference);
+
+    for (const std::pair<std::size_t, foxglove::websocket::ChannelId> channel : channel_map) {
+      server.removeChannel(channel.second);
+    }
+
+    server.stop();
+    run_thread.join();
+  }
+
+  struct SchemaInfo {
+    std::string name;
+    std::string definition;
+
+    SchemaInfo(const std::string &name, const std::string &definition) : name(name), definition(definition) {}
+  };
+
+private:
+  using SchemaMap = std::unordered_map<std::size_t, SchemaInfo>;
+  using ChannelMap = std::unordered_map<std::size_t, foxglove::websocket::ChannelId>;
+
+  static void topicCallback(void *user_ptr, const Plugin::TopicInfo &info);
+  static void messageCallback(void *user_ptr, const Plugin::MessageInfo &info);
+
+  ChannelMap::iterator handleTopic(const Plugin::TopicInfo &info);
+  inline ChannelMap::iterator handleMessage(const Plugin::MessageInfo &info);
+
+  SchemaMap schema_map;
+  ChannelMap channel_map;
+
+  foxglove::websocket::Server server;
+  std::mutex mutex;
+
+  std::thread run_thread;
+
+  Plugin::List::iterator self_reference;
+};
+
 static google::protobuf::FileDescriptorSet buildFileDescriptorSet(const google::protobuf::Descriptor *top_descriptor);
 
-FoxgloveServer::FoxgloveServer(const std::string &name, u16 port) : server(port, name) {
-  server.setSubscribeHandler([](foxglove::websocket::ChannelId channel_id) {
-    Logger("foxglove-ws")() << "First client subscribed to " << channel_id;
-  });
-
-  server.setUnsubscribeHandler([](foxglove::websocket::ChannelId channel_id) {
-    Logger("foxglove-ws")() << "Last client unsubscribed from " << channel_id;
-  });
-
-  Plugin plugin_info;
-  plugin_info.user_ptr = reinterpret_cast<void *>(this);
-  plugin_info.topic_callback = FoxgloveServer::topicCallback;
-  plugin_info.message_callback = FoxgloveServer::messageCallback;
-
-  self_reference = Manager::get().addPlugin(plugin_info);
-
-  run_thread = std::thread([this]() {
-    server.run();
-  });
+FoxgloveServer::FoxgloveServer(const std::string &name, u16 port) {
+  priv = new FoxgloveServerPrivate(name, port);
 }
 
 FoxgloveServer::~FoxgloveServer() {
-  Manager::get().removePlugin(self_reference);
-
-  for (const std::pair<std::size_t, foxglove::websocket::ChannelId> channel : channel_map) {
-    server.removeChannel(channel.second);
-  }
-
-  server.stop();
-  run_thread.join();
+  delete priv;
 }
 
-void FoxgloveServer::topicCallback(void *user_ptr, const Plugin::TopicInfo &info) {
-  FoxgloveServer *self = reinterpret_cast<FoxgloveServer *>(user_ptr);
+void FoxgloveServerPrivate::topicCallback(void *user_ptr, const Plugin::TopicInfo &info) {
+  FoxgloveServerPrivate *self = reinterpret_cast<FoxgloveServerPrivate *>(user_ptr);
 
   (void)self->handleTopic(info);
 }
 
-void FoxgloveServer::messageCallback(void *user_ptr, const Plugin::MessageInfo &info) {
-  FoxgloveServer *self = reinterpret_cast<FoxgloveServer *>(user_ptr);
+void FoxgloveServerPrivate::messageCallback(void *user_ptr, const Plugin::MessageInfo &info) {
+  FoxgloveServerPrivate *self = reinterpret_cast<FoxgloveServerPrivate *>(user_ptr);
 
   (void)self->handleMessage(info);
 }
 
-FoxgloveServer::ChannelMap::iterator FoxgloveServer::handleTopic(const Plugin::TopicInfo &info) {
+FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleTopic(const Plugin::TopicInfo &info) {
   SchemaMap::iterator schema_iterator = schema_map.find(info.type_hash);
   if (schema_iterator == schema_map.end()) {
     schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
@@ -88,7 +127,7 @@ FoxgloveServer::ChannelMap::iterator FoxgloveServer::handleTopic(const Plugin::T
   return channel_iterator;
 }
 
-inline FoxgloveServer::ChannelMap::iterator FoxgloveServer::handleMessage(const Plugin::MessageInfo &info) {
+inline FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleMessage(const Plugin::MessageInfo &info) {
   ChannelMap::iterator channel_iterator = channel_map.find(info.topic_info.topic_hash);
   if (channel_iterator == channel_map.end()) {
     channel_iterator = handleTopic(info.topic_info);

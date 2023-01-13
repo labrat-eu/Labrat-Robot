@@ -74,7 +74,7 @@ std::size_t MavlinkUdpConnection::read(u8 *buffer, std::size_t size) {
 
     if (result <= 0) {
       if ((result == -1) && (errno != EINTR)) {
-        throw IoException("Failure suring epoll wait.", errno);
+        throw IoException("Failure during epoll wait.", errno);
       }
 
       return 0;

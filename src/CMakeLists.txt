@@ -2,11 +2,10 @@ cmake_minimum_required(VERSION 3.20.0)
 
 
 # Set the target name from the project name.
-set(TARGET_NAME ${LOCAL_PROJECT_NAME_FULL})
+set(TARGET_NAME ${LOCAL_PROJECT_NAME})
 
 # Get the install path.
-file(RELATIVE_PATH TARGET_RELATIVE_PATH ${PROJECT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-set(TARGET_PATH ${LOCAL_PROJECT_PATH}/${TARGET_RELATIVE_PATH})
+file(RELATIVE_PATH TARGET_RELATIVE_PATH ${PROJECT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(TARGET_SOURCES
   manager.cpp
@@ -40,13 +39,14 @@ add_subdirectory(msg)
 add_subdirectory(plugins)
 add_subdirectory(test)
 add_subdirectory(examples)
+add_subdirectory(utils)
 
 
 # Link external libraries to the library target.
 target_link_libraries(${TARGET_NAME} PRIVATE pthread)
 # Link internal libraries to the library target.
-target_link_libraries(${TARGET_NAME} PRIVATE robot_msg)
+target_link_libraries(${TARGET_NAME} PUBLIC robot_msg)
 
 
 # Add public header install target.
-install(FILES ${TARGET_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${TARGET_PATH})
+install(FILES ${TARGET_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LOCAL_PROJECT_PATH_FULL}/${TARGET_RELATIVE_PATH})
