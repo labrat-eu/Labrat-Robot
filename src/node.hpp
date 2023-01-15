@@ -33,28 +33,6 @@ class Manager;
  *
  */
 class Node {
-private:
-  /**
-   * @brief Get information about a topic by name.
-   * This will not lookup any data
-   *
-   * @tparam MessageType Type of the message sent over the relevant topic.
-   * @param topic_name Name of the topic.
-   * @return Plugin::TopicInfo Information about the topic.
-   */
-  template <typename MessageType>
-  requires is_message<MessageType>
-  static Plugin::TopicInfo getTopicInfo(const std::string &topic_name) {
-    const Plugin::TopicInfo result = {
-      .type_hash = typeid(MessageType).hash_code(),
-      .topic_hash = std::hash<std::string>()(topic_name),
-      .topic_name = topic_name,
-      .type_descriptor = MessageType::Content::descriptor(),
-    };
-
-    return result;
-  }
-
 public:
   /**
    * @brief Information on the environment in which the node is created.
@@ -96,11 +74,11 @@ public:
     Sender(const std::string &topic_name, Node &node,
       ConversionFunction<ContainerType, MessageType> conversion_function = defaultSenderConversionFunction<MessageType, ContainerType>,
       const void *user_ptr = nullptr) :
-      topic_info(Node::getTopicInfo<MessageType>(topic_name)),
+      topic_info(Plugin::TopicInfo::get<MessageType>(topic_name)),
       node(node), conversion_function(conversion_function), user_ptr(user_ptr),
       topic(node.environment.topic_map.addSender<MessageType>(topic_name, this)) {
       for (Plugin &plugin : node.environment.plugin_list) {
-        if (plugin.delete_flag.test()) {
+        if (plugin.delete_flag.test() || !plugin.filter.check(topic_info.topic_hash)) {
           continue;
         }
 
@@ -202,7 +180,7 @@ public:
       }
 
       for (Plugin &plugin : node.environment.plugin_list) {
-        if (plugin.delete_flag.test()) {
+        if (plugin.delete_flag.test() || !plugin.filter.check(topic_info.topic_hash)) {
           continue;
         }
 
@@ -254,7 +232,7 @@ public:
     Receiver(const std::string &topic_name, Node &node,
       ConversionFunction<MessageType, ContainerType> conversion_function = defaultReceiverConversionFunction<MessageType, ContainerType>,
       const void *user_ptr = nullptr, std::size_t buffer_size = 4) :
-      topic_info(Node::getTopicInfo<MessageType>(topic_name)),
+      topic_info(Plugin::TopicInfo::get<MessageType>(topic_name)),
       node(node), conversion_function(conversion_function), user_ptr(user_ptr),
       topic(node.environment.topic_map.addReceiver<MessageType>(topic_name, this)), index_mask(calculateBufferMask(buffer_size)),
       message_buffer(calculateBufferSize(buffer_size)), write_count(0), read_count(index_mask) {

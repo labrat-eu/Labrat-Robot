@@ -15,16 +15,16 @@
 
 #include <google/protobuf/descriptor.pb.h>
 
-#include <mcap/writer.hpp>
 #include <mcap/internal.hpp>
 #include <mcap/types.inl>
+#include <mcap/writer.hpp>
 #include <mcap/writer.inl>
 
 namespace labrat::robot::plugins {
 
 class McapRecorderPrivate {
 public:
-  McapRecorderPrivate(const std::string &filename) {
+  McapRecorderPrivate(const std::string &filename, const Plugin::Filter &filter) {
     const mcap::McapWriterOptions options("");
     const mcap::Status result = writer.open(filename, options);
 
@@ -36,6 +36,7 @@ public:
     plugin_info.user_ptr = reinterpret_cast<void *>(this);
     plugin_info.topic_callback = McapRecorderPrivate::topicCallback;
     plugin_info.message_callback = McapRecorderPrivate::messageCallback;
+    plugin_info.filter = filter;
 
     self_reference = Manager::get().addPlugin(plugin_info);
   }
@@ -75,8 +76,8 @@ private:
 
 static google::protobuf::FileDescriptorSet buildFileDescriptorSet(const google::protobuf::Descriptor *top_descriptor);
 
-McapRecorder::McapRecorder(const std::string &filename) {
-  priv = new McapRecorderPrivate(filename);
+McapRecorder::McapRecorder(const std::string &filename, const Plugin::Filter &filter) {
+  priv = new McapRecorderPrivate(filename, filter);
 }
 
 McapRecorder::~McapRecorder() {

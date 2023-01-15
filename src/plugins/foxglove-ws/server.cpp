@@ -14,15 +14,16 @@
 #include <chrono>
 #include <queue>
 
-#include <foxglove/websocket/server.hpp>
 #include <base64/Base64.h>
 #include <google/protobuf/descriptor.pb.h>
+
+#include <foxglove/websocket/server.hpp>
 
 namespace labrat::robot::plugins {
 
 class FoxgloveServerPrivate {
 public:
-  FoxgloveServerPrivate(const std::string &name, u16 port) : server(port, name) {
+  FoxgloveServerPrivate(const std::string &name, u16 port, const Plugin::Filter &filter) : server(port, name) {
     server.setSubscribeHandler([](foxglove::websocket::ChannelId channel_id) {
       Logger("foxglove-ws")() << "First client subscribed to " << channel_id;
     });
@@ -35,6 +36,7 @@ public:
     plugin_info.user_ptr = reinterpret_cast<void *>(this);
     plugin_info.topic_callback = FoxgloveServerPrivate::topicCallback;
     plugin_info.message_callback = FoxgloveServerPrivate::messageCallback;
+    plugin_info.filter = filter;
 
     self_reference = Manager::get().addPlugin(plugin_info);
 
@@ -84,8 +86,8 @@ private:
 
 static google::protobuf::FileDescriptorSet buildFileDescriptorSet(const google::protobuf::Descriptor *top_descriptor);
 
-FoxgloveServer::FoxgloveServer(const std::string &name, u16 port) {
-  priv = new FoxgloveServerPrivate(name, port);
+FoxgloveServer::FoxgloveServer(const std::string &name, u16 port, const Plugin::Filter &filter) {
+  priv = new FoxgloveServerPrivate(name, port, filter);
 }
 
 FoxgloveServer::~FoxgloveServer() {

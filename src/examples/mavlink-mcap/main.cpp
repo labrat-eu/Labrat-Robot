@@ -134,10 +134,14 @@ int main(int argc, char **argv) {
   labrat::robot::Logger::setLogLevel(labrat::robot::Logger::Verbosity::debug);
   logger() << "Starting application.";
 
-  labrat::robot::plugins::McapRecorder recorder("example_mavlink.mcap");
+  labrat::robot::Plugin::Filter filter;
+  filter.blacklist("/mavlink/in/open_drone_id_location");
+  filter.blacklist("/mavlink/in/open_drone_id_system");
+
+  labrat::robot::plugins::McapRecorder recorder("example_mavlink.mcap", filter);
   logger() << "Recording started.";
 
-  labrat::robot::plugins::FoxgloveServer server("Test Server");
+  labrat::robot::plugins::FoxgloveServer server("Test Server", 8765, filter);
   logger() << "Server started.";
 
   labrat::robot::plugins::MavlinkConnection::Ptr connection;

@@ -58,7 +58,7 @@ public:
 private:
   ssize_t file_descriptor;
   ssize_t epoll_handle;
-  
+
   static constexpr i32 timeout = 1000;
   sigset_t signal_mask;
 };
