@@ -13,6 +13,7 @@ include(Options)
 include(VersionFromGit)
 include(ClangFormat)
 include(ClangTidy)
+include(CoverageReport)
 include(Doxygen)
 include(IncludeSymlinks)
 

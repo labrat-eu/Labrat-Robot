@@ -25,7 +25,7 @@ set(CMAKE_C_FLAGS_RELEASE "-Wall -Wextra -Werror -O3" CACHE STRING "" FORCE)
 # Enable most warnings, treat warnings as errors and set highest optimization.
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "-Wall -Wextra -Werror -g -O3" CACHE STRING "" FORCE)
 # Enable most warnings, enable debug symbols and disable optimization.
-set(CMAKE_C_FLAGS_DEBUG "-Wall -Wextra -g -O0 -fstandalone-debug" CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS_DEBUG "-Wall -Wextra -g -O0 -fstandalone-debug -fprofile-instr-generate -fcoverage-mapping" CACHE STRING "" FORCE)
 
 # Default C++ compiler flags.
 
@@ -34,7 +34,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-Wall -Wextra -Werror -O3" CACHE STRING "" FORCE)
 # Enable most warnings, treat warnings as errors and set highest optimization.
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Wall -Wextra -Werror -g -O3" CACHE STRING "" FORCE)
 # Enable most warnings, enable debug symbols and disable optimization.
-set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -fstandalone-debug" CACHE STRING "" FORCE)
+set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0 -fstandalone-debug -fprofile-instr-generate -fcoverage-mapping" CACHE STRING "" FORCE)
 
 # Default ASM compiler flags.
 
@@ -43,7 +43,13 @@ set(CMAKE_ASM_FLAGS_RELEASE "-Wall -Wextra -Werror -O3" CACHE STRING "" FORCE)
 # Enable most warnings, treat warnings as errors and set highest optimization.
 set(CMAKE_ASM_FLAGS_RELWITHDEBINFO "-Wall -Wextra -Werror -g -O3" CACHE STRING "" FORCE)
 # Enable most warnings, enable debug symbols and disable optimization.
-set(CMAKE_ASM_FLAGS_DEBUG "-Wall -Wextra -g -O0 -fstandalone-debug" CACHE STRING "" FORCE)
+set(CMAKE_ASM_FLAGS_DEBUG "-Wall -Wextra -g -O0 -fstandalone-debug -fprofile-instr-generate -fcoverage-mapping" CACHE STRING "" FORCE)
+
+# Linker flags.
+set(CMAKE_EXE_LINKER_FLAGS_DEBUG_INIT "-fprofile-instr-generate" CACHE STRING "" FORCE)
+set(CMAKE_MODULE_LINKER_FLAGS_DEBUG_INIT "-fprofile-instr-generate" CACHE STRING "" FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS_DEBUG_INIT "-fprofile-instr-generate" CACHE STRING "" FORCE)
+
 
 # Add library locations.
 link_directories("/usr/local/lib")

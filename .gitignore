@@ -26,3 +26,6 @@ tags
 
 # Docker
 docker-compose.yml
+
+# coverage reports
+report*

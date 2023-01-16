@@ -10,9 +10,9 @@ function(prj_add_doxygen_targets)
   # Add doc generation target.
   if(${PRJ_OPT_INSTALL_DOCS})
     # Install man pages.
-    add_custom_target(generate-docs ALL COMMAND doxygen ${ARGS} ${DOXYFILE} OUTPUTS ${PROJECT_SOURCE_DIR}/docs/)
+    add_custom_target(generate-docs ALL COMMAND doxygen ${ARGS} ${DOXYFILE} OUTPUTS ${PROJECT_SOURCE_DIR}/docs/ COMMENT "Generating documentation")
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/docs/man/man3 DESTINATION ${CMAKE_INSTALL_MANDIR})
   else()
-    add_custom_target(generate-docs COMMAND doxygen ${ARGS} ${DOXYFILE} OUTPUTS ${PROJECT_SOURCE_DIR}/docs/)
+    add_custom_target(generate-docs COMMAND doxygen ${ARGS} ${DOXYFILE} OUTPUTS ${PROJECT_SOURCE_DIR}/docs/ COMMENT "Generating documentation")
   endif()
 endfunction(prj_add_doxygen_targets)

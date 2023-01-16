@@ -29,6 +29,6 @@ function(prj_add_clang_format_targets)
   configure_file(${PROJECT_SOURCE_DIR}/.clang/.clang-format.in ${PROJECT_SOURCE_DIR}/.clang-format @ONLY)
 
   # Add format script targets.
-  add_custom_target(format-code COMMAND ${PROJECT_SOURCE_DIR}/.scripts/format-code.sh ${ARGS})
-  add_custom_target(check-format COMMAND ${PROJECT_SOURCE_DIR}/.scripts/check-format.sh ${ARGS})
+  add_custom_target(format-code COMMAND ${PROJECT_SOURCE_DIR}/.scripts/format-code.sh ${ARGS} COMMENT "Formatting code")
+  add_custom_target(check-format COMMAND ${PROJECT_SOURCE_DIR}/.scripts/check-format.sh ${ARGS} COMMENT "Checking for code format compliance")
 endfunction(prj_add_clang_format_targets)

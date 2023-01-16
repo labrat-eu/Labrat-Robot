@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# Script to generate a coverage report for an executable target.
+
+set -e
+
+# Usage string function.
+usage() {
+  echo "Usage: $0 [option]..."
+  echo "Script to generate a coverage report for an executable target."
+  echo
+  echo "Options:"
+  echo "  -p PATH          Set path of the executable."
+  echo "  -l PATH          Linked libraries of the executable."
+  echo "  -c CLANG-VERSION Set clang major version number."
+  echo "  -o PATH          Output directory."
+  echo "  -v               Verbose mode."
+  echo "  -q               Quiet mode. Do not print to stdout."
+  echo "  -h               Display this help page and exit."
+
+  exit 0
+}
+
+# Get absolute path.
+executable="a.out"
+libraries=""
+clang_version="14"
+output="report"
+
+# Process command line options.
+while getopts 'p:l:c:o:vqh' flag; do
+  case "$flag" in
+  p) executable=$(echo ${OPTARG} | xargs) ;;
+  l) libraries="$libraries --object $(echo ${OPTARG} | xargs)" ;;
+  c) clang_version=$(echo ${OPTARG} | xargs);;
+  o) output=$(echo ${OPTARG} | xargs);;
+  v) verbose=1 ;;
+  q) quiet=1 ;;
+  h|*) usage ;;
+  esac
+done
+
+$executable
+llvm-profdata-$clang_version merge -o coverage.profdata default.profraw
+llvm-cov-$clang_version export --format=lcov --ignore-filename-regex="(\.pb\.(h|cc)|submodules/)" --instr-profile coverage.profdata $libraries $executable > lcov.info
+genhtml -o $output lcov.info
+
+if ! [ $quiet ]; then
+  # Display success message.
+  echo "The coverage report was successfully generated."
+fi
+
+# Exit normally.
+exit 0

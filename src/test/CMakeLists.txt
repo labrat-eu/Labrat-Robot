@@ -26,4 +26,7 @@ if(${PRJ_OPT_ENABLE_TESTS})
   gtest_discover_tests(${TARGET_NAME} DISCOVERY_MODE PRE_TEST)
 
   target_link_libraries(${TARGET_NAME} PRIVATE robot_msg plugins_mcap)
+
+  # Add coverage report target.
+  prj_add_coverage_report_targets(TARGET ${TARGET_NAME})
 endif()
