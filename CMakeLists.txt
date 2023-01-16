@@ -41,7 +41,7 @@ endif()
 message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 
 # Set build types.
-set(CMAKE_CONFIGURATION_TYPES Debug Release)
+set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo)
 
 # Default to Debug build type if none is set.
 if(NOT DEFINED CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")

@@ -22,6 +22,8 @@ set(CMAKE_SIZE_UTIL size)
 
 # Enable most warnings, treat warnings as errors and set highest optimization.
 set(CMAKE_C_FLAGS_RELEASE "-Wall -Wextra -Werror -O3" CACHE STRING "" FORCE)
+# Enable most warnings, treat warnings as errors and set highest optimization.
+set(CMAKE_C_FLAGS_RELWITHDEBINFO "-Wall -Wextra -Werror -g -O3" CACHE STRING "" FORCE)
 # Enable most warnings, enable debug symbols and disable optimization.
 set(CMAKE_C_FLAGS_DEBUG "-Wall -Wextra -g -O0" CACHE STRING "" FORCE)
 
@@ -29,6 +31,8 @@ set(CMAKE_C_FLAGS_DEBUG "-Wall -Wextra -g -O0" CACHE STRING "" FORCE)
 
 # Enable most warnings, treat warnings as errors and set highest optimization.
 set(CMAKE_CXX_FLAGS_RELEASE "-Wall -Wextra -Werror -O3" CACHE STRING "" FORCE)
+# Enable most warnings, treat warnings as errors and set highest optimization.
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Wall -Wextra -Werror -g -O3" CACHE STRING "" FORCE)
 # Enable most warnings, enable debug symbols and disable optimization.
 set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0" CACHE STRING "" FORCE)
 
@@ -36,6 +40,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "-Wall -Wextra -g -O0" CACHE STRING "" FORCE)
 
 # Enable most warnings, treat warnings as errors and set highest optimization.
 set(CMAKE_ASM_FLAGS_RELEASE "-Wall -Wextra -Werror -O3" CACHE STRING "" FORCE)
+# Enable most warnings, treat warnings as errors and set highest optimization.
+set(CMAKE_ASM_FLAGS_RELWITHDEBINFO "-Wall -Wextra -Werror -g -O3" CACHE STRING "" FORCE)
 # Enable most warnings, enable debug symbols and disable optimization.
 set(CMAKE_ASM_FLAGS_DEBUG "-Wall -Wextra -g -O0" CACHE STRING "" FORCE)
 
