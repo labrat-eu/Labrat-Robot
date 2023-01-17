@@ -110,8 +110,11 @@ FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleTopic(c
   SchemaMap::iterator schema_iterator = schema_map.find(info.type_hash);
   if (schema_iterator == schema_map.end()) {
     const std::string description = buildFileDescriptorSet(info.type_descriptor).SerializeAsString();
-    std::string encoded_description(description.size() * 4 / 3 + 1);
-    base64_encode(description.c_str(), description.size(), encoded_description.data(), encoded_description.size(), 0);
+    std::string encoded_description;
+    encoded_description.reserve(description.size() * 4 / 3 + 1);
+    std::size_t description_size;
+    base64_encode(description.c_str(), description.size(), encoded_description.data(), &description_size, 0);
+    encoded_description.resize(description_size);
 
     schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
       std::forward_as_tuple(info.type_descriptor->full_name(), encoded_description));
