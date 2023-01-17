@@ -82,6 +82,7 @@ add_compile_definitions(
 # Create the root project.
 project(${LOCAL_PROJECT_NAME} VERSION ${GIT_VERSION} DESCRIPTION ${LOCAL_PROJECT_DESCRIPTION} LANGUAGES ${USED_LANGUAGES})
 
+### CONAN PLACEHOLDER ###
 
 # Define variables and options here.
 prj_register_var(DOCKER_IMAGE "Name of the docker image to be built." ${PROJECT_NAME})
