@@ -31,15 +31,16 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
 
+if (NOT ${CONAN_EXPORTED})
+  # Select default toolchain file.
+  if(NOT DEFINED CMAKE_TOOLCHAIN_FILE OR CMAKE_TOOLCHAIN_FILE STREQUAL ""))
+    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/toolchains/clang/native.cmake)
+    include(${CMAKE_TOOLCHAIN_FILE})
+  endif()
 
-# Select default toolchain file.
-if(NOT DEFINED CMAKE_TOOLCHAIN_FILE OR CMAKE_TOOLCHAIN_FILE STREQUAL "")
-  set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/toolchains/clang/native.cmake)
-  include(${CMAKE_TOOLCHAIN_FILE})
+  # Inform of the toolchain file used
+  message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 endif()
-
-# Inform of the toolchain file used
-message(STATUS "Toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 
 # Set build types.
 set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo)
