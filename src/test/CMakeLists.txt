@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.20.0)
 
+find_package(GTest)
+
 
 # Set the target name from the path.
 get_filename_component(TARGET_NAME_SECONDARY ${CMAKE_CURRENT_SOURCE_DIR} NAME)
@@ -21,7 +23,7 @@ if(${PRJ_OPT_ENABLE_TESTS})
   # Create executable target for the unit test.
   add_executable(${TARGET_NAME} ${TARGET_TEST_SOURCES})
   # Link libraries to the test target.
-  target_link_libraries(${TARGET_NAME} PRIVATE ${LOCAL_PROJECT_NAME} gtest gtest_main pthread)
+  target_link_libraries(${TARGET_NAME} PRIVATE ${LOCAL_PROJECT_NAME} GTest::gtest GTest::gtest_main pthread)
   # Make tests available to ctest
   gtest_discover_tests(${TARGET_NAME} DISCOVERY_MODE PRE_TEST)
 
