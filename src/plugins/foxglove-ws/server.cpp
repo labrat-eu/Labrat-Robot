@@ -14,7 +14,7 @@
 #include <chrono>
 #include <queue>
 
-#include <base64/Base64.h>
+#include <libbase64.h>
 #include <google/protobuf/descriptor.pb.h>
 
 #include <foxglove/websocket/server.hpp>
@@ -109,9 +109,12 @@ void FoxgloveServerPrivate::messageCallback(void *user_ptr, const Plugin::Messag
 FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleTopic(const Plugin::TopicInfo &info) {
   SchemaMap::iterator schema_iterator = schema_map.find(info.type_hash);
   if (schema_iterator == schema_map.end()) {
+    const std::string description = buildFileDescriptorSet(info.type_descriptor).SerializeAsString();
+    std::string encoded_description(description.size() * 4 / 3 + 1);
+    base64_encode(description.c_str(), description.size(), encoded_description.data(), encoded_description.size(), 0);
+
     schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
-      std::forward_as_tuple(info.type_descriptor->full_name(),
-        macaron::Base64::Encode(buildFileDescriptorSet(info.type_descriptor).SerializeAsString())));
+      std::forward_as_tuple(info.type_descriptor->full_name(), encoded_description));
   }
 
   ChannelMap::iterator channel_iterator = channel_map.find(info.topic_hash);

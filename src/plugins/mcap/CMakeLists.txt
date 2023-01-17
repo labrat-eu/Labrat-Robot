@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.20.0)
 
+find_package(base64 REQUIRED)
+
 
 # Set the target name from the path.
 get_filename_component(TARGET_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
@@ -29,7 +31,7 @@ set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
 target_include_directories(${TARGET_NAME} PRIVATE ${Protobuf_INCLUDE_DIRS})
 
-target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME} ${Protobuf_LIBRARIES} zstd lz4)
+target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME} ${Protobuf_LIBRARIES} zstd lz4 aklomp::base64)
 
 # Add public header install target.
 install(FILES ${TARGET_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LOCAL_PROJECT_PATH_FULL}/${TARGET_RELATIVE_PATH})
