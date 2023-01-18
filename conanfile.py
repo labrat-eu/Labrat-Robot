@@ -61,6 +61,9 @@ class LabratRobotConan(ConanFile):
         self.build_requires('foxglove-websocket/0.0.1')
 
     def export(self):
+        git = tools.Git()
+        git.run("submodule update --init")
+        
         update_conandata(self, {"version_data": self.version_data})
 
     def _configure_cmake(self):
