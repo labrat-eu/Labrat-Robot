@@ -8,17 +8,22 @@ variables:
   CONAN_LOGIN_USERNAME: "None"
     
 .build-template: &build-template
+  stage: build
+  cache:
+    paths:
+      - ~/.conan/
   before_script:
     - sudo pip install --upgrade conan_package_tools
     - conan user
+    - pip install regex
+    - git config --global --add safe.directory '*'
   script:
-    - conan create . labrat.eu+robot/ci
+    - conan create . labrat.eu+robot/ci --build=missing
     #- conan remote add gitlab https://gitlab.com/api/v4/packages/conan
     #- conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
     #- conan upload labrat-robot/v0.0.0+49c9aef@labrat.eu+robot/ci --all -r gitlab
 
 build-clang-14:
-  stage: build
   image: conanio/clang14-ubuntu18.04
   <<: *build-template
 

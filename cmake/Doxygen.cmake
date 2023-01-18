@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20.0)
+cmake_minimum_required(VERSION 3.15.0)
 
 function(prj_add_doxygen_targets)
   set(DOXYFILE ${PROJECT_SOURCE_DIR}/.doxygen/doxyfile)
