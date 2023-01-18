@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15.0)
+cmake_minimum_required(VERSION 3.25.1)
 
 # Set C++20 standard.
 set(CMAKE_CXX_STANDARD 20)

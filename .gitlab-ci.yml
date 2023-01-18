@@ -11,14 +11,17 @@ variables:
   stage: build
   cache:
     paths:
-      - ~/.conan/
+      - .tmp/
   before_script:
-    - sudo pip install --upgrade conan_package_tools
+    - export CONAN_USER_HOME=$(pwd)/.tmp/
+    - pip install --upgrade conan_package_tools
     - conan user
+    - conan profile new ci --detect --force
+    - conan profile update settings.compiler.libcxx=libc++ ci
     - pip install regex
     - git config --global --add safe.directory '*'
   script:
-    - conan create . labrat.eu+robot/ci --build=missing
+    - conan create . labrat.eu+robot/ci --build=missing -pr:b=ci -pr:h=ci
     #- conan remote add gitlab https://gitlab.com/api/v4/packages/conan
     #- conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
     #- conan upload labrat-robot/v0.0.0+49c9aef@labrat.eu+robot/ci --all -r gitlab

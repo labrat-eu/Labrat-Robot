@@ -34,7 +34,7 @@ class LabratRobotConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False], "with_system_deps": [True, False]}
     default_options = {"shared": True, "fPIC": True, "with_system_deps": False}
-    generators = "cmake", "virtualrunenv"
+    generators = "cmake"
     exports_sources = ("CMakeLists.txt", "src/*", "cmake/*", "install/*", "submodules/*", ".clang/*", ".doxygen/*", ".scripts/*")
 
     def __init__(self, output, runner, display_name="", user=None, channel=None):
@@ -55,7 +55,8 @@ class LabratRobotConan(ConanFile):
         if self.options.with_system_deps:
             return
 
-        self.build_requires('protobuf/3.21.4')
+        self.build_requires('cmake/3.25.1')
+        self.build_requires('protobuf/3.21.9')
         self.build_requires('mcap/0.5.0')
         self.build_requires('foxglove-websocket/0.0.1')
 

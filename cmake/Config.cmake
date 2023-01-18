@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15.0)
+cmake_minimum_required(VERSION 3.25.1)
 
 # Set project name
 set(LOCAL_PROJECT_NAME robot)

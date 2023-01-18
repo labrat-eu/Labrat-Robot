@@ -32,7 +32,7 @@ class LabratRobotExamplesConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"with_system_deps": [True, False]}
     default_options = {"with_system_deps": False}
-    generators = "cmake", "virtualrunenv"
+    generators = "cmake"
     exports_sources = ("CMakeLists.txt", "src/*")
 
     def __init__(self, output, runner, display_name="", user=None, channel=None):

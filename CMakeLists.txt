@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15.0)
+cmake_minimum_required(VERSION 3.25.1)
 
 # Set used languages.
 set(USED_LANGUAGES CXX C ASM)
@@ -146,7 +146,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 # Set correct linking path.
 include(GNUInstallDirs)
-set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
+list(APPEND CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR})
 
 
 # TODO: add description
