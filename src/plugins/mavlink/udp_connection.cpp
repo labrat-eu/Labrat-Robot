@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 namespace labrat::robot::plugins {
 
