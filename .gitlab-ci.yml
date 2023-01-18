@@ -1,0 +1,24 @@
+stages:
+  - build
+
+variables:
+  CONAN_USERNAME: "None"
+  CONAN_REFERENCE: "test/v1"
+  CONAN_CHANNEL: "None"
+  CONAN_LOGIN_USERNAME: "None"
+    
+.build-template: &build-template
+  before_script:
+    - sudo pip install --upgrade conan_package_tools
+    - conan user
+  script:
+    - conan create . labrat.eu+robot/ci
+    #- conan remote add gitlab https://gitlab.com/api/v4/packages/conan
+    #- conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
+    #- conan upload labrat-robot/v0.0.0+49c9aef@labrat.eu+robot/ci --all -r gitlab
+
+build-clang-14:
+  stage: build
+  image: conanio/clang14-ubuntu18.04
+  <<: *build-template
+

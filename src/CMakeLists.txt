@@ -37,8 +37,6 @@ set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
 # Add subtarget source directory.
 add_subdirectory(msg)
 add_subdirectory(plugins)
-add_subdirectory(test)
-add_subdirectory(examples)
 add_subdirectory(utils)
 
 

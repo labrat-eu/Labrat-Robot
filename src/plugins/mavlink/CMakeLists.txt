@@ -26,6 +26,7 @@ set(TARGET_SOURCES
 add_subdirectory(msg)
 
 add_library(${TARGET_NAME} SHARED ${TARGET_HEADERS} ${TARGET_SOURCES})
+add_dependencies(robot_plugins ${TARGET_NAME})
 
 # Set shared object properties.
 set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${GIT_VERSION})

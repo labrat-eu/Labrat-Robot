@@ -1,5 +1,6 @@
+#include <helper.hpp>
+
 #include <labrat/robot/manager.hpp>
-#include <labrat/robot/test/helper.hpp>
 
 #include <thread>
 

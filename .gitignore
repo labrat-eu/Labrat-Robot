@@ -29,3 +29,6 @@ docker-compose.yml
 
 # coverage reports
 report*
+
+# Python
+*.pyc

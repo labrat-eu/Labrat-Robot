@@ -1,6 +1,7 @@
+#include <helper.hpp>
+
 #include <labrat/robot/manager.hpp>
 #include <labrat/robot/plugins/mcap/recorder.hpp>
-#include <labrat/robot/test/helper.hpp>
 
 #include <cmath>
 #include <thread>
