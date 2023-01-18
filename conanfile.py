@@ -22,7 +22,7 @@ class VersionInfo(dict):
         super().__setitem__("version_patch", search.group(3))
         
         super().__setitem__("version", "%s.%s.%s" % (self["version_major"], self["version_minor"], self["version_patch"]))
-        super().__setitem__("semver", "v%s+%s" % (self["version"], self["hash_short"]) if at_tag else self["version"])
+        super().__setitem__("semver", "v%s" % (self["version"]) if at_tag else "v%s+%s" % (self["version"], self["hash_short"]))
 
 class LabratRobotConan(ConanFile):
     name = "labrat-robot"
@@ -63,7 +63,7 @@ class LabratRobotConan(ConanFile):
     def export(self):
         git = tools.Git()
         git.run("submodule update --init")
-        
+
         update_conandata(self, {"version_data": self.version_data})
 
     def _configure_cmake(self):
