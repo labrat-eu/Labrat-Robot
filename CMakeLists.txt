@@ -73,8 +73,10 @@ project(${LOCAL_PROJECT_NAME} VERSION ${GIT_VERSION} DESCRIPTION ${LOCAL_PROJECT
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(SKIP_STD SKIP_FPIC)
 
+message(STATUS CMAKE_MODULE_PATH=${CMAKE_MODULE_PATH})
+message(STATUS CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH})
+
 # Define variables and options here.
-prj_register_var(DOCKER_IMAGE "Name of the docker image to be built." ${PROJECT_NAME})
 prj_register_option(ENABLE_COVERAGE "Enable generation of code coverage information once the application is run." OFF)
 prj_register_option(ENABLE_PROFILING "Enable generation of profiling information once the application is run." OFF)
 prj_register_option(ENABLE_LINTING "Enable the use of various linters (e.g. clang-tidy etc.)." OFF)
