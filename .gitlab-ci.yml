@@ -45,6 +45,7 @@ stages:
 
 
 .build-generic: &build-generic |
+  conan remove --force $CONAN_NAME/*
   conan create . $CONAN_USER/$CONAN_CHANNEL --build=missing -pr:h=ci
 
 .test-generic: &test-generic |
