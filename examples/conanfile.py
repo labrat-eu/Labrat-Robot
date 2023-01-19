@@ -53,8 +53,9 @@ class LabratRobotExamplesConan(ConanFile):
         if self.options.with_system_deps:
             return
 
+        self.build_requires('cmake/3.25.1')
         self.build_requires('labrat-robot/%s' % (self.version))
-        self.build_requires('protobuf/3.21.4')
+        self.build_requires('protobuf/3.21.9')
 
     def export(self):
         update_conandata(self, {"version_data": self.version_data})
