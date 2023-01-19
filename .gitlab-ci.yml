@@ -22,9 +22,9 @@ variables:
     - git config --global --add safe.directory '*'
   script:
     - conan create . labrat.eu+robot/ci --build=missing -pr:h=ci
-    #- conan remote add gitlab https://gitlab.com/api/v4/packages/conan
-    #- conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
-    #- conan upload labrat-robot/v0.0.0+49c9aef@labrat.eu+robot/ci --all -r gitlab
+    - conan remote add gitlab https://gitlab.com/api/v4/packages/conan
+    - conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
+    - conan upload $(conan info . | grep -oE "labrat-robot/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-Z0-9\-]+)" | head -n1)@labrat.eu+robot/ci --all -r gitlab
 
 build-clang-14:
   image: conanio/clang14-ubuntu18.04
