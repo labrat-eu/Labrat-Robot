@@ -5,6 +5,7 @@ stages:
 
 
 .setup-generic: &setup-generic |
+  git config --global --add safe.directory '*'
   export CONAN_USER_HOME=$(pwd)/.tmp/
   pip install --upgrade conan_package_tools
   pip install regex
@@ -13,8 +14,7 @@ stages:
   echo -e "\n[build_requires]\n&: cmake/3.25.1" >> .tmp/.conan/profiles/ci
   conan remote add --force gitlab https://gitlab.com/api/v4/packages/conan
   conan user -c
-  git config --global --add safe.directory '*'
-#  conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
+  conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
 
 
 .setup-clang: &setup-clang
@@ -48,7 +48,7 @@ stages:
   conan create . $CONAN_USER/$CONAN_CHANNEL --build=missing -pr:h=ci
 
 .test-generic: &test-generic |
-  conan test --build=missing -pr:h=ci -pr:b=ci testing $(conan info . | grep -oE "$CONAN_NAME/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-Z0-9\-]+)" | head -n1)@$CONAN_USER/$CONAN_CHANNEL
+  conan test --build=missing -pr:h=ci testing $(conan info . | grep -oE "$CONAN_NAME/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-Z0-9\-]+)" | head -n1)@$CONAN_USER/$CONAN_CHANNEL
 
 .deploy-generic: &deploy-generic |
   conan upload $(conan info . | grep -oE "$CONAN_NAME/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-Z0-9\-]+)" | head -n1)@$CONAN_USER/$CONAN_CHANNEL --all -r gitlab
