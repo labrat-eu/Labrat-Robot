@@ -1,32 +1,96 @@
 stages:
   - build
+  - test
+  - deploy
 
-variables:
-  CONAN_USERNAME: "None"
-  CONAN_REFERENCE: "test/v1"
-  CONAN_CHANNEL: "None"
-  CONAN_LOGIN_USERNAME: "None"
-    
-.build-template: &build-template
-  stage: build
+
+.setup-generic: &setup-generic |
+  export CONAN_USER_HOME=$(pwd)/.tmp/
+  pip install --upgrade conan_package_tools
+  pip install regex
+  conan profile new ci --detect --force
+  conan remote add gitlab https://gitlab.com/api/v4/packages/conan
+  conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
+  git config --global --add safe.directory '*'
+  
+
+.setup-clang: &setup-clang
   cache:
+    key: clang
     paths:
       - .tmp/
+  variables:
+    CONAN_NAME: "labrat-robot"
+    CONAN_USER: "labrat.eu+robot"
+    CONAN_CHANNEL: "clang"
   before_script:
-    - export CONAN_USER_HOME=$(pwd)/.tmp/
-    - pip install --upgrade conan_package_tools
-    - conan user
-    - conan profile new ci --detect --force
+    - *setup-generic
     - conan profile update settings.compiler.libcxx=libc++ ci
-    - pip install regex
-    - git config --global --add safe.directory '*'
-  script:
-    - conan create . labrat.eu+robot/ci --build=missing -pr:h=ci
-    - conan remote add gitlab https://gitlab.com/api/v4/packages/conan
-    - conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
-    - conan upload $(conan info . | grep -oE "labrat-robot/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-Z0-9\-]+)" | head -n1)@labrat.eu+robot/ci --all -r gitlab
+
+.setup-gcc: &setup-gcc
+  cache:
+    key: gcc
+    paths:
+      - .tmp/
+  variables:
+    CONAN_NAME: "labrat-robot"
+    CONAN_USER: "labrat.eu+robot"
+    CONAN_CHANNEL: "gcc"
+  before_script:
+    - *setup-generic
+    - conan profile update settings.compiler.libcxx=libstdc++11 ci
+
+
+.build-generic: &build-generic |
+  conan create . $CONAN_USER/$CONAN_CHANNEL --build=missing -pr:h=ci
+
+.test-generic: &test-generic |
+  conan test testing $CONAN_NAME/$(conan info . | grep -oE "$CONAN_NAME/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-Z0-9\-]+)" | head -n1)
+
+.deploy-generic: &deploy-generic |
+  conan upload $(conan info . | grep -oE "$CONAN_NAME/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-Z0-9\-]+)" | head -n1)@$CONAN_USER/$CONAN_CHANNEL --all -r gitlab
+
 
 build-clang-14:
+  stage: build
   image: conanio/clang14-ubuntu18.04
-  <<: *build-template
+  <<: *setup-clang
+  script:
+    - *build-generic
+
+test-clang-14:
+  stage: test
+  image: conanio/clang14-ubuntu18.04
+  <<: *setup-clang
+  script:
+    - *test-generic
+
+deploy-clang-14:
+  stage: deploy
+  image: conanio/clang14-ubuntu18.04
+  <<: *setup-clang
+  script:
+    - *deploy-generic
+
+
+build-gcc-12:
+  stage: build
+  image: conanio/gcc12-ubuntu18.04
+  <<: *setup-gcc
+  script:
+    - *build-generic
+
+test-gcc-12:
+  stage: test
+  image: conanio/gcc12-ubuntu18.04
+  <<: *setup-gcc
+  script:
+    - *test-generic
+
+deploy-gcc-12:
+  stage: deploy
+  image: conanio/gcc12-ubuntu18.04
+  <<: *setup-gcc
+  script:
+    - *deploy-generic
 
