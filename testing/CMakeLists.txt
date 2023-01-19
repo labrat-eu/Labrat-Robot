@@ -15,6 +15,9 @@ project(test CXX)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(SKIP_STD SKIP_FPIC)
 
+# Save the command line compile commands in the build output.
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
 find_package(labrat_robot REQUIRED)
 find_package(Protobuf MODULE REQUIRED)
 find_package(GTest REQUIRED)

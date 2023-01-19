@@ -47,10 +47,12 @@ public:
 
   ~FoxgloveServerPrivate() {
     Manager::get().removePlugin(self_reference);
-
+    
+    /*
     for (const std::pair<std::size_t, foxglove::websocket::ChannelId> channel : channel_map) {
       server.removeChannel(channel.second);
     }
+    */
 
     server.stop();
     run_thread.join();
