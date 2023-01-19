@@ -18,16 +18,6 @@ include(IncludeSymlinks)
 # Include global packages.
 find_package(PkgConfig)
 
-# Set C++20 standard.
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Set C11 standard.
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
-
 # Set build types.
 set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo)
 
@@ -71,7 +61,7 @@ add_compile_definitions(
 project(${LOCAL_PROJECT_NAME} VERSION ${GIT_VERSION} DESCRIPTION ${LOCAL_PROJECT_DESCRIPTION} LANGUAGES ${USED_LANGUAGES})
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(SKIP_STD SKIP_FPIC)
+conan_basic_setup(SKIP_FPIC)
 
 # Define variables and options here.
 prj_register_option(ENABLE_COVERAGE "Enable generation of code coverage information once the application is run." OFF)
