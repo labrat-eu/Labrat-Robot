@@ -1,6 +1,7 @@
 from conans import ConanFile, CMake, tools
 
 class LabratRobotTestConan(ConanFile):
+    settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
 
     def build_requirements(self):
