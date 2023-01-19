@@ -73,6 +73,9 @@ test:clang-14:
 deploy:clang-14:
   stage: deploy
   needs: ["test:clang-14"]
+  only:
+    refs:
+      - main
   image: conanio/clang14-ubuntu18.04
   <<: *setup-clang
   script:
@@ -97,6 +100,9 @@ test:gcc-12:
 deploy:gcc-12:
   stage: deploy
   needs: ["test:gcc-12"]
+  only:
+    refs:
+      - main
   image: conanio/gcc12-ubuntu18.04
   <<: *setup-gcc
   script:
