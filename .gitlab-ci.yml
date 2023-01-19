@@ -10,6 +10,7 @@ stages:
   pip install regex
   conan profile new ci --detect --force
   conan remote add gitlab https://gitlab.com/api/v4/packages/conan
+  conan user -c
   conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
   git config --global --add safe.directory '*'
 
