@@ -12,7 +12,7 @@ stages:
   conan remote add gitlab https://gitlab.com/api/v4/packages/conan
   conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
   git config --global --add safe.directory '*'
-  
+
 
 .setup-clang: &setup-clang
   cache:
@@ -51,46 +51,49 @@ stages:
   conan upload $(conan info . | grep -oE "$CONAN_NAME/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-Z0-9\-]+)" | head -n1)@$CONAN_USER/$CONAN_CHANNEL --all -r gitlab
 
 
-build-clang-14:
+build:clang-14:
   stage: build
   image: conanio/clang14-ubuntu18.04
   <<: *setup-clang
   script:
     - *build-generic
 
-test-clang-14:
+test:clang-14:
   stage: test
+  needs: ["build:clang-14"]
   image: conanio/clang14-ubuntu18.04
   <<: *setup-clang
   script:
     - *test-generic
 
-deploy-clang-14:
+deploy:clang-14:
   stage: deploy
+  needs: ["test:clang-14"]
   image: conanio/clang14-ubuntu18.04
   <<: *setup-clang
   script:
     - *deploy-generic
 
 
-build-gcc-12:
+build:gcc-12:
   stage: build
   image: conanio/gcc12-ubuntu18.04
   <<: *setup-gcc
   script:
     - *build-generic
 
-test-gcc-12:
+test:gcc-12:
   stage: test
+  needs: ["build:gcc-12"]
   image: conanio/gcc12-ubuntu18.04
   <<: *setup-gcc
   script:
     - *test-generic
 
-deploy-gcc-12:
+deploy:gcc-12:
   stage: deploy
+  needs: ["test:gcc-12"]
   image: conanio/gcc12-ubuntu18.04
   <<: *setup-gcc
   script:
     - *deploy-generic
-
