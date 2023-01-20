@@ -76,20 +76,21 @@ deploy:clang-14:
   only:
     refs:
       - main
+      - tags
   image: conanio/clang14-ubuntu18.04
   <<: *setup-clang
   script:
     - *deploy-generic
 
 
-build:gcc-12:
+.build:gcc-12:
   stage: build
   image: conanio/gcc12-ubuntu18.04
   <<: *setup-gcc
   script:
     - *build-generic
 
-test:gcc-12:
+.test:gcc-12:
   stage: test
   needs: ["build:gcc-12"]
   image: conanio/gcc12-ubuntu18.04
@@ -97,12 +98,13 @@ test:gcc-12:
   script:
     - *test-generic
 
-deploy:gcc-12:
+.deploy:gcc-12:
   stage: deploy
   needs: ["test:gcc-12"]
   only:
     refs:
       - main
+      - tags
   image: conanio/gcc12-ubuntu18.04
   <<: *setup-gcc
   script:
