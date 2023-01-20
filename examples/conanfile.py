@@ -39,7 +39,7 @@ class LabratRobotExamplesConan(ConanFile):
         try:
             self.version_data = VersionInfo()
         except:
-            self.version_data = self.files.conan_data["version_data"]
+            self.version_data = self.conan_data["version_data"]
 
         self.version = self.version_data["semver"]
 
