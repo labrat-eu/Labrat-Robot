@@ -1076,7 +1076,7 @@ private:
   template <typename MessageType>
   typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr addReceiver(const std::string &topic_name) {
     typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr result = node.addReceiver<Message<MessageType>, mavlink_message_t>(topic_name, MavlinkReceiver::convert<MessageType>, &system_info);
-    result->setCallback(MavlinkReceiver::callback<MessageType>, &node);
+    result->setCallback(MavlinkReceiver::callback<MessageType>, this);
 
     return result;
   }
