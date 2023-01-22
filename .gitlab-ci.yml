@@ -1,23 +1,29 @@
 stages:
+  - setup
   - build
   - test
   - deploy
 
 
-.setup-generic: &setup-generic |
+.init-docker: &init-docker |
+  docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+
+
+.init-generic: &init-generic |
   git config --global --add safe.directory '*'
   export CONAN_USER_HOME=$(pwd)/.tmp/
   pip install --upgrade conan_package_tools
   pip install regex
   conan profile new ci --detect --force
   conan profile update settings.compiler.cppstd=20 ci
+  conan profile update settings.compiler.libcxx=libstdc++11 ci
   echo -e "\n[build_requires]\n&: cmake/3.25.1" >> .tmp/.conan/profiles/ci
   conan remote add --force gitlab https://gitlab.com/api/v4/packages/conan
   conan user -c
   conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
 
 
-.setup-clang: &setup-clang
+.init-clang: &init-clang
   cache:
     key: clang
     paths:
@@ -27,10 +33,9 @@ stages:
     CONAN_USER: "labrat.eu+robot"
     CONAN_CHANNEL: "clang"
   before_script:
-    - *setup-generic
-    - conan profile update settings.compiler.libcxx=libc++ ci
+    - *init-generic
 
-.setup-gcc: &setup-gcc
+.init-gcc: &init-gcc
   cache:
     key: gcc
     paths:
@@ -40,8 +45,7 @@ stages:
     CONAN_USER: "labrat.eu+robot"
     CONAN_CHANNEL: "gcc"
   before_script:
-    - *setup-generic
-    - conan profile update settings.compiler.libcxx=libstdc++11 ci
+    - *init-generic
 
 
 .build-generic: &build-generic |
@@ -55,18 +59,34 @@ stages:
   conan upload $(conan info . | grep -oE "$CONAN_NAME/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-Z0-9\-]+)?" | head -n1)@$CONAN_USER/$CONAN_CHANNEL --all -r gitlab
 
 
+setup:clang-14:
+  stage: setup
+  only:
+    changes:
+      - .ci/clang-14/*
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - *init-docker
+  script:
+    - cd .ci/clang-14
+    - docker build -t $CI_REGISTRY_IMAGE:clang-14 .
+    - docker push $CI_REGISTRY_IMAGE:clang-14
+
+
 build:clang-14:
   stage: build
-  image: conanio/clang14-ubuntu18.04
-  <<: *setup-clang
+  image: $CI_REGISTRY_IMAGE:clang-14
+  <<: *init-clang
   script:
     - *build-generic
 
 test:clang-14:
   stage: test
   needs: ["build:clang-14"]
-  image: conanio/clang14-ubuntu18.04
-  <<: *setup-clang
+  image: $CI_REGISTRY_IMAGE:clang-14
+  <<: *init-clang
   script:
     - *test-generic
 
@@ -77,8 +97,8 @@ deploy:clang-14:
     refs:
       - main
       - tags
-  image: conanio/clang14-ubuntu18.04
-  <<: *setup-clang
+  image: $CI_REGISTRY_IMAGE:clang-14
+  <<: *init-clang
   script:
     - *deploy-generic
 
@@ -86,7 +106,7 @@ deploy:clang-14:
 .build:gcc-12:
   stage: build
   image: conanio/gcc12-ubuntu18.04
-  <<: *setup-gcc
+  <<: *init-gcc
   script:
     - *build-generic
 
@@ -94,7 +114,7 @@ deploy:clang-14:
   stage: test
   needs: ["build:gcc-12"]
   image: conanio/gcc12-ubuntu18.04
-  <<: *setup-gcc
+  <<: *init-gcc
   script:
     - *test-generic
 
@@ -106,6 +126,6 @@ deploy:clang-14:
       - main
       - tags
   image: conanio/gcc12-ubuntu18.04
-  <<: *setup-gcc
+  <<: *init-gcc
   script:
     - *deploy-generic
