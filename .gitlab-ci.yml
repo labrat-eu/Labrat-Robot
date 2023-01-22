@@ -126,14 +126,14 @@ deploy:clang-14:
     - *deploy-generic
 
 
-.build:gcc-12:
+build:gcc-12:
   stage: build
   image: $CI_REGISTRY_IMAGE:gcc-12
   <<: *init-gcc
   script:
     - *build-generic
 
-.test:gcc-12:
+test:gcc-12:
   stage: test
   needs: ["build:gcc-12"]
   image: $CI_REGISTRY_IMAGE:gcc-12
@@ -141,7 +141,7 @@ deploy:clang-14:
   script:
     - *test-generic
 
-.deploy:gcc-12:
+deploy:gcc-12:
   stage: deploy
   needs: ["test:gcc-12"]
   only:
