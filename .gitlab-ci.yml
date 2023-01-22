@@ -74,6 +74,21 @@ setup:clang-14:
     - docker build -t $CI_REGISTRY_IMAGE:clang-14 .
     - docker push $CI_REGISTRY_IMAGE:clang-14
 
+setup:gcc-12:
+  stage: setup
+  only:
+    changes:
+      - .ci/gcc-12/*
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - *init-docker
+  script:
+    - cd .ci/gcc-12
+    - docker build -t $CI_REGISTRY_IMAGE:gcc-12 .
+    - docker push $CI_REGISTRY_IMAGE:gcc-12
+
 
 build:clang-14:
   stage: build
@@ -105,7 +120,7 @@ deploy:clang-14:
 
 .build:gcc-12:
   stage: build
-  image: conanio/gcc12-ubuntu18.04
+  image: $CI_REGISTRY_IMAGE:gcc-12
   <<: *init-gcc
   script:
     - *build-generic
@@ -113,7 +128,7 @@ deploy:clang-14:
 .test:gcc-12:
   stage: test
   needs: ["build:gcc-12"]
-  image: conanio/gcc12-ubuntu18.04
+  image: $CI_REGISTRY_IMAGE:gcc-12
   <<: *init-gcc
   script:
     - *test-generic
@@ -125,7 +140,7 @@ deploy:clang-14:
     refs:
       - main
       - tags
-  image: conanio/gcc12-ubuntu18.04
+  image: $CI_REGISTRY_IMAGE:gcc-12
   <<: *init-gcc
   script:
     - *deploy-generic
