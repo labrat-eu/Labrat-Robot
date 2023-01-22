@@ -23,6 +23,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <functional>
 
 namespace labrat::robot {
 
@@ -209,6 +210,64 @@ public:
   template <typename ContainerType>
   requires is_container<ContainerType>
   using ContainerSender = Sender<typename ContainerType::MessageType, ContainerType>;
+
+  /**
+   * @brief Generic adapter for a sender.
+   * This allows access to sender objetcs without knowledge of the underlying message types.
+   * 
+   * @tparam ContainerType Container type of the sender object.
+   */
+  template <typename ContainerType>
+  class SenderAdapter {
+  private:
+    SenderAdapter() = default;
+
+    using PutFunction = std::function<void(const ContainerType &)>;
+    PutFunction put_function;
+
+    using FlushFunction = std::function<void()>;
+    FlushFunction flush_function;
+
+  public:
+    SenderAdapter(const SenderAdapter &rhs) : put_function(rhs.put_function), flush_function(rhs.flush_function) {}
+    ~SenderAdapter() = default;
+
+    /**
+     * @brief Get a generic adapter for a Sender object.
+     * 
+     * @tparam MessageType Message type of the sender.
+     * @param sender Sender to encapsulate.
+     * @return SenderAdapter<ContainerType> 
+     */
+    template <typename MessageType>
+    requires is_message<MessageType>
+    static SenderAdapter<ContainerType> get(Sender<MessageType, ContainerType> &sender) {
+      SenderAdapter<ContainerType> result;
+
+      result.put_function = std::bind_front(&Sender<MessageType, ContainerType>::put, &sender);
+      result.flush_function = std::bind_front(&Sender<MessageType, ContainerType>::flush, &sender);
+
+      return result;
+    }
+
+    /**
+     * @brief Send out a message onto the topic.
+     *
+     * @param container Object caintaining the data to be sent out.
+     */
+    void put(const ContainerType &container) {
+      put_function(container);
+    }
+
+    /**
+     * @brief Flush all receivers of the relevant topic.
+     * This will unblock any waiting receivers calling the next() function and will invalidate the data stored in their buffers.
+     *
+     */
+    void flush() {
+      flush_function();
+    }
+  };
 
   /**
    * @brief Generic class to receive messages from a topic.
@@ -517,6 +576,83 @@ public:
   template <typename ContainerType>
   requires is_container<ContainerType>
   using ContainerReceiver = Receiver<typename ContainerType::MessageType, ContainerType>;
+
+  /**
+   * @brief Generic adapter for a receiver.
+   * This allows access to receiver objetcs without knowledge of the underlying message types.
+   * 
+   * @tparam ContainerType Container type of the receiver object.
+   */
+  template <typename ContainerType>
+  class ReceiverAdapter {
+  private:
+    ReceiverAdapter() = default;
+
+    //using PutFunction = void(*)(void *, const ContainerType &);
+    using LatestFunction = std::function<ContainerType()>;
+    LatestFunction latest_function;
+
+    using NextFunction = std::function<ContainerType()>;
+    NextFunction next_function;
+
+    using NewDataAvailableFunction = std::function<bool()>;
+    NewDataAvailableFunction new_data_available_function;
+
+  public:
+    ReceiverAdapter(const ReceiverAdapter &rhs) : latest_function(rhs.latest_function), next_function(rhs.next_function), new_data_available_function(rhs.new_data_available_function) {}
+    ~ReceiverAdapter() = default;
+
+    /**
+     * @brief Get a generic adapter for a Receiver object.
+     * 
+     * @tparam MessageType Message type of the receiver.
+     * @param receiver Receiver to encapsulate.
+     * @return ReceiverAdapter<ContainerType> 
+     */
+    template <typename MessageType>
+    requires is_message<MessageType>
+    static ReceiverAdapter<ContainerType> get(Receiver<MessageType, ContainerType> &receiver) {
+      ReceiverAdapter<ContainerType> result;
+
+      result.latest_function = std::bind_front(&Receiver<MessageType, ContainerType>::latest, &receiver);
+      result.next_function = std::bind_front(&Receiver<MessageType, ContainerType>::next, &receiver);
+      result.new_data_available_function = std::bind_front(&Receiver<MessageType, ContainerType>::newDataAvailable, &receiver);
+
+      return result;
+    }
+
+    /**
+     * @brief Get the lastest message sent over the topic.
+     * This call is guaranteed to not block.
+     *
+     * @return ContainerType The latest message sent over the topic.
+     * @throw TopicNoDataAvailableException When the topic has no valid data available.
+     */
+    ContainerType latest() {
+      return latest_function();
+    };
+
+    /**
+     * @brief Get the next message sent over the topic.
+     * This call might block. However, it guaranteed that successive calls will yield different messages.
+     *
+     * @return ContainerType The next message sent over the topic.
+     * @throw TopicNoDataAvailableException When the topic has no valid data available.
+     */
+    ContainerType next() {
+      return next_function();
+    };
+
+    /**
+     * @brief Check whether new data is available on the topic and a call to next() will not block.
+     *
+     * @return true New data is availabe, a call to next() will not block.
+     * @return false No new data is availabe, a call to next() will block.
+     */
+    inline bool newDataAvailable() {
+      return new_data_available_function();
+    }
+  };
 
   /**
    * @brief Generic class to handle requests made to a service.

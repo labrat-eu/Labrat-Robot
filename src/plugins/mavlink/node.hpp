@@ -12,17 +12,9 @@
 #include <labrat/robot/node.hpp>
 #include <labrat/robot/plugins/mavlink/connection.hpp>
 
-#include <atomic>
-#include <mutex>
-#include <thread>
-
-typedef struct __mavlink_message mavlink_message_t;
-
 namespace labrat::robot::plugins {
 
-struct MavlinkSender;
-struct MavlinkReceiver;
-struct MavlinkServer;
+class MavlinkNodePrivate;
 
 /**
  * @brief Node to connect itself to a MAVLink network.
@@ -49,31 +41,9 @@ public:
   };
 
 private:
-  void readLoop();
-  void heartbeatLoop();
+  MavlinkNodePrivate *priv;
 
-  void readMessage(const mavlink_message_t &message);
-  void writeMessage(const mavlink_message_t &message);
-
-  MavlinkConnection::Ptr connection;
-
-  std::thread read_thread;
-  std::thread heartbeat_thread;
-  std::atomic_flag exit_flag;
-
-  MavlinkSender *sender;
-  MavlinkReceiver *receiver;
-  MavlinkServer *server;
-
-  std::mutex mutex;
-
-  SystemInfo system_info;
-
-  static constexpr std::size_t buffer_size = 1024;
-
-  friend MavlinkSender;
-  friend MavlinkReceiver;
-  friend MavlinkServer;
+  friend MavlinkNodePrivate;
 };
 
 }  // namespace labrat::robot::plugins
