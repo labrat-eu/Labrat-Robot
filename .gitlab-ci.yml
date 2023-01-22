@@ -35,6 +35,9 @@ stages:
   before_script:
     - *init-generic
     - conan profile update settings.compiler=clang ci
+    - conan profile update settings.compiler.version=14 ci
+    - conan profile update env.CC=clang-14 ci
+    - conan profile update env.CXX=clang++-14 ci
 
 .init-gcc: &init-gcc
   cache:
@@ -48,6 +51,9 @@ stages:
   before_script:
     - *init-generic
     - conan profile update settings.compiler=gcc ci
+    - conan profile update settings.compiler.version=12 ci
+    - conan profile update env.CC=gcc-12 ci
+    - conan profile update env.CXX=g++-12 ci
 
 
 .build-generic: &build-generic |
