@@ -1068,7 +1068,10 @@ private:
   template <typename MessageType>
   typename Node::Sender<Message<MessageType>, mavlink_message_t>::Ptr addSender(const std::string &topic_name, u16 id) {
     typename Node::Sender<Message<MessageType>, mavlink_message_t>::Ptr result = node.addSender<Message<MessageType>, mavlink_message_t>(topic_name, MavlinkSender::convert<MessageType>);
-    sender.map.emplace(std::make_pair(id, Node::SenderAdapter<mavlink_message_t>::get(*result)));
+    
+    if (!sender.map.try_emplace(id, Node::SenderAdapter<mavlink_message_t>::get(*result)).second) {
+      throw ManagementException("A sender has already been registered for the MAVLink message ID '" + std::to_string(id) + "'.");
+    }
 
     return result;
   }
