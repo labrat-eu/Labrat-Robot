@@ -34,6 +34,7 @@ stages:
     CONAN_CHANNEL: "clang"
   before_script:
     - *init-generic
+    - conan profile update settings.compiler=clang ci
 
 .init-gcc: &init-gcc
   cache:
@@ -46,6 +47,7 @@ stages:
     CONAN_CHANNEL: "gcc"
   before_script:
     - *init-generic
+    - conan profile update settings.compiler=gcc ci
 
 
 .build-generic: &build-generic |
