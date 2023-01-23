@@ -57,12 +57,12 @@
 #include <labrat/robot/plugins/mavlink/msg/vfr_hud.pb.h>
 #include <labrat/robot/plugins/mavlink/msg/vibration.pb.h>
 #include <labrat/robot/plugins/mavlink/node.hpp>
+#include <labrat/robot/utils/thread.hpp>
 
 #include <array>
 #include <unordered_map>
 #include <atomic>
 #include <mutex>
-#include <thread>
 
 #include <mavlink/common/mavlink.h>
 
@@ -216,9 +216,8 @@ private:
 
   static constexpr std::size_t buffer_size = 1024;
 
-  std::thread read_thread;
-  std::thread heartbeat_thread;
-  std::atomic_flag exit_flag;
+  utils::LoopThread read_thread;
+  utils::TimerThread heartbeat_thread;
 
   std::mutex mutex;
 };
@@ -1184,30 +1183,22 @@ MavlinkNodePrivate::MavlinkNodePrivate(MavlinkConnection::Ptr &&connection, Mavl
   server.command_long = addServer<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>(
     "/mavlink/srv/command_long", "/mavlink/out/command_long", "/mavlink/in/command_ack");
 
-  exit_flag.clear();
-  read_thread = std::thread(&MavlinkNodePrivate::readLoop, this);
-  heartbeat_thread = std::thread(&MavlinkNodePrivate::heartbeatLoop, this);
+  read_thread = utils::LoopThread(&MavlinkNodePrivate::readLoop, this);
+  heartbeat_thread = utils::TimerThread(&MavlinkNodePrivate::heartbeatLoop, std::chrono::milliseconds(500), this); 
 }
 
-MavlinkNodePrivate::~MavlinkNodePrivate() {
-  exit_flag.test_and_set();
-  read_thread.join();
-  heartbeat_thread.join();
-}
+MavlinkNodePrivate::~MavlinkNodePrivate() = default;
 
 void MavlinkNodePrivate::readLoop() {
   std::array<u8, buffer_size> buffer;
+  const std::size_t number_bytes = connection->read(buffer.data(), buffer_size);
 
-  while (!exit_flag.test()) {
-    const std::size_t number_bytes = connection->read(buffer.data(), buffer_size);
+  for (std::size_t i = 0; i < number_bytes; ++i) {
+    mavlink_message_t message;
+    mavlink_status_t status;
 
-    for (std::size_t i = 0; i < number_bytes; ++i) {
-      mavlink_message_t message;
-      mavlink_status_t status;
-
-      if (mavlink_parse_char(system_info.channel_id, buffer[i], &message, &status) == MAVLINK_FRAMING_OK) {
-        readMessage(message);
-      }
+    if (mavlink_parse_char(system_info.channel_id, buffer[i], &message, &status) == MAVLINK_FRAMING_OK) {
+      readMessage(message);
     }
   }
 }
@@ -1217,11 +1208,7 @@ void MavlinkNodePrivate::heartbeatLoop() {
   mavlink_msg_heartbeat_pack_chan(system_info.system_id, system_info.component_id, system_info.channel_id, &message,
     MAV_TYPE_ONBOARD_CONTROLLER, MAV_AUTOPILOT_INVALID, 0, 0, MAV_STATE_ACTIVE);
 
-  while (!exit_flag.test()) {
-    writeMessage(message);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  }
+  writeMessage(message);
 }
 
 void MavlinkNodePrivate::readMessage(const mavlink_message_t &message) {
