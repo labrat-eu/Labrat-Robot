@@ -38,11 +38,6 @@ add_compile_definitions(
   PRJ_LOCAL_PROJECT_DESCRIPTION="${LOCAL_PROJECT_DESCRIPTION}"
 )
 
-if (NOT DEFINED CONAN_EXPORTED)
-  # Get a version string from git.
-  prj_version_from_git()
-endif()
-
 # Set version definitions.
 add_compile_definitions(
   GIT_VERSION_MAJOR=${GIT_VERSION_MAJOR}
@@ -135,7 +130,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 # Set correct linking path.
 include(GNUInstallDirs)
-list(APPEND CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR})
+list(APPEND CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${LOCAL_PROJECT_NAME_FULL})
 
 
 # TODO: add description
