@@ -5,6 +5,12 @@ stages:
   - deploy
 
 
+variables:
+  CONAN_NAME: "labrat-robot"
+  CONAN_USER: "labrat.eu+robot"
+  CONAN_CHANNEL: "alpha"
+
+
 .init-docker: &init-docker |
   docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 
@@ -28,10 +34,6 @@ stages:
     key: clang
     paths:
       - .tmp/
-  variables:
-    CONAN_NAME: "labrat-robot"
-    CONAN_USER: "labrat.eu+robot"
-    CONAN_CHANNEL: "clang"
   before_script:
     - *init-generic
     - conan profile update settings.compiler=clang ci
@@ -44,10 +46,6 @@ stages:
     key: gcc
     paths:
       - .tmp/
-  variables:
-    CONAN_NAME: "labrat-robot"
-    CONAN_USER: "labrat.eu+robot"
-    CONAN_CHANNEL: "gcc"
   before_script:
     - *init-generic
     - conan profile update settings.compiler=gcc ci
