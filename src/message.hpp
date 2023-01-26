@@ -29,7 +29,7 @@ template <typename T>
 requires std::is_base_of_v<flatbuffers::Table, T>
 class Message {
 public:
-  using Content = T::NativeTableType;
+  using Content = typename T::NativeTableType;
 
   /**
    * @brief Default constructor to only set the timestamp to the current time.
