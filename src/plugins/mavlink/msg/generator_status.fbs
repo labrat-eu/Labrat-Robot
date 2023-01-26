@@ -1,0 +1,17 @@
+namespace mavlink.msg.common;
+
+table GeneratorStatus {
+ status:ulong;
+ battery_current:float;
+ load_current:float;
+ power_generated:float;
+ bus_voltage:float;
+ bat_current_setpoint:float;
+ runtime:uint;
+ time_until_maintenance:int;
+ generator_speed:ushort;
+ rectifier_temperature:short;
+ generator_temperature:short;
+}
+
+root_type GeneratorStatus;

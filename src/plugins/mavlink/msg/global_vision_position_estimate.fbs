@@ -1,0 +1,15 @@
+namespace mavlink.msg.common;
+
+table GlobalVisionPositionEstimate {
+ usec:ulong;
+ x:float;
+ y:float;
+ z:float;
+ roll:float;
+ pitch:float;
+ yaw:float;
+ covariance:[float];
+ reset_counter:ubyte;
+}
+
+root_type GlobalVisionPositionEstimate;

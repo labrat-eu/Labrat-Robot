@@ -22,8 +22,8 @@ TopicMap::Topic::Topic(Handle handle, const std::string &name) : handle(handle),
 void TopicMap::forceFlush() {
   for (std::pair<const std::string, Topic> &entry : map) {
     for (void *pointer : entry.second.getReceivers()) {
-      Node::Receiver<Message<google::protobuf::Message>> *receiver =
-        reinterpret_cast<Node::Receiver<Message<google::protobuf::Message>> *>(pointer);
+      Node::Receiver<Message<flatbuffers::Table>> *receiver =
+        reinterpret_cast<Node::Receiver<Message<flatbuffers::Table>> *>(pointer);
 
       const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
 

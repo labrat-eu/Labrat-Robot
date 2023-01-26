@@ -1,0 +1,21 @@
+namespace mavlink.msg.common;
+
+table HilGps {
+ time_usec:ulong;
+ lat:int;
+ lon:int;
+ alt:int;
+ eph:ushort;
+ epv:ushort;
+ vel:ushort;
+ vn:short;
+ ve:short;
+ vd:short;
+ cog:ushort;
+ fix_type:ubyte;
+ satellites_visible:ubyte;
+ id:ubyte;
+ yaw:ushort;
+}
+
+root_type HilGps;

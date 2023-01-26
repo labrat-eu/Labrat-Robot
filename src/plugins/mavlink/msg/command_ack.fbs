@@ -1,0 +1,12 @@
+namespace mavlink.msg.common;
+
+table CommandAck {
+ command:ushort;
+ result:ubyte;
+ progress:ubyte;
+ result_param2:int;
+ target_system:ubyte;
+ target_component:ubyte;
+}
+
+root_type CommandAck;

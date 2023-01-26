@@ -1,0 +1,11 @@
+namespace mavlink.msg.common;
+
+table LogEntry {
+ time_utc:uint;
+ size:uint;
+ id:ushort;
+ num_logs:ushort;
+ last_log_num:ushort;
+}
+
+root_type LogEntry;

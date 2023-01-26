@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.25.1)
 
+# Include toolchain.
+include(${CMAKE_TOOLCHAIN_FILE})
+
 # Set used languages.
 set(USED_LANGUAGES CXX C ASM)
 
@@ -43,20 +46,17 @@ add_compile_definitions(
   GIT_VERSION_MAJOR=${GIT_VERSION_MAJOR}
   GIT_VERSION_MINOR=${GIT_VERSION_MINOR}
   GIT_VERSION_PATCH=${GIT_VERSION_PATCH}
-  GIT_SEMVER="${GIT_SEMVER}"
-  GIT_VERSION="${GIT_VERSION}"
-  GIT_TAG="${GIT_TAG}"
-  GIT_HASH="${GIT_HASH}"
-  GIT_HASH_SHORT="${GIT_HASH_SHORT}"
-  GIT_BRANCH="${GIT_BRANCH}"
+  GIT_SEMVER=${GIT_SEMVER}
+  GIT_VERSION=${GIT_VERSION}
+  GIT_TAG=${GIT_TAG}
+  GIT_HASH=${GIT_HASH}
+  GIT_HASH_SHORT=${GIT_HASH_SHORT}
+  GIT_BRANCH=${GIT_BRANCH}
 )
-
 
 # Create the root project.
 project(${LOCAL_PROJECT_NAME} VERSION ${GIT_VERSION} DESCRIPTION ${LOCAL_PROJECT_DESCRIPTION} LANGUAGES ${USED_LANGUAGES})
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(SKIP_FPIC)
 
 # Define variables and options here.
 prj_register_option(ENABLE_COVERAGE "Enable generation of code coverage information once the application is run." OFF)
@@ -152,11 +152,3 @@ prj_add_clang_format_targets(SOURCEPATH ${CMAKE_CURRENT_LIST_DIR}/src)
 
 # Add doxygen targets.
 prj_add_doxygen_targets()
-
-# Add a install target for additional configurations.
-install(TARGETS ${LOCAL_PROJECT_NAME} robot_msg mavlink_msg plugins_foxglove-ws plugins_mavlink plugins_mcap EXPORT ${LOCAL_PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${LOCAL_PROJECT_NAME_FULL} ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/${LOCAL_PROJECT_NAME_FULL} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(EXPORT ${LOCAL_PROJECT_NAME} FILE ${LOCAL_PROJECT_NAME_FULL}.cmake NAMESPACE ${LOCAL_PROJECT_NAME_FULL}:: DESTINATION ${CMAKE_INSTALL_DATADIR}/${LOCAL_PROJECT_NAME_FULL})
-
-include(CMakePackageConfigHelpers)
-configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/install/Config.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/${LOCAL_PROJECT_NAME_FULL}Config.cmake INSTALL_DESTINATION ${CMAKE_INSTALL_DATADIR}/${LOCAL_PROJECT_NAME_FULL} PATH_VARS CMAKE_INSTALL_DATADIR)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${LOCAL_PROJECT_NAME_FULL}Config.cmake DESTINATION ${CMAKE_INSTALL_DATADIR}/${LOCAL_PROJECT_NAME_FULL})

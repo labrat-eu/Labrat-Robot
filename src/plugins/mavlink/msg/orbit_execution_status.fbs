@@ -1,0 +1,12 @@
+namespace mavlink.msg.common;
+
+table OrbitExecutionStatus {
+ time_usec:ulong;
+ radius:float;
+ x:int;
+ y:int;
+ z:float;
+ frame:ubyte;
+}
+
+root_type OrbitExecutionStatus;

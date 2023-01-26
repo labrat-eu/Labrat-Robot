@@ -1,0 +1,18 @@
+namespace mavlink.msg.common;
+
+table SetHomePosition {
+ latitude:int;
+ longitude:int;
+ altitude:int;
+ x:float;
+ y:float;
+ z:float;
+ q:[float];
+ approach_x:float;
+ approach_y:float;
+ approach_z:float;
+ target_system:ubyte;
+ time_usec:ulong;
+}
+
+root_type SetHomePosition;

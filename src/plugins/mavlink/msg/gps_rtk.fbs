@@ -1,0 +1,19 @@
+namespace mavlink.msg.common;
+
+table GpsRtk {
+ time_last_baseline_ms:uint;
+ tow:uint;
+ baseline_a_mm:int;
+ baseline_b_mm:int;
+ baseline_c_mm:int;
+ accuracy:uint;
+ iar_num_hypotheses:int;
+ wn:ushort;
+ rtk_receiver_id:ubyte;
+ rtk_health:ubyte;
+ rtk_rate:ubyte;
+ nsats:ubyte;
+ baseline_coords_type:ubyte;
+}
+
+root_type GpsRtk;

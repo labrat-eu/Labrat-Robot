@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package mavlink.msg.common;
-
-message AuthKey {
-  string key = 1; /*<  key*/
-}
-

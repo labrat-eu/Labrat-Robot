@@ -1,0 +1,18 @@
+namespace mavlink.msg.common;
+
+table StorageInformation {
+ time_boot_ms:uint;
+ total_capacity:float;
+ used_capacity:float;
+ available_capacity:float;
+ read_speed:float;
+ write_speed:float;
+ storage_id:ubyte;
+ storage_count:ubyte;
+ status:ubyte;
+ type:ubyte;
+ name:string;
+ storage_usage:ubyte;
+}
+
+root_type StorageInformation;

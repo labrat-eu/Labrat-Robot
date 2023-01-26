@@ -1,0 +1,15 @@
+namespace mavlink.msg.common;
+
+table EscInfo {
+ time_usec:ulong;
+ error_count:[uint];
+ counter:ushort;
+ failure_flags:[ushort];
+ temperature:[short];
+ index:ubyte;
+ count:ubyte;
+ connection_type:ubyte;
+ info:ubyte;
+}
+
+root_type EscInfo;

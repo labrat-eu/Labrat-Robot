@@ -1,0 +1,26 @@
+namespace mavlink.msg.common;
+
+table OnboardComputerStatus {
+ time_usec:ulong;
+ uptime:uint;
+ ram_usage:uint;
+ ram_total:uint;
+ storage_type:[uint];
+ storage_usage:[uint];
+ storage_total:[uint];
+ link_type:[uint];
+ link_tx_rate:[uint];
+ link_rx_rate:[uint];
+ link_tx_max:[uint];
+ link_rx_max:[uint];
+ fan_speed:[short];
+ type:ubyte;
+ cpu_cores:[ubyte];
+ cpu_combined:[ubyte];
+ gpu_cores:[ubyte];
+ gpu_combined:[ubyte];
+ temperature_board:byte;
+ temperature_core:[byte];
+}
+
+root_type OnboardComputerStatus;

@@ -1,0 +1,8 @@
+namespace mavlink.msg.common;
+
+table MessageInterval {
+ interval_us:int;
+ message_id:ushort;
+}
+
+root_type MessageInterval;

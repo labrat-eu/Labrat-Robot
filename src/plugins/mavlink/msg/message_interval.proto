@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package mavlink.msg.common;
-
-message MessageInterval {
-  sint32 interval_us = 1; /*< [us] The interval between two messages A value of -1 indicates this stream is disabled, 0 indicates it is not available, > 0 indicates the interval at which it is sent.*/
-  uint32 message_id = 2; /*<  The ID of the requested MAVLink message v1.0 is limited to 254 messages.*/
-}
-

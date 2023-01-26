@@ -1,0 +1,16 @@
+namespace mavlink.msg.common;
+
+table CameraTrackingImageStatus {
+ point_x:float;
+ point_y:float;
+ radius:float;
+ rec_top_x:float;
+ rec_top_y:float;
+ rec_bottom_x:float;
+ rec_bottom_y:float;
+ tracking_status:ubyte;
+ tracking_mode:ubyte;
+ target_data:ubyte;
+}
+
+root_type CameraTrackingImageStatus;

@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package mavlink.msg.common;
-
-message EncapsulatedData {
-  uint32 seqnr = 1; /*<  sequence number (starting with 0 on every transmission)*/
-  bytes data = 2; /*<  image data bytes*/
-}
-

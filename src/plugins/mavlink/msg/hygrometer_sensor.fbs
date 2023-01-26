@@ -1,0 +1,9 @@
+namespace mavlink.msg.common;
+
+table HygrometerSensor {
+ temperature:short;
+ humidity:ushort;
+ id:ubyte;
+}
+
+root_type HygrometerSensor;

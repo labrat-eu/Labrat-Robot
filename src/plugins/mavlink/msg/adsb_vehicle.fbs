@@ -1,0 +1,19 @@
+namespace mavlink.msg.common;
+
+table AdsbVehicle {
+ icao_address:uint;
+ lat:int;
+ lon:int;
+ altitude:int;
+ heading:ushort;
+ hor_velocity:ushort;
+ ver_velocity:short;
+ flags:ushort;
+ squawk:ushort;
+ altitude_type:ubyte;
+ callsign:string;
+ emitter_type:ubyte;
+ tslc:ubyte;
+}
+
+root_type AdsbVehicle;

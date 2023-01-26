@@ -1,0 +1,12 @@
+namespace mavlink.msg.common;
+
+table VisionSpeedEstimate {
+ usec:ulong;
+ x:float;
+ y:float;
+ z:float;
+ covariance:[float];
+ reset_counter:ubyte;
+}
+
+root_type VisionSpeedEstimate;

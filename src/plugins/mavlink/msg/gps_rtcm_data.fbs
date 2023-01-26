@@ -1,0 +1,9 @@
+namespace mavlink.msg.common;
+
+table GpsRtcmData {
+ flags:ubyte;
+ len:ubyte;
+ data:[ubyte];
+}
+
+root_type GpsRtcmData;

@@ -9,21 +9,15 @@
 #include <labrat/robot/manager.hpp>
 #include <labrat/robot/utils/atomic.hpp>
 
-#include <google/protobuf/stubs/common.h>
-
 namespace labrat::robot {
 
 std::unique_ptr<Manager> Manager::instance;
 
-Manager::Manager() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-}
+Manager::Manager() = default;
 
 Manager::~Manager() {
   topic_map.forceFlush();
   node_map.clear();
-
-  google::protobuf::ShutdownProtobufLibrary();
 }
 
 Manager &Manager::get() {

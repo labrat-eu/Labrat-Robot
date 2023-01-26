@@ -1,0 +1,17 @@
+namespace mavlink.msg.common;
+
+table ScaledImu3 {
+ time_boot_ms:uint;
+ xacc:short;
+ yacc:short;
+ zacc:short;
+ xgyro:short;
+ ygyro:short;
+ zgyro:short;
+ xmag:short;
+ ymag:short;
+ zmag:short;
+ temperature:short;
+}
+
+root_type ScaledImu3;

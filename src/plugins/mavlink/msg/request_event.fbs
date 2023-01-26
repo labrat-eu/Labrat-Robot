@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table RequestEvent {
+ first_sequence:ushort;
+ last_sequence:ushort;
+ target_system:ubyte;
+ target_component:ubyte;
+}
+
+root_type RequestEvent;

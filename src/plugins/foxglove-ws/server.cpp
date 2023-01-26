@@ -7,29 +7,28 @@
  */
 
 #include <labrat/robot/exception.hpp>
-#include <labrat/robot/logger.hpp>
 #include <labrat/robot/manager.hpp>
+#include <labrat/robot/message.hpp>
+#include <labrat/robot/logger.hpp>
 #include <labrat/robot/plugins/foxglove-ws/server.hpp>
 
 #include <chrono>
 #include <queue>
 
 #include <base64/Base64.h>
-#include <google/protobuf/descriptor.pb.h>
-
 #include <foxglove/websocket/server.hpp>
 
 namespace labrat::robot::plugins {
 
 class FoxgloveServerPrivate {
 public:
-  FoxgloveServerPrivate(const std::string &name, u16 port, const Plugin::Filter &filter) : server(port, name) {
-    server.setSubscribeHandler([](foxglove::websocket::ChannelId channel_id) {
-      Logger("foxglove-ws")() << "First client subscribed to " << channel_id;
+  FoxgloveServerPrivate(const std::string &name, u16 port, const Plugin::Filter &filter) : server(port, name), logger("foxglove-ws") {
+    server.setSubscribeHandler([this](foxglove::websocket::ChannelId channel_id) {
+      logger() << "First client subscribed to " << channel_id;
     });
 
-    server.setUnsubscribeHandler([](foxglove::websocket::ChannelId channel_id) {
-      Logger("foxglove-ws")() << "Last client unsubscribed from " << channel_id;
+    server.setUnsubscribeHandler([this](foxglove::websocket::ChannelId channel_id) {
+      logger() << "Last client unsubscribed from " << channel_id;
     });
 
     Plugin plugin_info;
@@ -84,9 +83,9 @@ private:
   std::thread run_thread;
 
   Plugin::List::iterator self_reference;
-};
 
-static google::protobuf::FileDescriptorSet buildFileDescriptorSet(const google::protobuf::Descriptor *top_descriptor);
+  Logger logger;
+};
 
 FoxgloveServer::FoxgloveServer(const std::string &name, u16 port, const Plugin::Filter &filter) {
   priv = new FoxgloveServerPrivate(name, port, filter);
@@ -111,16 +110,23 @@ void FoxgloveServerPrivate::messageCallback(void *user_ptr, const Plugin::Messag
 FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleTopic(const Plugin::TopicInfo &info) {
   SchemaMap::iterator schema_iterator = schema_map.find(info.type_hash);
   if (schema_iterator == schema_map.end()) {
+    MessageReflection reflection(info.type_name);
+
+    if (!reflection.isValid()) {
+      logger.debug() << "Unknown message schema '" << info.type_name << "'.";
+      return channel_map.end();
+    }
+
     schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
-      std::forward_as_tuple(info.type_descriptor->full_name(),
-      macaron::Base64::Encode(buildFileDescriptorSet(info.type_descriptor).SerializeAsString())));
+      std::forward_as_tuple(info.type_name,
+      macaron::Base64::Encode(reflection.getBuffer())));
   }
 
   ChannelMap::iterator channel_iterator = channel_map.find(info.topic_hash);
   if (channel_iterator == channel_map.end()) {
     foxglove::websocket::ChannelId channel_id = server.addChannel({
       .topic = info.topic_name,
-      .encoding = "protobuf",
+      .encoding = "flatbuffer",
       .schemaName = schema_iterator->second.name,
       .schema = schema_iterator->second.definition,
     });
@@ -135,38 +141,16 @@ inline FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handle
   ChannelMap::iterator channel_iterator = channel_map.find(info.topic_info.topic_hash);
   if (channel_iterator == channel_map.end()) {
     channel_iterator = handleTopic(info.topic_info);
-  }
 
-  std::lock_guard guard(mutex);
-  server.sendMessage(channel_iterator->second, info.timestamp.count(), info.serialized_message);
-
-  return channel_iterator;
-}
-
-static google::protobuf::FileDescriptorSet buildFileDescriptorSet(const google::protobuf::Descriptor *top_descriptor) {
-  google::protobuf::FileDescriptorSet result;
-  std::queue<const google::protobuf::FileDescriptor *> queue;
-
-  queue.push(top_descriptor->file());
-
-  std::unordered_set<std::string> dependencies;
-
-  while (!queue.empty()) {
-    const google::protobuf::FileDescriptor *next = queue.front();
-    queue.pop();
-    next->CopyTo(result.add_file());
-
-    for (int i = 0; i < next->dependency_count(); ++i) {
-      const auto &dep = next->dependency(i);
-
-      if (dependencies.find(dep->name()) == dependencies.end()) {
-        dependencies.insert(dep->name());
-        queue.push(dep);
-      }
+    if (channel_iterator == channel_map.end()) {
+      return channel_iterator;
     }
   }
 
-  return result;
+  std::lock_guard guard(mutex);
+  server.sendMessage(channel_iterator->second, info.timestamp.count(), std::string_view(reinterpret_cast<char *>(info.serialized_message.data()), info.serialized_message.size()));
+
+  return channel_iterator;
 }
 
 }  // namespace labrat::robot::plugins

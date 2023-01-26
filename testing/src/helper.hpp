@@ -1,5 +1,5 @@
 #include <labrat/robot/message.hpp>
-#include <labrat/robot/msg/test.pb.h>
+#include <labrat/robot/msg/test_generated.h>
 #include <labrat/robot/node.hpp>
 
 #include <atomic>
@@ -18,13 +18,13 @@ public:
   double float_field = 0;
 
   static inline void toMessage(const TestContainer &source, TestMessage &destination, const void *) {
-    destination().set_integral_field(source.integral_field);
-    destination().set_float_field(source.float_field);
+    destination().integral_field = source.integral_field;
+    destination().float_field = source.float_field;
   }
 
   static inline void fromMessage(const TestMessage &source, TestContainer &destination, const void *) {
-    destination.integral_field = source().integral_field();
-    destination.float_field = source().float_field();
+    destination.integral_field = source().integral_field;
+    destination.float_field = source().float_field;
   }
 
   bool operator==(const TestContainer &rhs) const {

@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table ParamRequestRead {
+ param_index:short;
+ target_system:ubyte;
+ target_component:ubyte;
+ param_id:string;
+}
+
+root_type ParamRequestRead;

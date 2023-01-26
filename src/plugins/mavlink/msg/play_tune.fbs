@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table PlayTune {
+ target_system:ubyte;
+ target_component:ubyte;
+ tune:string;
+ tune2:string;
+}
+
+root_type PlayTune;

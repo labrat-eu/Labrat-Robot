@@ -1,0 +1,13 @@
+namespace mavlink.msg.common;
+
+table TerrainReport {
+ lat:int;
+ lon:int;
+ terrain_height:float;
+ current_height:float;
+ spacing:ushort;
+ pending:ushort;
+ loaded:ushort;
+}
+
+root_type TerrainReport;

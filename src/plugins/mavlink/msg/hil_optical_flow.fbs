@@ -1,0 +1,18 @@
+namespace mavlink.msg.common;
+
+table HilOpticalFlow {
+ time_usec:ulong;
+ integration_time_us:uint;
+ integrated_x:float;
+ integrated_y:float;
+ integrated_xgyro:float;
+ integrated_ygyro:float;
+ integrated_zgyro:float;
+ time_delta_distance_us:uint;
+ distance:float;
+ temperature:short;
+ sensor_id:ubyte;
+ quality:ubyte;
+}
+
+root_type HilOpticalFlow;

@@ -1,0 +1,8 @@
+namespace mavlink.msg.common;
+
+table CurrentEventSequence {
+ sequence:ushort;
+ flags:ubyte;
+}
+
+root_type CurrentEventSequence;

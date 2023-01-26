@@ -1,28 +1,35 @@
-from conans import ConanFile, CMake, tools
+from conans import ConanFile, tools
+from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain
+import os
 
 class LabratRobotTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake"
+    generators = "CMakeDeps", "CMakeToolchain"
+
+    def requirements(self):
+        self.requires(self.tested_reference_str)
+        self.requires("flatbuffers/22.12.06")
 
     def build_requirements(self):
-        self.build_requires('cmake/3.25.1')
-        self.build_requires('protobuf/3.21.9')
-        self.build_requires('gtest/cci.20210126')
+        self.tool_requires("cmake/3.25.1")
+        self.test_requires("gtest/1.13.0")
 
-    def _configure_cmake(self):
-        cmake = CMake(self)
+    def generate(self):
+        deps = CMakeDeps(self)
+        deps.build_context_activated = ["gtest"]
+        deps.build_context_build_modules = ["gtest"]
+        deps.generate()
 
-        self.run("cmake %s %s" % (self.source_folder, cmake.command_line))
-
-        return cmake
-
-    def _build_target(self, cmake, target = "all"):
-        self.run("cmake --build . --target %s %s -j%d" % (target, cmake.build_config, tools.cpu_count()))
+        toolchain = CMakeToolchain(self)
+        toolchain.variables["CMAKE_RUNTIME_OUTPUT_DIRECTORY"] = os.path.join(self.build_folder, "bin")
+        toolchain.variables["CMAKE_LIBRARY_OUTPUT_DIRECTORY"] = os.path.join(self.build_folder, "lib")
+        toolchain.generate()
 
     def build(self):
-        cmake = self._configure_cmake()
-
-        self._build_target(cmake)
+        cmake = CMake(self)
+        cmake.configure()
+        cmake.build()
 
     def test(self):
-        self.run("ctest")
+        cmake = CMake(self)
+        cmake.test()

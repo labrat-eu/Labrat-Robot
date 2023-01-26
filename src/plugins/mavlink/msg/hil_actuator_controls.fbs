@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table HilActuatorControls {
+ time_usec:ulong;
+ flags:ulong;
+ controls:[float];
+ mode:ubyte;
+}
+
+root_type HilActuatorControls;

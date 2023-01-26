@@ -1,0 +1,8 @@
+namespace mavlink.msg.common;
+
+table SystemTime {
+ time_unix_usec:ulong;
+ time_boot_ms:uint;
+}
+
+root_type SystemTime;

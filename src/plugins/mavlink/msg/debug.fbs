@@ -1,0 +1,9 @@
+namespace mavlink.msg.common;
+
+table Debug {
+ time_boot_ms:uint;
+ value:float;
+ ind:ubyte;
+}
+
+root_type Debug;

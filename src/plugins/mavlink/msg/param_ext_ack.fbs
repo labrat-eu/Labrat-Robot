@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table ParamExtAck {
+ param_id:string;
+ param_value:string;
+ param_type:ubyte;
+ param_result:ubyte;
+}
+
+root_type ParamExtAck;

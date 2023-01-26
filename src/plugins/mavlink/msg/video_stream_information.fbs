@@ -1,0 +1,18 @@
+namespace mavlink.msg.common;
+
+table VideoStreamInformation {
+ framerate:float;
+ bitrate:uint;
+ flags:ushort;
+ resolution_h:ushort;
+ resolution_v:ushort;
+ rotation:ushort;
+ hfov:ushort;
+ stream_id:ubyte;
+ count:ubyte;
+ type:ubyte;
+ name:string;
+ uri:string;
+}
+
+root_type VideoStreamInformation;

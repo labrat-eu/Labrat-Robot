@@ -1,0 +1,14 @@
+namespace mavlink.msg.common;
+
+table NavControllerOutput {
+ nav_roll:float;
+ nav_pitch:float;
+ alt_error:float;
+ aspd_error:float;
+ xtrack_error:float;
+ nav_bearing:short;
+ target_bearing:short;
+ wp_dist:ushort;
+}
+
+root_type NavControllerOutput;

@@ -1,0 +1,9 @@
+namespace mavlink.msg.common;
+
+table SetMode {
+ custom_mode:uint;
+ target_system:ubyte;
+ base_mode:ubyte;
+}
+
+root_type SetMode;

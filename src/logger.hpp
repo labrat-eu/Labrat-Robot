@@ -8,7 +8,7 @@
 #pragma once
 
 #include <labrat/robot/message.hpp>
-#include <labrat/robot/msg/log.pb.h>
+#include <labrat/robot/msg/log_generated.h>
 
 #include <chrono>
 #include <memory>
@@ -109,29 +109,29 @@ public:
     static inline void toMessage(const Entry &source, Message<msg::Log> &destination) {
       switch (source.verbosity) {
         case (Verbosity::critical): {
-          destination().set_verbosity(msg::Log_Verbosity::Log_Verbosity_critical);
+          destination().verbosity = msg::Verbosity::Verbosity_critical;
           break;
         }
 
         case (Verbosity::warning): {
-          destination().set_verbosity(msg::Log_Verbosity::Log_Verbosity_warning);
+          destination().verbosity = msg::Verbosity::Verbosity_warning;
           break;
         }
 
         case (Verbosity::info): {
-          destination().set_verbosity(msg::Log_Verbosity::Log_Verbosity_info);
+          destination().verbosity = msg::Verbosity::Verbosity_info;
           break;
         }
 
         case (Verbosity::debug): {
-          destination().set_verbosity(msg::Log_Verbosity::Log_Verbosity_debug);
+          destination().verbosity = msg::Verbosity::Verbosity_debug;
           break;
         }
       }
 
-      destination().set_timestamp(source.timestamp.count());
-      destination().set_logger_name(source.logger_name);
-      destination().set_message(source.message);
+      destination().timestamp = source.timestamp.count();
+      destination().logger_name = source.logger_name;
+      destination().message = source.message;
     }
   };
 

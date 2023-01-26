@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table Statustext {
+ severity:ubyte;
+ text:string;
+ id:ushort;
+ chunk_seq:ubyte;
+}
+
+root_type Statustext;

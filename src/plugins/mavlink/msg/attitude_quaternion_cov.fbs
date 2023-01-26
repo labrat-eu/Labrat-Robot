@@ -1,0 +1,12 @@
+namespace mavlink.msg.common;
+
+table AttitudeQuaternionCov {
+ time_usec:ulong;
+ q:[float];
+ rollspeed:float;
+ pitchspeed:float;
+ yawspeed:float;
+ covariance:[float];
+}
+
+root_type AttitudeQuaternionCov;

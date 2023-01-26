@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table CameraSettings {
+ time_boot_ms:uint;
+ mode_id:ubyte;
+ zoom_level:float;
+ focus_level:float;
+}
+
+root_type CameraSettings;

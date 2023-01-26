@@ -1,0 +1,13 @@
+namespace mavlink.msg.common;
+
+table AttitudeTarget {
+ time_boot_ms:uint;
+ q:[float];
+ body_roll_rate:float;
+ body_pitch_rate:float;
+ body_yaw_rate:float;
+ thrust:float;
+ type_mask:ubyte;
+}
+
+root_type AttitudeTarget;

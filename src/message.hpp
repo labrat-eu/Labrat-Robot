@@ -9,25 +9,27 @@
 #pragma once
 
 #include <labrat/robot/utils/concepts.hpp>
+#include <labrat/robot/utils/types.hpp>
 
 #include <chrono>
 #include <concepts>
 #include <utility>
+#include <string>
 
-#include <google/protobuf/message_lite.h>
+#include <flatbuffers/flatbuffers.h>
 
 namespace labrat::robot {
 
 /**
- * @brief Wrapper of a protobuf message for use within this library.
+ * @brief Wrapper of a flatbuf message for use within this library.
  *
  * @tparam T
  */
 template <typename T>
-requires std::is_base_of_v<google::protobuf::Message, T>
+requires std::is_base_of_v<flatbuffers::Table, T>
 class Message {
 public:
-  using Content = T;
+  using Content = T::NativeTableType;
 
   /**
    * @brief Default constructor to only set the timestamp to the current time.
@@ -58,18 +60,18 @@ public:
   }
 
   /**
-   * @brief Get the stored protobuf message object.
+   * @brief Get the stored flatbuf message object.
    *
-   * @return Content& Reference to the stored protobuf message object.
+   * @return Content& Reference to the stored flatbuf message object.
    */
   inline Content &get() {
     return content;
   };
 
   /**
-   * @brief Get the stored protobuf message object.
+   * @brief Get the stored flatbuf message object.
    *
-   * @return Content& Reference to the stored protobuf message object.
+   * @return Content& Reference to the stored flatbuf message object.
    */
   inline const Content &get() const {
     return content;
@@ -78,7 +80,7 @@ public:
   /**
    * @brief Alias of get().
    *
-   * @return Content& Reference to the stored protobuf message object.
+   * @return Content& Reference to the stored flatbuf message object.
    */
   inline Content &operator()() {
     return get();
@@ -87,7 +89,7 @@ public:
   /**
    * @brief Alias of get().
    *
-   * @return Content& Reference to the stored protobuf message object.
+   * @return Content& Reference to the stored flatbuf message object.
    */
   inline const Content &operator()() const {
     return get();
@@ -102,6 +104,10 @@ public:
     return timestamp;
   }
 
+  static inline constexpr std::string getName() {
+    return std::string(Content::TableType::GetFullyQualifiedName());
+  }
+
 private:
   std::chrono::nanoseconds timestamp;
   Content content;
@@ -113,6 +119,27 @@ concept is_message = utils::is_specialization_of_v<T, Message>;
 template <typename T>
 concept is_container = requires {
   typename T::MessageType;
+};
+
+class MessageReflection {
+public:
+  template <typename T>
+  requires std::is_base_of_v<flatbuffers::Table, T>
+  MessageReflection() : MessageReflection(Message<T>::getName()) {}
+
+  MessageReflection(const std::string &name);
+
+  inline const std::string &getBuffer() const {
+    return buffer;
+  }
+
+  inline bool isValid() const {
+    return valid;
+  }
+
+private:
+  std::string buffer;
+  bool valid;
 };
 
 /**

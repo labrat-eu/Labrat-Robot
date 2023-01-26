@@ -1,0 +1,22 @@
+namespace mavlink.msg.common;
+
+table SetPositionTargetGlobalInt {
+ time_boot_ms:uint;
+ lat_int:int;
+ lon_int:int;
+ alt:float;
+ vx:float;
+ vy:float;
+ vz:float;
+ afx:float;
+ afy:float;
+ afz:float;
+ yaw:float;
+ yaw_rate:float;
+ type_mask:ushort;
+ target_system:ubyte;
+ target_component:ubyte;
+ coordinate_frame:ubyte;
+}
+
+root_type SetPositionTargetGlobalInt;

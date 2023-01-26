@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package mavlink.msg.common;
-
-message SystemTime {
-  uint64 time_unix_usec = 1; /*< [us] Timestamp (UNIX epoch time)*/
-  uint32 time_boot_ms = 2; /*< [ms] Timestamp (time since system boot)*/
-}
-

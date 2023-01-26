@@ -1,0 +1,11 @@
+namespace mavlink.msg.common;
+
+table OpenDroneIdOperatorId {
+ target_system:ubyte;
+ target_component:ubyte;
+ id_or_mac:[ubyte];
+ operator_id_type:ubyte;
+ operator_id:string;
+}
+
+root_type OpenDroneIdOperatorId;

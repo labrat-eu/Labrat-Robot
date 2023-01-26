@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table TerrainRequest {
+ mask:ulong;
+ lat:int;
+ lon:int;
+ grid_spacing:ushort;
+}
+
+root_type TerrainRequest;

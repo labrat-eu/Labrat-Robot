@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table GpsGlobalOrigin {
+ latitude:int;
+ longitude:int;
+ altitude:int;
+ time_usec:ulong;
+}
+
+root_type GpsGlobalOrigin;

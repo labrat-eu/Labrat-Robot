@@ -1,0 +1,16 @@
+namespace mavlink.msg.common;
+
+table GlobalPositionIntCov {
+ time_usec:ulong;
+ lat:int;
+ lon:int;
+ alt:int;
+ relative_alt:int;
+ vx:float;
+ vy:float;
+ vz:float;
+ covariance:[float];
+ estimator_type:ubyte;
+}
+
+root_type GlobalPositionIntCov;

@@ -1,0 +1,12 @@
+namespace mavlink.msg.common;
+
+table OpenDroneIdSystemUpdate {
+ operator_latitude:int;
+ operator_longitude:int;
+ operator_altitude_geo:float;
+ timestamp:uint;
+ target_system:ubyte;
+ target_component:ubyte;
+}
+
+root_type OpenDroneIdSystemUpdate;

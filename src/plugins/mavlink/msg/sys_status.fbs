@@ -1,0 +1,22 @@
+namespace mavlink.msg.common;
+
+table SysStatus {
+ onboard_control_sensors_present:uint;
+ onboard_control_sensors_enabled:uint;
+ onboard_control_sensors_health:uint;
+ load:ushort;
+ voltage_battery:ushort;
+ current_battery:short;
+ drop_rate_comm:ushort;
+ errors_comm:ushort;
+ errors_count1:ushort;
+ errors_count2:ushort;
+ errors_count3:ushort;
+ errors_count4:ushort;
+ battery_remaining:byte;
+ onboard_control_sensors_present_extended:uint;
+ onboard_control_sensors_enabled_extended:uint;
+ onboard_control_sensors_health_extended:uint;
+}
+
+root_type SysStatus;

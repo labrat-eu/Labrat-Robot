@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package mavlink.msg.common;
-
-message TerrainCheck {
-  sint32 lat = 1; /*< [degE7] Latitude*/
-  sint32 lon = 2; /*< [degE7] Longitude*/
-}
-

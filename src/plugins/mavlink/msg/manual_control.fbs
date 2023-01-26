@@ -1,0 +1,16 @@
+namespace mavlink.msg.common;
+
+table ManualControl {
+ x:short;
+ y:short;
+ z:short;
+ r:short;
+ buttons:ushort;
+ target:ubyte;
+ buttons2:ushort;
+ enabled_extensions:ubyte;
+ s:short;
+ t:short;
+}
+
+root_type ManualControl;

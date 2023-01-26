@@ -1,0 +1,25 @@
+namespace mavlink.msg.common;
+
+table GpsInput {
+ time_usec:ulong;
+ time_week_ms:uint;
+ lat:int;
+ lon:int;
+ alt:float;
+ hdop:float;
+ vdop:float;
+ vn:float;
+ ve:float;
+ vd:float;
+ speed_accuracy:float;
+ horiz_accuracy:float;
+ vert_accuracy:float;
+ ignore_flags:ushort;
+ time_week:ushort;
+ gps_id:ubyte;
+ fix_type:ubyte;
+ satellites_visible:ubyte;
+ yaw:ushort;
+}
+
+root_type GpsInput;

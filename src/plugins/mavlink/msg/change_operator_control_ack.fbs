@@ -1,0 +1,9 @@
+namespace mavlink.msg.common;
+
+table ChangeOperatorControlAck {
+ gcs_system_id:ubyte;
+ control_request:ubyte;
+ ack:ubyte;
+}
+
+root_type ChangeOperatorControlAck;

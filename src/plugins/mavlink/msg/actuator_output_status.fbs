@@ -1,0 +1,9 @@
+namespace mavlink.msg.common;
+
+table ActuatorOutputStatus{
+ time_usec:ulong;
+ active:uint;
+ actuator:[float];
+}
+
+root_type ActuatorOutputStatus;

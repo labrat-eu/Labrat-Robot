@@ -1,0 +1,8 @@
+namespace mavlink.msg.common;
+
+table ExtendedSysState {
+ vtol_state:ubyte;
+ landed_state:ubyte;
+}
+
+root_type ExtendedSysState;

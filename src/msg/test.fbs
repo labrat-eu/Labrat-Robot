@@ -1,0 +1,8 @@
+namespace labrat.robot.msg;
+
+table Test {
+  integral_field:ulong;
+  float_field:double;
+}
+
+root_type Test;

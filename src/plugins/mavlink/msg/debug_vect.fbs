@@ -1,0 +1,11 @@
+namespace mavlink.msg.common;
+
+table DebugVect {
+ time_usec:ulong;
+ x:float;
+ y:float;
+ z:float;
+ name:string;
+}
+
+root_type DebugVect;

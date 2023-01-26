@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package mavlink.msg.common;
-
-message MissionItemReached {
-  uint32 seq = 1; /*<  Sequence*/
-}
-

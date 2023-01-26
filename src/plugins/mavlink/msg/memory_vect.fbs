@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table MemoryVect {
+ address:ushort;
+ ver:ubyte;
+ type:ubyte;
+ value:[byte];
+}
+
+root_type MemoryVect;

@@ -1,0 +1,8 @@
+namespace mavlink.msg.common;
+
+table ParamExtRequestList {
+ target_system:ubyte;
+ target_component:ubyte;
+}
+
+root_type ParamExtRequestList;

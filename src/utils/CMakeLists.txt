@@ -17,6 +17,7 @@ set(TARGET_HEADERS
   final_ptr.hpp
   thread.hpp
   concepts.hpp
+  string.hpp
 )
 
 # Add public header install target.

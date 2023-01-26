@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.25.1)
 
-project(test CXX)
+# Include toolchain.
+include(${CMAKE_TOOLCHAIN_FILE})
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(SKIP_FPIC)
+project(test CXX)
 
 # Save the command line compile commands in the build output.
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-find_package(labrat_robot REQUIRED)
-find_package(Protobuf MODULE REQUIRED)
+find_package(labrat-robot MODULE REQUIRED)
 find_package(GTest REQUIRED)
+include(GoogleTest)
 
 # Set discovery mode.
 set(CMAKE_GTEST_DISCOVER_TESTS_DISCOVERY_MODE POST_BUILD)
@@ -30,10 +30,6 @@ set(TARGET_TEST_SOURCES
 # Create executable target for the unit test.
 add_executable(testing ${TARGET_TEST_SOURCES})
 # Link libraries to the test target.
-target_link_libraries(testing PRIVATE GTest::gtest GTest::gtest_main pthread)
+target_link_libraries(testing PRIVATE labrat-robot::core GTest::gtest GTest::gtest_main pthread)
 # Make tests available to ctest
 gtest_discover_tests(testing DISCOVERY_MODE PRE_TEST)
-
-target_include_directories(testing PRIVATE ${Protobuf_INCLUDE_DIRS})
-
-target_link_libraries(testing PUBLIC labrat_robot::robot labrat_robot::plugins_foxglove-ws labrat_robot::plugins_mavlink labrat_robot::plugins_mcap ${Protobuf_LIBRARIES})

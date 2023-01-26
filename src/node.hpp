@@ -171,14 +171,14 @@ public:
       MessageType message;
       conversion_function(container, message, user_ptr);
 
+      flatbuffers::FlatBufferBuilder builder;
+      builder.Finish(MessageType::Content::TableType::Pack(builder, &message()));
+
       Plugin::MessageInfo message_info = {
         .topic_info = topic_info,
         .timestamp = message.getTimestamp(),
+        .serialized_message = builder.GetBufferSpan(),
       };
-
-      if (!message().SerializeToString(&message_info.serialized_message)) {
-        throw SerializationException("Failure during message serialization.", node.getLogger());
-      }
 
       for (Plugin &plugin : node.environment.plugin_list) {
         if (plugin.delete_flag.test() || !plugin.filter.check(topic_info.topic_hash)) {

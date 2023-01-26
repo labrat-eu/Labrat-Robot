@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table LogRequestList {
+ start:ushort;
+ end:ushort;
+ target_system:ubyte;
+ target_component:ubyte;
+}
+
+root_type LogRequestList;

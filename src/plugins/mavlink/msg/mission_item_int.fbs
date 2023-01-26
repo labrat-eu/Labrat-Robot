@@ -1,0 +1,21 @@
+namespace mavlink.msg.common;
+
+table MissionItemInt {
+ param1:float;
+ param2:float;
+ param3:float;
+ param4:float;
+ x:int;
+ y:int;
+ z:float;
+ seq:ushort;
+ command:ushort;
+ target_system:ubyte;
+ target_component:ubyte;
+ frame:ubyte;
+ current:ubyte;
+ autocontinue:ubyte;
+ mission_type:ubyte;
+}
+
+root_type MissionItemInt;

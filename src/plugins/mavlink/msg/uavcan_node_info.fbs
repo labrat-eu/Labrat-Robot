@@ -1,0 +1,15 @@
+namespace mavlink.msg.common;
+
+table UavcanNodeInfo {
+ time_usec:ulong;
+ uptime_sec:uint;
+ sw_vcs_commit:uint;
+ name:string;
+ hw_version_major:ubyte;
+ hw_version_minor:ubyte;
+ hw_unique_id:[ubyte];
+ sw_version_major:ubyte;
+ sw_version_minor:ubyte;
+}
+
+root_type UavcanNodeInfo;

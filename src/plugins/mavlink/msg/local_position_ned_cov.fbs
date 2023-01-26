@@ -1,0 +1,18 @@
+namespace mavlink.msg.common;
+
+table LocalPositionNedCov {
+ time_usec:ulong;
+ x:float;
+ y:float;
+ z:float;
+ vx:float;
+ vy:float;
+ vz:float;
+ ax:float;
+ ay:float;
+ az:float;
+ covariance:[float];
+ estimator_type:ubyte;
+}
+
+root_type LocalPositionNedCov;

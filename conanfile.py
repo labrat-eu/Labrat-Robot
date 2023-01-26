@@ -1,7 +1,9 @@
-from conans import ConanFile, CMake, tools
+from conans import ConanFile, tools
+from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain
 from conan.tools.files import update_conandata
 import regex
 import os
+
 
 class VersionInfo(dict):
     def __init__(self):
@@ -30,12 +32,12 @@ class LabratRobotConan(ConanFile):
     author = "Max Yvon Zimmermann (maxyvon@gmx.de)"
     url = "https://gitlab.com/labrat.eu/robot"
     description = "Minimal robot framework to provide an alternative to ROS."
-    topics = ("robotics", "messaging")
+    topics = "robotics", "messaging"
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False], "with_system_deps": [True, False]}
     default_options = {"shared": True, "fPIC": True, "with_system_deps": False}
-    generators = "cmake"
-    exports_sources = ("CMakeLists.txt", "src/*", "cmake/*", "install/*", "submodules/*", ".clang/*", ".doxygen/*", ".scripts/*")
+    generators = "CMakeDeps", "CMakeToolchain"
+    exports_sources = "CMakeLists.txt", "src/*", "cmake/*", "submodules/*", ".clang/*", ".doxygen/*", ".scripts/*"
 
     def __init__(self, output, runner, display_name="", user=None, channel=None):
         try:
@@ -51,14 +53,34 @@ class LabratRobotConan(ConanFile):
         if self.settings.os != 'Linux':
             raise Exception("Package is only supported on Linux.")
 
+    def requirements(self):
+        self.requires("flatbuffers/22.12.06")
+        self.requires("mcap/0.5.0")
+        self.requires("foxglove-websocket/0.0.1")
+
     def build_requirements(self):
         if self.options.with_system_deps:
             return
 
-        self.build_requires('cmake/3.25.1')
-        self.build_requires('protobuf/3.21.9')
-        self.build_requires('mcap/0.5.0')
-        self.build_requires('foxglove-websocket/0.0.1')
+        self.tool_requires("cmake/3.25.1")
+
+    def generate(self):
+        deps = CMakeDeps(self)
+        deps.generate()
+
+        toolchain = CMakeToolchain(self)
+        toolchain.variables["CMAKE_RUNTIME_OUTPUT_DIRECTORY"] = os.path.join(self.build_folder, "bin")
+        toolchain.variables["CMAKE_LIBRARY_OUTPUT_DIRECTORY"] = os.path.join(self.build_folder, "lib")
+        toolchain.variables["GIT_VERSION_MAJOR"] = self.version_data["version_major"]
+        toolchain.variables["GIT_VERSION_MINOR"] = self.version_data["version_minor"]
+        toolchain.variables["GIT_VERSION_PATCH"] = self.version_data["version_patch"]
+        toolchain.variables["GIT_SEMVER"] = self.version_data["semver"]
+        toolchain.variables["GIT_VERSION"] = self.version_data["version"]
+        toolchain.variables["GIT_TAG"] = self.version_data["tag"]
+        toolchain.variables["GIT_HASH"] = self.version_data["hash"]
+        toolchain.variables["GIT_HASH_SHORT"] = self.version_data["hash_short"]
+        toolchain.variables["GIT_BRANCH"] = self.version_data["branch"]
+        toolchain.generate()
 
     def export(self):
         git = tools.Git()
@@ -66,36 +88,22 @@ class LabratRobotConan(ConanFile):
 
         update_conandata(self, {"version_data": self.version_data})
 
-    def _configure_cmake(self):
-        cmake = CMake(self)
-        cmake.definitions["GIT_VERSION_MAJOR"] = self.version_data["version_major"]
-        cmake.definitions["GIT_VERSION_MINOR"] = self.version_data["version_minor"]
-        cmake.definitions["GIT_VERSION_PATCH"] = self.version_data["version_patch"]
-        cmake.definitions["GIT_SEMVER"] = self.version_data["semver"]
-        cmake.definitions["GIT_VERSION"] = self.version_data["version"]
-        cmake.definitions["GIT_TAG"] = self.version_data["tag"]
-        cmake.definitions["GIT_HASH"] = self.version_data["hash"]
-        cmake.definitions["GIT_HASH_SHORT"] = self.version_data["hash_short"]
-        cmake.definitions["GIT_BRANCH"] = self.version_data["branch"]
-
-        self.run("cmake %s %s" % (self.source_folder, cmake.command_line))
-
-        return cmake
-
-    def _build_target(self, cmake, target = "all"):
-        self.run("cmake --build . --target %s %s -j%d" % (target, cmake.build_config, tools.cpu_count()))
-
     def build(self):
-        cmake = self._configure_cmake()
-
-        self._build_target(cmake)
+        cmake = CMake(self)
+        cmake.configure()
+        cmake.build()
 
     def package(self):
-        cmake = self._configure_cmake()
-
-        self._build_target(cmake, "install")
+        cmake = CMake(self)
+        cmake.install()
 
     def package_info(self):
-        self.cpp_info.libs = ["labrat_robot::robot"]
+        self.cpp_info.set_property("cmake_find_mode", "module")
+        self.cpp_info.set_property("cmake_target_name", f"{self.name}::core")
+        self.cpp_info.set_property("cmake_module_target_name", f"{self.name}::core")
+        self.cpp_info.names["cmake_find_package"] = self.name
+        self.cpp_info.names["cmake_find_package_multi"] = self.name
+        self.cpp_info.libs = ["robot", "plugins_mcap", "plugins_foxglove-ws", "plugins_mavlink"]
+        self.cpp_info.requires = ["flatbuffers::flatbuffers", "mcap::mcap", "foxglove-websocket::foxglove-websocket"]
 
-        self.env_info.LD_LIBRARY_PATH.append(os.path.join(self.package_folder, "lib"))
+        self.env_info.LABRAT_ROBOT_REFLECTION_PATH.append(os.path.join(self.package_folder, "var", "run"))

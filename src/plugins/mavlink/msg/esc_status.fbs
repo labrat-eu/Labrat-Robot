@@ -1,0 +1,11 @@
+namespace mavlink.msg.common;
+
+table EscStatus {
+ time_usec:ulong;
+ rpm:[int];
+ voltage:[float];
+ current:[float];
+ index:ubyte;
+}
+
+root_type EscStatus;

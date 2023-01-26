@@ -1,0 +1,8 @@
+namespace mavlink.msg.common;
+
+table OpenDroneIdArmStatus {
+ status:ubyte;
+ error:string;
+}
+
+root_type OpenDroneIdArmStatus;

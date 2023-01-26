@@ -1,0 +1,13 @@
+namespace mavlink.msg.common;
+
+table Event {
+ id:uint;
+ event_time_boot_ms:uint;
+ sequence:ushort;
+ destination_component:ubyte;
+ destination_system:ubyte;
+ log_levels:ubyte;
+ arguments:[ubyte];
+}
+
+root_type Event;

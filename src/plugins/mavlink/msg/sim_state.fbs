@@ -1,0 +1,29 @@
+namespace mavlink.msg.common;
+
+table SimState {
+ q1:float;
+ q2:float;
+ q3:float;
+ q4:float;
+ roll:float;
+ pitch:float;
+ yaw:float;
+ xacc:float;
+ yacc:float;
+ zacc:float;
+ xgyro:float;
+ ygyro:float;
+ zgyro:float;
+ lat:float;
+ lon:float;
+ alt:float;
+ std_dev_horz:float;
+ std_dev_vert:float;
+ vn:float;
+ ve:float;
+ vd:float;
+ lat_int:int;
+ lon_int:int;
+}
+
+root_type SimState;

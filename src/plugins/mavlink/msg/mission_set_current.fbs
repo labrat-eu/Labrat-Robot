@@ -1,0 +1,9 @@
+namespace mavlink.msg.common;
+
+table MissionSetCurrent {
+ seq:ushort;
+ target_system:ubyte;
+ target_component:ubyte;
+}
+
+root_type MissionSetCurrent;

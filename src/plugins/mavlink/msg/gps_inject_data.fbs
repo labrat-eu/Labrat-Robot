@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table GpsInjectData {
+ target_system:ubyte;
+ target_component:ubyte;
+ len:ubyte;
+ data:[ubyte];
+}
+
+root_type GpsInjectData;

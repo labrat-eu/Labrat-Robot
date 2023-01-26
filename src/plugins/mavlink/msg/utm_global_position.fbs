@@ -1,0 +1,24 @@
+namespace mavlink.msg.common;
+
+table UtmGlobalPosition {
+ time:ulong;
+ lat:int;
+ lon:int;
+ alt:int;
+ relative_alt:int;
+ next_lat:int;
+ next_lon:int;
+ next_alt:int;
+ vx:short;
+ vy:short;
+ vz:short;
+ h_acc:ushort;
+ v_acc:ushort;
+ vel_acc:ushort;
+ update_rate:ushort;
+ uas_id:[ubyte];
+ flight_state:ubyte;
+ flags:ubyte;
+}
+
+root_type UtmGlobalPosition;

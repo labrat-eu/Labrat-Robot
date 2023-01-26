@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table Ping {
+ time_usec:ulong;
+ seq:uint;
+ target_system:ubyte;
+ target_component:ubyte;
+}
+
+root_type Ping;

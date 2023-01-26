@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table WifiConfigAp {
+ ssid:string;
+ password:string;
+ mode:byte;
+ response:byte;
+}
+
+root_type WifiConfigAp;

@@ -1,0 +1,11 @@
+namespace mavlink.msg.common;
+
+table ProtocolVersion {
+ version:ushort;
+ min_version:ushort;
+ max_version:ushort;
+ spec_version_hash:[ubyte];
+ library_version_hash:[ubyte];
+}
+
+root_type ProtocolVersion;

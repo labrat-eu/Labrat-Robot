@@ -16,7 +16,7 @@
 #include <string>
 #include <unordered_set>
 
-#include <google/protobuf/descriptor.h>
+#include <flatbuffers/stl_emulation.h>
 
 namespace labrat::robot {
 
@@ -58,9 +58,9 @@ public:
    */
   struct TopicInfo {
     const std::size_t type_hash;
+    const std::string type_name;
     const std::size_t topic_hash;
     const std::string topic_name;
-    const google::protobuf::Descriptor *type_descriptor;
 
     /**
      * @brief Get information about a topic by name.
@@ -75,9 +75,9 @@ public:
     static Plugin::TopicInfo get(const std::string &topic_name) {
       const Plugin::TopicInfo result = {
         .type_hash = typeid(MessageType).hash_code(),
+        .type_name = MessageType::getName(),
         .topic_hash = std::hash<std::string>()(topic_name),
         .topic_name = topic_name,
-        .type_descriptor = MessageType::Content::descriptor(),
       };
 
       return result;
@@ -97,7 +97,7 @@ public:
   struct MessageInfo {
     const TopicInfo &topic_info;
     const std::chrono::nanoseconds timestamp;
-    std::string serialized_message;
+    const flatbuffers::span<u8> serialized_message;
   };
 
   /**

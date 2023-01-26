@@ -1,0 +1,18 @@
+namespace mavlink.msg.common;
+
+table RawImu {
+ time_usec:ulong;
+ xacc:short;
+ yacc:short;
+ zacc:short;
+ xgyro:short;
+ ygyro:short;
+ zgyro:short;
+ xmag:short;
+ ymag:short;
+ zmag:short;
+ id:ubyte;
+ temperature:short;
+}
+
+root_type RawImu;

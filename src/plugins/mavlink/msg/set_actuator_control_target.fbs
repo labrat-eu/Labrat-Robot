@@ -1,0 +1,11 @@
+namespace mavlink.msg.common;
+
+table SetActuatorControlTarget {
+ time_usec:ulong;
+ controls:[float];
+ group_mlx:ubyte;
+ target_system:ubyte;
+ target_component:ubyte;
+}
+
+root_type SetActuatorControlTarget;

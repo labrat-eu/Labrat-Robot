@@ -1,0 +1,17 @@
+namespace mavlink.msg.common;
+
+table LinkNodeStatus {
+ timestamp:ulong;
+ tx_rate:uint;
+ rx_rate:uint;
+ messages_sent:uint;
+ messages_received:uint;
+ messages_lost:uint;
+ rx_parse_err:ushort;
+ tx_overflows:ushort;
+ rx_overflows:ushort;
+ tx_buf:ubyte;
+ rx_buf:ubyte;
+}
+
+root_type LinkNodeStatus;

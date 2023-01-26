@@ -1,0 +1,8 @@
+namespace mavlink.msg.common;
+
+table CameraTrigger {
+ time_usec:ulong;
+ seq:uint;
+}
+
+root_type CameraTrigger;

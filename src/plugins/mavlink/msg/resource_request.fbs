@@ -1,0 +1,11 @@
+namespace mavlink.msg.common;
+
+table ResourceRequest {
+ request_id:ubyte;
+ uri_type:ubyte;
+ uri:[ubyte];
+ transfer_type:ubyte;
+ storage:[ubyte];
+}
+
+root_type ResourceRequest;

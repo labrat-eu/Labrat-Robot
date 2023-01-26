@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.25.1)
 
 
+find_package(mcap REQUIRED)
+
 # Set the target name from the path.
 get_filename_component(TARGET_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 get_filename_component(TARGET_NAME_PRIMARY ${TARGET_DIR} NAME)
@@ -28,10 +30,9 @@ set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
 # Set library properties.
 set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
-target_include_directories(${TARGET_NAME} PRIVATE ${Protobuf_INCLUDE_DIRS})
-
-target_link_libraries(${TARGET_NAME} PRIVATE ${Protobuf_LIBRARIES} zstd lz4)
+target_link_libraries(${TARGET_NAME} PRIVATE ${LOCAL_PROJECT_NAME}_msg mcap::mcap)
 target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME})
 
-# Add public header install target.
+# Add a install targets.
+install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES ${TARGET_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LOCAL_PROJECT_PATH_FULL}/${TARGET_RELATIVE_PATH})

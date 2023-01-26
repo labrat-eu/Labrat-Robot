@@ -1,0 +1,19 @@
+namespace mavlink.msg.common;
+
+table AutopilotStateForGimbalDevice {
+ time_boot_us:ulong;
+ q:[float];
+ q_estimated_delay_us:uint;
+ vx:float;
+ vy:float;
+ vz:float;
+ v_estimated_delay_us:uint;
+ feed_forward_angular_velocity_z:float;
+ estimator_status:ushort;
+ target_system:ubyte;
+ target_component:ubyte;
+ landed_state:ubyte;
+ angular_velocity_z:float;
+}
+
+root_type AutopilotStateForGimbalDevice;

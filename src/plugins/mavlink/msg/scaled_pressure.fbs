@@ -1,0 +1,11 @@
+namespace mavlink.msg.common;
+
+table ScaledPressure {
+ time_boot_ms:uint;
+ press_abs:float;
+ press_diff:float;
+ temperature:short;
+ temperature_press_diff:short;
+}
+
+root_type ScaledPressure;

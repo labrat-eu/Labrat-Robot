@@ -1,0 +1,11 @@
+namespace mavlink.msg.common;
+
+table OpenDroneIdSelfId {
+ target_system:ubyte;
+ target_component:ubyte;
+ id_or_mac:[ubyte];
+ description_type:ubyte;
+ description:string;
+}
+
+root_type OpenDroneIdSelfId;

@@ -1,0 +1,24 @@
+namespace mavlink.msg.common;
+
+table EfiStatus {
+ ecu_index:float;
+ rpm:float;
+ fuel_consumed:float;
+ fuel_flow:float;
+ engine_load:float;
+ throttle_position:float;
+ spark_dwell_time:float;
+ barometric_pressure:float;
+ intake_manifold_pressure:float;
+ intake_manifold_temperature:float;
+ cylinder_head_temperature:float;
+ ignition_timing:float;
+ injection_time:float;
+ exhaust_gas_temperature:float;
+ throttle_out:float;
+ pt_compensation:float;
+ health:ubyte;
+ ignition_voltage:float;
+}
+
+root_type EfiStatus;

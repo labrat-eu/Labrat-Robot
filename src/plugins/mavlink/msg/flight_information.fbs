@@ -1,0 +1,10 @@
+namespace mavlink.msg.common;
+
+table FlightInformation {
+ arming_time_utc:ulong;
+ takeoff_time_utc:ulong;
+ flight_uuid:ulong;
+ time_boot_ms:uint;
+}
+
+root_type FlightInformation;

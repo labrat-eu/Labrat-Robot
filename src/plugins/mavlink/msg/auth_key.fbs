@@ -1,0 +1,7 @@
+namespace mavlink.msg.common;
+
+table AuthKey {
+ key:string;
+}
+
+root_type AuthKey;

@@ -1,0 +1,15 @@
+namespace mavlink.msg.common;
+
+table OpenDroneIdAuthentication {
+ timestamp:uint;
+ target_system:ubyte;
+ target_component:ubyte;
+ id_or_mac:[ubyte];
+ authentication_type:ubyte;
+ data_page:ubyte;
+ last_page_index:ubyte;
+ length:ubyte;
+ authentication_data:[ubyte];
+}
+
+root_type OpenDroneIdAuthentication;

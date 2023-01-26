@@ -1,0 +1,11 @@
+namespace mavlink.msg.common;
+
+table MountOrientation {
+ time_boot_ms:uint;
+ roll:float;
+ pitch:float;
+ yaw:float;
+ yaw_absolute:float;
+}
+
+root_type MountOrientation;

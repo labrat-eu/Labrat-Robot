@@ -1,0 +1,13 @@
+namespace mavlink.msg.common;
+
+table LocalPositionNed {
+ time_boot_ms:uint;
+ x:float;
+ y:float;
+ z:float;
+ vx:float;
+ vy:float;
+ vz:float;
+}
+
+root_type LocalPositionNed;

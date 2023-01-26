@@ -1,0 +1,13 @@
+namespace mavlink.msg.common;
+
+table CameraCaptureStatus {
+ time_boot_ms:uint;
+ image_interval:float;
+ recording_time_ms:uint;
+ available_capacity:float;
+ image_status:ubyte;
+ video_status:ubyte;
+ image_count:int;
+}
+
+root_type CameraCaptureStatus;

@@ -1,0 +1,14 @@
+namespace mavlink.msg.common;
+
+table SerialControl {
+ baudrate:uint;
+ timeout:ushort;
+ device:ubyte;
+ flags:ubyte;
+ count:ubyte;
+ data:[ubyte];
+ target_system:ubyte;
+ target_component:ubyte;
+}
+
+root_type SerialControl;

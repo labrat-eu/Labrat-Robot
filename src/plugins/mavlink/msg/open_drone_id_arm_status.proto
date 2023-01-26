@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package mavlink.msg.common;
-
-message OpenDroneIdArmStatus {
-  uint32 status = 1; /*<  Status level indicating if arming is allowed*/
-  string error = 2; /*<  Text error message, should be empty if status is good to arm Fill with nulls in unused portion.*/
-}
-

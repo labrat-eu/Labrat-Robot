@@ -1,0 +1,13 @@
+namespace mavlink.msg.common;
+
+table LocalPositionNedSystemGlobalOffset {
+ time_boot_ms:uint;
+ x:float;
+ y:float;
+ z:float;
+ roll:float;
+ pitch:float;
+ yaw:float;
+}
+
+root_type LocalPositionNedSystemGlobalOffset;

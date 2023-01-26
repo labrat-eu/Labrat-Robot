@@ -1,0 +1,13 @@
+namespace mavlink.msg.common;
+
+table Vibration {
+ time_usec:ulong;
+ vibration_x:float;
+ vibration_y:float;
+ vibration_z:float;
+ clipping_0:uint;
+ clipping_1:uint;
+ clipping_2:uint;
+}
+
+root_type Vibration;

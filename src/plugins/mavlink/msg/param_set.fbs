@@ -1,0 +1,11 @@
+namespace mavlink.msg.common;
+
+table ParamSet {
+ param_value:float;
+ target_system:ubyte;
+ target_component:ubyte;
+ param_id:string;
+ param_type:ubyte;
+}
+
+root_type ParamSet;

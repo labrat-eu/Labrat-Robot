@@ -1,0 +1,21 @@
+namespace mavlink.msg.common;
+
+table GimbalDeviceInformation {
+ uid:ulong;
+ time_boot_ms:uint;
+ firmware_version:uint;
+ hardware_version:uint;
+ roll_min:float;
+ roll_max:float;
+ pitch_min:float;
+ pitch_max:float;
+ yaw_min:float;
+ yaw_max:float;
+ cap_flags:ushort;
+ custom_cap_flags:ushort;
+ vendor_name:string;
+ model_name:string;
+ custom_name:string;
+}
+
+root_type GimbalDeviceInformation;
