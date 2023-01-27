@@ -43,12 +43,12 @@ public:
   };
 
   template <typename MessageType>
-  void registerSender(Node::Sender<Message<MessageType>, mavlink_message_t>::Ptr &sender, u16 id) {
+  void registerSender(typename Node::Sender<Message<MessageType>, mavlink_message_t>::Ptr &sender, u16 id) {
     registerSenderAdapter(Node::SenderAdapter<mavlink_message_t>::get(*sender), id);
   }
 
   template <typename MessageType>
-  void registerReceiver(Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr &receiver) {
+  void registerReceiver(typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr &receiver) {
     receiver->setCallback(MavlinkNode::receiverCallback, priv);
   }
 

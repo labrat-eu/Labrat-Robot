@@ -196,7 +196,7 @@ public:
         receiver->read_count.notify_one();
 
         if (receiver->callback.valid()) {
-          receiver->callback(*receiver, receiver->callback_ptr);
+          receiver->callback(receiver->adapter, receiver->callback_ptr);
         }
       }
 
@@ -389,7 +389,8 @@ public:
       topic_info(Plugin::TopicInfo::get<MessageType>(topic_name)),
       node(node), conversion_function(conversion_function), user_ptr(user_ptr),
       topic(node.environment.topic_map.addReceiver<MessageType>(topic_name, this)), index_mask(calculateBufferMask(buffer_size)),
-      message_buffer(calculateBufferSize(buffer_size)), write_count(0), read_count(index_mask) {
+      message_buffer(calculateBufferSize(buffer_size)), write_count(0), read_count(index_mask),
+      adapter(ReceiverAdapter<ContainerType>::get(*this)) {
       next_count = index_mask;
       flush_flag = true;
     }
@@ -502,6 +503,8 @@ public:
     std::atomic<std::size_t> read_count;
     std::size_t next_count;
     volatile bool flush_flag;
+
+    ReceiverAdapter<ContainerType> adapter;
 
   public:
     using Ptr = std::unique_ptr<Receiver<MessageType, ContainerType>>;
