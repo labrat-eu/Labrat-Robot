@@ -1,14 +1,14 @@
 namespace mavlink.msg.common;
 
 table ViconPositionEstimate {
- usec:ulong;
- x:float;
- y:float;
- z:float;
- roll:float;
- pitch:float;
- yaw:float;
- covariance:[float];
+  usec:ulong;
+  x:float;
+  y:float;
+  z:float;
+  roll:float;
+  pitch:float;
+  yaw:float;
+  covariance:[float];
 }
 
 root_type ViconPositionEstimate;

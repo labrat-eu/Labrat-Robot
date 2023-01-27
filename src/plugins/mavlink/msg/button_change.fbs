@@ -1,9 +1,9 @@
 namespace mavlink.msg.common;
 
 table ButtonChange {
- time_boot_ms:uint;
- last_change_ms:uint;
- state:ubyte;
+  time_boot_ms:uint;
+  last_change_ms:uint;
+  state:ubyte;
 }
 
 root_type ButtonChange;

@@ -1,8 +1,8 @@
 namespace mavlink.msg.common;
 
 table EncapsulatedData {
- seqnr:ushort;
- data:[ubyte];
+  seqnr:ushort;
+  data:[ubyte];
 }
 
 root_type EncapsulatedData;

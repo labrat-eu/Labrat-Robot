@@ -1,11 +1,11 @@
 namespace mavlink.msg.common;
 
 table ParamValue {
- param_value:float;
- param_count:ushort;
- param_index:ushort;
- param_id:string;
- param_type:ubyte;
+  param_value:float;
+  param_count:ushort;
+  param_index:ushort;
+  param_id:string;
+  param_type:ubyte;
 }
 
 root_type ParamValue;

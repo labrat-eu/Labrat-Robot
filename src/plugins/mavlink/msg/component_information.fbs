@@ -1,11 +1,11 @@
 namespace mavlink.msg.common;
 
 table ComponentInformation {
- time_boot_ms:uint;
- general_metadata_file_crc:uint;
- peripherals_metadata_file_crc:uint;
- general_metadata_uri:string;
- peripherals_metadata_uri:string;
+  time_boot_ms:uint;
+  general_metadata_file_crc:uint;
+  peripherals_metadata_file_crc:uint;
+  general_metadata_uri:string;
+  peripherals_metadata_uri:string;
 }
 
 root_type ComponentInformation;

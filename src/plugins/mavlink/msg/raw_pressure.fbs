@@ -1,11 +1,11 @@
 namespace mavlink.msg.common;
 
 table RawPressure {
- time_usec:ulong;
- press_abs:short;
- press_diff1:short;
- press_diff2:short;
- temperature:short;
+  time_usec:ulong;
+  press_abs:short;
+  press_diff1:short;
+  press_diff2:short;
+  temperature:short;
 }
 
 root_type RawPressure;

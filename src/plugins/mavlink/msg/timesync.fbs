@@ -1,10 +1,10 @@
 namespace mavlink.msg.common;
 
 table Timesync {
- tc1:long;
- ts1:long;
- target_system:ubyte;
- target_component:ubyte;
+  tc1:long;
+  ts1:long;
+  target_system:ubyte;
+  target_component:ubyte;
 }
 
 root_type Timesync;

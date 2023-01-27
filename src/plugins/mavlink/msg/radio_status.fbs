@@ -1,13 +1,13 @@
 namespace mavlink.msg.common;
 
 table RadioStatus {
- rxerrors:ushort;
- fixed:ushort;
- rssi:ubyte;
- remrssi:ubyte;
- txbuf:ubyte;
- noise:ubyte;
- remnoise:ubyte;
+  rxerrors:ushort;
+  fixed:ushort;
+  rssi:ubyte;
+  remrssi:ubyte;
+  txbuf:ubyte;
+  noise:ubyte;
+  remnoise:ubyte;
 }
 
 root_type RadioStatus;

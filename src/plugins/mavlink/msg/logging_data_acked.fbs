@@ -1,12 +1,12 @@
 namespace mavlink.msg.common;
 
 table LoggingDataAcked {
- sequence:ushort;
- target_system:ubyte;
- target_component:ubyte;
- length:ubyte;
- first_message_offset:ubyte;
- data:[ubyte];
+  sequence:ushort;
+  target_system:ubyte;
+  target_component:ubyte;
+  length:ubyte;
+  first_message_offset:ubyte;
+  data:[ubyte];
 }
 
 root_type LoggingDataAcked;

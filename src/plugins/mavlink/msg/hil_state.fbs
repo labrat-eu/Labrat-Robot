@@ -1,22 +1,22 @@
 namespace mavlink.msg.common;
 
 table HilState {
- time_usec:ulong;
- roll:float;
- pitch:float;
- yaw:float;
- rollspeed:float;
- pitchspeed:float;
- yawspeed:float;
- lat:int;
- lon:int;
- alt:int;
- vx:short;
- vy:short;
- vz:short;
- xacc:short;
- yacc:short;
- zacc:short;
+  time_usec:ulong;
+  roll:float;
+  pitch:float;
+  yaw:float;
+  rollspeed:float;
+  pitchspeed:float;
+  yawspeed:float;
+  lat:int;
+  lon:int;
+  alt:int;
+  vx:short;
+  vy:short;
+  vz:short;
+  xacc:short;
+  yacc:short;
+  zacc:short;
 }
 
 root_type HilState;

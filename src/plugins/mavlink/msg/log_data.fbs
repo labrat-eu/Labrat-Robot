@@ -1,10 +1,10 @@
 namespace mavlink.msg.common;
 
 table LogData {
- ofs:uint;
- id:ushort;
- count:ubyte;
- data:[ubyte];
+  ofs:uint;
+  id:ushort;
+  count:ubyte;
+  data:[ubyte];
 }
 
 root_type LogData;

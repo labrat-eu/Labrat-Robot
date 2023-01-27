@@ -1,11 +1,11 @@
 namespace mavlink.msg.common;
 
 table FenceStatus {
- breach_time:uint;
- breach_count:ushort;
- breach_status:ubyte;
- breach_type:ubyte;
- breach_mitigation:ubyte;
+  breach_time:uint;
+  breach_count:ushort;
+  breach_status:ubyte;
+  breach_type:ubyte;
+  breach_mitigation:ubyte;
 }
 
 root_type FenceStatus;

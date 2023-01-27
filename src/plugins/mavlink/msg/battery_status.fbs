@@ -1,20 +1,21 @@
 namespace mavlink.msg.common;
 
 table BatteryStatus {
- current_consumed:int;
- energy_consumed:int;
- temperature:short;
- voltages:[ushort];
- current_battery:short;
- id:ubyte;
- battery_function:ubyte;
- type:ubyte;
- battery_remaining:byte;
- time_remaining:int;
- charge_state:ubyte;
- voltages_ext:[ushort];
- mode:ubyte;
- fault_bitmask:uint;
+  current_consumed:int;
+  energy_consumed:int;
+  temperature:short;
+  voltages:[ushort];
+  current_battery:short;
+  id:ubyte;
+  battery_function:ubyte;
+  type:ubyte;
+  battery_remaining:byte;
+  time_remaining:int;
+  charge_state:ubyte;
+  voltages_ext:[ushort];
+  mode:ubyte;
+  fault_bitmask:uint;
 }
 
 root_type BatteryStatus;
+

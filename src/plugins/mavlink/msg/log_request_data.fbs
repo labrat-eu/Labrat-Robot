@@ -1,11 +1,11 @@
 namespace mavlink.msg.common;
 
 table LogRequestData {
- ofs:uint;
- count:uint;
- id:ushort;
- target_system:ubyte;
- target_component:ubyte;
+  ofs:uint;
+  count:uint;
+  id:ushort;
+  target_system:ubyte;
+  target_component:ubyte;
 }
 
 root_type LogRequestData;

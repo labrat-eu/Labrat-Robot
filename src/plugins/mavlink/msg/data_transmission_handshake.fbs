@@ -1,13 +1,13 @@
 namespace mavlink.msg.common;
 
 table DataTransmissionHandshake {
- size:uint;
- width:ushort;
- height:ushort;
- packets:ushort;
- type:ubyte;
- payload:ubyte;
- jpg_quality:ubyte;
+  size:uint;
+  width:ushort;
+  height:ushort;
+  packets:ushort;
+  type:ubyte;
+  payload:ubyte;
+  jpg_quality:ubyte;
 }
 
 root_type DataTransmissionHandshake;

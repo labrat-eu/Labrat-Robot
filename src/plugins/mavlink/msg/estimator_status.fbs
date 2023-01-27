@@ -1,16 +1,16 @@
 namespace mavlink.msg.common;
 
 table EstimatorStatus {
- time_usec:ulong;
- vel_ratio:float;
- pos_horiz_ratio:float;
- pos_vert_ratio:float;
- mag_ratio:float;
- hagl_ratio:float;
- tas_ratio:float;
- pos_horiz_accuracy:float;
- pos_vert_accuracy:float;
- flags:ushort;
+  time_usec:ulong;
+  vel_ratio:float;
+  pos_horiz_ratio:float;
+  pos_vert_ratio:float;
+  mag_ratio:float;
+  hagl_ratio:float;
+  tas_ratio:float;
+  pos_horiz_accuracy:float;
+  pos_vert_accuracy:float;
+  flags:ushort;
 }
 
 root_type EstimatorStatus;

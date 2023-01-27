@@ -1,17 +1,17 @@
 namespace mavlink.msg.common;
 
 table RcChannelsRaw {
- time_boot_ms:uint;
- chan1_raw:ushort;
- chan2_raw:ushort;
- chan3_raw:ushort;
- chan4_raw:ushort;
- chan5_raw:ushort;
- chan6_raw:ushort;
- chan7_raw:ushort;
- chan8_raw:ushort;
- port:ubyte;
- rssi:ubyte;
+  time_boot_ms:uint;
+  chan1_raw:ushort;
+  chan2_raw:ushort;
+  chan3_raw:ushort;
+  chan4_raw:ushort;
+  chan5_raw:ushort;
+  chan6_raw:ushort;
+  chan7_raw:ushort;
+  chan8_raw:ushort;
+  port:ubyte;
+  rssi:ubyte;
 }
 
 root_type RcChannelsRaw;

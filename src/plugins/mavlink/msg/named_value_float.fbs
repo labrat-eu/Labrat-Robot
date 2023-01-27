@@ -1,9 +1,9 @@
 namespace mavlink.msg.common;
 
 table NamedValueFloat {
- time_boot_ms:uint;
- value:float;
- name:string;
+  time_boot_ms:uint;
+  value:float;
+  name:string;
 }
 
 root_type NamedValueFloat;

@@ -1,15 +1,15 @@
 namespace mavlink.msg.common;
 
 table GlobalPositionInt {
- time_boot_ms:uint;
- lat:int;
- lon:int;
- alt:int;
- relative_alt:int;
- vx:short;
- vy:short;
- vz:short;
- hdg:ushort;
+  time_boot_ms:uint;
+  lat:int;
+  lon:int;
+  alt:int;
+  relative_alt:int;
+  vx:short;
+  vy:short;
+  vz:short;
+  hdg:ushort;
 }
 
 root_type GlobalPositionInt;

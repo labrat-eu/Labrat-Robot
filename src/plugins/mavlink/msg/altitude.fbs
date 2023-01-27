@@ -1,13 +1,13 @@
 namespace mavlink.msg.common;
 
 table Altitude {
- time_usec:ulong;
- altitude_monotonic:float;
- altitude_amsl:float;
- altitude_local:float;
- altitude_relative:float;
- altitude_terrain:float;
- bottom_clearance:float;
+  time_usec:ulong;
+  altitude_monotonic:float;
+  altitude_amsl:float;
+  altitude_local:float;
+  altitude_relative:float;
+  altitude_terrain:float;
+  bottom_clearance:float;
 }
 
 root_type Altitude;

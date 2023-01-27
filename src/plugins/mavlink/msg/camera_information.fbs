@@ -1,19 +1,19 @@
 namespace mavlink.msg.common;
 
 table CameraInformation {
- time_boot_ms:uint;
- firmware_version:uint;
- focal_length:float;
- sensor_size_h:float;
- sensor_size_v:float;
- flags:uint;
- resolution_h:ushort;
- resolution_v:ushort;
- cam_definition_version:ushort;
- vendor_name:[ubyte];
- model_name:[ubyte];
- lens_id:ubyte;
- cam_definition_uri:string;
+  time_boot_ms:uint;
+  firmware_version:uint;
+  focal_length:float;
+  sensor_size_h:float;
+  sensor_size_v:float;
+  flags:uint;
+  resolution_h:ushort;
+  resolution_v:ushort;
+  cam_definition_version:ushort;
+  vendor_name:[ubyte];
+  model_name:[ubyte];
+  lens_id:ubyte;
+  cam_definition_uri:string;
 }
 
 root_type CameraInformation;

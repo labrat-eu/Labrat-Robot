@@ -1,20 +1,21 @@
 namespace mavlink.msg.common;
 
 table LandingTarget {
- time_usec:ulong;
- angle_x:float;
- angle_y:float;
- distance:float;
- size_x:float;
- size_y:float;
- target_num:ubyte;
- frame:ubyte;
- x:float;
- y:float;
- z:float;
- q:[float];
- type:ubyte;
- position_valid:ubyte;
+  time_usec:ulong;
+  angle_x:float;
+  angle_y:float;
+  distance:float;
+  size_x:float;
+  size_y:float;
+  target_num:ubyte;
+  frame:ubyte;
+  x:float;
+  y:float;
+  z:float;
+  q:[float];
+  type:ubyte;
+  position_valid:ubyte;
 }
 
 root_type LandingTarget;
+

@@ -1,11 +1,11 @@
 namespace mavlink.msg.common;
 
 table ResponseEventError {
- sequence:ushort;
- sequence_oldest_available:ushort;
- target_system:ubyte;
- target_component:ubyte;
- reason:ubyte;
+  sequence:ushort;
+  sequence_oldest_available:ushort;
+  target_system:ubyte;
+  target_component:ubyte;
+  reason:ubyte;
 }
 
 root_type ResponseEventError;

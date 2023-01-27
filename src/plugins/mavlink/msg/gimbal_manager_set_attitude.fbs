@@ -1,14 +1,14 @@
 namespace mavlink.msg.common;
 
 table GimbalManagerSetAttitude {
- flags:uint;
- q:[float];
- angular_velocity_x:float;
- angular_velocity_y:float;
- angular_velocity_z:float;
- target_system:ubyte;
- target_component:ubyte;
- gimbal_device_id:ubyte;
+  flags:uint;
+  q:[float];
+  angular_velocity_x:float;
+  angular_velocity_y:float;
+  angular_velocity_z:float;
+  target_system:ubyte;
+  target_component:ubyte;
+  gimbal_device_id:ubyte;
 }
 
 root_type GimbalManagerSetAttitude;

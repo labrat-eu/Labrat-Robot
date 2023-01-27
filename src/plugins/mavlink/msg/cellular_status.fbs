@@ -1,13 +1,13 @@
 namespace mavlink.msg.common;
 
 table CellularStatus {
- mcc:ushort;
- mnc:ushort;
- lac:ushort;
- status:ubyte;
- failure_reason:ubyte;
- type:ubyte;
- quality:ubyte;
+  mcc:ushort;
+  mnc:ushort;
+  lac:ushort;
+  status:ubyte;
+  failure_reason:ubyte;
+  type:ubyte;
+  quality:ubyte;
 }
 
 root_type CellularStatus;

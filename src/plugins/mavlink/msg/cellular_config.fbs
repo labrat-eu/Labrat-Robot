@@ -1,14 +1,14 @@
 namespace mavlink.msg.common;
 
 table CellularConfig {
- enable_lte:ubyte;
- enable_pin:ubyte;
- pin:string;
- new_pin:string;
- apn:string;
- puk:string;
- roaming:ubyte;
- response:ubyte;
+  enable_lte:ubyte;
+  enable_pin:ubyte;
+  pin:string;
+  new_pin:string;
+  apn:string;
+  puk:string;
+  roaming:ubyte;
+  response:ubyte;
 }
 
 root_type CellularConfig;

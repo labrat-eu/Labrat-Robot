@@ -1,17 +1,17 @@
 namespace mavlink.msg.common;
 
 table CommandLong {
- param1:float;
- param2:float;
- param3:float;
- param4:float;
- param5:float;
- param6:float;
- param7:float;
- command:ushort;
- target_system:ubyte;
- target_component:ubyte;
- confirmation:ubyte;
+  param1:float;
+  param2:float;
+  param3:float;
+  param4:float;
+  param5:float;
+  param6:float;
+  param7:float;
+  command:ushort;
+  target_system:ubyte;
+  target_component:ubyte;
+  confirmation:ubyte;
 }
 
 root_type CommandLong;

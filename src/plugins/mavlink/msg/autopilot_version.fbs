@@ -1,18 +1,18 @@
 namespace mavlink.msg.common;
 
 table AutopilotVersion {
- capabilities:ulong;
- uid:ulong;
- flight_sw_version:uint;
- middleware_sw_version:uint;
- os_sw_version:uint;
- board_version:uint;
- vendor_id:ushort;
- product_id:ushort;
- flight_custom_version:[ubyte];
- middleware_custom_version:[ubyte];
- os_custom_version:[ubyte];
- uid2:[ubyte];
+  capabilities:ulong;
+  uid:ulong;
+  flight_sw_version:uint;
+  middleware_sw_version:uint;
+  os_sw_version:uint;
+  board_version:uint;
+  vendor_id:ushort;
+  product_id:ushort;
+  flight_custom_version:[ubyte];
+  middleware_custom_version:[ubyte];
+  os_custom_version:[ubyte];
+  uid2:[ubyte];
 }
 
 root_type AutopilotVersion;

@@ -1,10 +1,10 @@
 namespace mavlink.msg.common;
 
 table MissionCurrent {
- seq:ushort;
- total:ushort;
- mission_state:ubyte;
- mission_mode:ubyte;
+  seq:ushort;
+  total:ushort;
+  mission_state:ubyte;
+  mission_mode:ubyte;
 }
 
 root_type MissionCurrent;

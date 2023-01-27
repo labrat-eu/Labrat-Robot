@@ -1,24 +1,25 @@
 namespace mavlink.msg.common;
 
 table MagCalReport {
- fitness:float;
- ofs_x:float;
- ofs_y:float;
- ofs_z:float;
- diag_x:float;
- diag_y:float;
- diag_z:float;
- offdiag_x:float;
- offdiag_y:float;
- offdiag_z:float;
- compass_id:ubyte;
- cal_mask:ubyte;
- cal_status:ubyte;
- autosaved:ubyte;
- orientation_confidence:float;
- old_orientation:ubyte;
- new_orientation:ubyte;
- scale_factor:float;
+  fitness:float;
+  ofs_x:float;
+  ofs_y:float;
+  ofs_z:float;
+  diag_x:float;
+  diag_y:float;
+  diag_z:float;
+  offdiag_x:float;
+  offdiag_y:float;
+  offdiag_z:float;
+  compass_id:ubyte;
+  cal_mask:ubyte;
+  cal_status:ubyte;
+  autosaved:ubyte;
+  orientation_confidence:float;
+  old_orientation:ubyte;
+  new_orientation:ubyte;
+  scale_factor:float;
 }
 
 root_type MagCalReport;
+

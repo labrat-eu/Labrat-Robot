@@ -1,8 +1,8 @@
 namespace mavlink.msg.common;
 
 table RawRpm {
- frequency:float;
- index:ubyte;
+  frequency:float;
+  index:ubyte;
 }
 
 root_type RawRpm;

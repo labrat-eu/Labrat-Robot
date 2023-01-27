@@ -1,9 +1,9 @@
 namespace mavlink.msg.common;
 
 table ActuatorControlTarget {
- time_usec:ulong;
- controls:[float];
- group_mlx:ubyte;
+  time_usec:ulong;
+  controls:[float];
+  group_mlx:ubyte;
 }
 
 root_type ActuatorControlTarget;

@@ -1,12 +1,12 @@
 namespace mavlink.msg.common;
 
 table VfrHud {
- airspeed:float;
- groundspeed:float;
- alt:float;
- climb:float;
- heading:short;
- throttle:ushort;
+  airspeed:float;
+  groundspeed:float;
+  alt:float;
+  climb:float;
+  heading:short;
+  throttle:ushort;
 }
 
 root_type VfrHud;

@@ -1,11 +1,11 @@
 namespace mavlink.msg.common;
 
 table MissionRequestPartialList {
- start_index:short;
- end_index:short;
- target_system:ubyte;
- target_component:ubyte;
- mission_type:ubyte;
+  start_index:short;
+  end_index:short;
+  target_system:ubyte;
+  target_component:ubyte;
+  mission_type:ubyte;
 }
 
 root_type MissionRequestPartialList;

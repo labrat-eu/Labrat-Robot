@@ -1,17 +1,17 @@
 namespace mavlink.msg.common;
 
 table GimbalDeviceAttitudeStatus {
- time_boot_ms:uint;
- q:[float];
- angular_velocity_x:float;
- angular_velocity_y:float;
- angular_velocity_z:float;
- failure_flags:uint;
- flags:ushort;
- target_system:ubyte;
- target_component:ubyte;
- delta_yaw:float;
- delta_yaw_velocity:float;
+  time_boot_ms:uint;
+  q:[float];
+  angular_velocity_x:float;
+  angular_velocity_y:float;
+  angular_velocity_z:float;
+  failure_flags:uint;
+  flags:ushort;
+  target_system:ubyte;
+  target_component:ubyte;
+  delta_yaw:float;
+  delta_yaw_velocity:float;
 }
 
 root_type GimbalDeviceAttitudeStatus;

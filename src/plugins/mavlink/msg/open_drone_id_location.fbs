@@ -1,25 +1,25 @@
 namespace mavlink.msg.common;
 
 table OpenDroneIdLocation {
- latitude:int;
- longitude:int;
- altitude_barometric:float;
- altitude_geodetic:float;
- height:float;
- timestamp:float;
- direction:ushort;
- speed_horizontal:ushort;
- speed_vertical:short;
- target_system:ubyte;
- target_component:ubyte;
- id_or_mac:[ubyte];
- status:ubyte;
- height_reference:ubyte;
- horizontal_accuracy:ubyte;
- vertical_accuracy:ubyte;
- barometer_accuracy:ubyte;
- speed_accuracy:ubyte;
- timestamp_accuracy:ubyte;
+  latitude:int;
+  longitude:int;
+  altitude_barometric:float;
+  altitude_geodetic:float;
+  height:float;
+  timestamp:float;
+  direction:ushort;
+  speed_horizontal:ushort;
+  speed_vertical:short;
+  target_system:ubyte;
+  target_component:ubyte;
+  id_or_mac:[ubyte];
+  status:ubyte;
+  height_reference:ubyte;
+  horizontal_accuracy:ubyte;
+  vertical_accuracy:ubyte;
+  barometer_accuracy:ubyte;
+  speed_accuracy:ubyte;
+  timestamp_accuracy:ubyte;
 }
 
 root_type OpenDroneIdLocation;

@@ -1,20 +1,20 @@
 namespace mavlink.msg.common;
 
 table HilRcInputsRaw {
- time_usec:ulong;
- chan1_raw:ushort;
- chan2_raw:ushort;
- chan3_raw:ushort;
- chan4_raw:ushort;
- chan5_raw:ushort;
- chan6_raw:ushort;
- chan7_raw:ushort;
- chan8_raw:ushort;
- chan9_raw:ushort;
- chan10_raw:ushort;
- chan11_raw:ushort;
- chan12_raw:ushort;
- rssi:ubyte;
+  time_usec:ulong;
+  chan1_raw:ushort;
+  chan2_raw:ushort;
+  chan3_raw:ushort;
+  chan4_raw:ushort;
+  chan5_raw:ushort;
+  chan6_raw:ushort;
+  chan7_raw:ushort;
+  chan8_raw:ushort;
+  chan9_raw:ushort;
+  chan10_raw:ushort;
+  chan11_raw:ushort;
+  chan12_raw:ushort;
+  rssi:ubyte;
 }
 
 root_type HilRcInputsRaw;

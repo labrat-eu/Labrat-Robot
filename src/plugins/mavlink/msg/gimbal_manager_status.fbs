@@ -1,13 +1,13 @@
 namespace mavlink.msg.common;
 
 table GimbalManagerStatus {
- time_boot_ms:uint;
- flags:uint;
- gimbal_device_id:ubyte;
- primary_control_sysid:ubyte;
- primary_control_compid:ubyte;
- secondary_control_sysid:ubyte;
- secondary_control_compid:ubyte;
+  time_boot_ms:uint;
+  flags:uint;
+  gimbal_device_id:ubyte;
+  primary_control_sysid:ubyte;
+  primary_control_compid:ubyte;
+  secondary_control_sysid:ubyte;
+  secondary_control_compid:ubyte;
 }
 
 root_type GimbalManagerStatus;

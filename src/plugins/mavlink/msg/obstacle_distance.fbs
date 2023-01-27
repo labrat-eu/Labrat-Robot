@@ -1,15 +1,16 @@
 namespace mavlink.msg.common;
 
 table ObstacleDistance {
- time_usec:ulong;
- distances:[ushort];
- min_distance:ushort;
- max_distance:ushort;
- sensor_type:ubyte;
- increment:ubyte;
- increment_f:float;
- angle_offset:float;
- frame:ubyte;
+  time_usec:ulong;
+  distances:[ushort];
+  min_distance:ushort;
+  max_distance:ushort;
+  sensor_type:ubyte;
+  increment:ubyte;
+  increment_f:float;
+  angle_offset:float;
+  frame:ubyte;
 }
 
 root_type ObstacleDistance;
+

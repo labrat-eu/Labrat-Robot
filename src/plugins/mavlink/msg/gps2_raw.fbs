@@ -1,24 +1,25 @@
 namespace mavlink.msg.common;
 
 table Gps2Raw {
- time_usec:ulong;
- lat:int;
- lon:int;
- alt:int;
- dgps_age:uint;
- eph:ushort;
- epv:ushort;
- vel:ushort;
- cog:ushort;
- fix_type:ubyte;
- satellites_visible:ubyte;
- dgps_numch:ubyte;
- yaw:ushort;
- alt_ellipsoid:int;
- h_acc:uint;
- v_acc:uint;
- vel_acc:uint;
- hdg_acc:uint;
+  time_usec:ulong;
+  lat:int;
+  lon:int;
+  alt:int;
+  dgps_age:uint;
+  eph:ushort;
+  epv:ushort;
+  vel:ushort;
+  cog:ushort;
+  fix_type:ubyte;
+  satellites_visible:ubyte;
+  dgps_numch:ubyte;
+  yaw:ushort;
+  alt_ellipsoid:int;
+  h_acc:uint;
+  v_acc:uint;
+  vel_acc:uint;
+  hdg_acc:uint;
 }
 
 root_type Gps2Raw;
+

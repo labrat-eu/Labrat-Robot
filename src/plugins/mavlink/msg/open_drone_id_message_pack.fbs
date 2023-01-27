@@ -1,12 +1,12 @@
 namespace mavlink.msg.common;
 
 table OpenDroneIdMessagePack {
- target_system:ubyte;
- target_component:ubyte;
- id_or_mac:[ubyte];
- single_message_size:ubyte;
- msg_pack_size:ubyte;
- messages:[ubyte];
+  target_system:ubyte;
+  target_component:ubyte;
+  id_or_mac:[ubyte];
+  single_message_size:ubyte;
+  msg_pack_size:ubyte;
+  messages:[ubyte];
 }
 
 root_type OpenDroneIdMessagePack;

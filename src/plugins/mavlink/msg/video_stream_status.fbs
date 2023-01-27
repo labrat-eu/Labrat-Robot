@@ -1,14 +1,14 @@
 namespace mavlink.msg.common;
 
 table VideoStreamStatus {
- framerate:float;
- bitrate:uint;
- flags:ushort;
- resolution_h:ushort;
- resolution_v:ushort;
- rotation:ushort;
- hfov:ushort;
- stream_id:ubyte;
+  framerate:float;
+  bitrate:uint;
+  flags:ushort;
+  resolution_h:ushort;
+  resolution_v:ushort;
+  rotation:ushort;
+  hfov:ushort;
+  stream_id:ubyte;
 }
 
 root_type VideoStreamStatus;

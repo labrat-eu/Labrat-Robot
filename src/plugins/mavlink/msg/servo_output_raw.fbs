@@ -1,24 +1,25 @@
 namespace mavlink.msg.common;
 
 table ServoOutputRaw {
- time_usec:uint;
- servo1_raw:ushort;
- servo2_raw:ushort;
- servo3_raw:ushort;
- servo4_raw:ushort;
- servo5_raw:ushort;
- servo6_raw:ushort;
- servo7_raw:ushort;
- servo8_raw:ushort;
- port:ubyte;
- servo9_raw:ushort;
- servo10_raw:ushort;
- servo11_raw:ushort;
- servo12_raw:ushort;
- servo13_raw:ushort;
- servo14_raw:ushort;
- servo15_raw:ushort;
- servo16_raw:ushort;
+  time_usec:uint;
+  servo1_raw:ushort;
+  servo2_raw:ushort;
+  servo3_raw:ushort;
+  servo4_raw:ushort;
+  servo5_raw:ushort;
+  servo6_raw:ushort;
+  servo7_raw:ushort;
+  servo8_raw:ushort;
+  port:ubyte;
+  servo9_raw:ushort;
+  servo10_raw:ushort;
+  servo11_raw:ushort;
+  servo12_raw:ushort;
+  servo13_raw:ushort;
+  servo14_raw:ushort;
+  servo15_raw:ushort;
+  servo16_raw:ushort;
 }
 
 root_type ServoOutputRaw;
+

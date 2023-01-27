@@ -1,12 +1,12 @@
 namespace mavlink.msg.common;
 
 table OpenDroneIdBasicId {
- target_system:ubyte;
- target_component:ubyte;
- id_or_mac:[ubyte];
- id_type:ubyte;
- ua_type:ubyte;
- uas_id:[ubyte];
+  target_system:ubyte;
+  target_component:ubyte;
+  id_or_mac:[ubyte];
+  id_type:ubyte;
+  ua_type:ubyte;
+  uas_id:[ubyte];
 }
 
 root_type OpenDroneIdBasicId;

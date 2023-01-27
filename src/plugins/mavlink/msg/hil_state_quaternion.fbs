@@ -1,22 +1,22 @@
 namespace mavlink.msg.common;
 
 table HilStateQuaternion {
- time_usec:ulong;
- attitude_quaternion:[float];
- rollspeed:float;
- pitchspeed:float;
- yawspeed:float;
- lat:int;
- lon:int;
- alt:int;
- vx:short;
- vy:short;
- vz:short;
- ind_airspeed:ushort;
- true_airspeed:ushort;
- xacc:short;
- yacc:short;
- zacc:short;
+  time_usec:ulong;
+  attitude_quaternion:[float];
+  rollspeed:float;
+  pitchspeed:float;
+  yawspeed:float;
+  lat:int;
+  lon:int;
+  alt:int;
+  vx:short;
+  vy:short;
+  vz:short;
+  ind_airspeed:ushort;
+  true_airspeed:ushort;
+  xacc:short;
+  yacc:short;
+  zacc:short;
 }
 
 root_type HilStateQuaternion;

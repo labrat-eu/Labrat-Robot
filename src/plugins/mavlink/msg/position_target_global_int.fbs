@@ -1,20 +1,20 @@
 namespace mavlink.msg.common;
 
 table PositionTargetGlobalInt {
- time_boot_ms:uint;
- lat_int:int;
- lon_int:int;
- alt:float;
- vx:float;
- vy:float;
- vz:float;
- afx:float;
- afy:float;
- afz:float;
- yaw:float;
- yaw_rate:float;
- type_mask:ushort;
- coordinate_frame:ubyte;
+  time_boot_ms:uint;
+  lat_int:int;
+  lon_int:int;
+  alt:float;
+  vx:float;
+  vy:float;
+  vz:float;
+  afx:float;
+  afy:float;
+  afz:float;
+  yaw:float;
+  yaw_rate:float;
+  type_mask:ushort;
+  coordinate_frame:ubyte;
 }
 
 root_type PositionTargetGlobalInt;

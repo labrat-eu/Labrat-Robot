@@ -1,19 +1,19 @@
 namespace mavlink.msg.common;
 
 table CameraTrackingGeoStatus {
- lat:int;
- lon:int;
- alt:float;
- h_acc:float;
- v_acc:float;
- vel_n:float;
- vel_e:float;
- vel_d:float;
- vel_acc:float;
- dist:float;
- hdg:float;
- hdg_acc:float;
- tracking_status:ubyte;
+  lat:int;
+  lon:int;
+  alt:float;
+  h_acc:float;
+  v_acc:float;
+  vel_n:float;
+  vel_e:float;
+  vel_d:float;
+  vel_acc:float;
+  dist:float;
+  hdg:float;
+  hdg_acc:float;
+  tracking_status:ubyte;
 }
 
 root_type CameraTrackingGeoStatus;

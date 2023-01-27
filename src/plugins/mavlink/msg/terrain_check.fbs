@@ -1,8 +1,8 @@
 namespace mavlink.msg.common;
 
 table TerrainCheck {
- lat:int;
- lon:int;
+  lat:int;
+  lon:int;
 }
 
 root_type TerrainCheck;

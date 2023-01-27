@@ -1,9 +1,9 @@
 namespace mavlink.msg.common;
 
 table DataStream {
- message_rate:ushort;
- stream_id:ubyte;
- on_off:ubyte;
+  message_rate:ushort;
+  stream_id:ubyte;
+  on_off:ubyte;
 }
 
 root_type DataStream;

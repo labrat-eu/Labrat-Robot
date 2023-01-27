@@ -1,30 +1,30 @@
 namespace mavlink.msg.common;
 
 table HighLatency {
- custom_mode:uint;
- latitude:int;
- longitude:int;
- roll:short;
- pitch:short;
- heading:ushort;
- heading_sp:short;
- altitude_amsl:short;
- altitude_sp:short;
- wp_distance:ushort;
- base_mode:ubyte;
- landed_state:ubyte;
- throttle:byte;
- airspeed:ubyte;
- airspeed_sp:ubyte;
- groundspeed:ubyte;
- climb_rate:byte;
- gps_nsat:ubyte;
- gps_fix_type:ubyte;
- battery_remaining:ubyte;
- temperature:byte;
- temperature_air:byte;
- failsafe:ubyte;
- wp_num:ubyte;
+  custom_mode:uint;
+  latitude:int;
+  longitude:int;
+  roll:short;
+  pitch:short;
+  heading:ushort;
+  heading_sp:short;
+  altitude_amsl:short;
+  altitude_sp:short;
+  wp_distance:ushort;
+  base_mode:ubyte;
+  landed_state:ubyte;
+  throttle:byte;
+  airspeed:ubyte;
+  airspeed_sp:ubyte;
+  groundspeed:ubyte;
+  climb_rate:byte;
+  gps_nsat:ubyte;
+  gps_fix_type:ubyte;
+  battery_remaining:ubyte;
+  temperature:byte;
+  temperature_air:byte;
+  failsafe:ubyte;
+  wp_num:ubyte;
 }
 
 root_type HighLatency;

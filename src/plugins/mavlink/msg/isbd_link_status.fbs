@@ -1,14 +1,14 @@
 namespace mavlink.msg.common;
 
 table IsbdLinkStatus {
- timestamp:ulong;
- last_heartbeat:ulong;
- failed_sessions:ushort;
- successful_sessions:ushort;
- signal_quality:ubyte;
- ring_pending:ubyte;
- tx_session_pending:ubyte;
- rx_session_pending:ubyte;
+  timestamp:ulong;
+  last_heartbeat:ulong;
+  failed_sessions:ushort;
+  successful_sessions:ushort;
+  signal_quality:ubyte;
+  ring_pending:ubyte;
+  tx_session_pending:ubyte;
+  rx_session_pending:ubyte;
 }
 
 root_type IsbdLinkStatus;

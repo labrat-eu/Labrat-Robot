@@ -1,16 +1,16 @@
 namespace mavlink.msg.common;
 
 table CameraFovStatus {
- time_boot_ms:uint;
- lat_camera:int;
- lon_camera:int;
- alt_camera:int;
- lat_image:int;
- lon_image:int;
- alt_image:int;
- q:[float];
- hfov:float;
- vfov:float;
+  time_boot_ms:uint;
+  lat_camera:int;
+  lon_camera:int;
+  alt_camera:int;
+  lat_image:int;
+  lon_image:int;
+  alt_image:int;
+  q:[float];
+  hfov:float;
+  vfov:float;
 }
 
 root_type CameraFovStatus;

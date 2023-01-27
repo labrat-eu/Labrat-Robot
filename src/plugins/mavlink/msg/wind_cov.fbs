@@ -1,15 +1,15 @@
 namespace mavlink.msg.common;
 
 table WindCov {
- time_usec:ulong;
- wind_x:float;
- wind_y:float;
- wind_z:float;
- var_horiz:float;
- var_vert:float;
- wind_alt:float;
- horiz_accuracy:float;
- vert_accuracy:float;
+  time_usec:ulong;
+  wind_x:float;
+  wind_y:float;
+  wind_z:float;
+  var_horiz:float;
+  var_vert:float;
+  wind_alt:float;
+  horiz_accuracy:float;
+  vert_accuracy:float;
 }
 
 root_type WindCov;

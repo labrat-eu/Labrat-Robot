@@ -1,10 +1,10 @@
 namespace mavlink.msg.common;
 
 table FileTransferProtocol {
- target_network:ubyte;
- target_system:ubyte;
- target_component:ubyte;
- payload:[ubyte];
+  target_network:ubyte;
+  target_system:ubyte;
+  target_component:ubyte;
+  payload:[ubyte];
 }
 
 root_type FileTransferProtocol;

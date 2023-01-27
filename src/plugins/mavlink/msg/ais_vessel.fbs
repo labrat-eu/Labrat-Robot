@@ -1,23 +1,23 @@
 namespace mavlink.msg.common;
 
 table AisVessel {
- mmsi:uint;
- lat:int;
- lon:int;
- cog:ushort;
- heading:ushort;
- velocity:ushort;
- dimension_bow:ushort;
- dimension_stern:ushort;
- tslc:ushort;
- flags:ushort;
- turn_rate:byte;
- navigational_status:ubyte;
- type:ubyte;
- dimension_port:ubyte;
- dimension_starboard:ubyte;
- callsign:string;
- name:string;
+  mmsi:uint;
+  lat:int;
+  lon:int;
+  cog:ushort;
+  heading:ushort;
+  velocity:ushort;
+  dimension_bow:ushort;
+  dimension_stern:ushort;
+  tslc:ushort;
+  flags:ushort;
+  turn_rate:byte;
+  navigational_status:ubyte;
+  type:ubyte;
+  dimension_port:ubyte;
+  dimension_starboard:ubyte;
+  callsign:string;
+  name:string;
 }
 
 root_type AisVessel;

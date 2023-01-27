@@ -1,9 +1,9 @@
 namespace mavlink.msg.common;
 
 table NamedValueInt {
- time_boot_ms:uint;
- value:int;
- name:string;
+  time_boot_ms:uint;
+  value:int;
+  name:string;
 }
 
 root_type NamedValueInt;

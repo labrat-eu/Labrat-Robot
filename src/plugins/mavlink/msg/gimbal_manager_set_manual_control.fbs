@@ -1,14 +1,14 @@
 namespace mavlink.msg.common;
 
 table GimbalManagerSetManualControl {
- flags:uint;
- pitch:float;
- yaw:float;
- pitch_rate:float;
- yaw_rate:float;
- target_system:ubyte;
- target_component:ubyte;
- gimbal_device_id:ubyte;
+  flags:uint;
+  pitch:float;
+  yaw:float;
+  pitch_rate:float;
+  yaw_rate:float;
+  target_system:ubyte;
+  target_component:ubyte;
+  gimbal_device_id:ubyte;
 }
 
 root_type GimbalManagerSetManualControl;

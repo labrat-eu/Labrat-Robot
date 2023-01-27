@@ -1,14 +1,14 @@
 namespace mavlink.msg.common;
 
 table WinchStatus {
- time_usec:ulong;
- line_length:float;
- speed:float;
- tension:float;
- voltage:float;
- current:float;
- status:uint;
- temperature:short;
+  time_usec:ulong;
+  line_length:float;
+  speed:float;
+  tension:float;
+  voltage:float;
+  current:float;
+  status:uint;
+  temperature:short;
 }
 
 root_type WinchStatus;

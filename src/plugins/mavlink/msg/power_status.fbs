@@ -1,9 +1,9 @@
 namespace mavlink.msg.common;
 
 table PowerStatus {
- vcc:ushort;
- vservo:ushort;
- flags:ushort;
+  vcc:ushort;
+  vservo:ushort;
+  flags:ushort;
 }
 
 root_type PowerStatus;

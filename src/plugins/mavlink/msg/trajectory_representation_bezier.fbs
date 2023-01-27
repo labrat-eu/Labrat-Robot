@@ -1,13 +1,13 @@
 namespace mavlink.msg.common;
 
 table TrajectoryRepresentationBezier {
- time_usec:ulong;
- pos_x:[float];
- pos_y:[float];
- pos_z:[float];
- delta:[float];
- pos_yaw:[float];
- valid_points:ubyte;
+  time_usec:ulong;
+  pos_x:[float];
+  pos_y:[float];
+  pos_z:[float];
+  delta:[float];
+  pos_yaw:[float];
+  valid_points:ubyte;
 }
 
 root_type TrajectoryRepresentationBezier;

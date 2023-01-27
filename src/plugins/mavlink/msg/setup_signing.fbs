@@ -1,10 +1,10 @@
 namespace mavlink.msg.common;
 
 table SetupSigning {
- initial_timestamp:ulong;
- target_system:ubyte;
- target_component:ubyte;
- secret_key:[ubyte];
+  initial_timestamp:ulong;
+  target_system:ubyte;
+  target_component:ubyte;
+  secret_key:[ubyte];
 }
 
 root_type SetupSigning;

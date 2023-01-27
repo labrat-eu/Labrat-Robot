@@ -1,12 +1,12 @@
 namespace mavlink.msg.common;
 
 table UavcanNodeStatus {
- time_usec:ulong;
- uptime_sec:uint;
- vendor_specific_status_code:ushort;
- health:ubyte;
- mode:ubyte;
- sub_mode:ubyte;
+  time_usec:ulong;
+  uptime_sec:uint;
+  vendor_specific_status_code:ushort;
+  health:ubyte;
+  mode:ubyte;
+  sub_mode:ubyte;
 }
 
 root_type UavcanNodeStatus;

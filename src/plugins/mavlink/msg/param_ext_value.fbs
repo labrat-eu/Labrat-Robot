@@ -1,11 +1,11 @@
 namespace mavlink.msg.common;
 
 table ParamExtValue {
- param_count:ushort;
- param_index:ushort;
- param_id:string;
- param_value:string;
- param_type:ubyte;
+  param_count:ushort;
+  param_index:ushort;
+  param_id:string;
+  param_value:string;
+  param_type:ubyte;
 }
 
 root_type ParamExtValue;

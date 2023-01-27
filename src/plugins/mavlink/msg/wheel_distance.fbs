@@ -1,9 +1,9 @@
 namespace mavlink.msg.common;
 
 table WheelDistance {
- time_usec:ulong;
- distance:[double];
- count:ubyte;
+  time_usec:ulong;
+  distance:[double];
+  count:ubyte;
 }
 
 root_type WheelDistance;

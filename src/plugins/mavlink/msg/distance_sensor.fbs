@@ -1,18 +1,19 @@
 namespace mavlink.msg.common;
 
 table DistanceSensor {
- time_boot_ms:uint;
- min_distance:ushort;
- max_distance:ushort;
- current_distance:ushort;
- type:ubyte;
- id:ubyte;
- orientation:ubyte;
- covariance:ubyte;
- horizontal_fov:float;
- vertical_fov:float;
- quaternion:[float];
- signal_quality:ubyte;
+  time_boot_ms:uint;
+  min_distance:ushort;
+  max_distance:ushort;
+  current_distance:ushort;
+  type:ubyte;
+  id:ubyte;
+  orientation:ubyte;
+  covariance:ubyte;
+  horizontal_fov:float;
+  vertical_fov:float;
+  quaternion:[float];
+  signal_quality:ubyte;
 }
 
 root_type DistanceSensor;
+

@@ -1,11 +1,11 @@
 namespace mavlink.msg.common;
 
 table TerrainData {
- lat:int;
- lon:int;
- grid_spacing:ushort;
- data:[short];
- gridbit:ubyte;
+  lat:int;
+  lon:int;
+  grid_spacing:ushort;
+  data:[short];
+  gridbit:ubyte;
 }
 
 root_type TerrainData;

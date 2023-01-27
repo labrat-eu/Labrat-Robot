@@ -1,10 +1,10 @@
 namespace mavlink.msg.common;
 
 table ChangeOperatorControl {
- target_system:ubyte;
- control_request:ubyte;
- version:ubyte;
- passkey:string;
+  target_system:ubyte;
+  control_request:ubyte;
+  version:ubyte;
+  passkey:string;
 }
 
 root_type ChangeOperatorControl;

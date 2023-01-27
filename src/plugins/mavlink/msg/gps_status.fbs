@@ -1,12 +1,12 @@
 namespace mavlink.msg.common;
 
 table GpsStatus {
- satellites_visible:ubyte;
- satellite_prn:[ubyte];
- satellite_used:[ubyte];
- satellite_elevation:[ubyte];
- satellite_azimuth:[ubyte];
- satellite_snr:[ubyte];
+  satellites_visible:ubyte;
+  satellite_prn:[ubyte];
+  satellite_used:[ubyte];
+  satellite_elevation:[ubyte];
+  satellite_azimuth:[ubyte];
+  satellite_snr:[ubyte];
 }
 
 root_type GpsStatus;

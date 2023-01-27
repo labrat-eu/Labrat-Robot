@@ -1,22 +1,22 @@
 namespace mavlink.msg.common;
 
 table SetPositionTargetLocalNed {
- time_boot_ms:uint;
- x:float;
- y:float;
- z:float;
- vx:float;
- vy:float;
- vz:float;
- afx:float;
- afy:float;
- afz:float;
- yaw:float;
- yaw_rate:float;
- type_mask:ushort;
- target_system:ubyte;
- target_component:ubyte;
- coordinate_frame:ubyte;
+  time_boot_ms:uint;
+  x:float;
+  y:float;
+  z:float;
+  vx:float;
+  vy:float;
+  vz:float;
+  afx:float;
+  afy:float;
+  afz:float;
+  yaw:float;
+  yaw_rate:float;
+  type_mask:ushort;
+  target_system:ubyte;
+  target_component:ubyte;
+  coordinate_frame:ubyte;
 }
 
 root_type SetPositionTargetLocalNed;

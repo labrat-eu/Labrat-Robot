@@ -1,13 +1,13 @@
 namespace mavlink.msg.common;
 
 table SafetyAllowedArea {
- p1x:float;
- p1y:float;
- p1z:float;
- p2x:float;
- p2y:float;
- p2z:float;
- frame:ubyte;
+  p1x:float;
+  p1y:float;
+  p1z:float;
+  p2x:float;
+  p2y:float;
+  p2z:float;
+  frame:ubyte;
 }
 
 root_type SafetyAllowedArea;

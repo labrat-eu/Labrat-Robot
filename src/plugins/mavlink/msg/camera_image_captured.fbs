@@ -1,17 +1,17 @@
 namespace mavlink.msg.common;
 
 table CameraImageCaptured {
- time_utc:ulong;
- time_boot_ms:uint;
- lat:int;
- lon:int;
- alt:int;
- relative_alt:int;
- q:[float];
- image_index:int;
- camera_id:ubyte;
- capture_result:byte;
- file_url:string;
+  time_utc:ulong;
+  time_boot_ms:uint;
+  lat:int;
+  lon:int;
+  alt:int;
+  relative_alt:int;
+  q:[float];
+  image_index:int;
+  camera_id:ubyte;
+  capture_result:byte;
+  file_url:string;
 }
 
 root_type CameraImageCaptured;

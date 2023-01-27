@@ -1,17 +1,17 @@
 namespace mavlink.msg.common;
 
 table FollowTarget {
- timestamp:ulong;
- custom_state:ulong;
- lat:int;
- lon:int;
- alt:float;
- vel:[float];
- acc:[float];
- attitude_q:[float];
- rates:[float];
- position_cov:[float];
- est_capabilities:ubyte;
+  timestamp:ulong;
+  custom_state:ulong;
+  lat:int;
+  lon:int;
+  alt:float;
+  vel:[float];
+  acc:[float];
+  attitude_q:[float];
+  rates:[float];
+  position_cov:[float];
+  est_capabilities:ubyte;
 }
 
 root_type FollowTarget;

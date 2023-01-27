@@ -1,23 +1,23 @@
 namespace mavlink.msg.common;
 
 table ControlSystemState {
- time_usec:ulong;
- x_acc:float;
- y_acc:float;
- z_acc:float;
- x_vel:float;
- y_vel:float;
- z_vel:float;
- x_pos:float;
- y_pos:float;
- z_pos:float;
- airspeed:float;
- vel_variance:[float];
- pos_variance:[float];
- q:[float];
- roll_rate:float;
- pitch_rate:float;
- yaw_rate:float;
+  time_usec:ulong;
+  x_acc:float;
+  y_acc:float;
+  z_acc:float;
+  x_vel:float;
+  y_vel:float;
+  z_vel:float;
+  x_pos:float;
+  y_pos:float;
+  z_pos:float;
+  airspeed:float;
+  vel_variance:[float];
+  pos_variance:[float];
+  q:[float];
+  roll_rate:float;
+  pitch_rate:float;
+  yaw_rate:float;
 }
 
 root_type ControlSystemState;

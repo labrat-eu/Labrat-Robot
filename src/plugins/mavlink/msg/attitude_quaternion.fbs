@@ -1,15 +1,15 @@
 namespace mavlink.msg.common;
 
 table AttitudeQuaternion {
- time_boot_ms:uint;
- q1:float;
- q2:float;
- q3:float;
- q4:float;
- rollspeed:float;
- pitchspeed:float;
- yawspeed:float;
- repr_offset_q:[float];
+  time_boot_ms:uint;
+  q1:float;
+  q2:float;
+  q3:float;
+  q4:float;
+  rollspeed:float;
+  pitchspeed:float;
+  yawspeed:float;
+  repr_offset_q:[float];
 }
 
 root_type AttitudeQuaternion;

@@ -1,12 +1,12 @@
 namespace mavlink.msg.common;
 
 table AttPosMocap {
- time_usec:ulong;
- q:[float];
- x:float;
- y:float;
- z:float;
- covariance:[float];
+  time_usec:ulong;
+  q:[float];
+  x:float;
+  y:float;
+  z:float;
+  covariance:[float];
 }
 
 root_type AttPosMocap;

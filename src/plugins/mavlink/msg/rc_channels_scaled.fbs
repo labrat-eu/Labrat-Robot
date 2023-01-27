@@ -1,17 +1,17 @@
 namespace mavlink.msg.common;
 
 table RcChannelsScaled {
- time_boot_ms:uint;
- chan1_scaled:short;
- chan2_scaled:short;
- chan3_scaled:short;
- chan4_scaled:short;
- chan5_scaled:short;
- chan6_scaled:short;
- chan7_scaled:short;
- chan8_scaled:short;
- port:ubyte;
- rssi:ubyte;
+  time_boot_ms:uint;
+  chan1_scaled:short;
+  chan2_scaled:short;
+  chan3_scaled:short;
+  chan4_scaled:short;
+  chan5_scaled:short;
+  chan6_scaled:short;
+  chan7_scaled:short;
+  chan8_scaled:short;
+  port:ubyte;
+  rssi:ubyte;
 }
 
 root_type RcChannelsScaled;

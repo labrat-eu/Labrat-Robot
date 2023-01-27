@@ -1,13 +1,13 @@
 namespace mavlink.msg.common;
 
 table ManualSetpoint {
- time_boot_ms:uint;
- roll:float;
- pitch:float;
- yaw:float;
- thrust:float;
- mode_switch:ubyte;
- manual_override_switch:ubyte;
+  time_boot_ms:uint;
+  roll:float;
+  pitch:float;
+  yaw:float;
+  thrust:float;
+  mode_switch:ubyte;
+  manual_override_switch:ubyte;
 }
 
 root_type ManualSetpoint;

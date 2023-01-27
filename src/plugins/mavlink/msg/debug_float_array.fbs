@@ -1,10 +1,10 @@
 namespace mavlink.msg.common;
 
 table DebugFloatArray {
- time_usec:ulong;
- array_id:ushort;
- name:string;
- data:[float];
+  time_usec:ulong;
+  array_id:ushort;
+  name:string;
+  data:[float];
 }
 
 root_type DebugFloatArray;

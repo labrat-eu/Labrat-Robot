@@ -1,9 +1,9 @@
 namespace mavlink.msg.common;
 
 table ComponentMetadata {
- time_boot_ms:uint;
- file_crc:uint;
- uri:string;
+  time_boot_ms:uint;
+  file_crc:uint;
+  uri:string;
 }
 
 root_type ComponentMetadata;

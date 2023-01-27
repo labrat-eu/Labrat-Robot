@@ -1,9 +1,9 @@
 namespace mavlink.msg.common;
 
 table MissionRequestList {
- target_system:ubyte;
- target_component:ubyte;
- mission_type:ubyte;
+  target_system:ubyte;
+  target_component:ubyte;
+  mission_type:ubyte;
 }
 
 root_type MissionRequestList;

@@ -1,12 +1,12 @@
 namespace mavlink.msg.common;
 
 table CanFrame {
- id:uint;
- target_system:ubyte;
- target_component:ubyte;
- bus:ubyte;
- len:ubyte;
- data:[ubyte];
+  id:uint;
+  target_system:ubyte;
+  target_component:ubyte;
+  bus:ubyte;
+  len:ubyte;
+  data:[ubyte];
 }
 
 root_type CanFrame;

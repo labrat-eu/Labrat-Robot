@@ -1,12 +1,12 @@
 namespace mavlink.msg.common;
 
 table Heartbeat {
- custom_mode:uint;
- type:ubyte;
- autopilot:ubyte;
- base_mode:ubyte;
- system_status:ubyte;
- mavlink_version:ubyte;
+  custom_mode:uint;
+  type:ubyte;
+  autopilot:ubyte;
+  base_mode:ubyte;
+  system_status:ubyte;
+  mavlink_version:ubyte;
 }
 
 root_type Heartbeat;

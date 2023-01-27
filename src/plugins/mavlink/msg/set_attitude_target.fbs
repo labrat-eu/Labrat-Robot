@@ -1,16 +1,17 @@
 namespace mavlink.msg.common;
 
 table SetAttitudeTarget {
- time_boot_ms:uint;
- q:[float];
- body_roll_rate:float;
- body_pitch_rate:float;
- body_yaw_rate:float;
- thrust:float;
- target_system:ubyte;
- target_component:ubyte;
- type_mask:ubyte;
- thrust_body:[float];
+  time_boot_ms:uint;
+  q:[float];
+  body_roll_rate:float;
+  body_pitch_rate:float;
+  body_yaw_rate:float;
+  thrust:float;
+  target_system:ubyte;
+  target_component:ubyte;
+  type_mask:ubyte;
+  thrust_body:[float];
 }
 
 root_type SetAttitudeTarget;
+

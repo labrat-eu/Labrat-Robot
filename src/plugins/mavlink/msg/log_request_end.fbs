@@ -1,8 +1,8 @@
 namespace mavlink.msg.common;
 
 table LogRequestEnd {
- target_system:ubyte;
- target_component:ubyte;
+  target_system:ubyte;
+  target_component:ubyte;
 }
 
 root_type LogRequestEnd;

@@ -1,21 +1,21 @@
 namespace mavlink.msg.common;
 
 table MissionItem {
- param1:float;
- param2:float;
- param3:float;
- param4:float;
- x:float;
- y:float;
- z:float;
- seq:ushort;
- command:ushort;
- target_system:ubyte;
- target_component:ubyte;
- frame:ubyte;
- current:ubyte;
- autocontinue:ubyte;
- mission_type:ubyte;
+  param1:float;
+  param2:float;
+  param3:float;
+  param4:float;
+  x:float;
+  y:float;
+  z:float;
+  seq:ushort;
+  command:ushort;
+  target_system:ubyte;
+  target_component:ubyte;
+  frame:ubyte;
+  current:ubyte;
+  autocontinue:ubyte;
+  mission_type:ubyte;
 }
 
 root_type MissionItem;

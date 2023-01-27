@@ -1,7 +1,7 @@
 namespace mavlink.msg.common;
 
 table MissionItemReached {
- seq:ushort;
+  seq:ushort;
 }
 
 root_type MissionItemReached;

@@ -1,16 +1,17 @@
 namespace mavlink.msg.common;
 
 table OpticalFlow {
- time_usec:ulong;
- flow_comp_m_x:float;
- flow_comp_m_y:float;
- ground_distance:float;
- flow_x:short;
- flow_y:short;
- sensor_id:ubyte;
- quality:ubyte;
- flow_rate_x:float;
- flow_rate_y:float;
+  time_usec:ulong;
+  flow_comp_m_x:float;
+  flow_comp_m_y:float;
+  ground_distance:float;
+  flow_x:short;
+  flow_y:short;
+  sensor_id:ubyte;
+  quality:ubyte;
+  flow_rate_x:float;
+  flow_rate_y:float;
 }
 
 root_type OpticalFlow;
+

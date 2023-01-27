@@ -1,11 +1,11 @@
 namespace mavlink.msg.common;
 
 table Tunnel {
- payload_type:ushort;
- target_system:ubyte;
- target_component:ubyte;
- payload_length:ubyte;
- payload_buffer:[ubyte];
+  payload_type:ushort;
+  target_system:ubyte;
+  target_component:ubyte;
+  payload_length:ubyte;
+  payload_buffer:[ubyte];
 }
 
 root_type Tunnel;

@@ -1,15 +1,15 @@
 namespace mavlink.msg.common;
 
 table GimbalManagerInformation {
- time_boot_ms:uint;
- cap_flags:uint;
- roll_min:float;
- roll_max:float;
- pitch_min:float;
- pitch_max:float;
- yaw_min:float;
- yaw_max:float;
- gimbal_device_id:ubyte;
+  time_boot_ms:uint;
+  cap_flags:uint;
+  roll_min:float;
+  roll_max:float;
+  pitch_min:float;
+  pitch_max:float;
+  yaw_min:float;
+  yaw_max:float;
+  gimbal_device_id:ubyte;
 }
 
 root_type GimbalManagerInformation;

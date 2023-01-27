@@ -1,24 +1,24 @@
 namespace mavlink.msg.common;
 
 table Odometry {
- time_usec:ulong;
- x:float;
- y:float;
- z:float;
- q:[float];
- vx:float;
- vy:float;
- vz:float;
- rollspeed:float;
- pitchspeed:float;
- yawspeed:float;
- pose_covariance:[float];
- velocity_covariance:[float];
- frame_id:ubyte;
- child_frame_id:ubyte;
- reset_counter:ubyte;
- estimator_type:ubyte;
- quality:byte;
+  time_usec:ulong;
+  x:float;
+  y:float;
+  z:float;
+  q:[float];
+  vx:float;
+  vy:float;
+  vz:float;
+  rollspeed:float;
+  pitchspeed:float;
+  yawspeed:float;
+  pose_covariance:[float];
+  velocity_covariance:[float];
+  frame_id:ubyte;
+  child_frame_id:ubyte;
+  reset_counter:ubyte;
+  estimator_type:ubyte;
+  quality:byte;
 }
 
 root_type Odometry;

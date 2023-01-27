@@ -1,11 +1,11 @@
 namespace mavlink.msg.common;
 
 table TimeEstimateToTarget {
- safe_return:int;
- land:int;
- mission_next_item:int;
- mission_end:int;
- commanded_action:int;
+  safe_return:int;
+  land:int;
+  mission_next_item:int;
+  mission_end:int;
+  commanded_action:int;
 }
 
 root_type TimeEstimateToTarget;

@@ -1,13 +1,13 @@
 namespace mavlink.msg.common;
 
 table Collision {
- id:uint;
- time_to_minimum_delta:float;
- altitude_minimum_delta:float;
- horizontal_minimum_delta:float;
- src:ubyte;
- action:ubyte;
- threat_level:ubyte;
+  id:uint;
+  time_to_minimum_delta:float;
+  altitude_minimum_delta:float;
+  horizontal_minimum_delta:float;
+  src:ubyte;
+  action:ubyte;
+  threat_level:ubyte;
 }
 
 root_type Collision;

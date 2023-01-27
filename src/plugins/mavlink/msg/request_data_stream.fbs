@@ -1,11 +1,11 @@
 namespace mavlink.msg.common;
 
 table RequestDataStream {
- req_message_rate:ushort;
- target_system:ubyte;
- target_component:ubyte;
- req_stream_id:ubyte;
- start_stop:ubyte;
+  req_message_rate:ushort;
+  target_system:ubyte;
+  target_component:ubyte;
+  req_stream_id:ubyte;
+  start_stop:ubyte;
 }
 
 root_type RequestDataStream;
