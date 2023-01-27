@@ -1,10 +1,11 @@
-from conans import ConanFile, tools
+from conans import ConanFile
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain
+from conan.tools.env import VirtualRunEnv
 import os
 
 class LabratRobotTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeDeps", "CMakeToolchain"
+    generators = "CMakeDeps", "CMakeToolchain", "VirtualRunEnv"
 
     def requirements(self):
         self.requires(self.tested_reference_str)
@@ -25,6 +26,9 @@ class LabratRobotTestConan(ConanFile):
         toolchain.variables["CMAKE_LIBRARY_OUTPUT_DIRECTORY"] = os.path.join(self.build_folder, "lib")
         toolchain.generate()
 
+        environment = VirtualRunEnv(self)
+        environment.generate()
+
     def build(self):
         cmake = CMake(self)
         cmake.configure()
@@ -32,4 +36,4 @@ class LabratRobotTestConan(ConanFile):
 
     def test(self):
         cmake = CMake(self)
-        cmake.test()
+        cmake.test(env = "conanrun")

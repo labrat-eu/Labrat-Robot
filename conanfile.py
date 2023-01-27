@@ -106,4 +106,4 @@ class LabratRobotConan(ConanFile):
         self.cpp_info.libs = ["robot", "plugins_mcap", "plugins_foxglove-ws", "plugins_mavlink"]
         self.cpp_info.requires = ["flatbuffers::flatbuffers", "mcap::mcap", "foxglove-websocket::foxglove-websocket"]
 
-        self.env_info.LABRAT_ROBOT_REFLECTION_PATH.append(os.path.join(self.package_folder, "var", "run"))
+        self.runenv_info.append_path("LABRAT_ROBOT_REFLECTION_PATH", os.path.join(self.package_folder, "var", "run"))

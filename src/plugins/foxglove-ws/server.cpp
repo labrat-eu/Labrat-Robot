@@ -113,8 +113,7 @@ FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleTopic(c
     MessageReflection reflection(info.type_name);
 
     if (!reflection.isValid()) {
-      logger.debug() << "Unknown message schema '" << info.type_name << "'.";
-      return channel_map.end();
+      throw SchemaUnknownException("Unknown message schema '" + info.type_name + "'.", logger);
     }
 
     schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
@@ -141,10 +140,6 @@ inline FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handle
   ChannelMap::iterator channel_iterator = channel_map.find(info.topic_info.topic_hash);
   if (channel_iterator == channel_map.end()) {
     channel_iterator = handleTopic(info.topic_info);
-
-    if (channel_iterator == channel_map.end()) {
-      return channel_iterator;
-    }
   }
 
   std::lock_guard guard(mutex);

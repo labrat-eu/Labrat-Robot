@@ -142,4 +142,8 @@ class ConversionException : public Exception {
   using Exception::Exception;
 };
 
+class SchemaUnknownException : public Exception {
+  using Exception::Exception;
+};
+
 }  // namespace labrat::robot
