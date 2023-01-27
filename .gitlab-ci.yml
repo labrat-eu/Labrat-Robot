@@ -55,6 +55,7 @@ variables:
 
 
 .build-generic: &build-generic |
+  if [ $LABRAT_ROBOT_NIGHTLY_PIPELINE ]; then rm -rf $CONAN_USER_HOME/.conan; fi
   conan remove --force $CONAN_NAME/*
   conan create . $CONAN_USER/$CONAN_CHANNEL --build=missing -pr:h=ci -pr:b=ci
 
