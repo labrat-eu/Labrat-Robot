@@ -64,6 +64,7 @@
 #include <unordered_map>
 #include <atomic>
 #include <mutex>
+#include <memory>
 
 #include <mavlink/common/mavlink.h>
 
@@ -129,11 +130,6 @@ public:
     template <typename T>
     static void convert(const Message<T> &source, mavlink_message_t &destination, const MavlinkNode::SystemInfo *info);
 
-    template <typename T>
-    static void callback(Node::Receiver<Message<T>, mavlink_message_t> &receiver, MavlinkNodePrivate *node) {
-      node->writeMessage(receiver.latest());
-    }
-
     Node::Receiver<Message<mavlink::msg::common::ParamRequestRead>, mavlink_message_t>::Ptr param_request_read;
     Node::Receiver<Message<mavlink::msg::common::SetPositionTargetLocalNed>, mavlink_message_t>::Ptr set_position_target_local_ned;
     Node::Receiver<Message<mavlink::msg::common::CommandInt>, mavlink_message_t>::Ptr command_int;
@@ -175,14 +171,13 @@ public:
   MavlinkNodePrivate(MavlinkConnection::Ptr &&connection, MavlinkNode &node);
   ~MavlinkNodePrivate();
 
+  void writeMessage(const mavlink_message_t &message);
+
 private:
   template <typename MessageType>
   typename Node::Sender<Message<MessageType>, mavlink_message_t>::Ptr addSender(const std::string &topic_name, u16 id) {
     typename Node::Sender<Message<MessageType>, mavlink_message_t>::Ptr result = node.addSender<Message<MessageType>, mavlink_message_t>(topic_name, MavlinkSender::convert<MessageType>);
-    
-    if (!sender.map.try_emplace(id, Node::SenderAdapter<mavlink_message_t>::get(*result)).second) {
-      throw ManagementException("A sender has already been registered for the MAVLink message ID '" + std::to_string(id) + "'.");
-    }
+    node.registerSender<MessageType>(result, id);
 
     return result;
   }
@@ -190,7 +185,7 @@ private:
   template <typename MessageType>
   typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr addReceiver(const std::string &topic_name) {
     typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr result = node.addReceiver<Message<MessageType>, mavlink_message_t>(topic_name, MavlinkReceiver::convert<MessageType>, &system_info);
-    result->setCallback(MavlinkReceiver::callback<MessageType>, this);
+    node.registerReceiver<MessageType>(result);
 
     return result;
   }
@@ -207,7 +202,6 @@ private:
   void heartbeatLoop();
 
   void readMessage(const mavlink_message_t &message);
-  void writeMessage(const mavlink_message_t &message);
 
   std::unordered_map<u16, Node::SenderAdapter<mavlink_message_t>> sender_map;
 
@@ -1055,11 +1049,24 @@ Message<mavlink::msg::common::CommandAck> MavlinkNodePrivate::MavlinkServer::han
 }
 
 MavlinkNode::MavlinkNode(const Node::Environment &environment, MavlinkConnection::Ptr &&connection) : Node(environment) {
-  priv = new MavlinkNodePrivate(std::forward<MavlinkConnection::Ptr>(connection), *this);
+  std::allocator<MavlinkNodePrivate> allocator;
+  priv = allocator.allocate(1);
+
+  priv = std::construct_at(priv, std::forward<MavlinkConnection::Ptr>(connection), *this);
 }
 
 MavlinkNode::~MavlinkNode() {
   delete priv;
+}
+
+void MavlinkNode::registerSenderAdapter(Node::SenderAdapter<mavlink_message_t> &&adapter, u16 id) {
+  if (!priv->sender.map.try_emplace(id, std::forward<Node::SenderAdapter<mavlink_message_t>>(adapter)).second) {
+    throw ManagementException("A sender has already been registered for the MAVLink message ID '" + std::to_string(id) + "'.");
+  }
+}
+
+void MavlinkNode::receiverCallback(Node::ReceiverAdapter<mavlink_message_t> &receiver, MavlinkNodePrivate *node) {
+  node->writeMessage(receiver.latest());
 }
 
 MavlinkNodePrivate::MavlinkNodePrivate(MavlinkConnection::Ptr &&connection, MavlinkNode &node) : connection(std::forward<MavlinkConnection::Ptr>(connection)), node(node) {

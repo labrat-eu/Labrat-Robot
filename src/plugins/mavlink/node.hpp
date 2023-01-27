@@ -12,6 +12,8 @@
 #include <labrat/robot/node.hpp>
 #include <labrat/robot/plugins/mavlink/connection.hpp>
 
+typedef struct __mavlink_message mavlink_message_t;
+
 namespace labrat::robot::plugins {
 
 class MavlinkNodePrivate;
@@ -40,7 +42,21 @@ public:
     u8 component_id;
   };
 
+  template <typename MessageType>
+  void registerSender(Node::Sender<Message<MessageType>, mavlink_message_t>::Ptr &sender, u16 id) {
+    registerSenderAdapter(Node::SenderAdapter<mavlink_message_t>::get(*sender), id);
+  }
+
+  template <typename MessageType>
+  void registerReceiver(Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr &receiver) {
+    receiver->setCallback(MavlinkNode::receiverCallback, priv);
+  }
+
 private:
+  void registerSenderAdapter(Node::SenderAdapter<mavlink_message_t> &&adapter, u16 id);
+
+  static void receiverCallback(Node::ReceiverAdapter<mavlink_message_t> &receiver, MavlinkNodePrivate *node);
+
   MavlinkNodePrivate *priv;
 
   friend MavlinkNodePrivate;
