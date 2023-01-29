@@ -57,10 +57,10 @@ variables:
 .build-generic: &build-generic |
   if [ $LABRAT_ROBOT_NIGHTLY_PIPELINE ]; then rm -rf $CONAN_USER_HOME/.conan/data; fi
   conan remove --force $CONAN_NAME/*
-  conan create . $CONAN_USER/$CONAN_CHANNEL --build=missing -pr:h=ci -pr:b=ci
+  conan create . $CONAN_USER/$CONAN_CHANNEL -b=outdated -pr:h=ci -pr:b=ci
 
 .test-generic: &test-generic |
-  conan test --build=missing -pr:h=ci -pr:b=ci testing $(conan info . | grep -oE "$CONAN_NAME/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-z0-9\-]+)?" | head -n1)@$CONAN_USER/$CONAN_CHANNEL
+  conan test -b=outdated -pr:h=ci -pr:b=ci testing $(conan info . | grep -oE "$CONAN_NAME/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-z0-9\-]+)?" | head -n1)@$CONAN_USER/$CONAN_CHANNEL
 
 .deploy-generic: &deploy-generic |
   conan upload $(conan info . | grep -oE "$CONAN_NAME/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-z0-9\-]+)?" | head -n1)@$CONAN_USER/$CONAN_CHANNEL --all -r gitlab
@@ -97,6 +97,22 @@ setup:gcc-12:
     - cd .ci/gcc-12
     - docker build -t $CI_REGISTRY_IMAGE:gcc-12 .
     - docker push $CI_REGISTRY_IMAGE:gcc-12
+
+setup:doxygen:
+  stage: setup
+  rules:
+    - changes:
+      - .ci/doxygen/*
+    - if: $LABRAT_ROBOT_NIGHTLY_PIPELINE
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - *init-docker
+  script:
+    - cd .ci/doxygen
+    - docker build -t $CI_REGISTRY_IMAGE:doxygen .
+    - docker push $CI_REGISTRY_IMAGE:doxygen
 
 
 build:clang-14:
@@ -150,3 +166,20 @@ deploy:gcc-12:
   <<: *init-gcc
   script:
     - *deploy-generic
+
+pages:
+  stage: deploy
+  image: $CI_REGISTRY_IMAGE:doxygen
+  <<: *init-gcc
+  script:
+    - mkdir build
+    - cd build
+    - conan install .. -b=missing -pr:h=ci -pr:b=ci -o="&:manual_build=True"
+    - conan build ..
+    - cmake .. -DROBOT_ENABLE_DOCS=ON
+    - make generate-docs
+    - cd ..
+    - cp -r docs/html public
+  artifacts:
+    paths:
+      - public

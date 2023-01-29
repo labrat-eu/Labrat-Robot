@@ -34,8 +34,8 @@ class LabratRobotConan(ConanFile):
     description = "Minimal robot framework to provide an alternative to ROS."
     topics = "robotics", "messaging"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "fPIC": [True, False], "with_system_deps": [True, False]}
-    default_options = {"shared": True, "fPIC": True, "with_system_deps": False}
+    options = {"with_system_deps": [True, False], "manual_build": [True, False]}
+    default_options = {"with_system_deps": False, "manual_build": False}
     generators = "CMakeDeps", "CMakeToolchain"
     exports_sources = "CMakeLists.txt", "src/*", "cmake/*", "submodules/*"
 
@@ -54,6 +54,9 @@ class LabratRobotConan(ConanFile):
             raise Exception("Package is only supported on Linux.")
 
     def requirements(self):
+        if self.options.with_system_deps:
+            return
+
         self.requires("flatbuffers/22.12.06")
         self.requires("mcap/0.5.0")
         self.requires("foxglove-websocket/0.0.1")
@@ -91,6 +94,10 @@ class LabratRobotConan(ConanFile):
     def build(self):
         cmake = CMake(self)
         cmake.configure()
+
+        if self.options.manual_build:
+            return
+
         cmake.build()
 
     def package(self):
