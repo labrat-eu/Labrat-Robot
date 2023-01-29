@@ -106,11 +106,19 @@ class LabratRobotConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "module")
-        self.cpp_info.set_property("cmake_target_name", f"{self.name}::core")
-        self.cpp_info.set_property("cmake_module_target_name", f"{self.name}::core")
-        self.cpp_info.names["cmake_find_package"] = self.name
-        self.cpp_info.names["cmake_find_package_multi"] = self.name
-        self.cpp_info.libs = ["robot", "plugins_mcap", "plugins_foxglove-ws", "plugins_mavlink"]
-        self.cpp_info.requires = ["flatbuffers::flatbuffers", "mcap::mcap", "foxglove-websocket::foxglove-websocket"]
+
+        self.cpp_info.components["core"].set_property("cmake_target_name", f"{self.name}::core")
+        self.cpp_info.components["core"].set_property("cmake_module_target_name", f"{self.name}::core")
+        self.cpp_info.components["core"].names["cmake_find_package"] = self.name
+        self.cpp_info.components["core"].names["cmake_find_package_multi"] = self.name
+        self.cpp_info.components["core"].libs = ["robot"]
+        self.cpp_info.components["core"].requires = ["flatbuffers::flatbuffers"]
+
+        self.cpp_info.components["plugins"].set_property("cmake_target_name", f"{self.name}::plugins")
+        self.cpp_info.components["plugins"].set_property("cmake_module_target_name", f"{self.name}::plugins")
+        self.cpp_info.components["plugins"].names["cmake_find_package"] = self.name
+        self.cpp_info.components["plugins"].names["cmake_find_package_multi"] = self.name
+        self.cpp_info.components["plugins"].libs = ["plugins_mcap", "plugins_foxglove-ws", "plugins_mavlink"]
+        self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "foxglove-websocket::foxglove-websocket"]
 
         self.runenv_info.append_path("LABRAT_ROBOT_REFLECTION_PATH", os.path.join(self.package_folder, "var", "run"))

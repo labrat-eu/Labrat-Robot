@@ -30,6 +30,6 @@ set(TARGET_TEST_SOURCES
 # Create executable target for the unit test.
 add_executable(testing ${TARGET_TEST_SOURCES})
 # Link libraries to the test target.
-target_link_libraries(testing PRIVATE labrat-robot::core GTest::gtest GTest::gtest_main pthread)
+target_link_libraries(testing PRIVATE labrat-robot::core labrat-robot::plugins GTest::gtest GTest::gtest_main pthread)
 # Make tests available to ctest
 gtest_discover_tests(testing DISCOVERY_MODE PRE_TEST)
