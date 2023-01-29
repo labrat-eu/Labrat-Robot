@@ -42,11 +42,24 @@ public:
     u8 component_id;
   };
 
+  /**
+   * @brief Register a sender with the MAVLink node. Incoming MAVLink messages will be forwarded onto the sender.
+   * 
+   * @tparam MessageType Message type of the sender.
+   * @param sender Sender to be regsitered. The sender must use the mavlink_message_t type as a container.
+   * @param id Message ID of the underlying MAVLink message.
+   */
   template <typename MessageType>
   void registerSender(typename Node::Sender<Message<MessageType>, mavlink_message_t>::Ptr &sender, u16 id) {
     registerSenderAdapter(Node::SenderAdapter<mavlink_message_t>::get(*sender), id);
   }
 
+  /**
+   * @brief Register a receiver with the MAVLink node. Incoming messages will be forwarded onto the MAVLink network.
+   * 
+   * @tparam MessageType Message type of the receiver. 
+   * @param receiver Receiver to be regsitered. The receiver must use the mavlink_message_t type as a container.
+   */
   template <typename MessageType>
   void registerReceiver(typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr &receiver) {
     receiver->setCallback(MavlinkNode::receiverCallback, priv);

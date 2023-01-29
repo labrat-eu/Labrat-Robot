@@ -104,6 +104,11 @@ public:
     return timestamp;
   }
 
+  /**
+   * @brief Get the fully qualified type name.
+   * 
+   * @return constexpr std::string Name of the type.
+   */
   static inline constexpr std::string getName() {
     return std::string(Content::TableType::GetFullyQualifiedName());
   }
@@ -121,18 +126,45 @@ concept is_container = requires {
   typename T::MessageType;
 };
 
+/**
+ * @brief Non-templated container to store reflection info about a Message type.
+ * 
+ */
 class MessageReflection {
 public:
+  /**
+   * @brief Construct a new Message Reflection object by type template.
+   * 
+   * @tparam T 
+   * @return requires 
+   */
   template <typename T>
   requires std::is_base_of_v<flatbuffers::Table, T>
   MessageReflection() : MessageReflection(Message<T>::getName()) {}
 
+  /**
+   * @brief Construct a new Message Reflection object by type name.
+   * 
+   * @param name Name of the type.
+   */
   MessageReflection(const std::string &name);
 
+  /**
+   * @brief Get buffer containing the type information.
+   * @details For this function to work properly, the LABRAT_ROBOT_REFLECTION_PATH environment variable must be set correctly.
+   * 
+   * @return const std::string& String contianing the binary type information.
+   */
   inline const std::string &getBuffer() const {
     return buffer;
   }
 
+  /**
+   * @brief Check whether or not the requested type could be found and the buffer is valid.
+   * 
+   * @return true The buffer is valid.
+   * @return false The type could not be found and the type is invalid.
+   */
   inline bool isValid() const {
     return valid;
   }
