@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.25.1)
+cmake_minimum_required(VERSION 3.22.0)
+
 
 # Include toolchain.
 include(${CMAKE_TOOLCHAIN_FILE})
@@ -13,13 +14,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 include(Config)
 include(Options)
 include(ClangFormat)
-include(ClangTidy)
-include(CoverageReport)
 include(Doxygen)
 include(IncludeSymlinks)
-
-# Include global packages.
-find_package(PkgConfig)
 
 # Set build types.
 set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo)
@@ -59,70 +55,15 @@ project(${LOCAL_PROJECT_NAME} VERSION ${GIT_VERSION} DESCRIPTION ${LOCAL_PROJECT
 
 
 # Define variables and options here.
-prj_register_option(ENABLE_COVERAGE "Enable generation of code coverage information once the application is run." OFF)
-prj_register_option(ENABLE_PROFILING "Enable generation of profiling information once the application is run." OFF)
-prj_register_option(ENABLE_LINTING "Enable the use of various linters (e.g. clang-tidy etc.)." OFF)
-prj_register_option(INSTALL_DOCS "Enable installation of man pages on make install." OFF)
+prj_register_option(ENABLE_PLUGINS "Enable building of plugins." ON)
+prj_register_option(ENABLE_FORMAT "Enable code formatting targets." OFF)
+prj_register_option(ENABLE_DOCS "Enable documnetation generation targets." OFF)
 
 # Print enabled variables and options.
 list(JOIN PRJ_CUSTOM_VARIABLES ", " PRJ_PRJ_CUSTOM_VARIABLES_STRING)
 list(JOIN PRJ_ENABLED_OPTIONS ", " PRJ_ENABLED_OPTIONS_STRING)
 message(STATUS "Custom variables: " ${PRJ_PRJ_CUSTOM_VARIABLES_STRING})
 message(STATUS "Enabled options: " ${PRJ_ENABLED_OPTIONS_STRING})
-
-# Handle enabled coverage option.
-if(${PRJ_OPT_ENABLE_COVERAGE})
-  if(CMAKE_BUILD_TYPE MATCHES Debug)
-    if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-      list(APPEND PRJ_C_FLAGS "-fprofile-arcs" "-ftest-coverage")
-      list(APPEND PRJ_CXX_FLAGS "-fprofile-arcs" "-ftest-coverage")
-      list(APPEND PRJ_ASM_FLAGS "-fprofile-arcs" "-ftest-coverage")
-    elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "CLANG")
-      list(APPEND PRJ_C_FLAGS "-fprofile-instr-generate -fcoverage-mapping")
-      list(APPEND PRJ_CXX_FLAGS "-fprofile-instr-generate -fcoverage-mapping")
-      list(APPEND PRJ_ASM_FLAGS "-fprofile-instr-generate -fcoverage-mapping")
-    else()
-      message(WARNING "Coverage not supported for specified compiler.")
-    endif()
-  else()
-    message(WARNING "Invalid configuration: Option ENABLE_COVERAGE requires build type 'Debug'.")
-  endif()
-endif()
-
-# Handle enabled profiling option.
-if(${PRJ_OPT_ENABLE_PROFILING})
-  list(APPEND PRJ_C_FLAGS "-pg")
-  list(APPEND PRJ_CXX_FLAGS "-pg")
-  list(APPEND PRJ_ASM_FLAGS "-pg")
-endif()
-
-# Handle enabled linting option.
-if(${PRJ_OPT_ENABLE_LINTING})
-  if(CMAKE_BUILD_TYPE MATCHES Debug)
-    prj_add_clang_tidy()
-  else()
-    prj_add_clang_tidy(FAIL_ON_WARNING)
-  endif()
-endif()
-
-# Apply all set compiler flags to the CMAKE variable.
-list(JOIN PRJ_C_FLAGS " " PRJ_C_FLAGS)
-list(JOIN PRJ_CXX_FLAGS " " PRJ_CXX_FLAGS)
-list(JOIN PRJ_ASM_FLAGS " " PRJ_ASM_FLAGS)
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${PRJ_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${PRJ_C_FLAGS}")
-set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${PRJ_C_FLAGS}")
-
-if(CMAKE_BUILD_TYPE MATCHES Debug)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
-  set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${CMAKE_ASM_FLAGS_DEBUG}")
-else(CMAKE_BUILD_TYPE MATCHES Release)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-  set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${CMAKE_ASM_FLAGS_RELEASE}")
-endif()
 
 # Save the command line compile commands in the build output.
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
@@ -133,22 +74,24 @@ include(GNUInstallDirs)
 list(APPEND CMAKE_INSTALL_RPATH "$ORIGIN")
 
 
-# TODO: add description
-prj_add_include_symlink(TARGET src NAME ${LOCAL_PROJECT_NAME} NAMESPACE ${LOCAL_PROJECT_NAMESPACE})
+# Add include symlinks.
+prj_add_include_symlink(TARGET ${CMAKE_CURRENT_LIST_DIR}/src NAME ${LOCAL_PROJECT_NAME} NAMESPACE ${LOCAL_PROJECT_NAMESPACE})
+prj_add_include_symlink(TARGET ${CMAKE_CURRENT_LIST_DIR}/submodules/mavlink NAME mavlink)
+prj_add_include_symlink(TARGET ${CMAKE_CURRENT_LIST_DIR}/submodules/base64 NAME base64)
 
 # Add the project root and build directory to the include path.
 include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/include)
 include_directories(BEFORE ${CMAKE_BINARY_DIR})
 
-# Add header libraries to the include path.
-include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/submodules)
-include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/submodules/cpp-utils)
-
 # Add main source directory.
 add_subdirectory(src)
 
-# Add clang format targets.
-prj_add_clang_format_targets(SOURCEPATH ${CMAKE_CURRENT_LIST_DIR}/src)
+if(${PRJ_OPT_ENABLE_FORMAT})
+  # Add clang format targets.
+  prj_add_clang_format_targets(SOURCEPATH ${CMAKE_CURRENT_LIST_DIR}/src)
+endif()
 
-# Add doxygen targets.
-prj_add_doxygen_targets()
+if(${PRJ_OPT_ENABLE_DOCS})
+  # Add doxygen targets.
+  prj_add_doxygen_targets()
+endif()

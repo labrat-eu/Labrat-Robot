@@ -18,12 +18,12 @@
 #include <labrat/robot/utils/types.hpp>
 
 #include <atomic>
+#include <functional>
 #include <future>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
-#include <functional>
 
 namespace labrat::robot {
 
@@ -61,7 +61,7 @@ public:
   /**
    * @brief Generic adapter for a sender.
    * This allows access to sender objetcs without knowledge of the underlying message types.
-   * 
+   *
    * @tparam ContainerType Container type of the sender object.
    */
   template <typename ContainerType>
@@ -81,10 +81,10 @@ public:
 
     /**
      * @brief Get a generic adapter for a Sender object.
-     * 
+     *
      * @tparam MessageType Message type of the sender.
      * @param sender Sender to encapsulate.
-     * @return SenderAdapter<ContainerType> 
+     * @return SenderAdapter<ContainerType>
      */
     template <typename MessageType>
     requires is_message<MessageType>
@@ -290,7 +290,7 @@ public:
   /**
    * @brief Generic adapter for a receiver.
    * This allows access to receiver objetcs without knowledge of the underlying message types.
-   * 
+   *
    * @tparam ContainerType Container type of the receiver object.
    */
   template <typename ContainerType>
@@ -298,7 +298,6 @@ public:
   private:
     ReceiverAdapter() = default;
 
-    //using PutFunction = void(*)(void *, const ContainerType &);
     using LatestFunction = std::function<ContainerType()>;
     LatestFunction latest_function;
 
@@ -309,15 +308,18 @@ public:
     NewDataAvailableFunction new_data_available_function;
 
   public:
-    ReceiverAdapter(const ReceiverAdapter &rhs) : latest_function(rhs.latest_function), next_function(rhs.next_function), new_data_available_function(rhs.new_data_available_function) {}
+    ReceiverAdapter(const ReceiverAdapter &rhs) :
+      latest_function(rhs.latest_function), next_function(rhs.next_function), new_data_available_function(rhs.new_data_available_function) {
+    }
+    
     ~ReceiverAdapter() = default;
 
     /**
      * @brief Get a generic adapter for a Receiver object.
-     * 
+     *
      * @tparam MessageType Message type of the receiver.
      * @param receiver Receiver to encapsulate.
-     * @return ReceiverAdapter<ContainerType> 
+     * @return ReceiverAdapter<ContainerType>
      */
     template <typename MessageType>
     requires is_message<MessageType>

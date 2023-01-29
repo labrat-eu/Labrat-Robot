@@ -7,9 +7,9 @@
  */
 
 #include <labrat/robot/exception.hpp>
+#include <labrat/robot/logger.hpp>
 #include <labrat/robot/manager.hpp>
 #include <labrat/robot/message.hpp>
-#include <labrat/robot/logger.hpp>
 #include <labrat/robot/plugins/mcap/recorder.hpp>
 
 #include <chrono>

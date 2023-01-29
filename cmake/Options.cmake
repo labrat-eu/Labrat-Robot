@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25.1)
+cmake_minimum_required(VERSION 3.22.0)
 
 function(prj_register_var var_name var_desciption var_default)
   set(${LOCAL_PROJECT_NAME_CAPS}_${var_name} ${var_default} CACHE STRING ${var_desciption})

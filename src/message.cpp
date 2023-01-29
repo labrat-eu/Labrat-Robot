@@ -9,11 +9,11 @@
 #include <labrat/robot/message.hpp>
 
 #include <algorithm>
+#include <cctype>
 #include <cstdlib>
-#include <sstream>
 #include <forward_list>
 #include <fstream>
-#include <cctype>
+#include <sstream>
 
 namespace labrat::robot {
 

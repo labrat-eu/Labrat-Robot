@@ -37,7 +37,7 @@ class LabratRobotConan(ConanFile):
     options = {"shared": [True, False], "fPIC": [True, False], "with_system_deps": [True, False]}
     default_options = {"shared": True, "fPIC": True, "with_system_deps": False}
     generators = "CMakeDeps", "CMakeToolchain"
-    exports_sources = "CMakeLists.txt", "src/*", "cmake/*", "submodules/*", ".clang/*", ".doxygen/*", ".scripts/*"
+    exports_sources = "CMakeLists.txt", "src/*", "cmake/*", "submodules/*"
 
     def __init__(self, output, runner, display_name="", user=None, channel=None):
         try:

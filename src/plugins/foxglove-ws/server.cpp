@@ -7,15 +7,16 @@
  */
 
 #include <labrat/robot/exception.hpp>
+#include <labrat/robot/logger.hpp>
 #include <labrat/robot/manager.hpp>
 #include <labrat/robot/message.hpp>
-#include <labrat/robot/logger.hpp>
 #include <labrat/robot/plugins/foxglove-ws/server.hpp>
 
 #include <chrono>
 #include <queue>
 
 #include <base64/Base64.h>
+
 #include <foxglove/websocket/server.hpp>
 
 namespace labrat::robot::plugins {
@@ -46,7 +47,7 @@ public:
 
   ~FoxgloveServerPrivate() {
     Manager::get().removePlugin(self_reference);
-    
+
     /*
     for (const std::pair<std::size_t, foxglove::websocket::ChannelId> channel : channel_map) {
       server.removeChannel(channel.second);
@@ -117,8 +118,7 @@ FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleTopic(c
     }
 
     schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
-      std::forward_as_tuple(info.type_name,
-      macaron::Base64::Encode(reflection.getBuffer())));
+      std::forward_as_tuple(info.type_name, macaron::Base64::Encode(reflection.getBuffer())));
   }
 
   ChannelMap::iterator channel_iterator = channel_map.find(info.topic_hash);
@@ -143,7 +143,8 @@ inline FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handle
   }
 
   std::lock_guard guard(mutex);
-  server.sendMessage(channel_iterator->second, info.timestamp.count(), std::string_view(reinterpret_cast<char *>(info.serialized_message.data()), info.serialized_message.size()));
+  server.sendMessage(channel_iterator->second, info.timestamp.count(),
+    std::string_view(reinterpret_cast<char *>(info.serialized_message.data()), info.serialized_message.size()));
 
   return channel_iterator;
 }
