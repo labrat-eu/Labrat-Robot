@@ -173,6 +173,8 @@ public:
 
   void writeMessage(const mavlink_message_t &message);
 
+  MavlinkNode::SystemInfo system_info;
+
 private:
   template <typename MessageType>
   typename Node::Sender<Message<MessageType>, mavlink_message_t>::Ptr addSender(const std::string &topic_name, u16 id) {
@@ -210,7 +212,6 @@ private:
 
   MavlinkConnection::Ptr connection;
   MavlinkNode &node;
-  MavlinkNode::SystemInfo system_info;
 
   static constexpr std::size_t buffer_size = 1024;
 
@@ -1064,6 +1065,10 @@ MavlinkNode::MavlinkNode(const Node::Environment &environment, MavlinkConnection
 
 MavlinkNode::~MavlinkNode() {
   delete priv;
+}
+
+const MavlinkNode::SystemInfo &MavlinkNode::getSystemInfo() {
+  return priv->system_info;
 }
 
 void MavlinkNode::registerSenderAdapter(Node::SenderAdapter<mavlink_message_t> &&adapter, u16 id) {

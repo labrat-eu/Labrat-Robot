@@ -27,6 +27,12 @@ class MavlinkNodePrivate;
  */
 class MavlinkNode : public Node {
 public:
+  struct SystemInfo {
+    u8 channel_id;
+    u8 system_id;
+    u8 component_id;
+  };
+
   /**
    * @brief Construct a new Mavlink Node object
    *
@@ -36,11 +42,7 @@ public:
   MavlinkNode(const Node::Environment &environment, MavlinkConnection::Ptr &&connection);
   ~MavlinkNode();
 
-  struct SystemInfo {
-    u8 channel_id;
-    u8 system_id;
-    u8 component_id;
-  };
+  const SystemInfo &getSystemInfo();
 
   /**
    * @brief Register a sender with the MAVLink node. Incoming MAVLink messages will be forwarded onto the sender.
