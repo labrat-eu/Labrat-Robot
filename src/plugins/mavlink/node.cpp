@@ -1067,7 +1067,7 @@ MavlinkNode::~MavlinkNode() {
   delete priv;
 }
 
-const MavlinkNode::SystemInfo &MavlinkNode::getSystemInfo() {
+const MavlinkNode::SystemInfo &MavlinkNode::getSystemInfo() const {
   return priv->system_info;
 }
 

@@ -34,7 +34,7 @@ public:
   };
 
   /**
-   * @brief Construct a new Mavlink Node object
+   * @brief Construct a new Mavlink Node object.
    *
    * @param environment Node environment.
    * @param connection MavlinkConnection to be used by this instance.
@@ -42,7 +42,12 @@ public:
   MavlinkNode(const Node::Environment &environment, MavlinkConnection::Ptr &&connection);
   ~MavlinkNode();
 
-  const SystemInfo &getSystemInfo();
+  /**
+   * @brief Get the MAVLink system info about the local system.
+   * 
+   * @return const SystemInfo& System information.
+   */
+  const SystemInfo &getSystemInfo() const;
 
   /**
    * @brief Register a sender with the MAVLink node. Incoming MAVLink messages will be forwarded onto the sender.

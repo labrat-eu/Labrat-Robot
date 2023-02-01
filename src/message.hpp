@@ -55,7 +55,7 @@ public:
    *
    * @param content Contents of the message.
    */
-  Message(Content &&content) : content(std::forward(content)) {
+  Message(Content &&content) : content(std::forward<Content>(content)) {
     timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
   }
 
