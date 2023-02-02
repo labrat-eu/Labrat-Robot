@@ -188,7 +188,7 @@ public:
         receiver->read_count.notify_one();
 
         if (receiver->callback.valid()) {
-          receiver->callback(dynamic_cast<GenericReceiver<MessageType> &>(*receiver), receiver->callback_ptr);
+          receiver->callback(*receiver, receiver->callback_ptr);
         }
       }
 
