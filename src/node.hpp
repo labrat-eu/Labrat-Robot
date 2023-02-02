@@ -123,7 +123,7 @@ public:
    */
   template <typename MessageType, typename ContainerType>
   requires is_message<MessageType>
-  class Sender : public GenericSender<ContainerType> {
+  class Sender final : public GenericSender<ContainerType> {
   private:
     /**
      * @brief Construct a new Sender object.
@@ -385,7 +385,7 @@ public:
    */
   template <typename MessageType, typename ContainerType>
   requires is_message<MessageType>
-  class Receiver : public GenericReceiver<ContainerType> {
+  class Receiver final : public GenericReceiver<ContainerType> {
   private:
     /**
      * @brief Construct a new Receiver object.
@@ -601,7 +601,7 @@ public:
    * @tparam ResponseType Type of the response made to by a service.
    */
   template <typename RequestType, typename ResponseType>
-  class Server {
+  class Server final {
   public:
     /**
      * @brief Handler function to handle requests made to a service.
@@ -685,7 +685,7 @@ public:
    * @tparam ResponseType Type of the response made to by a service.
    */
   template <typename RequestType, typename ResponseType>
-  class Client {
+  class Client final {
   private:
     /**
      * @brief Construct a new Client object.
