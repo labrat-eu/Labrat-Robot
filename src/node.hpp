@@ -59,61 +59,60 @@ public:
   class Sender;
 
   /**
-   * @brief Generic adapter for a sender.
+   * @brief Alias of the Sender class with only the ContainerType template parameter provided that the relevant type satisfies the
+   * is_container concept.
+   *
+   * @tparam ContainerType Type of the objects provided by the user to be accepted by the sender.
+   */
+  template <typename ContainerType>
+  requires is_container<ContainerType>
+  using ContainerSender = Sender<typename ContainerType::MessageType, ContainerType>;
+
+  /**
+   * @brief Generic sender to declare virtual functions for type specific receiver instances to define.
    * This allows access to sender objetcs without knowledge of the underlying message types.
    *
    * @tparam ContainerType Container type of the sender object.
    */
   template <typename ContainerType>
-  class SenderAdapter {
-  private:
-    SenderAdapter() = default;
-
-    using PutFunction = std::function<void(const ContainerType &)>;
-    PutFunction put_function;
-
-    using FlushFunction = std::function<void()>;
-    FlushFunction flush_function;
-
+  class GenericSender {
   public:
-    SenderAdapter(const SenderAdapter &rhs) : put_function(rhs.put_function), flush_function(rhs.flush_function) {}
-    ~SenderAdapter() = default;
+    using Ptr = std::unique_ptr<GenericSender<ContainerType>>;
 
-    /**
-     * @brief Get a generic adapter for a Sender object.
-     *
-     * @tparam MessageType Message type of the sender.
-     * @param sender Sender to encapsulate.
-     * @return SenderAdapter<ContainerType>
-     */
-    template <typename MessageType>
-    requires is_message<MessageType>
-    static SenderAdapter<ContainerType> get(Sender<MessageType, ContainerType> &sender) {
-      SenderAdapter<ContainerType> result;
-
-      result.put_function = std::bind_front(&Sender<MessageType, ContainerType>::put, &sender);
-      result.flush_function = std::bind_front(&Sender<MessageType, ContainerType>::flush, &sender);
-
-      return result;
-    }
+    virtual ~GenericSender() = default;
 
     /**
      * @brief Send out a message onto the topic.
      *
      * @param container Object caintaining the data to be sent out.
      */
-    void put(const ContainerType &container) {
-      put_function(container);
-    }
+    virtual void put(const ContainerType &container) = 0;
 
     /**
      * @brief Flush all receivers of the relevant topic.
      * This will unblock any waiting receivers calling the next() function and will invalidate the data stored in their buffers.
      *
      */
-    void flush() {
-      flush_function();
+    virtual void flush() = 0;
+
+    /**
+     * @brief Get the name of the relevant topic.
+     *
+     * @return const std::string& Name of the topic.
+     */
+    inline const std::string &getTopicName() const {
+      return topic_info.topic_name;
     }
+
+  protected:
+    GenericSender(const Plugin::TopicInfo &topic_info, TopicMap::Topic &topic, Node &node, const void *user_ptr) :
+    topic_info(topic_info), topic(topic), node(node), user_ptr(user_ptr) {}
+
+    const Plugin::TopicInfo topic_info;
+    TopicMap::Topic &topic;
+
+    Node &node;
+    const void *const user_ptr;
   };
 
   /**
@@ -124,7 +123,7 @@ public:
    */
   template <typename MessageType, typename ContainerType>
   requires is_message<MessageType>
-  class Sender {
+  class Sender : public GenericSender<ContainerType> {
   private:
     /**
      * @brief Construct a new Sender object.
@@ -136,29 +135,22 @@ public:
      */
     Sender(const std::string &topic_name, Node &node,
       ConversionFunction<ContainerType, MessageType> conversion_function = defaultSenderConversionFunction<MessageType, ContainerType>,
-      const void *user_ptr = nullptr) :
-      topic_info(Plugin::TopicInfo::get<MessageType>(topic_name)),
-      node(node), conversion_function(conversion_function), user_ptr(user_ptr),
-      topic(node.environment.topic_map.addSender<MessageType>(topic_name, this)) {
-      for (Plugin &plugin : node.environment.plugin_list) {
-        if (plugin.delete_flag.test() || !plugin.filter.check(topic_info.topic_hash)) {
+      const void *user_ptr = nullptr) : GenericSender<ContainerType>(Plugin::TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addSender<MessageType>(topic_name, this), node, user_ptr),
+      conversion_function(conversion_function) {
+      for (Plugin &plugin : GenericSender<ContainerType>::node.environment.plugin_list) {
+        if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<ContainerType>::topic_info.topic_hash)) {
           continue;
         }
 
         utils::ConsumerGuard<u32> guard(plugin.use_count);
 
-        plugin.topic_callback(plugin.user_ptr, topic_info);
+        plugin.topic_callback(plugin.user_ptr, GenericSender<ContainerType>::topic_info);
       }
     }
 
     friend class Node;
 
-    const Plugin::TopicInfo topic_info;
-
-    Node &node;
     const ConversionFunction<ContainerType, MessageType> conversion_function;
-    const void *const user_ptr;
-    TopicMap::Topic &topic;
 
   public:
     using Ptr = std::unique_ptr<Sender<MessageType, ContainerType>>;
@@ -170,7 +162,7 @@ public:
     ~Sender() {
       flush();
 
-      node.environment.topic_map.removeSender(topic.name, this);
+      GenericSender<ContainerType>::node.environment.topic_map.removeSender(GenericSender<ContainerType>::topic.name, this);
     }
 
     /**
@@ -179,7 +171,7 @@ public:
      * @param container Object caintaining the data to be sent out.
      */
     void put(const ContainerType &container) {
-      for (void *pointer : topic.getReceivers()) {
+      for (void *pointer : GenericSender<ContainerType>::topic.getReceivers()) {
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
         const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
@@ -187,7 +179,7 @@ public:
 
         {
           std::lock_guard guard(receiver->message_buffer[index].mutex);
-          conversion_function(container, receiver->message_buffer[index].message, user_ptr);
+          conversion_function(container, receiver->message_buffer[index].message, GenericSender<ContainerType>::user_ptr);
 
           receiver->read_count.store(count);
         }
@@ -196,7 +188,7 @@ public:
         receiver->read_count.notify_one();
 
         if (receiver->callback.valid()) {
-          receiver->callback(receiver->adapter, receiver->callback_ptr);
+          receiver->callback(dynamic_cast<GenericReceiver<MessageType> &>(*receiver), receiver->callback_ptr);
         }
       }
 
@@ -209,7 +201,7 @@ public:
      *
      */
     void flush() {
-      for (void *pointer : topic.getReceivers()) {
+      for (void *pointer : GenericSender<ContainerType>::topic.getReceivers()) {
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
         const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
@@ -226,24 +218,24 @@ public:
      * @param container Object caintaining the data to be sent out.
      */
     void log(const ContainerType &container) {
-      if (node.environment.plugin_list.empty()) {
+      if (GenericSender<ContainerType>::node.environment.plugin_list.empty()) {
         return;
       }
 
       MessageType message;
-      conversion_function(container, message, user_ptr);
+      conversion_function(container, message, GenericSender<ContainerType>::user_ptr);
 
       flatbuffers::FlatBufferBuilder builder;
       builder.Finish(MessageType::Content::TableType::Pack(builder, &message()));
 
       Plugin::MessageInfo message_info = {
-        .topic_info = topic_info,
+        .topic_info = GenericSender<ContainerType>::topic_info,
         .timestamp = message.getTimestamp(),
         .serialized_message = builder.GetBufferSpan(),
       };
 
-      for (Plugin &plugin : node.environment.plugin_list) {
-        if (plugin.delete_flag.test() || !plugin.filter.check(topic_info.topic_hash)) {
+      for (Plugin &plugin : GenericSender<ContainerType>::node.environment.plugin_list) {
+        if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<ContainerType>::topic_info.topic_hash)) {
           continue;
         }
 
@@ -252,26 +244,7 @@ public:
         plugin.message_callback(plugin.user_ptr, message_info);
       }
     }
-
-    /**
-     * @brief Get the name of the relevant topic.
-     *
-     * @return const std::string& Name of the topic.
-     */
-    inline const std::string &getTopicName() const {
-      return topic.name;
-    }
   };
-
-  /**
-   * @brief Alias of the Sender class with only the ContainerType template parameter provided that the relevant type satisfies the
-   * is_container concept.
-   *
-   * @tparam ContainerType Type of the objects provided by the user to be accepted by the sender.
-   */
-  template <typename ContainerType>
-  requires is_container<ContainerType>
-  using ContainerSender = Sender<typename ContainerType::MessageType, ContainerType>;
 
   template <typename MessageType, typename ContainerType = MessageType>
   requires is_message<MessageType>
@@ -286,52 +259,19 @@ public:
   template <typename ContainerType>
   requires is_container<ContainerType>
   using ContainerReceiver = Receiver<typename ContainerType::MessageType, ContainerType>;
-
+  
   /**
-   * @brief Generic adapter for a receiver.
+   * @brief @brief Generic receiver to declare virtual functions for type specific receiver instances to define.
    * This allows access to receiver objetcs without knowledge of the underlying message types.
-   *
-   * @tparam ContainerType Container type of the receiver object.
+   * 
+   * @tparam ContainerType Type of the objects provided by the receiver to be used by the user.
    */
   template <typename ContainerType>
-  class ReceiverAdapter {
-  private:
-    ReceiverAdapter() = default;
-
-    using LatestFunction = std::function<ContainerType()>;
-    LatestFunction latest_function;
-
-    using NextFunction = std::function<ContainerType()>;
-    NextFunction next_function;
-
-    using NewDataAvailableFunction = std::function<bool()>;
-    NewDataAvailableFunction new_data_available_function;
-
+  class GenericReceiver {
   public:
-    ReceiverAdapter(const ReceiverAdapter &rhs) :
-      latest_function(rhs.latest_function), next_function(rhs.next_function), new_data_available_function(rhs.new_data_available_function) {
-    }
-    
-    ~ReceiverAdapter() = default;
+    using Ptr = std::unique_ptr<GenericReceiver<ContainerType>>;
 
-    /**
-     * @brief Get a generic adapter for a Receiver object.
-     *
-     * @tparam MessageType Message type of the receiver.
-     * @param receiver Receiver to encapsulate.
-     * @return ReceiverAdapter<ContainerType>
-     */
-    template <typename MessageType>
-    requires is_message<MessageType>
-    static ReceiverAdapter<ContainerType> get(Receiver<MessageType, ContainerType> &receiver) {
-      ReceiverAdapter<ContainerType> result;
-
-      result.latest_function = std::bind_front(&Receiver<MessageType, ContainerType>::latest, &receiver);
-      result.next_function = std::bind_front(&Receiver<MessageType, ContainerType>::next, &receiver);
-      result.new_data_available_function = std::bind_front(&Receiver<MessageType, ContainerType>::newDataAvailable, &receiver);
-
-      return result;
-    }
+    virtual ~GenericReceiver() = default;
 
     /**
      * @brief Get the lastest message sent over the topic.
@@ -340,20 +280,16 @@ public:
      * @return ContainerType The latest message sent over the topic.
      * @throw TopicNoDataAvailableException When the topic has no valid data available.
      */
-    ContainerType latest() {
-      return latest_function();
-    };
+    virtual ContainerType latest() = 0;
 
     /**
      * @brief Get the next message sent over the topic.
-     * This call might block. However, it guaranteed that successive calls will yield different messages.
+     * This call might block. However, it is guaranteed that successive calls will yield different messages.
      *
      * @return ContainerType The next message sent over the topic.
      * @throw TopicNoDataAvailableException When the topic has no valid data available.
      */
-    ContainerType next() {
-      return next_function();
-    };
+    virtual ContainerType next() = 0;
 
     /**
      * @brief Check whether new data is available on the topic and a call to next() will not block.
@@ -362,37 +298,30 @@ public:
      * @return false No new data is availabe, a call to next() will block.
      */
     inline bool newDataAvailable() {
-      return new_data_available_function();
+      return (read_count.load() != next_count);
     }
-  };
 
-  /**
-   * @brief Generic class to receive messages from a topic.
-   *
-   * @tparam MessageType Type of the messages sent over the topic.
-   * @tparam ContainerType Type of the objects provided by the receiver to be used by the user.
-   */
-  template <typename MessageType, typename ContainerType>
-  requires is_message<MessageType>
-  class Receiver {
-  private:
-    /**
-     * @brief Construct a new Receiver object.
+        /**
+     * @brief Get the internal buffer size.
      *
-     * @param topic_name Name of the topic.
-     * @param node Reference to the parent node.
-     * @param conversion_function Conversion function convert from MessageType to ContainerType.
-     * @param user_ptr User pointer to be used by the conversion function.
-     * @param buffer_size Size of the internal receiver buffer. It must be at least 4 and should ideally be a power of 2.
+     * @return std::size_t
      */
-    Receiver(const std::string &topic_name, Node &node,
-      ConversionFunction<MessageType, ContainerType> conversion_function = defaultReceiverConversionFunction<MessageType, ContainerType>,
-      const void *user_ptr = nullptr, std::size_t buffer_size = 4) :
-      topic_info(Plugin::TopicInfo::get<MessageType>(topic_name)),
-      node(node), conversion_function(conversion_function), user_ptr(user_ptr),
-      topic(node.environment.topic_map.addReceiver<MessageType>(topic_name, this)), index_mask(calculateBufferMask(buffer_size)),
-      message_buffer(calculateBufferSize(buffer_size)), write_count(0), read_count(index_mask),
-      adapter(ReceiverAdapter<ContainerType>::get(*this)) {
+    inline std::size_t getBufferSize() const {
+      return index_mask + 1;
+    }
+
+    /**
+     * @brief Get the name of the relevant topic.
+     *
+     * @return const std::string& Name of the topic.
+     */
+    inline const std::string &getTopicName() const {
+      return topic_info.topic_name;
+    }
+
+  protected:
+    GenericReceiver(const Plugin::TopicInfo &topic_info, TopicMap::Topic &topic, Node &node, const void *user_ptr, std::size_t buffer_size) :
+    topic_info(topic_info), topic(topic), node(node), user_ptr(user_ptr), index_mask(calculateBufferMask(buffer_size)), write_count(0), read_count(index_mask) {
       next_count = index_mask;
       flush_flag = true;
     }
@@ -433,6 +362,45 @@ public:
     std::size_t calculateBufferMask(std::size_t buffer_size) {
       return calculateBufferSize(buffer_size) - 1;
     }
+
+    const Plugin::TopicInfo topic_info;
+    TopicMap::Topic &topic;
+
+    Node &node;
+    const void *user_ptr;
+
+    const std::size_t index_mask;
+
+    std::atomic<std::size_t> write_count;
+    std::atomic<std::size_t> read_count;
+    std::size_t next_count;
+    volatile bool flush_flag;
+  };
+
+  /**
+   * @brief Generic class to receive messages from a topic.
+   *
+   * @tparam MessageType Type of the messages sent over the topic.
+   * @tparam ContainerType Type of the objects provided by the receiver to be used by the user.
+   */
+  template <typename MessageType, typename ContainerType>
+  requires is_message<MessageType>
+  class Receiver : public GenericReceiver<ContainerType> {
+  private:
+    /**
+     * @brief Construct a new Receiver object.
+     *
+     * @param topic_name Name of the topic.
+     * @param node Reference to the parent node.
+     * @param conversion_function Conversion function convert from MessageType to ContainerType.
+     * @param user_ptr User pointer to be used by the conversion function.
+     * @param buffer_size Size of the internal receiver buffer. It must be at least 4 and should ideally be a power of 2.
+     */
+    Receiver(const std::string &topic_name, Node &node,
+      ConversionFunction<MessageType, ContainerType> conversion_function = defaultReceiverConversionFunction<MessageType, ContainerType>,
+      const void *user_ptr = nullptr, std::size_t buffer_size = 4) : GenericReceiver<ContainerType>(Plugin::TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node, user_ptr, buffer_size),
+      conversion_function(conversion_function),
+      message_buffer(GenericReceiver<ContainerType>::calculateBufferSize(buffer_size)) {}
 
     friend class Node;
     friend class Sender<MessageType>;
@@ -491,22 +459,9 @@ public:
       const std::size_t size;
     };
 
-    const Plugin::TopicInfo topic_info;
-
-    Node &node;
     const ConversionFunction<MessageType, ContainerType> conversion_function;
-    const void *user_ptr;
-    TopicMap::Topic &topic;
 
-    const std::size_t index_mask;
     volatile MessageBuffer message_buffer;
-
-    std::atomic<std::size_t> write_count;
-    std::atomic<std::size_t> read_count;
-    std::size_t next_count;
-    volatile bool flush_flag;
-
-    ReceiverAdapter<ContainerType> adapter;
 
   public:
     using Ptr = std::unique_ptr<Receiver<MessageType, ContainerType>>;
@@ -518,7 +473,7 @@ public:
     class CallbackFunction {
     public:
       template <typename DataType = void>
-      using Function = void (*)(ReceiverAdapter<ContainerType> &, DataType *);
+      using Function = void (*)(GenericReceiver<ContainerType> &, DataType *);
 
       /**
        * @brief Default constructor invalidating the object.
@@ -538,23 +493,11 @@ public:
       /**
        * @brief Call the stored callback function.
        *
-       * @param receiver Reference to the relevant receiver adapter instance.
+       * @param receiver Reference to the relevant generic receiver instance.
        * @param user_ptr User pointer to access generic external data.
        */
-      inline void operator()(ReceiverAdapter<ContainerType> &adapter, void *user_ptr) const {
-        function(adapter, user_ptr);
-      }
-
-      /**
-       * @brief Call the stored callback function.
-       *
-       * @param receiver Reference to the relevant receiver instance.
-       * @param user_ptr User pointer to access generic external data.
-       */
-      inline void operator()(Receiver<MessageType, ContainerType> &receiver, void *user_ptr) const {
-        ReceiverAdapter<ContainerType> adapter = ReceiverAdapter<ContainerType>::template get<MessageType>(receiver);
-
-        function(adapter, user_ptr);
+      inline void operator()(GenericReceiver<ContainerType> &receiver, void *user_ptr) const {
+        function(receiver, user_ptr);
       }
 
       /**
@@ -576,7 +519,7 @@ public:
      *
      */
     ~Receiver() {
-      node.environment.topic_map.removeReceiver(topic.name, this);
+      GenericReceiver<ContainerType>::node.environment.topic_map.removeReceiver(GenericReceiver<ContainerType>::topic.name, this);
     }
 
     /**
@@ -586,18 +529,18 @@ public:
      * @return ContainerType The latest message sent over the topic.
      * @throw TopicNoDataAvailableException When the topic has no valid data available.
      */
-    ContainerType latest() {
+    ContainerType latest() override {
       ContainerType result;
 
-      const std::size_t index = read_count.load() & index_mask;
+      const std::size_t index = GenericReceiver<ContainerType>::read_count.load() & GenericReceiver<ContainerType>::index_mask;
 
-      if (flush_flag) {
-        throw TopicNoDataAvailableException("Topic was flushed.", node.getLogger());
+      if (GenericReceiver<ContainerType>::flush_flag) {
+        throw TopicNoDataAvailableException("Topic was flushed.", GenericReceiver<ContainerType>::node.getLogger());
       }
 
       {
         std::lock_guard guard(message_buffer[index].mutex);
-        conversion_function(message_buffer[index].message, result, user_ptr);
+        conversion_function(message_buffer[index].message, result, GenericReceiver<ContainerType>::user_ptr);
       }
 
       return result;
@@ -605,32 +548,32 @@ public:
 
     /**
      * @brief Get the next message sent over the topic.
-     * This call might block. However, it guaranteed that successive calls will yield different messages.
+     * This call might block. However, it is guaranteed that successive calls will yield different messages.
      *
      * @return ContainerType The next message sent over the topic.
      * @throw TopicNoDataAvailableException When the topic has no valid data available.
      */
-    ContainerType next() {
-      if (flush_flag) {
-        throw TopicNoDataAvailableException("Topic was flushed.", node.getLogger());
+    ContainerType next() override {
+      if (GenericReceiver<ContainerType>::flush_flag) {
+        throw TopicNoDataAvailableException("Topic was flushed.", GenericReceiver<ContainerType>::node.getLogger());
       }
 
       ContainerType result;
 
-      read_count.wait(next_count);
+      GenericReceiver<ContainerType>::read_count.wait(GenericReceiver<ContainerType>::next_count);
 
-      if (flush_flag) {
-        throw TopicNoDataAvailableException("Topic was flushed during wait operation.", node.getLogger());
+      if (GenericReceiver<ContainerType>::flush_flag) {
+        throw TopicNoDataAvailableException("Topic was flushed during wait operation.", GenericReceiver<ContainerType>::node.getLogger());
       }
 
-      const std::size_t index = read_count.load() & index_mask;
+      const std::size_t index = GenericReceiver<ContainerType>::read_count.load() & GenericReceiver<ContainerType>::index_mask;
 
       {
         std::lock_guard guard(message_buffer[index].mutex);
-        conversion_function(message_buffer[index].message, result, user_ptr);
+        conversion_function(message_buffer[index].message, result, GenericReceiver<ContainerType>::user_ptr);
       }
 
-      next_count = index | (read_count.load() & ~index_mask);
+      GenericReceiver<ContainerType>::next_count = index | (GenericReceiver<ContainerType>::read_count.load() & ~GenericReceiver<ContainerType>::index_mask);
 
       return result;
     };
@@ -644,34 +587,6 @@ public:
     void setCallback(CallbackFunction function, void *ptr = nullptr) {
       callback = function;
       callback_ptr = ptr;
-    }
-
-    /**
-     * @brief Check whether new data is available on the topic and a call to next() will not block.
-     *
-     * @return true New data is availabe, a call to next() will not block.
-     * @return false No new data is availabe, a call to next() will block.
-     */
-    inline bool newDataAvailable() {
-      return (read_count.load() != next_count);
-    }
-
-    /**
-     * @brief Get the internal buffer size.
-     *
-     * @return std::size_t
-     */
-    inline std::size_t getBufferSize() const {
-      return index_mask + 1;
-    }
-
-    /**
-     * @brief Get the name of the relevant topic.
-     *
-     * @return const std::string& Name of the topic.
-     */
-    inline const std::string &getTopicName() const {
-      return topic.name;
     }
 
   private:

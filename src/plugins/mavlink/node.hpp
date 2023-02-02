@@ -25,7 +25,7 @@ class MavlinkNodePrivate;
  * In addition, servers are provided to issue commands and read out parameters.
  *
  */
-class MavlinkNode : public Node {
+class MavlinkNode final : public Node {
 public:
   struct SystemInfo {
     u8 channel_id;
@@ -53,12 +53,28 @@ public:
    * @brief Register a sender with the MAVLink node. Incoming MAVLink messages will be forwarded onto the sender.
    * 
    * @tparam MessageType Message type of the sender.
-   * @param sender Sender to be regsitered. The sender must use the mavlink_message_t type as a container.
+   * @param topic_name Name of the topic.
+   * @param conversion_function Conversion function used by the sender.
    * @param id Message ID of the underlying MAVLink message.
    */
   template <typename MessageType>
-  void registerSender(typename Node::Sender<Message<MessageType>, mavlink_message_t>::Ptr &sender, u16 id) {
-    registerSenderAdapter(Node::SenderAdapter<mavlink_message_t>::get(*sender), id);
+  void registerSender(const std::string topic_name, ConversionFunction<mavlink_message_t, Message<MessageType>> conversion_function, u16 id) {
+    registerGenericSender(addSender<Message<MessageType>, mavlink_message_t>(topic_name, conversion_function), id);
+  }
+
+  /**
+   * @brief Register a receiver with the MAVLink node. Incoming messages will be forwarded onto the MAVLink network.
+   * 
+   * @tparam MessageType Message type of the receiver.
+   * @param topic_name Name of the topic.
+   * @param conversion_function Conversion function used by the receiver.
+   */
+  template <typename MessageType>
+  void registerReceiver(const std::string topic_name, ConversionFunction<Message<MessageType>, mavlink_message_t> conversion_function) {
+    typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr receiver = addReceiver<Message<MessageType>, mavlink_message_t>(topic_name, conversion_function);
+    receiver->setCallback(&MavlinkNode::receiverCallback, priv);
+
+    registerGenericReceiver(std::move(receiver));
   }
 
   /**
@@ -73,9 +89,10 @@ public:
   }
 
 private:
-  void registerSenderAdapter(Node::SenderAdapter<mavlink_message_t> &&adapter, u16 id);
+  void registerGenericSender(Node::GenericSender<mavlink_message_t>::Ptr &&sender, u16 id);
+  void registerGenericReceiver(Node::GenericReceiver<mavlink_message_t>::Ptr &&receiver);
 
-  static void receiverCallback(Node::ReceiverAdapter<mavlink_message_t> &receiver, MavlinkNodePrivate *node);
+  static void receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, MavlinkNodePrivate *node);
 
   MavlinkNodePrivate *priv;
 
