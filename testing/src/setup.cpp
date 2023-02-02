@@ -110,11 +110,11 @@ TEST(setup, callback) {
 
   TestContainer message_b;
 
-  auto callback = [](TestNode::ReceiverAdapter<TestContainer> &receiver, TestContainer *message) -> void {
+  auto callback = [](TestNode::GenericReceiver<TestContainer> &receiver, TestContainer *message) -> void {
     *message = receiver.next();
   };
 
-  void (*ptr)(TestNode::ReceiverAdapter<TestContainer> &, TestContainer *) = callback;
+  void (*ptr)(TestNode::GenericReceiver<TestContainer> &, TestContainer *) = callback;
 
   node_b->receiver->setCallback(ptr, &message_b);
 
