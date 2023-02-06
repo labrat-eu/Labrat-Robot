@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <labrat/robot/base.hpp>
 #include <labrat/robot/message.hpp>
 #include <labrat/robot/node.hpp>
 #include <labrat/robot/plugins/mavlink/connection.hpp>
@@ -75,17 +76,6 @@ public:
     receiver->setCallback(&MavlinkNode::receiverCallback, priv);
 
     registerGenericReceiver(std::move(receiver));
-  }
-
-  /**
-   * @brief Register a receiver with the MAVLink node. Incoming messages will be forwarded onto the MAVLink network.
-   * 
-   * @tparam MessageType Message type of the receiver. 
-   * @param receiver Receiver to be regsitered. The receiver must use the mavlink_message_t type as a container.
-   */
-  template <typename MessageType>
-  void registerReceiver(typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr &receiver) {
-    receiver->setCallback(MavlinkNode::receiverCallback, priv);
   }
 
 private:

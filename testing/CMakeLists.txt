@@ -25,6 +25,7 @@ set(TARGET_TEST_SOURCES
   src/performance.cpp
   src/stress.cpp
   src/mcap.cpp
+  src/udp-bridge.cpp
 )
 
 # Create executable target for the unit test.

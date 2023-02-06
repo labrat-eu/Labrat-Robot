@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <labrat/robot/base.hpp>
 #include <labrat/robot/plugins/mavlink/connection.hpp>
 #include <labrat/robot/utils/types.hpp>
 
@@ -22,7 +23,7 @@ namespace labrat::robot::plugins {
  * @brief MavlinkConnection implementation for serial ports.
  *
  */
-class MavlinkSerialConnection : public MavlinkConnection {
+class MavlinkSerialConnection final : public MavlinkConnection {
 public:
   /**
    * @brief Construct a new Mavlink Serial Connection object.
@@ -44,7 +45,7 @@ public:
    * @param size Size of the buffer.
    * @return std::size_t Number of bytes written.
    */
-  virtual std::size_t write(const u8 *buffer, std::size_t size);
+  std::size_t write(const u8 *buffer, std::size_t size) override;
 
   /**
    * @brief Read bytes from the serial port.
@@ -53,7 +54,7 @@ public:
    * @param size Size of the buffer.
    * @return std::size_t Number of bytes read.
    */
-  virtual std::size_t read(u8 *buffer, std::size_t size);
+  std::size_t read(u8 *buffer, std::size_t size) override;
 
 private:
   ssize_t file_descriptor;

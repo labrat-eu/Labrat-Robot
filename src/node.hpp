@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <labrat/robot/base.hpp>
 #include <labrat/robot/exception.hpp>
 #include <labrat/robot/logger.hpp>
 #include <labrat/robot/message.hpp>
@@ -96,12 +97,12 @@ public:
     virtual void flush() = 0;
 
     /**
-     * @brief Get the name of the relevant topic.
+     * @brief Get information about the relevant topic.
      *
-     * @return const std::string& Name of the topic.
+     * @return const Plugin::TopicInfo& Information about the topic.
      */
-    inline const std::string &getTopicName() const {
-      return topic_info.topic_name;
+    inline const Plugin::TopicInfo &getTopicInfo() const {
+      return topic_info;
     }
 
   protected:
@@ -135,7 +136,7 @@ public:
      */
     Sender(const std::string &topic_name, Node &node,
       ConversionFunction<ContainerType, MessageType> conversion_function = defaultSenderConversionFunction<MessageType, ContainerType>,
-      const void *user_ptr = nullptr) : GenericSender<ContainerType>(Plugin::TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addSender<MessageType>(topic_name, this), node, user_ptr),
+      const void *user_ptr = nullptr) : GenericSender<ContainerType>(Plugin::TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addSender<MessageType>(topic_name, this), node, user_ptr == nullptr ? dynamic_cast<GenericSender<ContainerType> *>(this) : user_ptr),
       conversion_function(conversion_function) {
       for (Plugin &plugin : GenericSender<ContainerType>::node.environment.plugin_list) {
         if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<ContainerType>::topic_info.topic_hash)) {
@@ -311,12 +312,12 @@ public:
     }
 
     /**
-     * @brief Get the name of the relevant topic.
+     * @brief Get information about the relevant topic.
      *
-     * @return const std::string& Name of the topic.
+     * @return const Plugin::TopicInfo& Information about the topic.
      */
-    inline const std::string &getTopicName() const {
-      return topic_info.topic_name;
+    inline const Plugin::TopicInfo &getTopicInfo() const {
+      return topic_info;
     }
 
   protected:
@@ -398,7 +399,7 @@ public:
      */
     Receiver(const std::string &topic_name, Node &node,
       ConversionFunction<MessageType, ContainerType> conversion_function = defaultReceiverConversionFunction<MessageType, ContainerType>,
-      const void *user_ptr = nullptr, std::size_t buffer_size = 4) : GenericReceiver<ContainerType>(Plugin::TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node, user_ptr, buffer_size),
+      const void *user_ptr = nullptr, std::size_t buffer_size = 4) : GenericReceiver<ContainerType>(Plugin::TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node, user_ptr == nullptr ? dynamic_cast<GenericReceiver<ContainerType> *>(this) : user_ptr, buffer_size),
       conversion_function(conversion_function),
       message_buffer(GenericReceiver<ContainerType>::calculateBufferSize(buffer_size)) {}
 
@@ -646,7 +647,7 @@ public:
      * @param user_ptr User pointer to be used by the handler function.
      */
     Server(const std::string &service_name, Node &node, HandlerFunction handler_function, void *user_ptr = nullptr) :
-      node(node), handler_function(handler_function), user_ptr(user_ptr),
+      node(node), handler_function(handler_function), user_ptr(user_ptr == nullptr ? this : user_ptr),
       service(node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this)) {}
 
     friend class Node;

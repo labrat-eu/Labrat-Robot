@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <labrat/robot/base.hpp>
 #include <labrat/robot/message.hpp>
 #include <labrat/robot/utils/types.hpp>
 

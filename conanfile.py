@@ -118,7 +118,7 @@ class LabratRobotConan(ConanFile):
         self.cpp_info.components["plugins"].set_property("cmake_module_target_name", f"{self.name}::plugins")
         self.cpp_info.components["plugins"].names["cmake_find_package"] = self.name
         self.cpp_info.components["plugins"].names["cmake_find_package_multi"] = self.name
-        self.cpp_info.components["plugins"].libs = ["plugins_mcap", "plugins_foxglove-ws", "plugins_mavlink"]
+        self.cpp_info.components["plugins"].libs = ["plugins_mcap", "plugins_foxglove-ws", "plugins_mavlink", "plugins_udp-bridge"]
         self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "foxglove-websocket::foxglove-websocket"]
 
         self.runenv_info.append_path("LABRAT_ROBOT_REFLECTION_PATH", os.path.join(self.package_folder, "var", "run"))

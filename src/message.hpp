@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <labrat/robot/base.hpp>
 #include <labrat/robot/utils/concepts.hpp>
 #include <labrat/robot/utils/types.hpp>
 

@@ -19,6 +19,7 @@ set(TARGET_SOURCES
 )
 
 set(TARGET_HEADERS
+  base.hpp
   manager.hpp
   message.hpp
   node.hpp

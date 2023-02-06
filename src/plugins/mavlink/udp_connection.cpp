@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
+#include <endian.h>
 #include <unistd.h>
 
 namespace labrat::robot::plugins {
@@ -25,7 +26,7 @@ MavlinkUdpConnection::MavlinkUdpConnection(const std::string &address, u16 port,
   std::memset(&local_address, 0, sizeof(local_address));
   local_address.sin_family = AF_INET;
   local_address.sin_addr.s_addr = INADDR_ANY;
-  local_address.sin_port = htons(local_port);
+  local_address.sin_port = htobe16(local_port);
 
   if (bind(file_descriptor, (struct sockaddr *)&local_address, sizeof(struct sockaddr)) == -1) {
     throw IoException("Failed to bind to address.", errno);
@@ -38,7 +39,7 @@ MavlinkUdpConnection::MavlinkUdpConnection(const std::string &address, u16 port,
   memset(&remote_address, 0, sizeof(remote_address));
   remote_address.sin_family = AF_INET;
   remote_address.sin_addr.s_addr = inet_addr(address.c_str());
-  remote_address.sin_port = htons(port);
+  remote_address.sin_port = htobe16(port);
 
   epoll_handle = epoll_create(1);
 

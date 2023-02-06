@@ -34,10 +34,14 @@ public:
 
 class TestNode : public labrat::robot::Node {
 public:
-  TestNode(const Node::Environment environment, const std::string &sender_topic, const std::string &receiver_topic) :
+  TestNode(const Node::Environment environment, const std::string &sender_topic = "", const std::string &receiver_topic = "") :
     labrat::robot::Node(environment) {
-    sender = addSender<TestContainer>(sender_topic);
-    receiver = addReceiver<TestContainer>(receiver_topic, nullptr, 10);
+    if (!sender_topic.empty()) {
+      sender = addSender<TestContainer>(sender_topic);
+    }
+    if (!receiver_topic.empty()) {
+      receiver = addReceiver<TestContainer>(receiver_topic, nullptr, 10);
+    }
   }
 
   template <typename RequestType, typename ResponseType, typename... Args>

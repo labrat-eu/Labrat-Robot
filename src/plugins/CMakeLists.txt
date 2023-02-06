@@ -7,6 +7,7 @@ if(${PRJ_OPT_ENABLE_PLUGINS})
 
   add_custom_target(${TARGET_NAME})
 
+  add_subdirectory(udp-bridge)
   add_subdirectory(mcap)
   add_subdirectory(foxglove-ws)
   add_subdirectory(mavlink)
