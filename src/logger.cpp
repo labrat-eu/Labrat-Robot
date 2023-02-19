@@ -17,6 +17,8 @@
 namespace labrat::robot {
 
 Logger::Verbosity Logger::log_level = Verbosity::info;
+bool Logger::use_color = true;
+
 static std::mutex io_mutex;
 
 class LoggerNode : public Node {
@@ -47,7 +49,7 @@ public:
     normal = 39,
   };
 
-  Color(Code code = Code::normal, bool enable_color = true) : code(code), enable_color(enable_color) {}
+  Color(bool enable_color, Code code = Code::normal) : code(code), enable_color(enable_color) {}
 
   friend std::ostream &
 
@@ -98,7 +100,7 @@ Logger::LogStream::~LogStream() {
   if (verbosity <= Logger::log_level) {
     std::lock_guard guard(io_mutex);
 
-    std::cout << getVerbosityColor(verbosity) << "[" << getVerbosityShort(verbosity) << "]" << Color() << " (" << logger.name << " @ "
+    std::cout << getVerbosityColor(verbosity) << "[" << getVerbosityShort(verbosity) << "]" << Color(isColor()) << " (" << logger.name << " @ "
               << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count() << "): ";
     std::cout << line.str() << std::endl;
   }
@@ -171,23 +173,23 @@ const std::string getVerbosityShort(Logger::Verbosity verbosity) {
 const Color getVerbosityColor(Logger::Verbosity verbosity) {
   switch (verbosity) {
     case (Logger::Verbosity::critical): {
-      return Color(Color::Code::red);
+      return Color(Logger::isColor(), Color::Code::red);
     }
 
     case (Logger::Verbosity::warning): {
-      return Color(Color::Code::yellow);
+      return Color(Logger::isColor(), Color::Code::yellow);
     }
 
     case (Logger::Verbosity::info): {
-      return Color(Color::Code::cyan);
+      return Color(Logger::isColor(), Color::Code::cyan);
     }
 
     case (Logger::Verbosity::debug): {
-      return Color(Color::Code::magenta);
+      return Color(Logger::isColor(), Color::Code::magenta);
     }
 
     default: {
-      return Color();
+      return Color(Logger::isColor());
     }
   }
 }

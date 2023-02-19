@@ -141,7 +141,6 @@ UdpBridgeNode::~UdpBridgeNode() {
   delete priv;
 }
 
-
 void UdpBridgeNode::registerGenericSender(Node::GenericSender<UdpBridgeNode::PayloadInfo>::Ptr &&sender) {
   if (!priv->sender.map.try_emplace(sender->getTopicInfo().topic_name, std::forward<Node::GenericSender<UdpBridgeNode::PayloadInfo>::Ptr>(sender)).second) {
     throw ManagementException("A sender has already been registered for the topic name '" + sender->getTopicInfo().topic_name + "'.");

@@ -29,6 +29,7 @@ public:
    * @brief Construct a new Mavlink Serial Connection object.
    *
    * @param port Path to the serial port.
+   * @param baud_rate Baud rate of the serial port. Only a limited number of values are permitted.
    */
   MavlinkSerialConnection(const std::string &port = "/dev/ttyUSB0", u64 baud_rate = 921600);
 

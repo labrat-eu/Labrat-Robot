@@ -191,8 +191,38 @@ public:
    *
    * @param level The verbosity below no log entries are printed out to the console.
    */
-  static void setLogLevel(Verbosity level) {
+  static inline void setLogLevel(Verbosity level) {
     log_level = level;
+  }
+
+  /**
+   * @brief Get the log level of the application.
+   *
+   */
+  static inline Verbosity getLogLevel() {
+    return log_level;
+  }
+
+  /**
+   * @brief Enable colored console output.
+   */
+  static inline void enableColor() {
+    use_color = true;
+  }
+
+  /**
+   * @brief Disable colored console output.
+   */
+  static inline void disableColor() {
+    use_color = false;
+  }
+
+  /**
+   * @brief Check whether colored output is enabled.
+   *
+   */
+  static inline bool isColor() {
+    return use_color;
   }
 
 private:
@@ -210,6 +240,7 @@ private:
   static std::shared_ptr<LoggerNode> node;
 
   static Verbosity log_level;
+  static bool use_color;
 };
 
 }  // namespace labrat::robot

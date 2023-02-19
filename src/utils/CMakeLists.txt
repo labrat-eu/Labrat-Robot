@@ -18,6 +18,7 @@ set(TARGET_HEADERS
   thread.hpp
   concepts.hpp
   string.hpp
+  serial.hpp
 )
 
 # Add public header install target.
