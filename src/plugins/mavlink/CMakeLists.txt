@@ -261,7 +261,7 @@ set(TARGET_MESSAGE_BINARY_SCHEMAS_DIR ${CMAKE_CURRENT_BINARY_DIR}/schemas/${TARG
 flatbuffers_generate_headers(TARGET ${TARGET_NAME_MESSAGE} SCHEMAS ${TARGET_MESSAGES} INCLUDE_PREFIX ${TARGET_MESSAGE_INCLUDE_PREFIX} BINARY_SCHEMAS_DIR ${TARGET_MESSAGE_BINARY_SCHEMAS_DIR} FLAGS --gen-object-api --gen-name-strings --gen-compare --object-suffix "Native")
 
 # Link external libraries to the library target.
-target_link_libraries(${TARGET_NAME} PRIVATE ${LOCAL_PROJECT_NAME}_msg ${TARGET_NAME}_msg)
+target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_msg)
 # Link internal libraries to the library target.
 target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME})
 

@@ -1125,7 +1125,7 @@ void MavlinkNodePrivate::readMessage(const mavlink_message_t &message) {
   auto iterator = sender.map.find(message.msgid);
 
   if (iterator == sender.map.end()) {
-    node.getLogger().debug() << "Received MAVLink message without handling implementation (ID: " << message.msgid << ").";
+    node.getLogger().debug(LOGINIT) << "Received MAVLink message without handling implementation (ID: " << message.msgid << ").";
     return;
   }
 

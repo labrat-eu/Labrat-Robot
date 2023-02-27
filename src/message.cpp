@@ -18,7 +18,7 @@
 namespace labrat::robot {
 
 static const std::forward_list<std::string> getPaths(std::string name);
-static void toPath(std::string &name);
+static std::vector<std::string> toPaths(const std::string &name);
 
 MessageReflection::MessageReflection(const std::string &name) {
   valid = false;
@@ -42,7 +42,7 @@ MessageReflection::MessageReflection(const std::string &name) {
 }
 
 static const std::forward_list<std::string> getPaths(std::string name) {
-  toPath(name);
+  std::vector<std::string> paths = toPaths(name);
 
   std::forward_list<std::string> result;
   const char *environment = std::getenv("LABRAT_ROBOT_REFLECTION_PATH");
@@ -55,40 +55,52 @@ static const std::forward_list<std::string> getPaths(std::string name) {
 
   std::string environment_part;
   while (std::getline(environment_paths, environment_part, ':')) {
-    result.emplace_front(environment_part + "/" + name + ".bfbs");
+    for (const std::string &path : paths) {
+      result.emplace_front(environment_part + "/" + path + ".bfbs");
+    }
   }
 
   return result;
 }
 
-static void toPath(std::string &name) {
-  std::string result;
-  result.reserve(name.size() * 2);
+static std::vector<std::string> toPaths(const std::string &name) {
+  std::vector<std::string> result;
+  result.resize(2);
+
+  for (std::string &path : result) {
+    path.reserve(name.size() * 2);
+  }
 
   bool first_flag = true;
 
   for (const char &character : name) {
     if (std::isupper(character)) {
       if (!first_flag) {
-        result.push_back('_');
+        result[0].push_back('_');
       }
 
-      result.push_back(std::tolower(character));
+      result[0].push_back(std::tolower(character));
+      result[1].push_back(character);
     } else {
       if (character == '.') {
-        result.push_back('/');
+        for (std::string & path : result) {
+          path.push_back('/');
+        }
+
         first_flag = true;
 
         continue;
       }
 
-      result.push_back(character);
+      for (std::string & path : result) {
+        path.push_back(character);
+      }
     }
 
     first_flag = false;
   }
 
-  name = result;
+  return result;
 }
 
 }  // namespace labrat::robot

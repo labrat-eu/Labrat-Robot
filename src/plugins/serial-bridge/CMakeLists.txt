@@ -28,7 +28,7 @@ set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${GIT_VERSION})
 set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
 
 # Link external libraries to the library target.
-target_link_libraries(${TARGET_NAME} PRIVATE ${LOCAL_PROJECT_NAME}_msg crc_cpp::crc_cpp)
+target_link_libraries(${TARGET_NAME} PRIVATE crc_cpp::crc_cpp)
 # Link internal libraries to the library target.
 target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME})
 

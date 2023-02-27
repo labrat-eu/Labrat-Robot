@@ -30,7 +30,7 @@ set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
 # Set library properties.
 set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 
-target_link_libraries(${TARGET_NAME} PRIVATE ${LOCAL_PROJECT_NAME}_msg mcap::mcap)
+target_link_libraries(${TARGET_NAME} PRIVATE mcap::mcap)
 target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME})
 
 # Add a install targets.

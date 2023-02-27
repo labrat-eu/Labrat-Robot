@@ -27,7 +27,7 @@ add_dependencies(robot_plugins ${TARGET_NAME})
 set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${GIT_VERSION})
 set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
 
-target_link_libraries(${TARGET_NAME} PRIVATE ${LOCAL_PROJECT_NAME}_msg foxglove-websocket::foxglove-websocket)
+target_link_libraries(${TARGET_NAME} PRIVATE foxglove-websocket::foxglove-websocket)
 target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME})
 
 # Add a install targets.

@@ -25,11 +25,11 @@ class FoxgloveServerPrivate {
 public:
   FoxgloveServerPrivate(const std::string &name, u16 port, const Plugin::Filter &filter) : server(port, name), logger("foxglove-ws") {
     server.setSubscribeHandler([this](foxglove::websocket::ChannelId channel_id) {
-      logger() << "First client subscribed to " << channel_id;
+      logger(LOGINIT) << "First client subscribed to " << channel_id;
     });
 
     server.setUnsubscribeHandler([this](foxglove::websocket::ChannelId channel_id) {
-      logger() << "Last client unsubscribed from " << channel_id;
+      logger(LOGINIT) << "Last client unsubscribed from " << channel_id;
     });
 
     Plugin plugin_info;
