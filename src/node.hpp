@@ -193,7 +193,7 @@ public:
         }
       }
 
-      log(container);
+      trace(container);
     }
 
     /**
@@ -218,7 +218,7 @@ public:
      *
      * @param container Object caintaining the data to be sent out.
      */
-    void log(const ContainerType &container) {
+    void trace(const ContainerType &container) {
       if (GenericSender<ContainerType>::node.environment.plugin_list.empty()) {
         return;
       }

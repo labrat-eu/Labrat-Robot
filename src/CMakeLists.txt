@@ -32,7 +32,6 @@ set(TARGET_HEADERS
 
 set(TARGET_MESSAGES
   msg/test.fbs
-  msg/log.fbs
 )
 
 set(TARGET_MESSAGES_EXTERNAL

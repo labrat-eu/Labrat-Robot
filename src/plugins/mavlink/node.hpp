@@ -59,8 +59,8 @@ public:
    * @param id Message ID of the underlying MAVLink message.
    */
   template <typename MessageType>
-  void registerSender(const std::string topic_name, ConversionFunction<mavlink_message_t, Message<MessageType>> conversion_function, u16 id) {
-    registerGenericSender(addSender<Message<MessageType>, mavlink_message_t>(topic_name, conversion_function), id);
+  void registerSender(const std::string topic_name, ConversionFunction<mavlink_message_t, Message<MessageType>> conversion_function, u16 id, const void *user_ptr = nullptr) {
+    registerGenericSender(addSender<Message<MessageType>, mavlink_message_t>(topic_name, conversion_function, user_ptr), id);
   }
 
   /**
@@ -71,8 +71,8 @@ public:
    * @param conversion_function Conversion function used by the receiver.
    */
   template <typename MessageType>
-  void registerReceiver(const std::string topic_name, ConversionFunction<Message<MessageType>, mavlink_message_t> conversion_function) {
-    typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr receiver = addReceiver<Message<MessageType>, mavlink_message_t>(topic_name, conversion_function);
+  void registerReceiver(const std::string topic_name, ConversionFunction<Message<MessageType>, mavlink_message_t> conversion_function, const void *user_ptr = nullptr) {
+    typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr receiver = addReceiver<Message<MessageType>, mavlink_message_t>(topic_name, conversion_function, user_ptr);
     receiver->setCallback(&MavlinkNode::receiverCallback, priv);
 
     registerGenericReceiver(std::move(receiver));

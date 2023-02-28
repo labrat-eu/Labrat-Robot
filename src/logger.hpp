@@ -31,7 +31,14 @@ struct LoggerLocation {
   }
 };
 
-#define LOGINIT labrat::robot::LoggerLocation(std::filesystem::path(__FILE__), __LINE__)
+#define LABRAT_LOGINIT labrat::robot::LoggerLocation(std::filesystem::path(__FILE__), __LINE__)
+
+#define logCritical() write(labrat::robot::Logger::Verbosity::critical, LABRAT_LOGINIT)
+#define logError() write(labrat::robot::Logger::Verbosity::error, LABRAT_LOGINIT)
+#define logWarning() write(labrat::robot::Logger::Verbosity::warning, LABRAT_LOGINIT)
+#define logInfo() write(labrat::robot::Logger::Verbosity::info, LABRAT_LOGINIT)
+#define logDebug() write(labrat::robot::Logger::Verbosity::debug, LABRAT_LOGINIT)
+
 
 /**
  * @brief Class to print log messages and send them out as messages.
@@ -173,48 +180,13 @@ public:
   ~Logger() = default;
 
   /**
-   * @brief Alias of info().
+   * @brief Write to the logger with the specified verbosity.
    *
+   * @param verbosity Verbosity of the log entry.
+   * @param location Internal struct to specify the code location.
    * @return LogStream The temporary LogStream object.
    */
-  inline LogStream operator()(LoggerLocation &&location) {
-    return info(std::move(location));
-  }
-
-  /**
-   * @brief Write to the logger with the critical verbosity.
-   *
-   * @return LogStream The temporary LogStream object.
-   */
-  LogStream critical(LoggerLocation &&location);
-
-  /**
-   * @brief Write to the logger with the error verbosity.
-   *
-   * @return LogStream The temporary LogStream object.
-   */
-  LogStream error(LoggerLocation &&location);
-
-  /**
-   * @brief Write to the logger with the warning verbosity.
-   *
-   * @return LogStream The temporary LogStream object.
-   */
-  LogStream warning(LoggerLocation &&location);
-
-  /**
-   * @brief Write to the logger with the info verbosity.
-   *
-   * @return LogStream The temporary LogStream object.
-   */
-  LogStream info(LoggerLocation &&location);
-
-  /**
-   * @brief Write to the logger with the debug verbosity.
-   *
-   * @return LogStream The temporary LogStream object.
-   */
-  LogStream debug(LoggerLocation &&location);
+  LogStream write(Verbosity verbosity, LoggerLocation &&location);
 
   /**
    * @brief Set the log level of the application.
@@ -306,6 +278,13 @@ private:
    * @param entry Log entry to be sent out.
    */
   static void send(const Entry &entry);
+
+  /**
+   * @brief Trace a message entry over the logger node.
+   *
+   * @param entry Log entry to be sent out.
+   */
+  static void trace(const Entry &entry);
 
   friend class LogStream;
 

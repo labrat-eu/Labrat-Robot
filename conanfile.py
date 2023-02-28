@@ -37,7 +37,7 @@ class LabratRobotConan(ConanFile):
     options = {"with_system_deps": [True, False], "manual_build": [True, False]}
     default_options = {"with_system_deps": False, "manual_build": False}
     generators = "CMakeDeps", "CMakeToolchain"
-    exports_sources = "CMakeLists.txt", "src/*", "cmake/*", "submodules/*"
+    exports_sources = "CMakeLists.txt", "src/*", "cmake/*", "install/*", "submodules/*"
 
     def __init__(self, output, runner, display_name="", user=None, channel=None):
         try:
@@ -48,6 +48,10 @@ class LabratRobotConan(ConanFile):
         self.version = self.version_data["semver"]
 
         super().__init__(output, runner, display_name, user, channel)
+
+    @property
+    def _module_path(self):
+        return os.path.join("lib", "cmake")
 
     def system_requirements(self):
         if self.settings.os != 'Linux':
@@ -106,12 +110,17 @@ class LabratRobotConan(ConanFile):
         cmake.install()
 
     def package_info(self):
+        module_paths = [os.path.join(self._module_path, "LabratRobotLauncher.cmake")]
+
         self.cpp_info.set_property("cmake_find_mode", "module")
+        self.cpp_info.set_property("cmake_build_modules", module_paths)
 
         self.cpp_info.components["core"].set_property("cmake_target_name", f"{self.name}::core")
         self.cpp_info.components["core"].set_property("cmake_module_target_name", f"{self.name}::core")
         self.cpp_info.components["core"].names["cmake_find_package"] = self.name
         self.cpp_info.components["core"].names["cmake_find_package_multi"] = self.name
+        self.cpp_info.components["core"].build_modules["cmake_find_package"] = module_paths
+        self.cpp_info.components["core"].build_modules["cmake_find_package_multi"] = module_paths
         self.cpp_info.components["core"].libs = ["robot"]
         self.cpp_info.components["core"].requires = ["flatbuffers::flatbuffers"]
 

@@ -95,3 +95,6 @@ if(${PRJ_OPT_ENABLE_DOCS})
   # Add doxygen targets.
   prj_add_doxygen_targets()
 endif()
+
+install(FILES install/Launcher.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake RENAME LabratRobotLauncher.cmake)
+install(FILES install/launcher.sh.in DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake)

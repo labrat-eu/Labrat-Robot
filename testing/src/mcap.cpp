@@ -28,7 +28,7 @@ TEST(mcap, recorder) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    node_b->getLogger().info() << "Node is publishing.";
+    node_b->getLogger().logInfo() << "Node is publishing.";
 
     for (u64 i = 0; i < 1000; ++i) {
       TestContainer message;

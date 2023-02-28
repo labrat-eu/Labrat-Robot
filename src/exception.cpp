@@ -15,7 +15,7 @@ namespace labrat::robot {
 Exception::Exception(std::string message) : Exception(message, Logger("generic")) {}
 
 Exception::Exception(std::string message, Logger &logger) : message(message) {
-  logger.debug(LOGINIT) << "Exception thrown: " << message;
+  logger.logDebug() << "Exception thrown: " << message;
 }
 
 Exception::Exception(std::string message, Logger &&logger) : Exception(message, std::forward<Logger &>(logger)) {}

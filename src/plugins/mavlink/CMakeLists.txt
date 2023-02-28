@@ -265,6 +265,8 @@ target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_msg)
 # Link internal libraries to the library target.
 target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME})
 
+target_compile_options(${TARGET_NAME} PRIVATE "-Wno-address-of-packed-member")
+
 # Add a install targets.
 install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES ${TARGET_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LOCAL_PROJECT_PATH_FULL}/${TARGET_RELATIVE_PATH})

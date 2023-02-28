@@ -129,12 +129,12 @@ public:
 private:
   template <typename MessageType>
   void addSender(const std::string &topic_name, u16 id) {
-    node.registerSender<MessageType>(topic_name, MavlinkSender::convert<MessageType>, id);
+    node.registerSender<MessageType>(topic_name, MavlinkSender::convert<MessageType>, id, &system_info);
   }
 
   template <typename MessageType>
   void addReceiver(const std::string &topic_name) {
-    node.registerReceiver<MessageType>(topic_name, MavlinkReceiver::convert<MessageType>);
+    node.registerReceiver<MessageType>(topic_name, MavlinkReceiver::convert<MessageType>, &system_info);
   }
 
   template <typename RequestType, typename ResponseType>
@@ -1125,7 +1125,7 @@ void MavlinkNodePrivate::readMessage(const mavlink_message_t &message) {
   auto iterator = sender.map.find(message.msgid);
 
   if (iterator == sender.map.end()) {
-    node.getLogger().debug(LOGINIT) << "Received MAVLink message without handling implementation (ID: " << message.msgid << ").";
+    node.getLogger().logDebug() << "Received MAVLink message without handling implementation (ID: " << message.msgid << ").";
     return;
   }
 

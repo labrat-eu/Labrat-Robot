@@ -343,7 +343,7 @@ void SerialBridgeNodePrivate::processMessage(u8 *buffer, std::size_t size) {
   HeaderWire *header = reinterpret_cast<HeaderWire *>(buffer);
 
   if (!header->check()) {
-    node.getLogger().warning(LOGINIT) << "Received message with wrong header checksum.";
+    node.getLogger().logWarning() << "Received message with wrong header checksum.";
     return;
   }
 
@@ -351,18 +351,18 @@ void SerialBridgeNodePrivate::processMessage(u8 *buffer, std::size_t size) {
   header->topic_hash = be64toh(header->topic_hash);
 
   if (header->magic != HeaderWire::magic_check) {
-    node.getLogger().critical(LOGINIT) << "Received message with wrong magic byte.";
+    node.getLogger().logCritical() << "Received message with wrong magic byte.";
     return;
   }
   if (header->version_major != HeaderWire::version_major_check) {
-    node.getLogger().critical(LOGINIT) << "Received message of different major version number, discarding message.";
+    node.getLogger().logCritical() << "Received message of different major version number, discarding message.";
     return;
   }
   if (header->version_minor != HeaderWire::version_minor_check) {
-    node.getLogger().warning(LOGINIT) << "Received message of different minor version number.";
+    node.getLogger().logWarning() << "Received message of different minor version number.";
   }
   if (header->length != size - sizeof(HeaderWire)) {
-    node.getLogger().critical(LOGINIT) << "Datagram and header length mismatch, discarding message. (" << header->length << "/" << size - sizeof(HeaderWire) << ")";
+    node.getLogger().logCritical() << "Datagram and header length mismatch, discarding message. (" << header->length << "/" << size - sizeof(HeaderWire) << ")";
     return;
   }
 
@@ -371,7 +371,7 @@ void SerialBridgeNodePrivate::processMessage(u8 *buffer, std::size_t size) {
       PayloadWire *raw = reinterpret_cast<PayloadWire *>(buffer);
 
       if (!raw->data.check(header->length - sizeof(u16))) {
-        node.getLogger().warning(LOGINIT) << "Received message with wrong checksum.";
+        node.getLogger().logWarning() << "Received message with wrong checksum.";
         return;
       }
 
@@ -389,7 +389,7 @@ void SerialBridgeNodePrivate::processMessage(u8 *buffer, std::size_t size) {
       TopicWire *raw = reinterpret_cast<TopicWire *>(buffer);
 
       if (!raw->data.check(header->length - sizeof(u16), reinterpret_cast<const u8 *>(&raw->topic_name_end))) {
-        node.getLogger().warning(LOGINIT) << "Received message with wrong checksum.";
+        node.getLogger().logWarning() << "Received message with wrong checksum.";
         return;
       }
 
@@ -419,7 +419,7 @@ void SerialBridgeNodePrivate::processMessage(u8 *buffer, std::size_t size) {
     }
 
     default: {
-      node.getLogger().critical(LOGINIT) << "Received unknown message type.";
+      node.getLogger().logCritical() << "Received unknown message type.";
     }
   }
 }
@@ -428,7 +428,7 @@ void SerialBridgeNodePrivate::readPayloadMessage(const SerialBridgeNode::Payload
   auto iterator = sender.adapter.find(message.topic_hash);
 
   if (iterator == sender.adapter.end()) {
-    node.getLogger().debug(LOGINIT) << "Received bridge message without adapter entry (remote topic hash: " << message.topic_hash << ").";
+    node.getLogger().logDebug() << "Received bridge message without adapter entry (remote topic hash: " << message.topic_hash << ").";
     writeTopicRequestMessage(message.topic_hash);
     
     return;
@@ -441,12 +441,12 @@ void SerialBridgeNodePrivate::readTopicInfoMessage(const TopicInfo &message) {
   auto iterator = sender.map.find(std::string(message.topic_name));
 
   if (iterator == sender.map.end()) {
-    node.getLogger().warning(LOGINIT) << "No registered handling implementation found (topic name: " << message.topic_name << ").";
+    node.getLogger().logWarning() << "No registered handling implementation found (topic name: " << message.topic_name << ").";
     return;
   }
 
   if (iterator->second->getTopicInfo().type_name != message.type_name) {
-    node.getLogger().warning(LOGINIT) << "Local and remote type names do not match (" << iterator->second->getTopicInfo().type_name << "/" << message.type_name << ").";
+    node.getLogger().logWarning() << "Local and remote type names do not match (" << iterator->second->getTopicInfo().type_name << "/" << message.type_name << ").";
     return;
   }
 
@@ -466,14 +466,14 @@ void SerialBridgeNodePrivate::readTopicRequestMessage(std::size_t topic_hash) {
     }
   }
 
-  node.getLogger().debug(LOGINIT) << "Requested topic hash receiver not found (topic hash: " << topic_hash << ").";
+  node.getLogger().logDebug() << "Requested topic hash receiver not found (topic hash: " << topic_hash << ").";
 }
 
 void SerialBridgeNodePrivate::writePayloadMessage(const SerialBridgeNode::PayloadInfo &message) {
   PayloadWire raw;
 
   if (message.payload.size() > payload_size) {
-    node.getLogger().critical(LOGINIT) << "Maximum payload size exceeded.";
+    node.getLogger().logCritical() << "Maximum payload size exceeded.";
     return;
   }
 
@@ -496,11 +496,11 @@ void SerialBridgeNodePrivate::writePayloadMessage(const SerialBridgeNode::Payloa
 
 void SerialBridgeNodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
   if (message.topic_name.empty()) {
-    node.getLogger().critical(LOGINIT) << "The sent topic name must not be empty.";
+    node.getLogger().logCritical() << "The sent topic name must not be empty.";
     return;
   }
   if (message.type_name.empty()) {
-    node.getLogger().critical(LOGINIT) << "The sent type name must not be empty.";
+    node.getLogger().logCritical() << "The sent type name must not be empty.";
     return;
   }
 
@@ -508,7 +508,7 @@ void SerialBridgeNodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
   const u16 length = offsetof(TopicWire, data) + message.topic_name.size() + message.type_name.size() + sizeof(u16);
 
   if (length > payload_size) {
-    node.getLogger().critical(LOGINIT) << "Maximum payload size exceeded.";
+    node.getLogger().logCritical() << "Maximum payload size exceeded.";
     return;
   }
 

@@ -37,6 +37,10 @@ public:
   void send(const Logger::Entry &entry) {
     sender->put(entry);
   }
+
+  void trace(const Logger::Entry &entry) {
+    sender->trace(entry);
+  }
 };
 
 class Color {
@@ -78,28 +82,16 @@ std::shared_ptr<LoggerNode> Logger::node(Manager::get().addNode<LoggerNode>("log
 
 Logger::Logger(const std::string &name) : name(std::move(name)) {}
 
-Logger::LogStream Logger::critical(LoggerLocation &&location) {
-  return LogStream(*this, Verbosity::critical, std::move(location));
-}
-
-Logger::LogStream Logger::error(LoggerLocation &&location) {
-  return LogStream(*this, Verbosity::error, std::move(location));
-}
-
-Logger::LogStream Logger::warning(LoggerLocation &&location) {
-  return LogStream(*this, Verbosity::warning, std::move(location));
-}
-
-Logger::LogStream Logger::info(LoggerLocation &&location) {
-  return LogStream(*this, Verbosity::info, std::move(location));
-}
-
-Logger::LogStream Logger::debug(LoggerLocation &&location) {
-  return LogStream(*this, Verbosity::debug, std::move(location));
+Logger::LogStream Logger::write(Verbosity verbosity, LoggerLocation &&location) {
+  return LogStream(*this, verbosity, std::move(location));
 }
 
 void Logger::send(const Entry &message) {
   node->send(message);
+}
+
+void Logger::trace(const Entry &message) {
+  node->trace(message);
 }
 
 Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity, LoggerLocation &&location) : logger(logger), verbosity(verbosity), location(location) {}
@@ -128,16 +120,18 @@ Logger::LogStream::~LogStream() {
     std::cout << line.str() << std::endl;
   }
 
-  if (verbosity <= Verbosity::info) {
-    Entry entry;
-    entry.verbosity = verbosity;
-    entry.timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
-    entry.logger_name = logger.name;
-    entry.message = line.str();
-    entry.file = location.file;
-    entry.line = location.line;
+  Entry entry;
+  entry.verbosity = verbosity;
+  entry.timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
+  entry.logger_name = logger.name;
+  entry.message = line.str();
+  entry.file = location.file;
+  entry.line = location.line;
 
+  if (verbosity <= Verbosity::info) {
     logger.send(entry);
+  } else {
+    logger.trace(entry);
   }
 }
 
