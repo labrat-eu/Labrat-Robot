@@ -97,6 +97,13 @@ public:
     virtual void flush() = 0;
 
     /**
+     * @brief Provide a message to the active plugins without actually send out any data over the topic.
+     *
+     * @param container Object caintaining the data to be sent out.
+     */
+    virtual void trace(const ContainerType &container) = 0;
+
+    /**
      * @brief Get information about the relevant topic.
      *
      * @return const Plugin::TopicInfo& Information about the topic.

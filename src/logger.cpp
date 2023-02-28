@@ -8,7 +8,6 @@
 
 #include <labrat/robot/logger.hpp>
 #include <labrat/robot/manager.hpp>
-#include <labrat/robot/msg/log_generated.h>
 #include <labrat/robot/node.hpp>
 
 #include <iostream>
