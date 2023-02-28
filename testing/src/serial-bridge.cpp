@@ -22,18 +22,16 @@ TEST(serial_bridge, fork) {
     execlp("socat", "-d", "pty,raw,echo=0,link=test0", "pty,raw,echo=0,link=test1");
   }
 
-  bool init_flag = false;
-
   for (u64 i = 0; i < 5000; ++i) {
     if (std::filesystem::exists("test0") && std::filesystem::exists("test1")) {
-      init_flag = true;
       break;
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 
-  ASSERT_TRUE(init_flag);
+  ASSERT_TRUE(std::filesystem::exists("test0"));
+  ASSERT_TRUE(std::filesystem::exists("test1"));
 
   int setup_pid = fork();
 
