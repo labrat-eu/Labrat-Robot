@@ -30,8 +30,8 @@ TEST(serial_bridge, fork) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 
-  ASSERT_TRUE(std::filesystem::exists("test0"));
-  ASSERT_TRUE(std::filesystem::exists("test1"));
+  EXPECT_TRUE(std::filesystem::exists("test0"));
+  EXPECT_TRUE(std::filesystem::exists("test1"));
 
   int setup_pid = fork();
 
