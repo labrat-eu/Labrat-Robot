@@ -1,6 +1,7 @@
 #include <labrat/robot/message.hpp>
 #include <labrat/robot/msg/test_generated.h>
 #include <labrat/robot/node.hpp>
+#include <labrat/robot/cluster.hpp>
 
 #include <atomic>
 
@@ -60,6 +61,14 @@ public:
 
   std::unique_ptr<ContainerSender<TestContainer>> sender;
   std::unique_ptr<ContainerReceiver<TestContainer>> receiver;
+};
+
+class TestCluster : public labrat::robot::Cluster {
+public:
+  TestCluster(const std::string &name) : labrat::robot::Cluster(name) {
+    addNode<TestNode>("node_a", "main", "void");
+    addNode<TestNode>("node_b", "void", "main");
+  }
 };
 
 }  // namespace labrat::robot::test

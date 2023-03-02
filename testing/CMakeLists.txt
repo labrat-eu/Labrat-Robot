@@ -22,6 +22,7 @@ include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/src)
 set(TARGET_TEST_SOURCES
   src/helper.hpp
   src/setup.cpp
+  src/manager.cpp
   src/performance.cpp
   src/stress.cpp
   src/mcap.cpp

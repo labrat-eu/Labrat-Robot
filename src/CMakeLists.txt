@@ -16,6 +16,7 @@ set(TARGET_SOURCES
   service.cpp
   logger.cpp
   exception.cpp
+  cluster.cpp
 )
 
 set(TARGET_HEADERS
@@ -28,6 +29,7 @@ set(TARGET_HEADERS
   logger.hpp
   exception.hpp
   plugin.hpp
+  cluster.hpp
 )
 
 set(TARGET_MESSAGES

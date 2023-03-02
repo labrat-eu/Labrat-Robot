@@ -26,6 +26,8 @@
 
 namespace labrat::robot {
 
+class Cluster;
+
 /**
  * @brief Central class to manage nodes, plugins, topics and services.
  *
@@ -41,6 +43,7 @@ private:
   static std::unique_ptr<Manager> instance;
 
   std::unordered_map<std::string, utils::FinalPtr<Node>> node_map;
+  std::unordered_map<std::string, utils::FinalPtr<Cluster>> cluster_map;
   TopicMap topic_map;
   ServiceMap service_map;
   Plugin::List plugin_list;
@@ -70,12 +73,7 @@ public:
    */
   template <typename T, typename... Args>
   std::weak_ptr<T> addNode(const std::string &name, Args &&...args) requires std::is_base_of_v<Node, T> {
-    const Node::Environment environment = {
-      .name = name,
-      .topic_map = topic_map,
-      .service_map = service_map,
-      .plugin_list = plugin_list,
-    };
+    const Node::Environment environment = getEnvironment(name);
 
     const std::pair<std::unordered_map<std::string, utils::FinalPtr<Node>>::iterator, bool> result =
       node_map.emplace(name, std::make_shared<T>(environment, std::forward<Args>(args)...));
@@ -88,11 +86,39 @@ public:
   }
 
   /**
+   * @brief Construct and add a node cluster to the internal network.
+   *
+   * @tparam T Type of the cluster to be added.
+   * @tparam Args Types of the arguments to be forwarded to the cluster specific constructor.
+   * @param name Name of the cluster.
+   * @param args Arguments to be forwarded to the cluster specific constructor.
+   * @return std::weak_ptr<T> Pointer to the created cluster.
+   */
+  template <typename T, typename... Args>
+  std::weak_ptr<T> addCluster(const std::string &name, Args &&...args) requires std::is_base_of_v<Cluster, T> {
+    const std::pair<std::unordered_map<std::string, utils::FinalPtr<Cluster>>::iterator, bool> result =
+      cluster_map.emplace(name, std::make_shared<T>(name, std::forward<Args>(args)...));
+
+    if (!result.second) {
+      throw ManagementException("Cluster not added.");
+    }
+
+    return std::weak_ptr<T>(reinterpret_pointer_cast<T>(result.first->second));
+  }
+
+  /**
    * @brief Remove a node by name from the internal network.
    *
    * @param name
    */
   void removeNode(const std::string &name);
+
+  /**
+   * @brief Remove a node cluster by name from the internal network.
+   *
+   * @param name
+   */
+  void removeCluster(const std::string &name);
 
   /**
    * @brief Add a plugin to the manager.
@@ -123,6 +149,16 @@ public:
    *
    */
   void flushAllTopics();
+
+private:
+  inline Node::Environment getEnvironment(const std::string &name) {
+    return Node::Environment {
+      .name = name,
+      .topic_map = topic_map,
+      .service_map = service_map,
+      .plugin_list = plugin_list,
+    };
+  }
 };
 
 }  // namespace labrat::robot

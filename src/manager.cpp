@@ -38,6 +38,16 @@ void Manager::removeNode(const std::string &name) {
   node_map.erase(iterator);
 }
 
+void Manager::removeCluster(const std::string &name) {
+  const std::unordered_map<std::string, utils::FinalPtr<Cluster>>::iterator iterator = cluster_map.find(name);
+
+  if (iterator == cluster_map.end()) {
+    throw ManagementException("Cluster not found.");
+  }
+
+  cluster_map.erase(iterator);
+}
+
 Plugin::List::iterator Manager::addPlugin(const Plugin &plugin) {
   return plugin_list.emplace(plugin_list.begin(), plugin);
 }
