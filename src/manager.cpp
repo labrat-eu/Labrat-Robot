@@ -17,6 +17,8 @@ Manager::Manager() = default;
 
 Manager::~Manager() {
   topic_map.forceFlush();
+  
+  cluster_map.clear();
   node_map.clear();
 }
 
