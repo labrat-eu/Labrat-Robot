@@ -9,6 +9,7 @@ set(USED_LANGUAGES CXX C ASM)
 
 # Load cmake modules.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/install)
 
 # Include tools.
 include(Config)
@@ -16,6 +17,7 @@ include(Options)
 include(ClangFormat)
 include(Doxygen)
 include(IncludeSymlinks)
+include(GenerateFlatbuffer)
 
 # Set build types.
 set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo)
@@ -96,5 +98,6 @@ if(${PRJ_OPT_ENABLE_DOCS})
   prj_add_doxygen_targets()
 endif()
 
+install(FILES install/GenerateFlatbuffer.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake RENAME LabratRobotGenerateFlatbuffer.cmake)
 install(FILES install/Launcher.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake RENAME LabratRobotLauncher.cmake)
 install(FILES install/launcher.sh.in DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake)

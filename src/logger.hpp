@@ -9,7 +9,7 @@
 
 #include <labrat/robot/base.hpp>
 #include <labrat/robot/message.hpp>
-#include <foxglove/Log_generated.h>
+#include <foxglove/Log.fb.hpp>
 
 #include <chrono>
 #include <memory>
@@ -133,27 +133,27 @@ public:
     static inline void toMessage(const Entry &source, Message<foxglove::Log> &destination) {
       switch (source.verbosity) {
         case (Verbosity::critical): {
-          destination().level = foxglove::LogLevel::LogLevel_FATAL;
+          destination().level = foxglove::LogLevel::FATAL;
           break;
         }
 
         case (Verbosity::error): {
-          destination().level = foxglove::LogLevel::LogLevel_ERROR;
+          destination().level = foxglove::LogLevel::ERROR;
           break;
         }
 
         case (Verbosity::warning): {
-          destination().level = foxglove::LogLevel::LogLevel_WARNING;
+          destination().level = foxglove::LogLevel::WARNING;
           break;
         }
 
         case (Verbosity::info): {
-          destination().level = foxglove::LogLevel::LogLevel_INFO;
+          destination().level = foxglove::LogLevel::INFO;
           break;
         }
 
         case (Verbosity::debug): {
-          destination().level = foxglove::LogLevel::LogLevel_DEBUG;
+          destination().level = foxglove::LogLevel::DEBUG;
           break;
         }
       }
