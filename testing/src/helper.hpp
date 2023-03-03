@@ -1,5 +1,5 @@
 #include <labrat/robot/message.hpp>
-#include <labrat/robot/msg/test_generated.h>
+#include <labrat/robot/msg/test.fb.hpp>
 #include <labrat/robot/node.hpp>
 #include <labrat/robot/cluster.hpp>
 
