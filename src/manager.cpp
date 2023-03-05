@@ -7,27 +7,35 @@
  */
 
 #include <labrat/robot/manager.hpp>
+#include <labrat/robot/logger.hpp>
 #include <labrat/robot/utils/atomic.hpp>
 
 namespace labrat::robot {
 
-std::unique_ptr<Manager> Manager::instance;
+std::weak_ptr<Manager> Manager::instance;
 
 Manager::Manager() = default;
 
 Manager::~Manager() {
   topic_map.forceFlush();
+
+  Logger::deinitialize();
   
   cluster_map.clear();
   node_map.clear();
 }
 
-Manager &Manager::get() {
-  if (!instance) {
-    instance = std::unique_ptr<Manager>(new Manager());
+Manager::Ptr Manager::get() {
+  if (instance.use_count() != 0) {
+    return instance.lock();
   }
 
-  return *instance;
+  std::shared_ptr<Manager> result(new Manager());
+  instance = result;
+
+  Logger::initialize();
+
+  return result;
 }
 
 void Manager::removeNode(const std::string &name) {

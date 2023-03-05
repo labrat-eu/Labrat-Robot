@@ -38,7 +38,7 @@ public:
     plugin_info.message_callback = FoxgloveServerPrivate::messageCallback;
     plugin_info.filter = filter;
 
-    self_reference = Manager::get().addPlugin(plugin_info);
+    self_reference = Manager::get()->addPlugin(plugin_info);
 
     run_thread = std::thread([this]() {
       server.run();
@@ -46,7 +46,7 @@ public:
   }
 
   ~FoxgloveServerPrivate() {
-    Manager::get().removePlugin(self_reference);
+    Manager::get()->removePlugin(self_reference);
 
     /*
     for (const std::pair<std::size_t, foxglove::websocket::ChannelId> channel : channel_map) {

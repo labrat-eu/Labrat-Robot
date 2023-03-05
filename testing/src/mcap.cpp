@@ -13,10 +13,12 @@ namespace labrat::robot::test {
 
 TEST(mcap, recorder) {
   {
+    labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+
     plugins::McapRecorder recorder("test.mcap");
 
-    std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "/topic_a", "/topic_b"));
-    std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "/topic_b", "/topic_a"));
+    std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "/topic_a", "/topic_b"));
+    std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "/topic_b", "/topic_a"));
 
     for (u64 i = 0; i < 1000; ++i) {
       TestContainer message;
@@ -41,9 +43,9 @@ TEST(mcap, recorder) {
     }
 
     node_a = std::shared_ptr<TestNode>();
-    ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+    ASSERT_NO_THROW(manager->removeNode("node_a"));
     node_b = std::shared_ptr<TestNode>();
-    ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
+    ASSERT_NO_THROW(manager->removeNode("node_b"));
   }
 
   ASSERT_NE(0, std::filesystem::file_size("test.mcap"));

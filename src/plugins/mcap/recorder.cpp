@@ -38,11 +38,11 @@ public:
     plugin_info.message_callback = McapRecorderPrivate::messageCallback;
     plugin_info.filter = filter;
 
-    self_reference = Manager::get().addPlugin(plugin_info);
+    self_reference = Manager::get()->addPlugin(plugin_info);
   }
 
   ~McapRecorderPrivate() {
-    Manager::get().removePlugin(self_reference);
+    Manager::get()->removePlugin(self_reference);
     writer.close();
   }
 

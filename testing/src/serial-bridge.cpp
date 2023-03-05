@@ -13,6 +13,8 @@
 namespace labrat::robot::test {
 
 TEST(serial_bridge, fork) {
+  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+
   std::filesystem::remove("test0");
   std::filesystem::remove("test1");
 
@@ -36,8 +38,8 @@ TEST(serial_bridge, fork) {
   int setup_pid = fork();
 
   if (setup_pid == 0) {
-    std::shared_ptr<TestNode> source(labrat::robot::Manager::get().addNode<TestNode>("source", "/network"));
-    std::shared_ptr<labrat::robot::plugins::SerialBridgeNode> bridge(labrat::robot::Manager::get().addNode<labrat::robot::plugins::SerialBridgeNode>("bridge", "test0"));
+    std::shared_ptr<TestNode> source(manager->addNode<TestNode>("source", "/network"));
+    std::shared_ptr<labrat::robot::plugins::SerialBridgeNode> bridge(manager->addNode<labrat::robot::plugins::SerialBridgeNode>("bridge", "test0"));
 
     bridge->registerReceiver<TestMessage>("/network");
 
@@ -52,14 +54,14 @@ TEST(serial_bridge, fork) {
     }
 
     source = std::shared_ptr<TestNode>();
-    labrat::robot::Manager::get().removeNode("source");
+    manager->removeNode("source");
     bridge = std::shared_ptr<labrat::robot::plugins::SerialBridgeNode>();
-    labrat::robot::Manager::get().removeNode("bridge");
+    manager->removeNode("bridge");
 
     exit(0);
   } else {
-    std::shared_ptr<TestNode> sink(labrat::robot::Manager::get().addNode<TestNode>("sink", "", "/network"));
-    std::shared_ptr<labrat::robot::plugins::SerialBridgeNode> bridge(labrat::robot::Manager::get().addNode<labrat::robot::plugins::SerialBridgeNode>("bridge", "test1"));
+    std::shared_ptr<TestNode> sink(manager->addNode<TestNode>("sink", "", "/network"));
+    std::shared_ptr<labrat::robot::plugins::SerialBridgeNode> bridge(manager->addNode<labrat::robot::plugins::SerialBridgeNode>("bridge", "test1"));
 
     bridge->registerSender<TestMessage>("/network");
 
@@ -82,9 +84,9 @@ TEST(serial_bridge, fork) {
     ASSERT_EQ(message.float_field, 1.0);
 
     sink = std::shared_ptr<TestNode>();
-    ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("sink"));
+    ASSERT_NO_THROW(manager->removeNode("sink"));
     bridge = std::shared_ptr<labrat::robot::plugins::SerialBridgeNode>();
-    ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("bridge"));
+    ASSERT_NO_THROW(manager->removeNode("bridge"));
 
     int status;
     ASSERT_GE(waitpid(setup_pid, &status, 0), 0);

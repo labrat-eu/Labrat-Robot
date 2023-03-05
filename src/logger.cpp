@@ -77,20 +77,32 @@ const std::string getVerbosityLong(Logger::Verbosity verbosity);
 const std::string getVerbosityShort(Logger::Verbosity verbosity);
 const Color getVerbosityColor(Logger::Verbosity verbosity);
 
-std::shared_ptr<LoggerNode> Logger::node(Manager::get().addNode<LoggerNode>("logger"));
+std::shared_ptr<LoggerNode> Logger::node;
 
 Logger::Logger(const std::string &name) : name(std::move(name)) {}
+
+void Logger::initialize() {
+  node = Manager::get()->addNode<LoggerNode>("logger");
+}
+
+void Logger::deinitialize() {
+  node.reset();
+}
 
 Logger::LogStream Logger::write(Verbosity verbosity, LoggerLocation &&location) {
   return LogStream(*this, verbosity, std::move(location));
 }
 
 void Logger::send(const Entry &message) {
-  node->send(message);
+  if (node) {
+    node->send(message);
+  }
 }
 
 void Logger::trace(const Entry &message) {
-  node->trace(message);
+  if (node) {
+    node->trace(message);
+  }
 }
 
 Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity, LoggerLocation &&location) : logger(logger), verbosity(verbosity), location(location) {}

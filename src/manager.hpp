@@ -40,7 +40,7 @@ private:
    */
   Manager();
 
-  static std::unique_ptr<Manager> instance;
+  static std::weak_ptr<Manager> instance;
 
   std::unordered_map<std::string, utils::FinalPtr<Node>> node_map;
   std::unordered_map<std::string, utils::FinalPtr<Cluster>> cluster_map;
@@ -49,6 +49,8 @@ private:
   Plugin::List plugin_list;
 
 public:
+  using Ptr = std::shared_ptr<Manager>;
+
   /**
    * @brief Destroy the Manager object.
    *
@@ -58,9 +60,9 @@ public:
   /**
    * @brief Get the static instance.
    *
-   * @return Manager& Reference to the static instance.
+   * @return Manager::Ptr Pointer to the static instance.
    */
-  static Manager &get();
+  static Manager::Ptr get();
 
   /**
    * @brief Construct and add a node to the internal network.
@@ -69,10 +71,10 @@ public:
    * @tparam Args Types of the arguments to be forwarded to the node specific constructor.
    * @param name Name of the node.
    * @param args Arguments to be forwarded to the node specific constructor.
-   * @return std::weak_ptr<T> Pointer to the created node.
+   * @return std::shared_ptr<T> Pointer to the created node.
    */
   template <typename T, typename... Args>
-  std::weak_ptr<T> addNode(const std::string &name, Args &&...args) requires std::is_base_of_v<Node, T> {
+  std::shared_ptr<T> addNode(const std::string &name, Args &&...args) requires std::is_base_of_v<Node, T> {
     const Node::Environment environment = getEnvironment(name);
 
     const std::pair<std::unordered_map<std::string, utils::FinalPtr<Node>>::iterator, bool> result =
@@ -82,7 +84,7 @@ public:
       throw ManagementException("Node not added.");
     }
 
-    return std::weak_ptr<T>(reinterpret_pointer_cast<T>(result.first->second));
+    return std::shared_ptr<T>(reinterpret_pointer_cast<T>(result.first->second));
   }
 
   /**
@@ -92,10 +94,10 @@ public:
    * @tparam Args Types of the arguments to be forwarded to the cluster specific constructor.
    * @param name Name of the cluster.
    * @param args Arguments to be forwarded to the cluster specific constructor.
-   * @return std::weak_ptr<T> Pointer to the created cluster.
+   * @return std::shared_ptr<T> Pointer to the created cluster.
    */
   template <typename T, typename... Args>
-  std::weak_ptr<T> addCluster(const std::string &name, Args &&...args) requires std::is_base_of_v<Cluster, T> {
+  std::shared_ptr<T> addCluster(const std::string &name, Args &&...args) requires std::is_base_of_v<Cluster, T> {
     const std::pair<std::unordered_map<std::string, utils::FinalPtr<Cluster>>::iterator, bool> result =
       cluster_map.emplace(name, std::make_shared<T>(name, std::forward<Args>(args)...));
 
@@ -103,7 +105,7 @@ public:
       throw ManagementException("Cluster not added.");
     }
 
-    return std::weak_ptr<T>(reinterpret_pointer_cast<T>(result.first->second));
+    return std::shared_ptr<T>(reinterpret_pointer_cast<T>(result.first->second));
   }
 
   /**

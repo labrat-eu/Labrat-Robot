@@ -17,7 +17,7 @@ Cluster::~Cluster() {
     const std::string &name = nodes.back()->getName();
     nodes.pop_back();
 
-    Manager::get().removeNode(name);
+    Manager::get()->removeNode(name);
   }
 }
 

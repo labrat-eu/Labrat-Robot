@@ -33,12 +33,12 @@ protected:
    * @tparam Args Types of the arguments to be forwarded to the node specific constructor.
    * @param name Name of the node.
    * @param args Arguments to be forwarded to the node specific constructor.
-   * @return std::weak_ptr<T> Pointer to the created node.
+   * @return std::shared_ptr<T> Pointer to the created node.
    */
   template <typename T, typename... Args>
-  std::weak_ptr<T> addNode(const std::string &name, Args &&...args) requires std::is_base_of_v<Node, T> {
-    std::weak_ptr<T> result = Manager::get().addNode<T>(name, std::forward<Args>(args)...);
-    nodes.emplace_back(result.lock());
+  std::shared_ptr<T> addNode(const std::string &name, Args &&...args) requires std::is_base_of_v<Node, T> {
+    std::shared_ptr<T> result = Manager::get()->addNode<T>(name, std::forward<Args>(args)...);
+    nodes.emplace_back(result);
 
     return result;
   }

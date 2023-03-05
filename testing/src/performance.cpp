@@ -9,8 +9,10 @@
 namespace labrat::robot::test {
 
 TEST(performance, put) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
+  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
   const u64 limit = 10000000;
 
@@ -26,14 +28,16 @@ TEST(performance, put) {
   EXPECT_EQ(message.integral_field, limit);
 
   node_a = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(manager->removeNode("node_a"));
   node_b = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
+  ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(performance, latest) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
+  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
   TestContainer message_a;
   message_a.integral_field = 42;
@@ -50,14 +54,16 @@ TEST(performance, latest) {
   EXPECT_EQ(message_a, message_b);
 
   node_a = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(manager->removeNode("node_a"));
   node_b = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
+  ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(performance, next) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
+  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
   TestContainer message_a;
   message_a.integral_field = 42;
@@ -73,9 +79,9 @@ TEST(performance, next) {
   EXPECT_EQ(message_a, message_b);
 
   node_a = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(manager->removeNode("node_a"));
   node_b = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
+  ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 }  // namespace labrat::robot::test

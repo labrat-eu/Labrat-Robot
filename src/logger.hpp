@@ -272,6 +272,9 @@ public:
   }
 
 private:
+  static void initialize();
+  static void deinitialize();
+
   /**
    * @brief Send out a message entry over the logger node.
    *
@@ -296,6 +299,8 @@ private:
   static bool use_color;
   static bool print_location;
   static bool print_time;
+
+  friend class Manager;
 };
 
 }  // namespace labrat::robot

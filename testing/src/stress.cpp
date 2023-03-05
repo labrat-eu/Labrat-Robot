@@ -9,8 +9,10 @@
 namespace labrat::robot::test {
 
 TEST(stress, latest) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
+  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
   const u64 limit = 1000000;
 
@@ -43,14 +45,16 @@ TEST(stress, latest) {
   sender_thread.join();
 
   node_a = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(manager->removeNode("node_a"));
   node_b = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
+  ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(stress, next) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
+  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
   const u64 limit = 1000000;
   std::atomic_flag done;
@@ -90,9 +94,9 @@ TEST(stress, next) {
   sender_thread.join();
 
   node_a = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(manager->removeNode("node_a"));
   node_b = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
+  ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 }  // namespace labrat::robot::test

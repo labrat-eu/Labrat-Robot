@@ -9,8 +9,10 @@
 namespace labrat::robot::test {
 
 TEST(setup, latest) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
+  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
   TestContainer message_a;
   message_a.integral_field = 10;
@@ -44,14 +46,16 @@ TEST(setup, latest) {
   ASSERT_THROW(node_b->receiver->latest(), labrat::robot::TopicNoDataAvailableException);
 
   node_a = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(manager->removeNode("node_a"));
   node_b = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
+  ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(setup, next) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
+  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
   TestContainer message_a;
   message_a.integral_field = 10;
@@ -99,14 +103,16 @@ TEST(setup, next) {
   ASSERT_THROW(node_b->receiver->next(), labrat::robot::TopicNoDataAvailableException);
 
   node_a = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(manager->removeNode("node_a"));
   node_b = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
+  ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(setup, callback) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
+  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
   TestContainer message_b;
 
@@ -127,14 +133,16 @@ TEST(setup, callback) {
   ASSERT_EQ(message_a, message_b);
 
   node_a = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(manager->removeNode("node_a"));
   node_b = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
+  ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(setup, server) {
-  std::shared_ptr<TestNode> node_a(labrat::robot::Manager::get().addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(labrat::robot::Manager::get().addNode<TestNode>("node_b", "void", "main"));
+  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
   u64 result = 0;
   u64 counter = 0;
@@ -159,9 +167,9 @@ TEST(setup, server) {
   ASSERT_THROW(client->callSync(10.5), labrat::robot::ServiceUnavailableException);
 
   node_a = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_a"));
+  ASSERT_NO_THROW(manager->removeNode("node_a"));
   node_b = std::shared_ptr<TestNode>();
-  ASSERT_NO_THROW(labrat::robot::Manager::get().removeNode("node_b"));
+  ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 }  // namespace labrat::robot::test
