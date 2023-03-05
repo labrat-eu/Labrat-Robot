@@ -12,6 +12,7 @@
 #include <labrat/robot/plugins/mavlink/node.hpp>
 #include <labrat/robot/utils/string.hpp>
 #include <labrat/robot/utils/thread.hpp>
+#include <labrat/robot/utils/cleanup.hpp>
 #include <mavlink/msg/common/actuator_control_target.fb.hpp>
 #include <mavlink/msg/common/altitude.fb.hpp>
 #include <mavlink/msg/common/attitude.fb.hpp>
@@ -160,6 +161,9 @@ private:
   utils::TimerThread heartbeat_thread;
 
   std::mutex mutex;
+
+public:
+  utils::CleanupLock lock;
 };
 
 template <>
@@ -1023,6 +1027,12 @@ void MavlinkNode::registerGenericReceiver(Node::GenericReceiver<mavlink_message_
 }
 
 void MavlinkNode::receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, MavlinkNodePrivate *node) {
+  utils::CleanupLock::Guard guard = node->lock.lock();
+
+  if (!guard.valid()) {
+    return;
+  }
+  
   node->writeMessage(receiver.latest());
 }
 
