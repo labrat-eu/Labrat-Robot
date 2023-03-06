@@ -108,6 +108,45 @@ TEST(setup, next) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
+TEST(setup, move) {
+  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
+
+  node_a->sender->setMove(&TestContainer::toMessageMove);
+  node_b->receiver->setMove(&TestContainer::fromMessageMove);
+
+  static const std::size_t size = 10000000L;
+  std::vector<u8> local_buffer;
+  local_buffer.reserve(size);
+
+  for (std::size_t i = 0; i < size; ++i) {
+    local_buffer.emplace_back(static_cast<u8>(i));
+  }
+
+  TestContainer message_a;
+  message_a.integral_field = 10;
+  message_a.float_field = 5.0;
+  message_a.buffer = local_buffer;
+  
+  node_a->sender->move(std::move<TestContainer &>(message_a));
+
+  ASSERT_TRUE(message_a.buffer.empty());
+
+  TestContainer message_b = node_b->receiver->next();
+
+  ASSERT_NE(message_a, message_b);
+
+  message_a.buffer = local_buffer;
+  ASSERT_EQ(message_a, message_b);
+
+  node_a = std::shared_ptr<TestNode>();
+  ASSERT_NO_THROW(manager->removeNode("node_a"));
+  node_b = std::shared_ptr<TestNode>();
+  ASSERT_NO_THROW(manager->removeNode("node_b"));
+}
+
 TEST(setup, callback) {
   labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
 

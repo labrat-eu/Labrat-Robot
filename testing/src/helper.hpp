@@ -17,19 +17,34 @@ public:
 
   u64 integral_field = 0;
   double float_field = 0;
+  std::vector<u8> buffer;
 
   static inline void toMessage(const TestContainer &source, TestMessage &destination, const void *) {
     destination().integral_field = source.integral_field;
     destination().float_field = source.float_field;
+    destination().buffer = source.buffer;
+  }
+
+  static inline void toMessageMove(TestContainer &&source, TestMessage &destination, const void *) {
+    destination().integral_field = source.integral_field;
+    destination().float_field = source.float_field;
+    destination().buffer = std::forward<std::vector<u8>>(source.buffer);
   }
 
   static inline void fromMessage(const TestMessage &source, TestContainer &destination, const void *) {
     destination.integral_field = source().integral_field;
     destination.float_field = source().float_field;
+    destination.buffer = source().buffer;
+  }
+
+  static inline void fromMessageMove(TestMessage &&source, TestContainer &destination, const void *) {
+    destination.integral_field = source().integral_field;
+    destination.float_field = source().float_field;
+    destination.buffer = std::forward<std::vector<u8>>(source().buffer);
   }
 
   bool operator==(const TestContainer &rhs) const {
-    return (integral_field == rhs.integral_field) && (float_field == rhs.float_field);
+    return (integral_field == rhs.integral_field) && (float_field == rhs.float_field) && (buffer == rhs.buffer);
   }
 };
 

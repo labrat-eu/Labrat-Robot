@@ -70,6 +70,10 @@ public:
         return topic.receivers.end();
       }
 
+      inline std::size_t size() const {
+        return topic.receivers.size();
+      }
+
     private:
       Topic &topic;
     };

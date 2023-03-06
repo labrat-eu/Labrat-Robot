@@ -268,4 +268,56 @@ inline void defaultReceiverConversionFunction(const OriginalType &source, Conver
   ConvertedType::fromMessage(source, destination);
 }
 
+/**
+ * @brief Move function to convert one data type into another.
+ *
+ * @tparam OriginalType Type to be converted from.
+ * @tparam ConvertedType Type to be converted to.
+ */
+template <typename OriginalType, typename ConvertedType>
+class MoveFunction {
+public:
+  template <typename DataType = void>
+  using Function = void (*)(OriginalType &&, ConvertedType &, const DataType *);
+
+  /**
+   * @brief Default-construct a new Move Function object.
+   * 
+   */
+  MoveFunction() : function(nullptr) {}
+
+  /**
+   * @brief Construct a new move function.
+   *
+   * @tparam DataType Type of the data pointed to by the user pointer.
+   * @param function Function to be used as a move function.
+   */
+  template <typename DataType = void>
+  MoveFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
+
+  /**
+   * @brief Call the stored move function.
+   *
+   * @param source Object to be converted.
+   * @param destination Object to be converted to.
+   * @param user_ptr User pointer to access generic external data.
+   */
+  inline void operator()(OriginalType &&source, ConvertedType &destination, const void *user_ptr) const {
+    function(std::forward<OriginalType>(source), destination, user_ptr);
+  }
+
+  /**
+   * @brief Check whether a valid function is stored.
+   * 
+   * @return true The function is valid.
+   * @return false The function is invalid.
+   */
+  inline operator bool() const {
+    return (function != nullptr);
+  }
+
+private:
+  Function<void> function;
+};
+
 }  // namespace labrat::robot

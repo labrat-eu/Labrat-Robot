@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.0)
 
-#find_package(flatbuffers MODULE REQUIRED)
+find_package(flatbuffers MODULE REQUIRED)
 
 function(labrat_robot_generate_flatbuffer)
   set(options)
@@ -49,7 +49,8 @@ function(labrat_robot_generate_flatbuffer)
   list(APPEND INT_FLAGS --object-suffix Native)
   list(APPEND INT_FLAGS --no-prefix)
   list(APPEND INT_FLAGS --scoped-enums)
-  list(APPEND INT_FLAGS --keep-prefix )
+  list(APPEND INT_FLAGS --keep-prefix)
+  list(APPEND INT_FLAGS --cpp-std=c++17)
 
   set(suffix ".fb")
   set(extension "hpp")

@@ -3,6 +3,8 @@ namespace labrat.robot.msg;
 table Test {
   integral_field:ulong;
   float_field:double;
+
+  buffer:[ubyte];
 }
 
 root_type Test;

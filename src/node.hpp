@@ -90,6 +90,16 @@ public:
     virtual void put(const ContainerType &container) = 0;
 
     /**
+     * @brief Send out a message onto the topic by moving its contents onto the topic.
+     * @details This operation is efficient when sending out large buffers as it avoids copying tht data.
+     * However, this comes at the cost of a constant overhead as this operation is only possible when only one receiver or plugin
+     * depends on the relevant topic.
+     *
+     * @param container Object containing the data to be sent out.
+     */
+    virtual void move(ContainerType &&container) = 0;
+
+    /**
      * @brief Flush all receivers of the relevant topic.
      * This will unblock any waiting receivers calling the next() function and will invalidate the data stored in their buffers.
      *
@@ -138,7 +148,7 @@ public:
      *
      * @param topic_name Name of the topic.
      * @param node Reference to the parent node.
-     * @param conversion_function Conversion function convert from ContainerType to MessageType.
+     * @param conversion_function Conversion function to convert from ContainerType to MessageType.
      * @param user_ptr User pointer to be used by the conversion function.
      */
     Sender(const std::string &topic_name, Node &node,
@@ -159,6 +169,7 @@ public:
     friend class Node;
 
     const ConversionFunction<ContainerType, MessageType> conversion_function;
+    MoveFunction<ContainerType, MessageType> move_function;
 
   public:
     using Ptr = std::unique_ptr<Sender<MessageType, ContainerType>>;
@@ -176,7 +187,7 @@ public:
     /**
      * @brief Send out a message onto the topic.
      *
-     * @param container Object caintaining the data to be sent out.
+     * @param container Object containing the data to be sent out.
      */
     void put(const ContainerType &container) {
       for (void *pointer : GenericSender<ContainerType>::topic.getReceivers()) {
@@ -201,6 +212,89 @@ public:
       }
 
       trace(container);
+    }
+
+    /**
+     * @brief Send out a message onto the topic by moving its contents onto the topic.
+     * @details This operation is efficient when sending out large buffers as it avoids copying tht data.
+     * However, this comes at the cost of a constant overhead as this operation is only possible when only one receiver or plugin
+     * depends on the relevant topic.
+     *
+     * @param container Object containing the data to be sent out.
+     */
+    void move(ContainerType &&container) {
+      if (!move_function) {
+        throw ConversionException("A sender move method was called without its move function being properly set.");
+      }
+
+      std::size_t receive_count = GenericSender<ContainerType>::topic.getReceivers().size();
+
+      const Plugin::List::iterator plugin_end = GenericSender<ContainerType>::node.environment.plugin_list.end();
+      Plugin::List::iterator plugin_iterator = plugin_end;
+
+      std::size_t i = 0;
+      for (Plugin::List::iterator iter = GenericSender<ContainerType>::node.environment.plugin_list.begin(); iter != plugin_end; ++iter) {
+        Plugin &plugin = *iter;
+        
+        if (!plugin.delete_flag.test() && plugin.filter.check(GenericSender<ContainerType>::topic_info.topic_hash)) {
+          ++receive_count;
+          plugin_iterator = iter;
+        }
+
+        ++i;
+      }
+
+      if (receive_count != 1) {
+        if (receive_count > 1) {
+          // If you use this function properly this branch should never get executed.
+          GenericSender<ContainerType>::node.getLogger().logWarning() << "Sender move function is sending out to multiple receivers or plugins. This can cause performance issues.";
+          put(container);
+        }
+
+        return;
+      }
+
+      if (plugin_iterator == plugin_end) {
+        // Send to a receiver.
+        Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(*GenericSender<ContainerType>::topic.getReceivers().begin());
+
+        const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
+        const std::size_t index = count & receiver->index_mask;
+
+        {
+          std::lock_guard guard(receiver->message_buffer[index].mutex);
+          move_function(std::forward<ContainerType>(container), receiver->message_buffer[index].message, GenericSender<ContainerType>::user_ptr);
+
+          receiver->read_count.store(count);
+        }
+
+        receiver->flush_flag = false;
+        receiver->read_count.notify_one();
+
+        if (receiver->callback.valid()) {
+          receiver->callback(*receiver, receiver->callback_ptr);
+        }
+      } else {
+        // Send to a plugin.
+        MessageType message;
+
+        move_function(std::forward<ContainerType>(container), message, GenericSender<ContainerType>::user_ptr);
+
+        flatbuffers::FlatBufferBuilder builder;
+        builder.Finish(MessageType::Content::TableType::Pack(builder, &message()));
+
+        Plugin::MessageInfo message_info = {
+          .topic_info = GenericSender<ContainerType>::topic_info,
+          .timestamp = message.getTimestamp(),
+          .serialized_message = builder.GetBufferSpan()
+        };
+
+        Plugin &plugin = *plugin_iterator;
+
+        utils::ConsumerGuard<u32> guard(plugin.use_count);
+
+        plugin.message_callback(plugin.user_ptr, message_info);
+      }
     }
 
     /**
@@ -255,6 +349,15 @@ public:
         plugin.message_callback(plugin.user_ptr, message_info);
       }
     }
+
+    /**
+     * @brief Register a move function.
+     *
+     * @param function Move function to be registered.
+     */
+    void setMove(MoveFunction<ContainerType, MessageType> function) {
+      move_function = function;
+    }
   };
 
   template <typename MessageType, typename ContainerType = MessageType>
@@ -295,7 +398,8 @@ public:
 
     /**
      * @brief Get the next message sent over the topic.
-     * This call might block. However, it is guaranteed that successive calls will yield different messages.
+     * @details This call might block. However, it is guaranteed that successive calls will yield different messages.
+     * Subsequent calls to latest() are unsafe.
      *
      * @return ContainerType The next message sent over the topic.
      * @throw TopicNoDataAvailableException When the topic has no valid data available.
@@ -471,6 +575,7 @@ public:
     };
 
     const ConversionFunction<MessageType, ContainerType> conversion_function;
+    MoveFunction<MessageType, ContainerType> move_function;
 
     volatile MessageBuffer message_buffer;
 
@@ -559,8 +664,9 @@ public:
 
     /**
      * @brief Get the next message sent over the topic.
-     * This call might block. However, it is guaranteed that successive calls will yield different messages.
-     *
+     * @details This call might block. However, it is guaranteed that successive calls will yield different messages.
+     * Subsequent calls to latest() are unsafe.
+     * 
      * @return ContainerType The next message sent over the topic.
      * @throw TopicNoDataAvailableException When the topic has no valid data available.
      */
@@ -579,7 +685,10 @@ public:
 
       const std::size_t index = GenericReceiver<ContainerType>::read_count.load() & GenericReceiver<ContainerType>::index_mask;
 
-      {
+      if (move_function) {
+        std::lock_guard guard(message_buffer[index].mutex);
+        move_function(std::move<MessageType &>(message_buffer[index].message), result, GenericReceiver<ContainerType>::user_ptr);
+      } else {
         std::lock_guard guard(message_buffer[index].mutex);
         conversion_function(message_buffer[index].message, result, GenericReceiver<ContainerType>::user_ptr);
       }
@@ -598,6 +707,15 @@ public:
     void setCallback(CallbackFunction function, void *ptr = nullptr) {
       callback = function;
       callback_ptr = ptr;
+    }
+
+    /**
+     * @brief Register a move function.
+     *
+     * @param function Move function to be registered.
+     */
+    void setMove(MoveFunction<MessageType, ContainerType> function) {
+      move_function = function;
     }
 
   private:
