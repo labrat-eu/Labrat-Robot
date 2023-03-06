@@ -97,8 +97,8 @@ public:
    */
   struct MessageInfo {
     const TopicInfo &topic_info;
-    const std::chrono::nanoseconds timestamp;
-    const flatbuffers::span<u8> serialized_message;
+    std::chrono::nanoseconds timestamp;
+    flatbuffers::span<u8> serialized_message;
   };
 
   /**

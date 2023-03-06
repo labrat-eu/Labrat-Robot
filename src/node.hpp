@@ -226,25 +226,28 @@ public:
      * @param container Object caintaining the data to be sent out.
      */
     void trace(const ContainerType &container) {
-      if (GenericSender<ContainerType>::node.environment.plugin_list.empty()) {
-        return;
-      }
-
       MessageType message;
-      conversion_function(container, message, GenericSender<ContainerType>::user_ptr);
-
-      flatbuffers::FlatBufferBuilder builder;
-      builder.Finish(MessageType::Content::TableType::Pack(builder, &message()));
-
       Plugin::MessageInfo message_info = {
-        .topic_info = GenericSender<ContainerType>::topic_info,
-        .timestamp = message.getTimestamp(),
-        .serialized_message = builder.GetBufferSpan(),
+        .topic_info = GenericSender<ContainerType>::topic_info
       };
+
+      bool init_flag = false;
 
       for (Plugin &plugin : GenericSender<ContainerType>::node.environment.plugin_list) {
         if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<ContainerType>::topic_info.topic_hash)) {
           continue;
+        }
+
+        if (!init_flag) {
+          conversion_function(container, message, GenericSender<ContainerType>::user_ptr);
+
+          flatbuffers::FlatBufferBuilder builder;
+          builder.Finish(MessageType::Content::TableType::Pack(builder, &message()));
+
+          message_info.timestamp = message.getTimestamp();
+          message_info.serialized_message = builder.GetBufferSpan();
+          
+          init_flag = true;
         }
 
         utils::ConsumerGuard<u32> guard(plugin.use_count);
