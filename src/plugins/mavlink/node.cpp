@@ -1103,8 +1103,8 @@ MavlinkNodePrivate::MavlinkNodePrivate(MavlinkConnection::Ptr &&connection, Mavl
   server.command_long = addServer<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>("/mavlink/srv/command_long",
     "/mavlink/out/command_long", "/mavlink/in/command_ack");
 
-  read_thread = utils::LoopThread(&MavlinkNodePrivate::readLoop, this);
-  heartbeat_thread = utils::TimerThread(&MavlinkNodePrivate::heartbeatLoop, std::chrono::milliseconds(500), this);
+  read_thread = utils::LoopThread(&MavlinkNodePrivate::readLoop, "mavlink read", 1, this);
+  heartbeat_thread = utils::TimerThread(&MavlinkNodePrivate::heartbeatLoop, std::chrono::milliseconds(500), "mavlink hb", 1, this);
 }
 
 MavlinkNodePrivate::~MavlinkNodePrivate() = default;

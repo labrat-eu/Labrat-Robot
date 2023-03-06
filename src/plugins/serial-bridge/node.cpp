@@ -277,7 +277,7 @@ SerialBridgeNodePrivate::SerialBridgeNodePrivate(const std::string &port, u64 ba
   decode_index = 0;
   escape_flag = false;
 
-  read_thread = utils::LoopThread(&SerialBridgeNodePrivate::readLoop, this);
+  read_thread = utils::LoopThread(&SerialBridgeNodePrivate::readLoop, "serial bridge", 1, this);
 }
 
 SerialBridgeNodePrivate::~SerialBridgeNodePrivate() = default;

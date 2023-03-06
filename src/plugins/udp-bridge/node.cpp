@@ -188,7 +188,7 @@ UdpBridgeNodePrivate::UdpBridgeNodePrivate(const std::string &address, u16 port,
   sigemptyset(&signal_mask);
   sigaddset(&signal_mask, SIGINT);
   
-  read_thread = utils::LoopThread(&UdpBridgeNodePrivate::readLoop, this);
+  read_thread = utils::LoopThread(&UdpBridgeNodePrivate::readLoop, "udp bridge", 1, this);
 }
 
 UdpBridgeNodePrivate::~UdpBridgeNodePrivate() = default;

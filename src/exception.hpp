@@ -107,6 +107,10 @@ protected:
   const std::string message;
 };
 
+class SystemException : public Exception {
+  using Exception::Exception;
+};
+
 class IoException : public Exception {
   using Exception::Exception;
 };

@@ -9,22 +9,60 @@
 #pragma once
 
 #include <labrat/robot/base.hpp>
+#include <labrat/robot/exception.hpp>
+#include <labrat/robot/utils/types.hpp>
+
 #include <chrono>
 #include <functional>
 #include <thread>
 
+#include <sys/prctl.h>
+#include <sched.h>
+#include <errno.h>
+
 inline namespace utils {
+
+/**
+ * @brief Abstract thread wrapper.
+ * 
+ */
+class Thread {
+public:
+  ~Thread() = default;
+
+protected:
+  Thread() = default;
+
+  static void setup(const std::string &name, i32 priority) {
+    // Set name of the thread in applications like top/htop for better performance debugging.
+    if (prctl(PR_SET_NAME, name.c_str()) != 0) {
+      throw labrat::robot::SystemException("Failed to set thread name.", errno);
+    }
+
+    if (priority > sched_get_priority_max(SCHED_RR) || priority < sched_get_priority_min(SCHED_RR)) {
+      throw labrat::robot::InvalidArgumentException("The specified scheduling priority is not within the permitted range.");
+    }
+
+    try {
+      // Select real-time scheduler.
+      sched_param scheduler_parameter = {.sched_priority = priority};
+      if (sched_setscheduler(0, SCHED_RR, &scheduler_parameter) != 0) {
+        throw labrat::robot::SystemException("Failed to specify scheduling algorithm.", errno);
+      }
+    } catch (labrat::robot::SystemException &) {}
+  }
+};
 
 /**
  * @brief Wrapper of a std::jthread to execute a function in an endless loop.
  *
  */
-class LoopThread {
+class LoopThread : public Thread {
 public:
   LoopThread() = default;
   LoopThread(LoopThread &) = delete;
 
-  LoopThread(LoopThread &&rhs) : thread(std::move(rhs.thread)){};
+  LoopThread(LoopThread &&rhs) : thread(std::move(rhs.thread)) {};
 
   /**
    * @brief Start the thread.
@@ -35,9 +73,11 @@ public:
    * @param args Arguments function to be executed repeatedly.
    */
   template <typename Function, typename... Args>
-  LoopThread(Function &&function, Args &&...args) {
+  LoopThread(Function &&function, const std::string &name, i32 priority, Args &&...args) {
     thread = std::jthread(
-      [](std::stop_token token, Function &&function, Args &&...args) {
+      [name, priority](std::stop_token token, Function &&function, Args &&...args) {
+      setup(name, priority);
+
       while (!token.stop_requested()) {
         std::invoke<Function, Args...>(std::forward<Function>(function), std::forward<Args>(args)...);
       }
@@ -57,12 +97,12 @@ private:
  * @brief Wrapper of a std::jthread to execute a function in an endless loop with a minimum time interval between calls.
  *
  */
-class TimerThread {
+class TimerThread : public Thread {
 public:
   TimerThread() = default;
   TimerThread(TimerThread &) = delete;
 
-  TimerThread(TimerThread &&rhs) : thread(std::move(rhs.thread)){};
+  TimerThread(TimerThread &&rhs) : thread(std::move(rhs.thread)) {};
 
   /**
    * @brief Start the thread.
@@ -74,9 +114,11 @@ public:
    * @param args Arguments function to be executed repeatedly.
    */
   template <typename Function, typename R, typename P, typename... Args>
-  TimerThread(Function &&function, const std::chrono::duration<R, P> &interval, Args &&...args) {
+  TimerThread(Function &&function, const std::chrono::duration<R, P> &interval, const std::string &name, i32 priority, Args &&...args) {
     thread = std::jthread(
-      [interval](std::stop_token token, Function &&function, Args &&...args) {
+      [interval, name, priority](std::stop_token token, Function &&function, Args &&...args) {
+      setup(name, priority);
+
       while (true) {
         const std::chrono::time_point<std::chrono::steady_clock> time_begin = std::chrono::steady_clock::now();
 
