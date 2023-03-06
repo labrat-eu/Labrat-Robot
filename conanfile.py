@@ -9,8 +9,8 @@ class VersionInfo(dict):
     def __init__(self):
         git = tools.Git()
 
-        super().__setitem__("commit", git.run("describe --tags --always"))
-        super().__setitem__("tag", git.run("describe --always --tags --abbrev=0"))
+        super().__setitem__("commit", git.run("describe --tags"))
+        super().__setitem__("tag", git.run("describe --tags --abbrev=0"))
         super().__setitem__("hash", git.run("rev-parse HEAD"))
         super().__setitem__("branch", git.run("rev-parse --abbrev-ref HEAD"))
 
