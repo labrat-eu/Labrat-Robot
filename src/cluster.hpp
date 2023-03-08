@@ -17,14 +17,14 @@ namespace labrat::robot {
 
 class Cluster {
 public:
-  ~Cluster();
+  ~Cluster() = default;
 
   inline const std::string &getName() const {
     return name;
   }
 
 protected:
-  Cluster(const std::string &name);
+  Cluster(const std::string &name) : name(name) {}
 
   /**
    * @brief Construct and add a node to the internal network.
@@ -46,6 +46,8 @@ protected:
 private:
   std::vector<std::shared_ptr<Node>> nodes;
   const std::string name;
+
+  friend class Manager;
 };
 
 }  // namespace labrat::robot

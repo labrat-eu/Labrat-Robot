@@ -8,6 +8,7 @@
 
 #include <labrat/robot/manager.hpp>
 #include <labrat/robot/logger.hpp>
+#include <labrat/robot/cluster.hpp>
 #include <labrat/robot/utils/atomic.hpp>
 
 namespace labrat::robot {
@@ -53,6 +54,15 @@ void Manager::removeCluster(const std::string &name) {
 
   if (iterator == cluster_map.end()) {
     throw ManagementException("Cluster not found.");
+  }
+
+  utils::FinalPtr<Cluster> &cluster = iterator->second;
+
+  while (!cluster->nodes.empty()) {
+    const std::string &name = cluster->nodes.back()->getName();
+    cluster->nodes.pop_back();
+
+    removeNode(name);
   }
 
   cluster_map.erase(iterator);

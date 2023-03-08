@@ -16,7 +16,6 @@ set(TARGET_SOURCES
   service.cpp
   logger.cpp
   exception.cpp
-  cluster.cpp
 )
 
 set(TARGET_HEADERS

@@ -328,6 +328,8 @@ public:
       bool init_flag = false;
 
       for (Plugin &plugin : GenericSender<ContainerType>::node.environment.plugin_list) {
+        utils::ConsumerGuard<u32> guard(plugin.use_count);
+        
         if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<ContainerType>::topic_info.topic_hash)) {
           continue;
         }
@@ -343,8 +345,6 @@ public:
           
           init_flag = true;
         }
-
-        utils::ConsumerGuard<u32> guard(plugin.use_count);
 
         plugin.message_callback(plugin.user_ptr, message_info);
       }
