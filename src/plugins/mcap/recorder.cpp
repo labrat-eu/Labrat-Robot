@@ -14,6 +14,8 @@
 
 #include <chrono>
 #include <queue>
+#include <mutex>
+#include <unordered_map>
 
 #include <mcap/internal.hpp>
 #include <mcap/types.inl>

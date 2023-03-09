@@ -10,10 +10,7 @@
 #include <labrat/robot/base.hpp>
 #include <labrat/robot/plugin.hpp>
 
-#include <mutex>
 #include <string>
-#include <thread>
-#include <unordered_map>
 
 namespace labrat::robot::plugins {
 

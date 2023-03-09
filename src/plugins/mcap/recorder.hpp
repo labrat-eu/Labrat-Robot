@@ -11,9 +11,7 @@
 #include <labrat/robot/base.hpp>
 #include <labrat/robot/plugin.hpp>
 
-#include <mutex>
 #include <string>
-#include <unordered_map>
 
 namespace labrat::robot::plugins {
 

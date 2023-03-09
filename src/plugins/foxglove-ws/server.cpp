@@ -14,6 +14,9 @@
 
 #include <chrono>
 #include <queue>
+#include <mutex>
+#include <thread>
+#include <unordered_map>
 
 #include <base64/Base64.h>
 
