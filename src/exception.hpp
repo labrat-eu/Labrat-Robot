@@ -115,6 +115,10 @@ class IoException : public Exception {
   using Exception::Exception;
 };
 
+class RuntimeException : public Exception {
+  using Exception::Exception;
+};
+
 class RuntimeRecursionException : public Exception {
   using Exception::Exception;
 };

@@ -7,3 +7,6 @@
 [submodule "submodules/schemas"]
 	path = submodules/schemas
 	url = https://github.com/foxglove/schemas.git
+[submodule "submodules/foxglove-ws"]
+	path = submodules/foxglove-ws
+	url = https://github.com/foxglove/ws-protocol.git

@@ -78,6 +78,7 @@ list(APPEND CMAKE_INSTALL_RPATH "$ORIGIN")
 
 # Add include symlinks.
 prj_add_include_symlink(TARGET ${CMAKE_CURRENT_LIST_DIR}/src NAME ${LOCAL_PROJECT_NAME} NAMESPACE ${LOCAL_PROJECT_NAMESPACE})
+prj_add_include_symlink(TARGET ${CMAKE_CURRENT_LIST_DIR}/submodules/foxglove-ws/cpp/foxglove-websocket/include/foxglove NAME foxglove)
 prj_add_include_symlink(TARGET ${CMAKE_CURRENT_LIST_DIR}/submodules/mavlink NAME mavlink)
 prj_add_include_symlink(TARGET ${CMAKE_CURRENT_LIST_DIR}/submodules/base64 NAME base64)
 
