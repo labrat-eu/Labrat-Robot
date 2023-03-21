@@ -9,6 +9,4 @@
 	url = https://github.com/foxglove/schemas.git
 [submodule "submodules/foxglove-ws"]
 	path = submodules/foxglove-ws
-	url = https://github.com/foxglove/ws-protocol.git
-[submodule "submodules/foxglove-ws/"]
 	url = https://gitlab.com/labrat.eu/clones/foxglove-ws.git
