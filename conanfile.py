@@ -1,6 +1,6 @@
-from conans import ConanFile, tools
+from conans import ConanFile, tools, errors
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain
-from conan.tools.files import update_conandata
+from conan.tools.files import copy, update_conandata
 import regex
 import os
 
@@ -37,7 +37,6 @@ class LabratRobotConan(ConanFile):
     options = {"with_system_deps": [True, False], "manual_build": [True, False]}
     default_options = {"with_system_deps": False, "manual_build": False}
     generators = "CMakeDeps", "CMakeToolchain"
-    exports_sources = "CMakeLists.txt", "src/*", "cmake/*", "install/*", "submodules/*"
 
     def __init__(self, output, runner, display_name="", user=None, channel=None):
         try:
@@ -79,6 +78,26 @@ class LabratRobotConan(ConanFile):
     def configure(self):
         self.options["websocketpp"].asio = "standalone"
 
+    def export_sources(self):
+        git = tools.Git()
+        git.run("submodule update --init")
+
+        copy(self, "CMakeLists.txt", self.recipe_folder, self.export_sources_folder)
+        copy(self, "src/*", self.recipe_folder, self.export_sources_folder)
+        copy(self, "cmake/*", self.recipe_folder, self.export_sources_folder)
+        copy(self, "install/*", self.recipe_folder, self.export_sources_folder)
+        copy(self, "submodules/*", self.recipe_folder, self.export_sources_folder)
+
+    def source(self):
+        git = tools.Git()
+
+        try:
+            git.check_repo()
+        except errors.ConanException:
+            return
+
+        git.run("submodule update --init")
+
     def generate(self):
         deps = CMakeDeps(self)
         deps.generate()
@@ -98,9 +117,6 @@ class LabratRobotConan(ConanFile):
         toolchain.generate()
 
     def export(self):
-        git = tools.Git()
-        git.run("submodule update --init")
-
         update_conandata(self, {"version_data": self.version_data})
 
     def build(self):
@@ -110,6 +126,7 @@ class LabratRobotConan(ConanFile):
         if self.options.manual_build:
             return
 
+        cmake = CMake(self)
         cmake.build()
 
     def package(self):
