@@ -173,9 +173,9 @@ pages:
   script:
     - mkdir build
     - cd build
-    - conan install .. -b=missing -pr:h=ci -pr:b=ci -o="&:manual_build=True"
+    - conan install .. -b=missing -pr:h=ci -pr:b=ci
     - conan source ..
-    - conan build ..
+    - conan build .. -c
     - cmake .. -DROBOT_ENABLE_DOCS=ON
     - make generate-docs
     - cd ..

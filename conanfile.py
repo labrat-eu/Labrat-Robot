@@ -34,8 +34,8 @@ class LabratRobotConan(ConanFile):
     description = "Minimal robot framework to provide an alternative to ROS."
     topics = "robotics", "messaging"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"with_system_deps": [True, False], "manual_build": [True, False]}
-    default_options = {"with_system_deps": False, "manual_build": False}
+    options = {"with_system_deps": [True, False]}
+    default_options = {"with_system_deps": False}
     generators = "CMakeDeps", "CMakeToolchain"
 
     def __init__(self, output, runner, display_name="", user=None, channel=None):
@@ -121,13 +121,12 @@ class LabratRobotConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure()
+        
+        if self.should_configure:
+            cmake.configure()
 
-        if self.options.manual_build:
-            return
-
-        cmake = CMake(self)
-        cmake.build()
+        if self.should_build:
+            cmake.build()
 
     def package(self):
         cmake = CMake(self)
