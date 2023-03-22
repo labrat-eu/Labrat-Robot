@@ -23,7 +23,7 @@ variables:
   conan profile new ci --detect --force
   conan profile update settings.compiler.cppstd=20 ci
   conan profile update settings.compiler.libcxx=libstdc++11 ci
-  echo -e "\n[build_requires]\n&: cmake/3.25.1" >> .tmp/.conan/profiles/ci
+  echo -e "\n[build_requires]\n&: cmake/3.25.3" >> .tmp/.conan/profiles/ci
   conan remote add --force gitlab https://gitlab.com/api/v4/packages/conan
   conan user -c
   conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}

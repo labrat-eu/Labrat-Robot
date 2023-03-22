@@ -12,7 +12,7 @@ class LabratRobotTestConan(ConanFile):
         self.requires("flatbuffers/22.12.06")
 
     def build_requirements(self):
-        self.tool_requires("cmake/3.25.1")
+        self.tool_requires("cmake/3.25.3")
         self.test_requires("gtest/1.13.0")
 
     def generate(self):

@@ -74,7 +74,7 @@ class LabratRobotConan(ConanFile):
         if self.options.with_system_deps:
             return
 
-        self.tool_requires("cmake/3.25.1")
+        self.tool_requires("cmake/3.25.3")
 
     def configure(self):
         self.options["websocketpp"].asio = "standalone"
