@@ -325,6 +325,7 @@ public:
         .topic_info = GenericSender<ContainerType>::topic_info
       };
 
+      flatbuffers::FlatBufferBuilder builder;
       bool init_flag = false;
 
       for (Plugin &plugin : GenericSender<ContainerType>::node.environment.plugin_list) {
@@ -337,7 +338,6 @@ public:
         if (!init_flag) {
           conversion_function(container, message, GenericSender<ContainerType>::user_ptr);
 
-          flatbuffers::FlatBufferBuilder builder;
           builder.Finish(MessageType::Content::TableType::Pack(builder, &message()));
 
           message_info.timestamp = message.getTimestamp();
