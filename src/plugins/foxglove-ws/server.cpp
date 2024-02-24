@@ -18,11 +18,9 @@
 #include <thread>
 #include <unordered_map>
 
-#include <base64/Base64.h>
-
 #include <foxglove/websocket/server_factory.hpp>
 #include <foxglove/websocket/server_interface.hpp>
-#include <foxglove/websocket/websocket_notls.hpp>
+#include <foxglove/websocket/base64.hpp>
 
 
 namespace labrat::robot::plugins {
@@ -149,7 +147,7 @@ FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleTopic(c
     }
 
     schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
-      std::forward_as_tuple(info.type_name, macaron::Base64::Encode(reflection.getBuffer())));
+      std::forward_as_tuple(info.type_name, foxglove::base64Encode(reflection.getBuffer())));
   }
 
   ChannelMap::iterator channel_iterator = channel_map.find(info.topic_hash);
