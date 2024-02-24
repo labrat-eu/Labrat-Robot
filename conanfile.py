@@ -46,10 +46,9 @@ class LabratRobotConan(ConanFile):
         try:
             return VersionInfo(self)
         except:
-            if hasattr(self, "conan_data"):
-                return self.conan_data["version_data"]
-            else:
+            if type(self.conan_data) is None:
                 raise
+            return self.conan_data["version_data"]
     
     def set_version(self):
         self.version = self.get_version_data()["semver"]
