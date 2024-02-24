@@ -1,6 +1,6 @@
 # Dockerfile to generate a build image for Ubuntu including all build dependencies.
 
-FROM ubuntu:latest
+FROM ubuntu:rolling
 LABEL maintainer="labrat.eu"
 
 # Run and remove the script.
