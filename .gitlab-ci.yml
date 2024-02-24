@@ -20,6 +20,7 @@ variables:
   python3 -m venv .venv
   source .venv/bin/activate
   export CONAN_HOME=$(pwd)/.tmp/
+  mkdir -p .tmp/profiles/
   python3 -m pip install --upgrade conan
   python3 -m pip install regex
 # conan remote add --force gitlab https://gitlab.com/api/v4/packages/conan
