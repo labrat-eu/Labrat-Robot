@@ -19,13 +19,9 @@ variables:
   git config --global --add safe.directory '*'
   python3 -m venv .venv
   source .venv/bin/activate
-  export CONAN_USER_HOME=$(pwd)/.tmp/
+  export CONAN_HOME=$(pwd)/.tmp/
   python3 -m pip install --upgrade conan
   python3 -m pip install regex
-  conan profile new ci --detect --force
-  conan profile update settings.compiler.cppstd=20 ci
-  conan profile update settings.compiler.libcxx=libstdc++11 ci
-  echo -e "\n[build_requires]\n&: cmake/3.28.1" >> .tmp/.conan/profiles/ci
   conan remote add --force gitlab https://gitlab.com/api/v4/packages/conan
   conan user -c
   conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
@@ -38,10 +34,7 @@ variables:
       - .tmp/
   before_script:
     - *init-generic
-    - conan profile update settings.compiler=clang ci
-    - conan profile update settings.compiler.version=17 ci
-    - conan profile update env.CC=clang-17 ci
-    - conan profile update env.CXX=clang++-17 ci
+    - cp .ci/clang-17/profile .tmp/profiles/ci
 
 .init-gcc: &init-gcc
   cache:
@@ -50,10 +43,7 @@ variables:
       - .tmp/
   before_script:
     - *init-generic
-    - conan profile update settings.compiler=gcc ci
-    - conan profile update settings.compiler.version=13 ci
-    - conan profile update env.CC=gcc-13 ci
-    - conan profile update env.CXX=g++-13 ci
+    - cp .ci/gcc-13/profile .tmp/profiles/ci
 
 
 .build-generic: &build-generic |
