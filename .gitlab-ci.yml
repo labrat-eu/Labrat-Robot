@@ -17,6 +17,7 @@ variables:
 
 .init-generic: &init-generic |
   git config --global --add safe.directory '*'
+  git fetch --depth=99999
   python3 -m venv .venv
   source .venv/bin/activate
   export CONAN_HOME=$(pwd)/.tmp/
