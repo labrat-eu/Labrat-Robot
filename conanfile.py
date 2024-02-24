@@ -128,6 +128,7 @@ class LabratRobotConan(ConanFile):
     def build(self):
         cmake = CMake(self)
         
+        cmake.configure()
         cmake.build()
 
     def package(self):
