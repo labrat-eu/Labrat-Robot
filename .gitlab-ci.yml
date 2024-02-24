@@ -17,10 +17,10 @@ variables:
 
 .init-generic: &init-generic |
   git config --global --add safe.directory '*'
-  export CONAN_USER_HOME=$(pwd)/.tmp/
   python3 -m venv .venv
   source .venv/bin/activate
-  python3 -m pip install --upgrade conan_package_tools
+  export CONAN_USER_HOME=$(pwd)/.tmp/
+  python3 -m pip install --upgrade conan
   python3 -m pip install regex
   conan profile new ci --detect --force
   conan profile update settings.compiler.cppstd=20 ci
