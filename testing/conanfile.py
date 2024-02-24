@@ -1,19 +1,21 @@
-from conans import ConanFile
-from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain
+from conan import ConanFile
+from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 from conan.tools.env import VirtualRunEnv
 import os
 
 class LabratRobotTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeDeps", "CMakeToolchain", "VirtualRunEnv"
 
     def requirements(self):
         self.requires(self.tested_reference_str)
-        self.requires("flatbuffers/22.12.06")
+        self.requires("flatbuffers/23.5.26")
 
     def build_requirements(self):
-        self.tool_requires("cmake/3.25.3")
-        self.test_requires("gtest/1.13.0")
+        self.tool_requires("cmake/3.28.1")
+        self.test_requires("gtest/1.14.0")
+
+    def layout(self):
+        cmake_layout(self)
 
     def generate(self):
         deps = CMakeDeps(self)
