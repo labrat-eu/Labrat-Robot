@@ -4,9 +4,11 @@
 #include <labrat/robot/plugins/serial-bridge/node.hpp>
 
 #include <filesystem>
+#include <system_error>
 
 #include <stdlib.h> 
 #include <unistd.h>
+#include <errno.h>
 #include <sys/wait.h>
 #include <gtest/gtest.h>
 
@@ -21,7 +23,14 @@ TEST(serial_bridge, fork) {
   int init_pid = fork();
 
   if (init_pid == 0) {
-    execlp("socat", "-d", "pty,raw,echo=0,link=test0", "pty,raw,echo=0,link=test1");
+    const int rc = execlp("/usr/bin/socat", "-dddd", "pty,raw,echo=0,link=test0", "pty,raw,echo=0,link=test1", nullptr);
+
+    EXPECT_EQ(rc, 0);
+
+    if (rc) {
+      const std::error_condition error = std::system_category().default_error_condition(errno);
+      FAIL() << error.value() << ": " << error.message();
+    }
   }
 
   for (u64 i = 0; i < 5000; ++i) {
