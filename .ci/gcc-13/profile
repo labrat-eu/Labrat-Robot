@@ -7,7 +7,7 @@ compiler.libcxx=libstdc++11
 compiler.version=13
 os=Linux
 
-[env]
+[buildenv]
 CC=gcc-13
 CXX=g++-13
 
