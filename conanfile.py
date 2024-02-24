@@ -68,18 +68,13 @@ class LabratRobotConan(ConanFile):
         self.requires("mcap/1.3.0")
         self.requires("crc_cpp/1.2.0")
 
-        #self.requires("foxglove-websocket/0.0.1")
-        self.requires("nlohmann_json/3.11.3")
-        self.requires("websocketpp/0.8.2")
+        self.requires("foxglove-websocket/1.2.0")
 
     def build_requirements(self):
         if self.options.with_system_deps:
             return
 
         self.tool_requires("cmake/3.28.1")
-
-    def configure(self):
-        self.options["websocketpp"].asio = "standalone"
 
     def layout(self):
         cmake_layout(self)
@@ -160,7 +155,6 @@ class LabratRobotConan(ConanFile):
         self.cpp_info.components["plugins"].names["cmake_find_package"] = self.name
         self.cpp_info.components["plugins"].names["cmake_find_package_multi"] = self.name
         self.cpp_info.components["plugins"].libs = ["plugins_mcap", "plugins_foxglove-ws", "plugins_mavlink", "plugins_udp-bridge", "plugins_serial-bridge"]
-        #self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "foxglove-websocket::foxglove-websocket", "crc_cpp::crc_cpp"]
-        self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "nlohmann_json::nlohmann_json", "websocketpp::websocketpp", "crc_cpp::crc_cpp"]
+        self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "foxglove-websocket::foxglove-websocket", "crc_cpp::crc_cpp"]
 
         self.runenv_info.append_path("LABRAT_ROBOT_REFLECTION_PATH", os.path.join(self.package_folder, "var", "run"))

@@ -20,15 +20,10 @@
 
 #include <base64/Base64.h>
 
-#include <foxglove/websocket/websocket_server.hpp>
+#include <foxglove/websocket/server_factory.hpp>
+#include <foxglove/websocket/server_interface.hpp>
 #include <foxglove/websocket/websocket_notls.hpp>
 
-namespace foxglove {
-
-template <>
-void Server<WebSocketNoTls>::setupTlsHandler() {}
-
-}
 
 namespace labrat::robot::plugins {
 
@@ -61,13 +56,13 @@ public:
     };
     
     const foxglove::ServerOptions options;
-    server = std::make_unique<foxglove::Server<foxglove::WebSocketNoTls>>(name, log_handler, options);
+    server = foxglove::ServerFactory::createServer<foxglove::WebSocketNoTls>(name, log_handler, options);
     
-    foxglove::ServerHandlers<foxglove::ConnHandle> handlers;
-    handlers.subscribeHandler = [&](foxglove::ChannelId channel_id, foxglove::ConnHandle) {
+    foxglove::ServerHandlers<foxglove::WebSocketNoTls> handlers;
+    handlers.subscribeHandler = [&](foxglove::ChannelId channel_id, foxglove::WebSocketNoTls) {
       logger.logInfo() << "First client subscribed to " << channel_id;
     };
-    handlers.unsubscribeHandler = [&](foxglove::ChannelId channel_id, foxglove::ConnHandle) {
+    handlers.unsubscribeHandler = [&](foxglove::ChannelId channel_id, foxglove::WebSocketNoTls) {
       logger.logInfo() << "Last client unsubscribed from " << channel_id;
     };
 
@@ -114,7 +109,7 @@ private:
   SchemaMap schema_map;
   ChannelMap channel_map;
 
-  std::unique_ptr<foxglove::Server<foxglove::WebSocketNoTls>> server;
+  std::unique_ptr<foxglove::ServerInterface<foxglove::WebSocketNoTls>> server;
   std::mutex mutex;
 
   Plugin::List::iterator self_reference;

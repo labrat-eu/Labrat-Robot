@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.22.0)
 
 
-find_package(nlohmann_json REQUIRED)
-find_package(websocketpp REQUIRED)
+find_package(foxglove-websocket REQUIRED)
 
 # Set the target name from the path.
 get_filename_component(TARGET_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
@@ -19,8 +18,6 @@ set(TARGET_HEADERS
 
 set(TARGET_SOURCES
   server.cpp
-  ../../../submodules/foxglove-ws/cpp/foxglove-websocket/src/parameter.cpp
-  ../../../submodules/foxglove-ws/cpp/foxglove-websocket/src/serialization.cpp
 )
 
 add_library(${TARGET_NAME} SHARED ${TARGET_HEADERS} ${TARGET_SOURCES})
@@ -30,7 +27,7 @@ add_dependencies(robot_plugins ${TARGET_NAME})
 set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${GIT_VERSION})
 set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
 
-target_link_libraries(${TARGET_NAME} PRIVATE nlohmann_json::nlohmann_json websocketpp::websocketpp)
+target_link_libraries(${TARGET_NAME} PRIVATE foxglove-websocket::foxglove-websocket)
 target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME})
 
 # Add a install targets.
