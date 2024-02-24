@@ -56,13 +56,13 @@ public:
     };
     
     const foxglove::ServerOptions options;
-    server = foxglove::ServerFactory::createServer<foxglove::WebSocketNoTls>(name, log_handler, options);
+    server = foxglove::ServerFactory::createServer<websocketpp::connection_hdl>(name, log_handler, options);
     
-    foxglove::ServerHandlers<foxglove::WebSocketNoTls> handlers;
-    handlers.subscribeHandler = [&](foxglove::ChannelId channel_id, foxglove::WebSocketNoTls) {
+    foxglove::ServerHandlers<websocketpp::connection_hdl> handlers;
+    handlers.subscribeHandler = [&](foxglove::ChannelId channel_id, websocketpp::connection_hdl) {
       logger.logInfo() << "First client subscribed to " << channel_id;
     };
-    handlers.unsubscribeHandler = [&](foxglove::ChannelId channel_id, foxglove::WebSocketNoTls) {
+    handlers.unsubscribeHandler = [&](foxglove::ChannelId channel_id, websocketpp::connection_hdl) {
       logger.logInfo() << "Last client unsubscribed from " << channel_id;
     };
 
@@ -109,7 +109,7 @@ private:
   SchemaMap schema_map;
   ChannelMap channel_map;
 
-  std::unique_ptr<foxglove::ServerInterface<foxglove::WebSocketNoTls>> server;
+  std::unique_ptr<foxglove::ServerInterface<websocketpp::connection_hdl>> server;
   std::mutex mutex;
 
   Plugin::List::iterator self_reference;
