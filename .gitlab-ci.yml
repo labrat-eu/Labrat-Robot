@@ -23,8 +23,7 @@ variables:
   python3 -m pip install --upgrade conan
   python3 -m pip install regex
   conan remote add --force gitlab https://gitlab.com/api/v4/packages/conan
-  conan user -c
-  conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
+  conan remote login gitlab ci_user -p ${CI_JOB_TOKEN}
 
 
 .init-clang: &init-clang
