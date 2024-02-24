@@ -10,3 +10,6 @@ os=Linux
 [buildenv]
 CC=clang-17
 CXX=clang-17
+
+[conf]
+tools.build:exelinkflags=['-lstdc++', '-lm']

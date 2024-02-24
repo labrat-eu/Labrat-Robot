@@ -1,5 +1,5 @@
 from conan import ConanFile, errors
-from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain
+from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 from conan.tools.files import copy, update_conandata
 from conan.tools.scm import Git
 import regex
@@ -80,6 +80,9 @@ class LabratRobotConan(ConanFile):
 
     def configure(self):
         self.options["websocketpp"].asio = "standalone"
+
+    def layout(self):
+        cmake_layout(self)
 
     def export_sources(self):
         git = Git(self)
