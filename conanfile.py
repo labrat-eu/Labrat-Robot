@@ -1,13 +1,14 @@
-from conans import ConanFile, tools, errors
+from conan import ConanFile, errors
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain
 from conan.tools.files import copy, update_conandata
+from conan.tools.scm import Git
 import regex
 import os
 
 
 class VersionInfo(dict):
-    def __init__(self):
-        git = tools.Git()
+    def __init__(self, conanfile):
+        git = Git(conanfile)
 
         super().__setitem__("commit", git.run("describe --tags"))
         super().__setitem__("tag", git.run("describe --tags --abbrev=0"))
@@ -36,21 +37,19 @@ class LabratRobotConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"with_system_deps": [True, False]}
     default_options = {"with_system_deps": False}
-    generators = "CMakeDeps", "CMakeToolchain"
-
-    def __init__(self, output, runner, display_name="", user=None, channel=None):
-        try:
-            self.version_data = VersionInfo()
-        except:
-            self.version_data = self.conan_data["version_data"]
-
-        self.version = self.version_data["semver"]
-
-        super().__init__(output, runner, display_name, user, channel)
 
     @property
     def _module_path(self):
         return os.path.join("lib", "cmake")
+    
+    def get_version_data(self):
+        try:
+            return VersionInfo(self)
+        except:
+            return self.conan_data["version_data"]
+    
+    def set_version(self):
+        self.version = self.get_version_data()["semver"]
 
     def system_requirements(self):
         if self.settings.os != 'Linux':
@@ -60,26 +59,26 @@ class LabratRobotConan(ConanFile):
         if self.options.with_system_deps:
             return
 
-        self.requires("flatbuffers/22.12.06")
+        self.requires("flatbuffers/23.5.26")
 
-        self.requires("mcap/0.5.0")
+        self.requires("mcap/1.3.0")
         self.requires("crc_cpp/1.2.0")
 
         #self.requires("foxglove-websocket/0.0.1")
-        self.requires("nlohmann_json/3.10.5")
+        self.requires("nlohmann_json/3.11.3")
         self.requires("websocketpp/0.8.2")
 
     def build_requirements(self):
         if self.options.with_system_deps:
             return
 
-        self.tool_requires("cmake/3.25.3")
+        self.tool_requires("cmake/3.28.1")
 
     def configure(self):
         self.options["websocketpp"].asio = "standalone"
 
     def export_sources(self):
-        git = tools.Git()
+        git = Git(self)
         git.run("submodule update --init")
 
         copy(self, "CMakeLists.txt", self.recipe_folder, self.export_sources_folder)
@@ -89,10 +88,10 @@ class LabratRobotConan(ConanFile):
         copy(self, "submodules/*", self.recipe_folder, self.export_sources_folder)
 
     def source(self):
-        git = tools.Git()
+        git = Git(self)
 
         try:
-            git.check_repo()
+            git.run("status")
         except errors.ConanException:
             return
 
@@ -102,37 +101,38 @@ class LabratRobotConan(ConanFile):
         deps = CMakeDeps(self)
         deps.generate()
 
+        version_data = self.get_version_data()
+
         toolchain = CMakeToolchain(self)
         toolchain.variables["CMAKE_RUNTIME_OUTPUT_DIRECTORY"] = os.path.join(self.build_folder, "bin")
         toolchain.variables["CMAKE_LIBRARY_OUTPUT_DIRECTORY"] = os.path.join(self.build_folder, "lib")
-        toolchain.variables["GIT_VERSION_MAJOR"] = self.version_data["version_major"]
-        toolchain.variables["GIT_VERSION_MINOR"] = self.version_data["version_minor"]
-        toolchain.variables["GIT_VERSION_PATCH"] = self.version_data["version_patch"]
-        toolchain.variables["GIT_SEMVER"] = self.version_data["semver"]
-        toolchain.variables["GIT_VERSION"] = self.version_data["version"]
-        toolchain.variables["GIT_TAG"] = self.version_data["tag"]
-        toolchain.variables["GIT_HASH"] = self.version_data["hash"]
-        toolchain.variables["GIT_HASH_SHORT"] = self.version_data["hash_short"]
-        toolchain.variables["GIT_BRANCH"] = self.version_data["branch"]
+        toolchain.variables["GIT_VERSION_MAJOR"] = version_data["version_major"]
+        toolchain.variables["GIT_VERSION_MINOR"] = version_data["version_minor"]
+        toolchain.variables["GIT_VERSION_PATCH"] = version_data["version_patch"]
+        toolchain.variables["GIT_SEMVER"] = version_data["semver"]
+        toolchain.variables["GIT_VERSION"] = version_data["version"]
+        toolchain.variables["GIT_TAG"] = version_data["tag"]
+        toolchain.variables["GIT_HASH"] = version_data["hash"]
+        toolchain.variables["GIT_HASH_SHORT"] = version_data["hash_short"]
+        toolchain.variables["GIT_BRANCH"] = version_data["branch"]
         toolchain.generate()
 
     def export(self):
-        update_conandata(self, {"version_data": self.version_data})
+        update_conandata(self, {"version_data": self.get_version_data()})
 
     def build(self):
         cmake = CMake(self)
-        
-        if self.should_configure:
-            cmake.configure()
-
-        if self.should_build:
-            cmake.build()
+    
+        cmake.configure()
+        cmake.build()
 
     def package(self):
         cmake = CMake(self)
         cmake.install()
 
     def package_info(self):
+        self.conf_info.define("version_data", self.version_data)
+
         module_paths = [
             os.path.join(self._module_path, "LabratRobotLauncher.cmake"),
             os.path.join(self._module_path, "LabratRobotGenerateFlatbuffer.cmake")

@@ -16,8 +16,8 @@ conan test testing labrat-robot/<version>
 ```
 mkdir build
 cd build
-conan install .. --build=missing
-conan build ..
+conan install .. -of . --build=missing
+conan build .. -of .
 ```
 
 If you want to make the development version available to other conan projects on your system export your package.

@@ -32,3 +32,6 @@ report*
 
 # Python
 *.pyc
+
+# Conan
+CMakeUserPresets.json

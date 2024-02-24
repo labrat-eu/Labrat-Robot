@@ -23,7 +23,7 @@ variables:
   conan profile new ci --detect --force
   conan profile update settings.compiler.cppstd=20 ci
   conan profile update settings.compiler.libcxx=libstdc++11 ci
-  echo -e "\n[build_requires]\n&: cmake/3.25.3" >> .tmp/.conan/profiles/ci
+  echo -e "\n[build_requires]\n&: cmake/3.28.1" >> .tmp/.conan/profiles/ci
   conan remote add --force gitlab https://gitlab.com/api/v4/packages/conan
   conan user -c
   conan user ci_user -r gitlab -p ${CI_JOB_TOKEN}
@@ -38,8 +38,8 @@ variables:
     - *init-generic
     - conan profile update settings.compiler=clang ci
     - conan profile update settings.compiler.version=14 ci
-    - conan profile update env.CC=clang-14 ci
-    - conan profile update env.CXX=clang++-14 ci
+    - conan profile update env.CC=clang-17 ci
+    - conan profile update env.CXX=clang++-17 ci
 
 .init-gcc: &init-gcc
   cache:
@@ -66,11 +66,11 @@ variables:
   conan upload $(conan info . | grep -oE "$CONAN_NAME/v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\+[a-z0-9\-]+)?" | head -n1)@$CONAN_USER/$CONAN_CHANNEL --all -r gitlab --retry 5 --retry-wait 10
 
 
-setup:clang-14:
+setup:clang-17:
   stage: setup
   rules:
     - changes:
-      - .ci/clang-14/*
+      - .ci/clang-17/*
     - if: $LABRAT_ROBOT_NIGHTLY_PIPELINE
   image: docker:latest
   services:
@@ -78,9 +78,9 @@ setup:clang-14:
   before_script:
     - *init-docker
   script:
-    - cd .ci/clang-14
-    - docker build -t $CI_REGISTRY_IMAGE:clang-14 .
-    - docker push $CI_REGISTRY_IMAGE:clang-14
+    - cd .ci/clang-17
+    - docker build -t $CI_REGISTRY_IMAGE:clang-17 .
+    - docker push $CI_REGISTRY_IMAGE:clang-17
 
 setup:gcc-12:
   stage: setup
@@ -115,27 +115,27 @@ setup:doxygen:
     - docker push $CI_REGISTRY_IMAGE:doxygen
 
 
-build:clang-14:
+build:clang-17:
   stage: build
-  image: $CI_REGISTRY_IMAGE:clang-14
+  image: $CI_REGISTRY_IMAGE:clang-17
   <<: *init-clang
   script:
     - *build-generic
 
-test:clang-14:
+test:clang-17:
   stage: test
-  needs: ["build:clang-14"]
-  image: $CI_REGISTRY_IMAGE:clang-14
+  needs: ["build:clang-17"]
+  image: $CI_REGISTRY_IMAGE:clang-17
   <<: *init-clang
   script:
     - *test-generic
 
-deploy:clang-14:
+deploy:clang-17:
   stage: deploy
   rules:
     - if: $CI_COMMIT_REF_PROTECTED
     - if: $CI_COMMIT_TAG
-  image: $CI_REGISTRY_IMAGE:clang-14
+  image: $CI_REGISTRY_IMAGE:clang-17
   <<: *init-clang
   script:
     - *deploy-generic
