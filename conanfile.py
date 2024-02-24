@@ -46,9 +46,11 @@ class LabratRobotConan(ConanFile):
         try:
             return VersionInfo(self)
         except:
-            if type(self.conan_data) is None:
-                raise
-            return self.conan_data["version_data"]
+            try:
+                return self.conan_data["version_data"]
+            except TypeError:
+                pass
+            raise
     
     def set_version(self):
         self.version = self.get_version_data()["semver"]
