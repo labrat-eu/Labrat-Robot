@@ -166,14 +166,11 @@ pages:
   image: $CI_REGISTRY_IMAGE:doxygen
   <<: *init-gcc
   script:
-    - mkdir build
-    - cd build
-    - conan install .. -b=missing -pr:h=ci -pr:b=ci
-    - conan source ..
-    - conan build .. -c
-    - cmake .. -DROBOT_ENABLE_DOCS=ON
+    - conan install . -b=missing -pr:h=ci -pr:b=ci
+    - cd build/Release
+    - cmake . -DROBOT_ENABLE_DOCS=ON
     - make generate-docs
-    - cd ..
+    - cd ../../
     - cp -r docs/html public
   artifacts:
     paths:

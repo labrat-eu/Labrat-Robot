@@ -119,13 +119,15 @@ class LabratRobotConan(ConanFile):
         toolchain.variables["GIT_BRANCH"] = version_data["branch"]
         toolchain.generate()
 
+        cmake = CMake(self)
+        cmake.configure()
+
     def export(self):
         update_conandata(self, {"version_data": self.get_version_data()})
 
     def build(self):
         cmake = CMake(self)
-    
-        cmake.configure()
+        
         cmake.build()
 
     def package(self):
