@@ -18,12 +18,9 @@ variables:
 .init-generic: &init-generic |
   git config --global --add safe.directory '*'
   git fetch --depth=99999
-  python3 -m venv .venv
-  source .venv/bin/activate
   export CONAN_HOME=$(pwd)/.tmp/
   mkdir -p .tmp/profiles/
-  python3 -m pip install --upgrade conan
-  python3 -m pip install regex
+  cp /opt/conan_profile .tmp/profiles/ci
 # conan remote add --force gitlab https://gitlab.com/api/v4/packages/conan
 # conan remote login gitlab ci_user -p ${CI_JOB_TOKEN}
 
@@ -35,7 +32,6 @@ variables:
       - .tmp/
   before_script:
     - *init-generic
-    - cp .ci/clang-17/profile .tmp/profiles/ci
 
 .init-gcc: &init-gcc
   cache:
@@ -44,7 +40,6 @@ variables:
       - .tmp/
   before_script:
     - *init-generic
-    - cp .ci/gcc-13/profile .tmp/profiles/ci
 
 
 .build-generic: &build-generic |

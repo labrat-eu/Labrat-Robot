@@ -3,9 +3,22 @@
 FROM ubuntu:rolling
 LABEL maintainer="labrat.eu"
 
-# Run and remove the script.
+# Install common packages
 RUN apt-get update
-RUN apt-get install -y clang-17 libstdc++-12-dev python3-venv python3-pip git cmake make socat
+RUN apt-get install -y python3-venv python3-pip git cmake make socat
+
+# Python setup
+RUN python3 -m venv /.venv
+ENV VIRTUAL_ENV /.venv
+ENV PATH /.venv/bin:$PATH
+RUN python3 -m pip install --upgrade conan
+RUN python3 -m pip install regex
+
+# Install toolchain
+RUN apt-get install -y clang-17 libstdc++-12-dev
 
 # Clear the unused apt files.
 RUN rm -rf /var/lib/apt/lists/*
+
+# Add conan profile
+ADD profile /opt/conan_profile
