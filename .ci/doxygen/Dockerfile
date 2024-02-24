@@ -14,6 +14,9 @@ ENV PATH /.venv/bin:$PATH
 RUN python3 -m pip install --upgrade conan
 RUN python3 -m pip install regex
 
+# Clear the unused apt files.
+RUN rm -rf /var/lib/apt/lists/*
+
 # Install doxygen
 ADD https://github.com/doxygen/doxygen/releases/download/Release_1_10_0/doxygen-1.10.0.linux.bin.tar.gz doxygen.tar.gz
 RUN tar -xaf doxygen.tar.gz
