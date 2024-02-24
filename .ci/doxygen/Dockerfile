@@ -3,12 +3,16 @@
 FROM ubuntu:rolling
 LABEL maintainer="labrat.eu"
 
-# Run and remove the script.
+# Install common packages
 RUN apt-get update
-RUN apt-get install -y g++-13 libstdc++-12-dev python3-venv python3-pip git cmake make
+RUN apt-get install -y python3-venv python3-pip git cmake make
 
-# Clear the unused apt files.
-RUN rm -rf /var/lib/apt/lists/*
+# Python setup
+RUN python3 -m venv /.venv
+ENV VIRTUAL_ENV /.venv
+ENV PATH /.venv/bin:$PATH
+RUN python3 -m pip install --upgrade conan
+RUN python3 -m pip install regex
 
 # Install doxygen
 ADD https://github.com/doxygen/doxygen/releases/download/Release_1_10_0/doxygen-1.10.0.linux.bin.tar.gz doxygen.tar.gz
