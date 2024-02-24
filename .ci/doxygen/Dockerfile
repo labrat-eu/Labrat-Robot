@@ -5,7 +5,7 @@ LABEL maintainer="labrat.eu"
 
 # Run and remove the script.
 RUN apt-get update
-RUN apt-get install -y g++-12 libstdc++-12-dev python3-pip git cmake make doxygen
+RUN apt-get install -y g++-12 libstdc++-12-dev python3-venv python3-pip git cmake make doxygen
 
 # Clear the unused apt files.
 RUN rm -rf /var/lib/apt/lists/*
