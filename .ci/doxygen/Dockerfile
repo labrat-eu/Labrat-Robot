@@ -22,3 +22,6 @@ ADD https://github.com/doxygen/doxygen/releases/download/Release_1_10_0/doxygen-
 RUN tar -xaf doxygen.tar.gz
 RUN cd doxygen-1.10.0; make install
 RUN cd ..; rm -rf doxygen-1.10.0*
+
+# Add conan profile
+ADD profile /opt/conan_profile

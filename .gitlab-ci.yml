@@ -58,7 +58,7 @@ setup:clang-17:
   stage: setup
   rules:
     - changes:
-      - .ci/clang-17/Dockerfile
+      - .ci/clang-17/*
     - if: $LABRAT_ROBOT_NIGHTLY_PIPELINE
   image: docker:latest
   services:
@@ -74,7 +74,7 @@ setup:gcc-13:
   stage: setup
   rules:
     - changes:
-      - .ci/gcc-13/Dockerfile
+      - .ci/gcc-13/*
     - if: $LABRAT_ROBOT_NIGHTLY_PIPELINE
   image: docker:latest
   services:
