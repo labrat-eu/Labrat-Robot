@@ -22,8 +22,8 @@ variables:
   export CONAN_HOME=$(pwd)/.tmp/
   python3 -m pip install --upgrade conan
   python3 -m pip install regex
-  conan remote add --force gitlab https://gitlab.com/api/v4/packages/conan
-  conan remote login gitlab ci_user -p ${CI_JOB_TOKEN}
+# conan remote add --force gitlab https://gitlab.com/api/v4/packages/conan
+# conan remote login gitlab ci_user -p ${CI_JOB_TOKEN}
 
 
 .init-clang: &init-clang
@@ -121,7 +121,8 @@ test:clang-17:
   script:
     - *test-generic
 
-deploy:clang-17:
+# Hidden until GitLab supports conan 2.0
+.deploy:clang-17:
   stage: deploy
   rules:
     - if: $CI_COMMIT_REF_PROTECTED
@@ -147,7 +148,8 @@ test:gcc-13:
   script:
     - *test-generic
 
-deploy:gcc-13:
+# Hidden until GitLab supports conan 2.0
+.deploy:gcc-13:
   stage: deploy
   rules:
     - if: $CI_COMMIT_REF_PROTECTED
