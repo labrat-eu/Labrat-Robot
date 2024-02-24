@@ -10,6 +10,3 @@ os=Linux
 [buildenv]
 CC=clang-17
 CXX=clang-17
-
-[build_requires]
-&: cmake/3.28.1
