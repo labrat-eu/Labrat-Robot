@@ -167,6 +167,7 @@ pages:
   <<: *init-gcc
   script:
     - conan install . -b=missing -pr:h=ci -pr:b=ci
+    - conan build . -b=missing -pr:h=ci -pr:b=ci -o dry_run=True
     - cd build/Release
     - cmake . -DROBOT_ENABLE_DOCS=ON
     - make generate-docs

@@ -35,8 +35,8 @@ class LabratRobotConan(ConanFile):
     description = "Minimal robot framework to provide an alternative to ROS."
     topics = "robotics", "messaging"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"with_system_deps": [True, False]}
-    default_options = {"with_system_deps": False}
+    options = {"with_system_deps": [True, False], "dry_run": [True, False]}
+    default_options = {"with_system_deps": False, "dry_run": False}
 
     @property
     def _module_path(self):
@@ -119,9 +119,6 @@ class LabratRobotConan(ConanFile):
         toolchain.variables["GIT_BRANCH"] = version_data["branch"]
         toolchain.generate()
 
-        cmake = CMake(self)
-        cmake.configure()
-
     def export(self):
         update_conandata(self, {"version_data": self.get_version_data()})
 
@@ -129,7 +126,9 @@ class LabratRobotConan(ConanFile):
         cmake = CMake(self)
         
         cmake.configure()
-        cmake.build()
+        
+        if not self.options.dry_run:
+            cmake.build()
 
     def package(self):
         cmake = CMake(self)
