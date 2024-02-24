@@ -131,8 +131,6 @@ class LabratRobotConan(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.conf_info.define("version_data", self.version_data)
-
         module_paths = [
             os.path.join(self._module_path, "LabratRobotLauncher.cmake"),
             os.path.join(self._module_path, "LabratRobotGenerateFlatbuffer.cmake")
