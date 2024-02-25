@@ -1,0 +1,27 @@
+namespace mavlink.msg.common;
+
+table SmartBatteryInfo {
+  discharge_minimum_voltage:float;
+  charging_minimum_voltage:float;
+  resting_minimum_voltage:float;
+  charging_maximum_voltage:float;
+  charging_maximum_current:float;
+  nominal_voltage:float;
+  discharge_maximum_current:float;
+  discharge_maximum_burst_current:float;
+  design_capacity:float;
+  full_charge_capacity:float;
+  cycle_count:ushort;
+  weight:ushort;
+  id:ubyte;
+  battery_function:ubyte;
+  type:ubyte;
+  state_of_health:ubyte;
+  cells_in_series:ubyte;
+  manufacture_date:string;
+  serial_number:string;
+  name:string;
+}
+
+root_type SmartBatteryInfo;
+

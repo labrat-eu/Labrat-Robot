@@ -14,6 +14,7 @@ table CameraInformation {
   model_name:[ubyte];
   lens_id:ubyte;
   cam_definition_uri:string;
+  gimbal_device_id:ubyte;
 }
 
 root_type CameraInformation;

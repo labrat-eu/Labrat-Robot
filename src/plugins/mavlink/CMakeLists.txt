@@ -37,6 +37,7 @@ set(TARGET_MESSAGES
   msg/auth_key.fbs
   msg/autopilot_state_for_gimbal_device.fbs
   msg/autopilot_version.fbs
+  msg/battery_info.fbs
   msg/battery_status.fbs
   msg/button_change.fbs
   msg/camera_capture_status.fbs
@@ -215,7 +216,6 @@ set(TARGET_MESSAGES
   msg/set_position_target_local_ned.fbs
   msg/setup_signing.fbs
   msg/sim_state.fbs
-  msg/smart_battery_info.fbs
   msg/statustext.fbs
   msg/storage_information.fbs
   msg/supported_tunes.fbs

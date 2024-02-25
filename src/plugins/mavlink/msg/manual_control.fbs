@@ -11,6 +11,12 @@ table ManualControl {
   enabled_extensions:ubyte;
   s:short;
   t:short;
+  aux1:short;
+  aux2:short;
+  aux3:short;
+  aux4:short;
+  aux5:short;
+  aux6:short;
 }
 
 root_type ManualControl;

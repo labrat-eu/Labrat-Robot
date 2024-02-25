@@ -19,6 +19,7 @@ table EfiStatus {
   pt_compensation:float;
   health:ubyte;
   ignition_voltage:float;
+  fuel_pressure:float;
 }
 
 root_type EfiStatus;

@@ -5,6 +5,7 @@ table FlightInformation {
   takeoff_time_utc:ulong;
   flight_uuid:ulong;
   time_boot_ms:uint;
+  landing_time:uint;
 }
 
 root_type FlightInformation;

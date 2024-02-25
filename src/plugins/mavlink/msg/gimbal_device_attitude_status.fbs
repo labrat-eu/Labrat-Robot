@@ -12,6 +12,7 @@ table GimbalDeviceAttitudeStatus {
   target_component:ubyte;
   delta_yaw:float;
   delta_yaw_velocity:float;
+  gimbal_device_id:ubyte;
 }
 
 root_type GimbalDeviceAttitudeStatus;

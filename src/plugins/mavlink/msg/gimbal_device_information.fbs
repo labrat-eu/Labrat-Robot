@@ -16,6 +16,7 @@ table GimbalDeviceInformation {
   vendor_name:string;
   model_name:string;
   custom_name:string;
+  gimbal_device_id:ubyte;
 }
 
 root_type GimbalDeviceInformation;

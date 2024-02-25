@@ -5,6 +5,7 @@ table MissionCount {
   target_system:ubyte;
   target_component:ubyte;
   mission_type:ubyte;
+  opaque_id:uint;
 }
 
 root_type MissionCount;

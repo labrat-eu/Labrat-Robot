@@ -5,6 +5,7 @@ table MissionAck {
   target_component:ubyte;
   type:ubyte;
   mission_type:ubyte;
+  opaque_id:uint;
 }
 
 root_type MissionAck;

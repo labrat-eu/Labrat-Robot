@@ -42,10 +42,12 @@ set(TARGET_MESSAGES_EXTERNAL
   msg/foxglove/CircleAnnotation.fbs
   msg/foxglove/Color.fbs
   msg/foxglove/CompressedImage.fbs
+  msg/foxglove/CompressedVideo.fbs
   msg/foxglove/CubePrimitive.fbs
   msg/foxglove/CylinderPrimitive.fbs
   msg/foxglove/Duration.fbs
   msg/foxglove/FrameTransform.fbs
+  msg/foxglove/FrameTransforms.fbs
   msg/foxglove/GeoJSON.fbs
   msg/foxglove/Grid.fbs
   msg/foxglove/ImageAnnotations.fbs
@@ -69,6 +71,7 @@ set(TARGET_MESSAGES_EXTERNAL
   msg/foxglove/SceneEntity.fbs
   msg/foxglove/SceneUpdate.fbs
   msg/foxglove/SpherePrimitive.fbs
+  msg/foxglove/TextAnnotation.fbs
   msg/foxglove/TextPrimitive.fbs
   msg/foxglove/Time.fbs
   msg/foxglove/TriangleListPrimitive.fbs

@@ -5,6 +5,9 @@ table MissionCurrent {
   total:ushort;
   mission_state:ubyte;
   mission_mode:ubyte;
+  mission_id:uint;
+  fence_id:uint;
+  rally_points_id:uint;
 }
 
 root_type MissionCurrent;
