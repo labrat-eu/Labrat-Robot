@@ -38,4 +38,4 @@ class LabratRobotTestConan(ConanFile):
 
     def test(self):
         cmake = CMake(self)
-        cmake.test(env = "conanrun")
+        cmake.test(cli_args=['ARGS=--output-junit report.xml'], env = "conanrun")

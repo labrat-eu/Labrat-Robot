@@ -145,17 +145,11 @@ class LabratRobotConan(ConanFile):
 
         self.cpp_info.components["core"].set_property("cmake_target_name", f"{self.name}::core")
         self.cpp_info.components["core"].set_property("cmake_module_target_name", f"{self.name}::core")
-        self.cpp_info.components["core"].names["cmake_find_package"] = self.name
-        self.cpp_info.components["core"].names["cmake_find_package_multi"] = self.name
-        self.cpp_info.components["core"].build_modules["cmake_find_package"] = module_paths
-        self.cpp_info.components["core"].build_modules["cmake_find_package_multi"] = module_paths
         self.cpp_info.components["core"].libs = ["robot"]
         self.cpp_info.components["core"].requires = ["flatbuffers::flatbuffers"]
 
         self.cpp_info.components["plugins"].set_property("cmake_target_name", f"{self.name}::plugins")
         self.cpp_info.components["plugins"].set_property("cmake_module_target_name", f"{self.name}::plugins")
-        self.cpp_info.components["plugins"].names["cmake_find_package"] = self.name
-        self.cpp_info.components["plugins"].names["cmake_find_package_multi"] = self.name
         self.cpp_info.components["plugins"].libs = ["plugins_mcap", "plugins_foxglove-ws", "plugins_mavlink", "plugins_udp-bridge", "plugins_serial-bridge"]
         self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "foxglove-websocket::foxglove-websocket", "crc_cpp::crc_cpp"]
 
