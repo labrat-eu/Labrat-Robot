@@ -16,6 +16,12 @@
 
 inline namespace utils {
 
+/**
+ * @brief Convert baud rates to Linux speed values.
+ * 
+ * @param baud_rate Baud rate to convert.
+ * @return speed_t Linux speed value.
+ */
 speed_t toSpeed(u64 baud_rate) {
   switch (baud_rate) {
     case (57600): {

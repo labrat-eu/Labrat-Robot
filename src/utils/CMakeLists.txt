@@ -20,6 +20,7 @@ set(TARGET_HEADERS
   concepts.hpp
   string.hpp
   serial.hpp
+  signal.hpp
 )
 
 # Add public header install target.
