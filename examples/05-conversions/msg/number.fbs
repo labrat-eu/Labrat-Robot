@@ -1,0 +1,7 @@
+namespace examples.msg;
+
+table Number {
+  value:float;
+}
+
+root_type Number;

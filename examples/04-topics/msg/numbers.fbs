@@ -1,0 +1,8 @@
+namespace examples.msg;
+
+table Numbers {
+  iteration:long;
+  value:float;
+}
+
+root_type Numbers;

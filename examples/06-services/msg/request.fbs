@@ -1,0 +1,8 @@
+namespace examples.msg;
+
+table Request {
+  base:float;
+  exponent:float;
+}
+
+root_type Request;
