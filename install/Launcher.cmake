@@ -12,6 +12,6 @@ function(labrat_robot_add_launcher)
 
   set(LABRAT_ROBOT_LAUNCHER_TARGET $<TARGET_FILE:${INT_TARGET}>)
 
-  configure_file(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/launcher.sh.in ${CMAKE_BINARY_DIR}/launch.tmp)
-  file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/launch_${INT_TARGET}.sh INPUT ${CMAKE_BINARY_DIR}/launch.tmp FILE_PERMISSIONS OWNER_READ OWNER_EXECUTE)
+  configure_file(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/launcher.sh.in ${CMAKE_BINARY_DIR}/launch_${INT_TARGET}.tmp)
+  file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/launch_${INT_TARGET}.sh INPUT ${CMAKE_BINARY_DIR}/launch_${INT_TARGET}.tmp FILE_PERMISSIONS OWNER_READ OWNER_EXECUTE)
 endfunction(labrat_robot_add_launcher)

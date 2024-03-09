@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
   robot::Logger logger("main");
 
   // In order to write messages to stdout we use the created logger.
-  logger.logInfo() << "Testing...";
+  logger.logInfo() << "Testing... " << 123;
 
   // We can also register multiple logger.
   robot::Logger logger_a("log_a");

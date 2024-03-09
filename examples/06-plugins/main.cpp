@@ -18,20 +18,10 @@ using namespace labrat;
 // 
 // In this example we will use some existing plugins that might help you in your projects.
 
-struct Vec {
-  double x;
-  double y;
-};
-
-void convertVectorToMessage(const Vec &source, robot::Message<examples::msg::Vector> &destination, const void *) {
-  destination().x = source.x;
-  destination().y = source.y;
-}
-
 class SenderNode : public robot::Node {
 public:
   SenderNode(const robot::Node::Environment &environment) : robot::Node(environment) {
-    sender = addSender<robot::Message<examples::msg::Vector>, Vec>("/examples/number", &convertVectorToMessage);
+    sender = addSender<robot::Message<examples::msg::Vector>>("/examples/number");
 
     sender_thread = utils::TimerThread(&SenderNode::senderFunction, std::chrono::milliseconds(50), "sender_thread", 1, this);
   }
@@ -39,14 +29,15 @@ public:
 private:
   void senderFunction() {
     ++i;
-    
-    sender->put({
-      .x = std::sin(i / 100.0),
-      .y = std::cos(i / 100.0)
-    });
+
+    robot::Message<examples::msg::Vector> message;
+    message().x = std::sin(i / 100.0);
+    message().y = std::cos(i / 100.0);
+
+    sender->put(message);
   }
 
-  Sender<robot::Message<examples::msg::Vector>, Vec>::Ptr sender;
+  Sender<robot::Message<examples::msg::Vector>>::Ptr sender;
   utils::TimerThread sender_thread;
 
   uint64_t i = 0;

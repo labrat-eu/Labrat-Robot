@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.28.1)
 find_package(labrat-robot MODULE REQUIRED)
 
 # Set the target name.
-set(TARGET_NAME threads)
+set(TARGET_NAME concurrency)
 
 set(TARGET_SOURCES
   main.cpp
