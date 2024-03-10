@@ -133,36 +133,36 @@ public:
     static inline void toMessage(const Entry &source, Message<foxglove::Log> &destination) {
       switch (source.verbosity) {
         case (Verbosity::critical): {
-          destination().level = foxglove::LogLevel::FATAL;
+          destination.level = foxglove::LogLevel::FATAL;
           break;
         }
 
         case (Verbosity::error): {
-          destination().level = foxglove::LogLevel::ERROR;
+          destination.level = foxglove::LogLevel::ERROR;
           break;
         }
 
         case (Verbosity::warning): {
-          destination().level = foxglove::LogLevel::WARNING;
+          destination.level = foxglove::LogLevel::WARNING;
           break;
         }
 
         case (Verbosity::info): {
-          destination().level = foxglove::LogLevel::INFO;
+          destination.level = foxglove::LogLevel::INFO;
           break;
         }
 
         case (Verbosity::debug): {
-          destination().level = foxglove::LogLevel::DEBUG;
+          destination.level = foxglove::LogLevel::DEBUG;
           break;
         }
       }
       
-      destination().timestamp = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(source.timestamp).count(), (source.timestamp % std::chrono::seconds(1)).count());
-      destination().name = source.logger_name;
-      destination().message = source.message;
-      destination().file = source.file;
-      destination().line = source.line;
+      destination.timestamp = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(source.timestamp).count(), (source.timestamp % std::chrono::seconds(1)).count());
+      destination.name = source.logger_name;
+      destination.message = source.message;
+      destination.file = source.file;
+      destination.line = source.line;
     }
   };
 

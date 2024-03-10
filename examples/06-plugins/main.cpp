@@ -31,8 +31,8 @@ private:
     ++i;
 
     robot::Message<examples::msg::Vector> message;
-    message().x = std::sin(i / 100.0);
-    message().y = std::cos(i / 100.0);
+    message.x = std::sin(i / 100.0);
+    message.y = std::cos(i / 100.0);
 
     sender->put(message);
   }

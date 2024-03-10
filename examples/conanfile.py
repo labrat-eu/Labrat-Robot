@@ -18,7 +18,7 @@ class RobotExamplesConan(ConanFile):
 
     def requirements(self):
         # You may add more dependencies here.
-        self.requires("labrat-robot/v0.0.11+7fda5c5")
+        self.requires("labrat-robot/v0.0.11+3c38385")
 
     def build_requirements(self):
         self.tool_requires("cmake/3.28.1")

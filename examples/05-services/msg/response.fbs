@@ -1,7 +1,0 @@
-namespace examples.msg;
-
-table Response {
-  answer:float;
-}
-
-root_type Response;

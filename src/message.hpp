@@ -22,13 +22,45 @@
 namespace labrat::robot {
 
 /**
+ * @brief Abstract base class for Message.
+ * 
+ */
+class MessageBase {
+public:
+  /**
+   * @brief Get the timestamp of the object.
+   *
+   * @return std::chrono::nanoseconds
+   */
+  inline std::chrono::nanoseconds getTimestamp() const {
+    return lrob_message_base_timestamp;
+  }
+
+protected:
+  /**
+   * @brief Construct a new Message Base object and set the timestamp to the current time.
+   * 
+   */
+  MessageBase() {
+    lrob_message_base_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
+  }
+
+private:
+  // Long name to make ambiquity less likely.
+  std::chrono::nanoseconds lrob_message_base_timestamp;
+};
+
+template <typename T>
+concept is_flatbuffer = std::is_base_of_v<flatbuffers::Table, T>;
+
+/**
  * @brief Wrapper of a flatbuf message for use within this library.
  *
  * @tparam T
  */
 template <typename T>
-requires std::is_base_of_v<flatbuffers::Table, T>
-class Message {
+requires is_flatbuffer<T>
+class Message : public MessageBase, public T::NativeTableType {
 public:
   using Content = typename T::NativeTableType;
 
@@ -36,9 +68,7 @@ public:
    * @brief Default constructor to only set the timestamp to the current time.
    *
    */
-  Message() {
-    timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
-  }
+  Message() {}
 
   /**
    * @brief Construct a new Message object by specifying the contents stored within the message.
@@ -46,9 +76,7 @@ public:
    *
    * @param content Contents of the message.
    */
-  Message(const Content &content) : content(content) {
-    timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
-  }
+  Message(const Content &content) : Content(content) {}
 
   /**
    * @brief Construct a new Message object by specifying the contents stored within the message.
@@ -56,54 +84,7 @@ public:
    *
    * @param content Contents of the message.
    */
-  Message(Content &&content) : content(std::forward<Content>(content)) {
-    timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
-  }
-
-  /**
-   * @brief Get the stored flatbuf message object.
-   *
-   * @return Content& Reference to the stored flatbuf message object.
-   */
-  inline Content &get() {
-    return content;
-  };
-
-  /**
-   * @brief Get the stored flatbuf message object.
-   *
-   * @return Content& Reference to the stored flatbuf message object.
-   */
-  inline const Content &get() const {
-    return content;
-  };
-
-  /**
-   * @brief Alias of get().
-   *
-   * @return Content& Reference to the stored flatbuf message object.
-   */
-  inline Content &operator()() {
-    return get();
-  };
-
-  /**
-   * @brief Alias of get().
-   *
-   * @return Content& Reference to the stored flatbuf message object.
-   */
-  inline const Content &operator()() const {
-    return get();
-  };
-
-  /**
-   * @brief Get the timestamp of the object.
-   *
-   * @return std::chrono::nanoseconds
-   */
-  inline std::chrono::nanoseconds getTimestamp() const {
-    return timestamp;
-  }
+  Message(Content &&content) : Content(std::forward<Content>(content)) {}
 
   /**
    * @brief Get the fully qualified type name.
@@ -113,10 +94,6 @@ public:
   static inline constexpr std::string getName() {
     return std::string(Content::TableType::GetFullyQualifiedName());
   }
-
-private:
-  std::chrono::nanoseconds timestamp;
-  Content content;
 };
 
 template <typename T>
@@ -226,7 +203,7 @@ inline void defaultSenderConversionFunction(const ConvertedType &source, Origina
 }
 
 /**
- * @brief Conversion function to be used as a default by a Node::Sender object when a toMessage() function is provided by the converted
+ * @brief Conversion function to be used as a default by a Node::Sender object when a tomessage function is provided by the converted
  * type.
  *
  * @tparam OriginalType Type to be converted from.
@@ -255,7 +232,7 @@ inline void defaultReceiverConversionFunction(const OriginalType &source, Conver
 }
 
 /**
- * @brief Conversion function to be used as a default by a Node::Receiver object when a fromMessage() function is provided by the converted
+ * @brief Conversion function to be used as a default by a Node::Receiver object when a frommessage function is provided by the converted
  * type.
  *
  * @tparam OriginalType Type to be converted from.

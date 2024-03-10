@@ -23,12 +23,12 @@ using namespace labrat;
 
 // Convert a number message to a float.
 void convertMessageToNumber(const robot::Message<examples::msg::Number> &source, float &destination, const void *) {
-  destination = source().value;
+  destination = source.value;
 }
 
 // Convert a float to a number message.
 void convertNumberToMessage(const float &source, robot::Message<examples::msg::Number> &destination, const void *) {
-  destination().value = source;
+  destination.value = source;
 }
 
 class SenderNode : public robot::Node {

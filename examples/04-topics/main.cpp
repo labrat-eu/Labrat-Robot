@@ -31,8 +31,8 @@ private:
   void senderFunction() {
     // Construct a message.
     robot::Message<examples::msg::Numbers> message;
-    message().iteration = ++i;
-    message().value = std::sin(i / 100.0);
+    message.iteration = ++i;
+    message.value = std::sin(i / 100.0);
 
     // Send the message.
     sender->put(message);
@@ -66,7 +66,7 @@ private:
       // The recommendation is to only use one call to Receiver::next() per thread.
       robot::Message<examples::msg::Numbers> message = receiver->next();
 
-      getLogger().logInfo() << "Received message: " << message().value;
+      getLogger().logInfo() << "Received message: " << message.value;
     } catch (robot::TopicNoDataAvailableException &) {}
   }
 

@@ -55,19 +55,12 @@ public:
    */
   ~Node() = default;
 
-  template <typename MessageType, typename ContainerType = MessageType>
-  requires is_message<MessageType>
+  template <typename MessageType, typename ContainerType>
   class Sender;
 
-  /**
-   * @brief Alias of the Sender class with only the ContainerType template parameter provided that the relevant type satisfies the
-   * is_container concept.
-   *
-   * @tparam ContainerType Type of the objects provided by the user to be accepted by the sender.
-   */
-  template <typename ContainerType>
-  requires is_container<ContainerType>
-  using ContainerSender = Sender<typename ContainerType::MessageType, ContainerType>;
+  template <typename MessageType, typename ContainerType>
+  requires is_message<MessageType>
+  class _Sender;
 
   /**
    * @brief Generic sender to declare virtual functions for type specific receiver instances to define.
@@ -141,7 +134,7 @@ public:
    */
   template <typename MessageType, typename ContainerType>
   requires is_message<MessageType>
-  class Sender final : public GenericSender<ContainerType> {
+  class _Sender : public GenericSender<ContainerType> {
   private:
     /**
      * @brief Construct a new Sender object.
@@ -151,7 +144,7 @@ public:
      * @param conversion_function Conversion function to convert from ContainerType to MessageType.
      * @param user_ptr User pointer to be used by the conversion function.
      */
-    Sender(const std::string &topic_name, Node &node,
+    _Sender(const std::string &topic_name, Node &node,
       ConversionFunction<ContainerType, MessageType> conversion_function = defaultSenderConversionFunction<MessageType, ContainerType>,
       const void *user_ptr = nullptr) : GenericSender<ContainerType>(Plugin::TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addSender<MessageType>(topic_name, this), node, user_ptr == nullptr ? dynamic_cast<GenericSender<ContainerType> *>(this) : user_ptr),
       conversion_function(conversion_function) {
@@ -172,13 +165,11 @@ public:
     MoveFunction<ContainerType, MessageType> move_function;
 
   public:
-    using Ptr = std::unique_ptr<Sender<MessageType, ContainerType>>;
-
-    /**
+        /**
      * @brief Destroy the Sender object.
      *
      */
-    ~Sender() {
+    ~_Sender() {
       flush();
 
       GenericSender<ContainerType>::node.environment.topic_map.removeSender(GenericSender<ContainerType>::topic.name, this);
@@ -281,7 +272,7 @@ public:
         move_function(std::forward<ContainerType>(container), message, GenericSender<ContainerType>::user_ptr);
 
         flatbuffers::FlatBufferBuilder builder;
-        builder.Finish(MessageType::Content::TableType::Pack(builder, &message()));
+        builder.Finish(MessageType::Content::TableType::Pack(builder, &message));
 
         Plugin::MessageInfo message_info = {
           .topic_info = GenericSender<ContainerType>::topic_info,
@@ -338,7 +329,7 @@ public:
         if (!init_flag) {
           conversion_function(container, message, GenericSender<ContainerType>::user_ptr);
 
-          builder.Finish(MessageType::Content::TableType::Pack(builder, &message()));
+          builder.Finish(MessageType::Content::TableType::Pack(builder, &message));
 
           message_info.timestamp = message.getTimestamp();
           message_info.serialized_message = builder.GetBufferSpan();
@@ -360,20 +351,57 @@ public:
     }
   };
 
+  // Wrapper classes to allow flatbuffer types to also work as template arguments.
   template <typename MessageType, typename ContainerType = MessageType>
-  requires is_message<MessageType>
+  class Sender final : public _Sender<MessageType, ContainerType> {
+  public:
+    using Super = _Sender<MessageType, ContainerType>;
+    using Ptr = std::unique_ptr<Sender<MessageType, ContainerType>>;
+
+    template<typename... Args>
+    Sender(Args &&...args) : Super(std::forward<Args>(args)...) {};
+  };
+  
+  template <typename FlatbufferType, typename ContainerType>
+  requires is_flatbuffer<FlatbufferType>
+  class Sender<FlatbufferType, ContainerType> final : public _Sender<Message<FlatbufferType>, ContainerType> {
+  public:
+    using Super = _Sender<Message<FlatbufferType>, ContainerType>;
+    using Ptr = std::unique_ptr<Sender<FlatbufferType, ContainerType>>;
+
+    template<typename... Args>
+    Sender(Args &&...args) : Super(std::forward<Args>(args)...) {};
+  };
+
+  template <typename FlatbufferType, typename ContainerType>
+  requires is_flatbuffer<FlatbufferType> && std::same_as<FlatbufferType, ContainerType>
+  class Sender<FlatbufferType, ContainerType> final : public _Sender<Message<FlatbufferType>, Message<FlatbufferType>> {
+  public:
+    using Super = _Sender<Message<FlatbufferType>, Message<FlatbufferType>>;
+    using Ptr = std::unique_ptr<Sender<FlatbufferType>>;
+
+    template<typename... Args>
+    Sender(Args &&...args) : Super(std::forward<Args>(args)...) {};
+  };
+
+  template <typename ContainerType, typename Placeholder>
+  requires is_container<ContainerType> && std::same_as<ContainerType, Placeholder>
+  class Sender<ContainerType, Placeholder> final : public _Sender<typename ContainerType::MessageType, ContainerType> {
+  public:
+    using Super = _Sender<typename ContainerType::MessageType, ContainerType>;
+    using Ptr = std::unique_ptr<Sender<ContainerType, Placeholder>>;
+
+    template<typename... Args>
+    Sender(const std::string &topic_name, Node &node, Args &&...args) : Super(topic_name, node, ContainerType::toMessage, std::forward<Args>(args)...) {};
+  };
+
+  template <typename MessageType, typename ContainerType>
   class Receiver;
 
-  /**
-   * @brief Alias of the Receiver class with only the ContainerType template parameter provided that the relevant type satisfies the
-   * is_container concept.
-   *
-   * @tparam ContainerType Type of the objects provided by the receiver to be used by the user.
-   */
-  template <typename ContainerType>
-  requires is_container<ContainerType>
-  using ContainerReceiver = Receiver<typename ContainerType::MessageType, ContainerType>;
-  
+  template <typename MessageType, typename ContainerType>
+  requires is_message<MessageType>
+  class _Receiver;
+
   /**
    * @brief @brief Generic receiver to declare virtual functions for type specific receiver instances to define.
    * This allows access to receiver objetcs without knowledge of the underlying message types.
@@ -500,7 +528,7 @@ public:
    */
   template <typename MessageType, typename ContainerType>
   requires is_message<MessageType>
-  class Receiver final : public GenericReceiver<ContainerType> {
+  class _Receiver : public GenericReceiver<ContainerType> {
   private:
     /**
      * @brief Construct a new Receiver object.
@@ -511,7 +539,7 @@ public:
      * @param user_ptr User pointer to be used by the conversion function.
      * @param buffer_size Size of the internal receiver buffer. It must be at least 4 and should ideally be a power of 2.
      */
-    Receiver(const std::string &topic_name, Node &node,
+    _Receiver(const std::string &topic_name, Node &node,
       ConversionFunction<MessageType, ContainerType> conversion_function = defaultReceiverConversionFunction<MessageType, ContainerType>,
       const void *user_ptr = nullptr, std::size_t buffer_size = 4) : GenericReceiver<ContainerType>(Plugin::TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node, user_ptr == nullptr ? dynamic_cast<GenericReceiver<ContainerType> *>(this) : user_ptr, buffer_size),
       conversion_function(conversion_function),
@@ -580,8 +608,6 @@ public:
     volatile MessageBuffer message_buffer;
 
   public:
-    using Ptr = std::unique_ptr<Receiver<MessageType, ContainerType>>;
-
     /**
      * @brief Callback function to be called by the corresponding sender on each put operation.
      *
@@ -634,7 +660,7 @@ public:
      * @brief Destroy the Receiver object.
      *
      */
-    ~Receiver() {
+    ~_Receiver() {
       GenericReceiver<ContainerType>::node.environment.topic_map.removeReceiver(GenericReceiver<ContainerType>::topic.name, this);
     }
 
@@ -723,6 +749,50 @@ public:
     void *callback_ptr;
   };
 
+  // Wrapper classes to allow flatbuffer types to also work as template arguments.
+  template <typename MessageType, typename ContainerType = MessageType>
+  class Receiver final : public _Receiver<MessageType, ContainerType> {
+  public:
+    using Super = _Receiver<MessageType, ContainerType>;
+    using Ptr = std::unique_ptr<Receiver<MessageType, ContainerType>>;
+
+    template<typename... Args>
+    Receiver(Args &&...args) : Super(std::forward<Args>(args)...) {};
+  };
+
+  template <typename FlatbufferType, typename ContainerType>
+  requires is_flatbuffer<FlatbufferType>
+  class Receiver<FlatbufferType, ContainerType> final : public _Receiver<Message<FlatbufferType>, ContainerType> {
+  public:
+    using Super = _Receiver<Message<FlatbufferType>, ContainerType>;
+    using Ptr = std::unique_ptr<Receiver<FlatbufferType, ContainerType>>;
+
+    template<typename... Args>
+    Receiver(Args &&...args) : Super(std::forward<Args>(args)...) {};
+  };
+
+  template <typename FlatbufferType, typename ContainerType>
+  requires is_flatbuffer<FlatbufferType> && std::same_as<FlatbufferType, ContainerType>
+  class Receiver<FlatbufferType, ContainerType> final : public _Receiver<Message<FlatbufferType>, Message<FlatbufferType>> {
+  public:
+    using Super = _Receiver<Message<FlatbufferType>, Message<FlatbufferType>>;
+    using Ptr = std::unique_ptr<Receiver<FlatbufferType>>;
+
+    template<typename... Args>
+    Receiver(Args &&...args) : Super(std::forward<Args>(args)...){};
+  };
+
+  template <typename ContainerType, typename Placeholder>
+  requires is_container<ContainerType> && std::same_as<ContainerType, Placeholder>
+  class Receiver<ContainerType, Placeholder> final : public _Receiver<typename ContainerType::MessageType, ContainerType> {
+  public:
+    using Super = _Receiver<typename ContainerType::MessageType, ContainerType>;
+    using Ptr = std::unique_ptr<Receiver<ContainerType, Placeholder>>;
+
+    template<typename... Args>
+    Receiver(const std::string &topic_name, Node &node, Args &&...args) : Super(topic_name, node, ContainerType::fromMessage, std::forward<Args>(args)...) {};
+  };
+
   /**
    * @brief Generic class to handle requests made to a service.
    *
@@ -730,7 +800,7 @@ public:
    * @tparam ResponseType Type of the response made to by a service.
    */
   template <typename RequestType, typename ResponseType>
-  class Server final {
+  class Server {
   public:
     /**
      * @brief Handler function to handle requests made to a service.
@@ -814,7 +884,7 @@ public:
    * @tparam ResponseType Type of the response made to by a service.
    */
   template <typename RequestType, typename ResponseType>
-  class Client final {
+  class Client {
   private:
     /**
      * @brief Construct a new Client object.
@@ -955,24 +1025,9 @@ protected:
    */
   template <typename MessageType, typename ContainerType = MessageType, typename... Args>
   typename Sender<MessageType, ContainerType>::Ptr addSender(const std::string &topic_name,
-    Args &&...args) requires is_message<MessageType> {
-    return std::unique_ptr<Sender<MessageType, ContainerType>>(
-      new Sender<MessageType, ContainerType>(topic_name, *this, std::forward<Args>(args)...));
-  }
-
-  /**
-   * @brief Construct and add a sender to the node, provided that the ContainerType satisfies the is_container concept.
-   *
-   * @tparam ContainerType Type of the objects provided by the user to be accepted by the sender.
-   * @tparam Args Types of the arguments to be forwarded to the sender specific constructor.
-   * @param args Arguments to be forwarded to the sender specific constructor.
-   * @return Sender<MessageType, ContainerType>::Ptr Pointer to the sender.
-   */
-  template <typename ContainerType, typename... Args>
-  typename ContainerSender<ContainerType>::Ptr addSender(const std::string &topic_name,
-    Args &&...args) requires is_container<ContainerType> {
-    return std::unique_ptr<ContainerSender<ContainerType>>(
-      new ContainerSender<ContainerType>(topic_name, *this, ContainerType::toMessage, std::forward<Args>(args)...));
+    Args &&...args) requires is_message<MessageType> || is_flatbuffer<MessageType> || is_container<MessageType> {
+    using Ptr = Sender<MessageType, ContainerType>::Ptr;
+    return Ptr(new Sender<MessageType, ContainerType>(topic_name, *this, std::forward<Args>(args)...));
   }
 
   /**
@@ -986,24 +1041,9 @@ protected:
    */
   template <typename MessageType, typename ContainerType = MessageType, typename... Args>
   typename Receiver<MessageType, ContainerType>::Ptr addReceiver(const std::string &topic_name,
-    Args &&...args) requires is_message<MessageType> {
-    return std::unique_ptr<Receiver<MessageType, ContainerType>>(
-      new Receiver<MessageType, ContainerType>(topic_name, *this, std::forward<Args>(args)...));
-  }
-
-  /**
-   * @brief Construct and add a receiver to the node, provided that the ContainerType satisfies the is_container concept.
-   *
-   * @tparam ContainerType Type of the objects provided by the receiver to be used by the user.
-   * @tparam Args Types of the arguments to be forwarded to the receiver specific constructor.
-   * @param args Arguments to be forwarded to the receiver specific constructor.
-   * @return Receiver<MessageType, ContainerType>::Ptr Pointer to the receiver.
-   */
-  template <typename ContainerType, typename... Args>
-  typename ContainerReceiver<ContainerType>::Ptr addReceiver(const std::string &topic_name,
-    Args &&...args) requires is_container<ContainerType> {
-    return std::unique_ptr<ContainerReceiver<ContainerType>>(
-      new ContainerReceiver<ContainerType>(topic_name, *this, ContainerType::fromMessage, std::forward<Args>(args)...));
+    Args &&...args) requires is_message<MessageType> || is_flatbuffer<MessageType> || is_container<MessageType> {
+    using Ptr = Receiver<MessageType, ContainerType>::Ptr;
+    return Ptr(new Receiver<MessageType, ContainerType>(topic_name, *this, std::forward<Args>(args)...));
   }
 
   /**
@@ -1016,8 +1056,8 @@ protected:
    */
   template <typename RequestType, typename ResponseType, typename... Args>
   typename Server<RequestType, ResponseType>::Ptr addServer(const std::string &service_name, Args &&...args) {
-    return std::unique_ptr<Server<RequestType, ResponseType>>(
-      new Server<RequestType, ResponseType>(service_name, *this, std::forward<Args>(args)...));
+    using Ptr = Server<RequestType, ResponseType>::Ptr;
+    return Ptr(new Server<RequestType, ResponseType>(service_name, *this, std::forward<Args>(args)...));
   }
 
   /**
@@ -1030,8 +1070,8 @@ protected:
    */
   template <typename RequestType, typename ResponseType, typename... Args>
   typename Client<RequestType, ResponseType>::Ptr addClient(const std::string &service_name, Args &&...args) {
-    return std::unique_ptr<Client<RequestType, ResponseType>>(
-      new Client<RequestType, ResponseType>(service_name, *this, std::forward<Args>(args)...));
+    using Ptr = Client<RequestType, ResponseType>::Ptr;
+    return Ptr(new Client<RequestType, ResponseType>(service_name, *this, std::forward<Args>(args)...));
   }
 
   friend class Manager;

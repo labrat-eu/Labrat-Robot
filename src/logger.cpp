@@ -26,11 +26,11 @@ static std::mutex io_mutex;
 
 class LoggerNode : public Node {
 private:
-  std::unique_ptr<Sender<Message<foxglove::Log>, Logger::Entry>> sender;
+  Sender<foxglove::Log, Logger::Entry>::Ptr sender;
 
 public:
   LoggerNode(const Node::Environment environment) : Node(environment) {
-    sender = addSender<Message<foxglove::Log>, Logger::Entry>("/log");
+    sender = addSender<foxglove::Log, Logger::Entry>("/log");
   }
 
   void send(const Logger::Entry &entry) {

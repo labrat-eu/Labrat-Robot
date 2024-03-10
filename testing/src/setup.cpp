@@ -194,8 +194,8 @@ TEST(setup, server) {
 
   u64 (*ptr)(const double &, u64 *) = handler;
 
-  Node::Server<double, u64>::Ptr server = node_a->addTestServer<double, u64>("test_service", ptr, &counter);
-  Node::Client<double, u64>::Ptr client = node_b->addTestClient<double, u64>("test_service");
+  Node::Server<double, u64>::Ptr server = node_a->addServer<double, u64>("test_service", ptr, &counter);
+  Node::Client<double, u64>::Ptr client = node_b->addClient<double, u64>("test_service");
 
   result = client->callSync(10.5);
 

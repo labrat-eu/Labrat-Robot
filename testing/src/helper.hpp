@@ -9,7 +9,8 @@
 
 namespace labrat::robot::test {
 
-using TestMessage = labrat::robot::Message<msg::Test>;
+using TestFlatbuffer = msg::Test;
+using TestMessage = labrat::robot::Message<TestFlatbuffer>;
 
 class TestContainer {
 public:
@@ -20,27 +21,27 @@ public:
   std::vector<u8> buffer;
 
   static inline void toMessage(const TestContainer &source, TestMessage &destination, const void *) {
-    destination().integral_field = source.integral_field;
-    destination().float_field = source.float_field;
-    destination().buffer = source.buffer;
+    destination.integral_field = source.integral_field;
+    destination.float_field = source.float_field;
+    destination.buffer = source.buffer;
   }
 
   static inline void toMessageMove(TestContainer &&source, TestMessage &destination, const void *) {
-    destination().integral_field = source.integral_field;
-    destination().float_field = source.float_field;
-    destination().buffer = std::forward<std::vector<u8>>(source.buffer);
+    destination.integral_field = source.integral_field;
+    destination.float_field = source.float_field;
+    destination.buffer = std::forward<std::vector<u8>>(source.buffer);
   }
 
   static inline void fromMessage(const TestMessage &source, TestContainer &destination, const void *) {
-    destination.integral_field = source().integral_field;
-    destination.float_field = source().float_field;
-    destination.buffer = source().buffer;
+    destination.integral_field = source.integral_field;
+    destination.float_field = source.float_field;
+    destination.buffer = source.buffer;
   }
 
   static inline void fromMessageMove(TestMessage &&source, TestContainer &destination, const void *) {
-    destination.integral_field = source().integral_field;
-    destination.float_field = source().float_field;
-    destination.buffer = std::forward<std::vector<u8>>(source().buffer);
+    destination.integral_field = source.integral_field;
+    destination.float_field = source.float_field;
+    destination.buffer = std::forward<std::vector<u8>>(source.buffer);
   }
 
   bool operator==(const TestContainer &rhs) const {
@@ -60,22 +61,14 @@ public:
     }
   }
 
-  template <typename RequestType, typename ResponseType, typename... Args>
-  typename Server<RequestType, ResponseType>::Ptr addTestServer(Args &&...args) {
-    return addServer<RequestType, ResponseType>(std::forward<Args>(args)...);
-  }
+  using labrat::robot::Node::addSender;
+  using labrat::robot::Node::addReceiver;
+  using labrat::robot::Node::addServer;
+  using labrat::robot::Node::addClient;
+  using labrat::robot::Node::getLogger;
 
-  template <typename RequestType, typename ResponseType, typename... Args>
-  typename Client<RequestType, ResponseType>::Ptr addTestClient(Args &&...args) {
-    return addClient<RequestType, ResponseType>(std::forward<Args>(args)...);
-  }
-
-  inline Logger getLogger() const {
-    return labrat::robot::Node::getLogger();
-  }
-
-  std::unique_ptr<ContainerSender<TestContainer>> sender;
-  std::unique_ptr<ContainerReceiver<TestContainer>> receiver;
+  Sender<TestContainer>::Ptr sender;
+  Receiver<TestContainer>::Ptr receiver;
 };
 
 class TestCluster : public labrat::robot::Cluster {

@@ -68,7 +68,7 @@ public:
 private:
   template <typename MessageType>
   static void senderConversionFunction(const PayloadInfo &source, MessageType &destination, const GenericSender<PayloadInfo> *sender) {
-    flatbuffers::GetRoot<typename MessageType::Content::TableType>(source.payload.data())->UnPackTo(&destination());
+    flatbuffers::GetRoot<typename MessageType::Content::TableType>(source.payload.data())->UnPackTo(&destination);
   }
 
   template <typename MessageType>
@@ -76,7 +76,7 @@ private:
     destination.topic_hash = receiver->getTopicInfo().topic_hash;
 
     flatbuffers::FlatBufferBuilder builder;
-    builder.Finish(MessageType::Content::TableType::Pack(builder, &source()));
+    builder.Finish(MessageType::Content::TableType::Pack(builder, &source));
 
     destination.payload = builder.GetBufferSpan();
   }
