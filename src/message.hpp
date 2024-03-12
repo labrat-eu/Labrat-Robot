@@ -34,7 +34,7 @@ public:
    * @return std::chrono::nanoseconds
    */
   inline std::chrono::nanoseconds getTimestamp() const {
-    return lrob_message_base_timestamp;
+    return lbot_message_base_timestamp;
   }
 
 protected:
@@ -43,12 +43,12 @@ protected:
    *
    */
   MessageBase() {
-    lrob_message_base_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
+    lbot_message_base_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
   }
 
 private:
-  // Long name to make ambiquity less likely.
-  std::chrono::nanoseconds lrob_message_base_timestamp;
+  // Long name to make ambiguity less likely.
+  std::chrono::nanoseconds lbot_message_base_timestamp;
 };
 
 template <typename T>
