@@ -9,7 +9,7 @@ conan create . --build=missing
 
 ## Running the tests
 ```
-conan test testing labrat-robot/<version>
+conan test testing lbot/<version>
 ```
 
 ## Building the library for development

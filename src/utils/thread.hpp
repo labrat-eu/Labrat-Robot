@@ -8,23 +8,23 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/exception.hpp>
-#include <labrat/robot/utils/types.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/utils/types.hpp>
 
 #include <chrono>
 #include <functional>
 #include <thread>
 
-#include <sys/prctl.h>
-#include <sched.h>
 #include <errno.h>
+#include <sched.h>
+#include <sys/prctl.h>
 
 inline namespace utils {
 
 /**
  * @brief Abstract thread wrapper.
- * 
+ *
  */
 class Thread {
 public:
@@ -36,20 +36,21 @@ protected:
   static void setup(const std::string &name, i32 priority) {
     // Set name of the thread in applications like top/htop for better performance debugging.
     if (prctl(PR_SET_NAME, name.c_str()) != 0) {
-      throw labrat::robot::SystemException("Failed to set thread name.", errno);
+      throw labrat::lbot::SystemException("Failed to set thread name.", errno);
     }
 
     if (priority > sched_get_priority_max(SCHED_RR) || priority < sched_get_priority_min(SCHED_RR)) {
-      throw labrat::robot::InvalidArgumentException("The specified scheduling priority is not within the permitted range.");
+      throw labrat::lbot::InvalidArgumentException("The specified scheduling priority is not within the permitted range.");
     }
 
     try {
       // Select real-time scheduler.
       sched_param scheduler_parameter = {.sched_priority = priority};
       if (sched_setscheduler(0, SCHED_RR, &scheduler_parameter) != 0) {
-        throw labrat::robot::SystemException("Failed to specify scheduling algorithm.", errno);
+        throw labrat::lbot::SystemException("Failed to specify scheduling algorithm.", errno);
       }
-    } catch (labrat::robot::SystemException &) {}
+    } catch (labrat::lbot::SystemException &) {
+    }
   }
 };
 
@@ -74,15 +75,13 @@ public:
    */
   template <typename Function, typename... Args>
   LoopThread(Function &&function, const std::string &name, i32 priority, Args &&...args) {
-    thread = std::jthread(
-      [name, priority](std::stop_token token, Function &&function, Args &&...args) {
+    thread = std::jthread([name, priority](std::stop_token token, Function &&function, Args &&...args) {
       setup(name, priority);
 
       while (!token.stop_requested()) {
         std::invoke<Function, Args...>(std::forward<Function>(function), std::forward<Args>(args)...);
       }
-      },
-      std::forward<Function>(function), std::forward<Args>(args)...);
+    }, std::forward<Function>(function), std::forward<Args>(args)...);
   }
 
   void operator=(LoopThread &&rhs) {
@@ -115,8 +114,7 @@ public:
    */
   template <typename Function, typename R, typename P, typename... Args>
   TimerThread(Function &&function, const std::chrono::duration<R, P> &interval, const std::string &name, i32 priority, Args &&...args) {
-    thread = std::jthread(
-      [interval, name, priority](std::stop_token token, Function &&function, Args &&...args) {
+    thread = std::jthread([interval, name, priority](std::stop_token token, Function &&function, Args &&...args) {
       setup(name, priority);
 
       while (true) {
@@ -130,8 +128,7 @@ public:
 
         std::this_thread::sleep_until(time_begin + interval);
       }
-      },
-      std::forward<Function>(function), std::forward<Args>(args)...);
+    }, std::forward<Function>(function), std::forward<Args>(args)...);
   }
 
   void operator=(TimerThread &&rhs) {

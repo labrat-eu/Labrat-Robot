@@ -8,13 +8,14 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/logger.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/logger.hpp>
 
 #include <exception>
 #include <system_error>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 /**
  * @brief Generic exception class.
@@ -155,4 +156,5 @@ class SchemaUnknownException : public Exception {
   using Exception::Exception;
 };
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

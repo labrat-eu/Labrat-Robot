@@ -6,13 +6,23 @@
  *
  */
 
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/node.hpp>
-#include <labrat/robot/plugins/mavlink/connection.hpp>
-#include <labrat/robot/plugins/mavlink/node.hpp>
-#include <labrat/robot/utils/string.hpp>
-#include <labrat/robot/utils/thread.hpp>
-#include <labrat/robot/utils/cleanup.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/node.hpp>
+#include <labrat/lbot/plugins/mavlink/connection.hpp>
+#include <labrat/lbot/plugins/mavlink/node.hpp>
+#include <labrat/lbot/utils/cleanup.hpp>
+#include <labrat/lbot/utils/string.hpp>
+#include <labrat/lbot/utils/thread.hpp>
+
+#include <array>
+#include <atomic>
+#include <memory>
+#include <mutex>
+#include <unordered_map>
+#include <vector>
+
+#include <mavlink/common/mavlink.h>
+
 #include <mavlink/msg/common/actuator_control_target.fb.hpp>
 #include <mavlink/msg/common/altitude.fb.hpp>
 #include <mavlink/msg/common/attitude.fb.hpp>
@@ -61,16 +71,8 @@
 #include <mavlink/msg/common/vfr_hud.fb.hpp>
 #include <mavlink/msg/common/vibration.fb.hpp>
 
-#include <array>
-#include <atomic>
-#include <memory>
-#include <mutex>
-#include <unordered_map>
-#include <vector>
-
-#include <mavlink/common/mavlink.h>
-
-namespace labrat::robot::plugins {
+inline namespace labrat {
+namespace lbot::plugins {
 
 class MavlinkNodePrivate {
 public:
@@ -917,25 +919,24 @@ void MavlinkNodePrivate::MavlinkReceiver::convert<mavlink::msg::common::SetPosit
   const Message<mavlink::msg::common::SetPositionTargetLocalNed> &source, mavlink_message_t &destination,
   const MavlinkNode::SystemInfo *info) {
   mavlink_msg_set_position_target_local_ned_pack_chan(info->system_id, info->component_id, info->channel_id, &destination,
-    source.time_boot_ms, source.target_system, source.target_component, source.coordinate_frame, source.type_mask, source.x,
-    source.y, source.z, source.vx, source.vy, source.vz, source.afx, source.afy, source.afz, source.yaw,
-    source.yaw_rate);
+    source.time_boot_ms, source.target_system, source.target_component, source.coordinate_frame, source.type_mask, source.x, source.y,
+    source.z, source.vx, source.vy, source.vz, source.afx, source.afy, source.afz, source.yaw, source.yaw_rate);
 }
 
 template <>
 void MavlinkNodePrivate::MavlinkReceiver::convert<mavlink::msg::common::CommandInt>(const Message<mavlink::msg::common::CommandInt> &source,
   mavlink_message_t &destination, const MavlinkNode::SystemInfo *info) {
   mavlink_msg_command_int_pack_chan(info->system_id, info->component_id, info->channel_id, &destination, source.target_system,
-    source.target_component, source.frame, source.command, source.current, source.autocontinue, source.param1, source.param2,
-    source.param3, source.param4, source.x, source.y, source.z);
+    source.target_component, source.frame, source.command, source.current, source.autocontinue, source.param1, source.param2, source.param3,
+    source.param4, source.x, source.y, source.z);
 }
 
 template <>
 void MavlinkNodePrivate::MavlinkReceiver::convert<mavlink::msg::common::CommandLong>(
   const Message<mavlink::msg::common::CommandLong> &source, mavlink_message_t &destination, const MavlinkNode::SystemInfo *info) {
   mavlink_msg_command_long_pack_chan(info->system_id, info->component_id, info->channel_id, &destination, source.target_system,
-    source.target_component, source.command, source.confirmation, source.param1, source.param2, source.param3, source.param4,
-    source.param5, source.param6, source.param7);
+    source.target_component, source.command, source.confirmation, source.param1, source.param2, source.param3, source.param4, source.param5,
+    source.param6, source.param7);
 }
 
 template <>
@@ -1032,7 +1033,7 @@ void MavlinkNode::receiverCallback(Node::GenericReceiver<mavlink_message_t> &rec
   if (!guard.valid()) {
     return;
   }
-  
+
   node->writeMessage(receiver.latest());
 }
 
@@ -1070,8 +1071,8 @@ MavlinkNodePrivate::MavlinkNodePrivate(MavlinkConnection::Ptr &&connection, Mavl
   addSender<mavlink::msg::common::AttitudeTarget>("/mavlink/in/attitude_target", MAVLINK_MSG_ID_ATTITUDE_TARGET);
   addSender<mavlink::msg::common::PositionTargetGlobalInt>("/mavlink/in/position_target_global_int",
     MAVLINK_MSG_ID_POSITION_TARGET_GLOBAL_INT);
-  addSender<mavlink::msg::common::LocalPositionNedSystemGlobalOffset>(
-    "/mavlink/in/local_position_ned_system_global_offset", MAVLINK_MSG_ID_LOCAL_POSITION_NED_SYSTEM_GLOBAL_OFFSET);
+  addSender<mavlink::msg::common::LocalPositionNedSystemGlobalOffset>("/mavlink/in/local_position_ned_system_global_offset",
+    MAVLINK_MSG_ID_LOCAL_POSITION_NED_SYSTEM_GLOBAL_OFFSET);
   addSender<mavlink::msg::common::HighresImu>("/mavlink/in/highres_imu", MAVLINK_MSG_ID_HIGHRES_IMU);
   addSender<mavlink::msg::common::Timesync>("/mavlink/in/timesync", MAVLINK_MSG_ID_TIMESYNC);
   addSender<mavlink::msg::common::ActuatorControlTarget>("/mavlink/in/actuator_control_target", MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET);
@@ -1151,4 +1152,5 @@ void MavlinkNodePrivate::writeMessage(const mavlink_message_t &message) {
   connection->write(buffer.data(), number_bytes);
 }
 
-}  // namespace labrat::robot::plugins
+}  // namespace lbot::plugins
+}  // namespace labrat

@@ -6,12 +6,13 @@
  *
  */
 
-#include <labrat/robot/exception.hpp>
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/node.hpp>
-#include <labrat/robot/topic.hpp>
+#include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/node.hpp>
+#include <labrat/lbot/topic.hpp>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 TopicMap::TopicMap() {}
 
@@ -94,4 +95,5 @@ void TopicMap::Topic::removeReceiver(void *old_receiver) {
   receivers.erase(iterator);
 }
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

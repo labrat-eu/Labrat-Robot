@@ -8,12 +8,13 @@
 
 #pragma once
 
-#include <labrat/robot/node.hpp>
-#include <labrat/robot/manager.hpp>
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/node.hpp>
 
 #include <vector>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 class Cluster {
 public:
@@ -36,7 +37,9 @@ protected:
    * @return std::shared_ptr<T> Pointer to the created node.
    */
   template <typename T, typename... Args>
-  std::shared_ptr<T> addNode(const std::string &name, Args &&...args) requires std::is_base_of_v<Node, T> {
+  std::shared_ptr<T> addNode(const std::string &name, Args &&...args)
+  requires std::is_base_of_v<Node, T>
+  {
     std::shared_ptr<T> result = Manager::get()->addNode<T>(name, std::forward<Args>(args)...);
     nodes.emplace_back(result);
 
@@ -50,4 +53,5 @@ private:
   friend class Manager;
 };
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

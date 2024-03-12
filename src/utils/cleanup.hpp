@@ -65,7 +65,7 @@ public:
       state.wait(State::locked);
     }
   }
-  
+
 private:
   enum class State : u8 {
     unlocked,

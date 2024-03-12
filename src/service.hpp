@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/utils/atomic.hpp>
-#include <labrat/robot/utils/types.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/utils/atomic.hpp>
+#include <labrat/lbot/utils/types.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -19,7 +19,8 @@
 #include <string>
 #include <unordered_map>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 class ServiceMap {
 public:
@@ -101,4 +102,5 @@ private:
   std::unordered_map<std::string, Service> map;
 };
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

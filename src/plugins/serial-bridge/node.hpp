@@ -8,13 +8,14 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/node.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/node.hpp>
 
 #include <span>
 
-namespace labrat::robot::plugins {
+inline namespace labrat {
+namespace lbot::plugins {
 
 class SerialBridgeNodePrivate;
 
@@ -42,7 +43,7 @@ public:
 
   /**
    * @brief Register a sender with the MAVLink node. Incoming messages will be forwarded onto the sender.
-   * 
+   *
    * @tparam MessageType Message type of the sender.
    * @param topic_name Name of the topic.
    */
@@ -53,13 +54,14 @@ public:
 
   /**
    * @brief Register a receiver with the MAVLink node. Incoming messages will be forwarded onto the network.
-   * 
+   *
    * @tparam MessageType Message type of the receiver.
    * @param topic_name Name of the topic.
    */
   template <typename MessageType>
   void registerReceiver(const std::string topic_name) {
-    typename Node::Receiver<MessageType, PayloadInfo>::Ptr receiver = addReceiver<MessageType, PayloadInfo>(topic_name, receiverConversionFunction<MessageType>);
+    typename Node::Receiver<MessageType, PayloadInfo>::Ptr receiver =
+      addReceiver<MessageType, PayloadInfo>(topic_name, receiverConversionFunction<MessageType>);
     receiver->setCallback(&SerialBridgeNode::receiverCallback, priv);
 
     registerGenericReceiver(std::move(receiver));
@@ -72,7 +74,8 @@ private:
   }
 
   template <typename MessageType>
-  static void receiverConversionFunction(const MessageType &source, PayloadInfo &destination, const GenericReceiver<PayloadInfo> *receiver) {
+  static void receiverConversionFunction(const MessageType &source, PayloadInfo &destination,
+    const GenericReceiver<PayloadInfo> *receiver) {
     destination.topic_hash = receiver->getTopicInfo().topic_hash;
 
     flatbuffers::FlatBufferBuilder builder;
@@ -91,4 +94,5 @@ private:
   friend SerialBridgeNodePrivate;
 };
 
-}  // namespace labrat::robot::plugins
+}  // namespace lbot::plugins
+}  // namespace labrat

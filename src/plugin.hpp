@@ -7,9 +7,9 @@
  */
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/utils/types.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/utils/types.hpp>
 
 #include <atomic>
 #include <chrono>
@@ -19,7 +19,8 @@
 
 #include <flatbuffers/stl_emulation.h>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 /**
  * @brief Class containing data required for registering a plugin.
@@ -193,4 +194,5 @@ private:
   friend class Node;
 };
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

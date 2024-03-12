@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
+#include <labrat/lbot/base.hpp>
+
 #include <atomic>
 
 inline namespace utils {

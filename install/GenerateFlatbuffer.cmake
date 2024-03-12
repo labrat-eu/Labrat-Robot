@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22.0)
 
 find_package(flatbuffers MODULE REQUIRED)
 
-function(labrat_robot_generate_flatbuffer)
+function(lbot_generate_flatbuffer)
   set(options)
   set(oneValueArgs TARGET TARGET_PATH INCLUDE_PREFIX)
   set(multiValueArgs SCHEMAS INCLUDE_DIRS FLAGS)
@@ -34,7 +34,7 @@ function(labrat_robot_generate_flatbuffer)
     set(include_params -I ${include_dir} ${include_params})
   endforeach()
 
-  foreach (include_dir ${labrat-robot_INCLUDE_DIRS})
+  foreach (include_dir ${lbot_INCLUDE_DIRS})
     set(include_params -I ${include_dir} ${include_params})
   endforeach()
 
@@ -107,4 +107,4 @@ function(labrat_robot_generate_flatbuffer)
   install(FILES ${INT_SCHEMAS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${INT_TARGET_PATH})
   install(FILES ${all_generated_header_files} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${INT_TARGET_PATH})
   install(FILES ${all_generated_binary_files} DESTINATION ${CMAKE_INSTALL_RUNSTATEDIR}/${INT_TARGET_PATH})
-endfunction(labrat_robot_generate_flatbuffer)
+endfunction(lbot_generate_flatbuffer)

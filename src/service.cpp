@@ -6,10 +6,11 @@
  *
  */
 
-#include <labrat/robot/exception.hpp>
-#include <labrat/robot/service.hpp>
+#include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/service.hpp>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 ServiceMap::ServiceMap() {}
 
@@ -58,4 +59,5 @@ void ServiceMap::Service::removeServer(void *old_server) {
   server = nullptr;
 }
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

@@ -8,12 +8,13 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/plugin.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/plugin.hpp>
 
 #include <string>
 
-namespace labrat::robot::plugins {
+inline namespace labrat {
+namespace lbot::plugins {
 
 class McapRecorderPrivate;
 
@@ -41,4 +42,5 @@ private:
   McapRecorderPrivate *priv;
 };
 
-}  // namespace labrat::robot::plugins
+}  // namespace lbot::plugins
+}  // namespace labrat

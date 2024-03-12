@@ -6,31 +6,31 @@
  *
  */
 
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/node.hpp>
-#include <labrat/robot/plugins/serial-bridge/node.hpp>
-#include <labrat/robot/utils/serial.hpp>
-#include <labrat/robot/utils/string.hpp>
-#include <labrat/robot/utils/thread.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/node.hpp>
+#include <labrat/lbot/plugins/serial-bridge/node.hpp>
+#include <labrat/lbot/utils/serial.hpp>
+#include <labrat/lbot/utils/string.hpp>
+#include <labrat/lbot/utils/thread.hpp>
 
+#include <cstring>
+#include <iomanip>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <unordered_map>
 #include <vector>
-#include <cstring>
 
-#include <iomanip>
-#include <iostream>
-
+#include <crc_cpp.h>
+#include <endian.h>
 #include <fcntl.h>
 #include <sys/epoll.h>
-#include <termios.h>
-#include <endian.h>
-#include <unistd.h>
 #include <sys/signal.h>
-#include <crc_cpp.h>
+#include <termios.h>
+#include <unistd.h>
 
-namespace labrat::robot::plugins {
+inline namespace labrat {
+namespace lbot::plugins {
 
 class SerialBridgeNodePrivate {
 public:
@@ -69,7 +69,7 @@ private:
       topic_info = 1,
       topic_request = 2,
     } type;
-    
+
     u16 flags;
     u16 length;
 
@@ -205,7 +205,9 @@ SerialBridgeNode::~SerialBridgeNode() {
 }
 
 void SerialBridgeNode::registerGenericSender(Node::GenericSender<SerialBridgeNode::PayloadInfo>::Ptr &&sender) {
-  if (!priv->sender.map.try_emplace(sender->getTopicInfo().topic_name, std::forward<Node::GenericSender<SerialBridgeNode::PayloadInfo>::Ptr>(sender)).second) {
+  if (!priv->sender.map
+         .try_emplace(sender->getTopicInfo().topic_name, std::forward<Node::GenericSender<SerialBridgeNode::PayloadInfo>::Ptr>(sender))
+         .second) {
     throw ManagementException("A sender has already been registered for the topic name '" + sender->getTopicInfo().topic_name + "'.");
   }
 }
@@ -362,7 +364,8 @@ void SerialBridgeNodePrivate::processMessage(u8 *buffer, std::size_t size) {
     node.getLogger().logWarning() << "Received message of different minor version number.";
   }
   if (header->length != size - sizeof(HeaderWire)) {
-    node.getLogger().logCritical() << "Datagram and header length mismatch, discarding message. (" << header->length << "/" << size - sizeof(HeaderWire) << ")";
+    node.getLogger().logCritical() << "Datagram and header length mismatch, discarding message. (" << header->length << "/"
+                                   << size - sizeof(HeaderWire) << ")";
     return;
   }
 
@@ -404,7 +407,7 @@ void SerialBridgeNodePrivate::processMessage(u8 *buffer, std::size_t size) {
 
       message.topic_name = std::string_view(reinterpret_cast<const char *>(raw->data.data()) + offset, raw->topic_name_end - offset);
       offset = raw->topic_name_end;
-      
+
       message.type_name = std::string_view(reinterpret_cast<const char *>(raw->data.data()) + offset, raw->type_name_end - offset);
 
       readTopicInfoMessage(message);
@@ -430,7 +433,7 @@ void SerialBridgeNodePrivate::readPayloadMessage(const SerialBridgeNode::Payload
   if (iterator == sender.adapter.end()) {
     node.getLogger().logDebug() << "Received bridge message without adapter entry (remote topic hash: " << message.topic_hash << ").";
     writeTopicRequestMessage(message.topic_hash);
-    
+
     return;
   }
 
@@ -446,7 +449,8 @@ void SerialBridgeNodePrivate::readTopicInfoMessage(const TopicInfo &message) {
   }
 
   if (iterator->second->getTopicInfo().type_name != message.type_name) {
-    node.getLogger().logWarning() << "Local and remote type names do not match (" << iterator->second->getTopicInfo().type_name << "/" << message.type_name << ").";
+    node.getLogger().logWarning() << "Local and remote type names do not match (" << iterator->second->getTopicInfo().type_name << "/"
+                                  << message.type_name << ").";
     return;
   }
 
@@ -488,7 +492,7 @@ void SerialBridgeNodePrivate::writePayloadMessage(const SerialBridgeNode::Payloa
 
   std::memcpy(raw.data.data(), message.payload.data(), message.payload.size());
   raw.data.finalize(message.payload.size());
-  
+
   std::lock_guard guard(mutex);
 
   escapeAndWriteMessage(reinterpret_cast<u8 *>(&raw), length);
@@ -530,7 +534,7 @@ void SerialBridgeNodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
   raw.type_name_end = htobe16(offset);
 
   raw.data.finalize(length - sizeof(HeaderWire) - sizeof(u16), reinterpret_cast<u8 *>(&raw.topic_name_end));
-  
+
   std::lock_guard guard(mutex);
 
   escapeAndWriteMessage(reinterpret_cast<u8 *>(&raw), length);
@@ -545,7 +549,7 @@ void SerialBridgeNodePrivate::writeTopicRequestMessage(std::size_t topic_hash) {
   raw.length = 0;
   raw.topic_hash = htobe64(topic_hash);
   raw.finalize();
-  
+
   std::lock_guard guard(mutex);
 
   escapeAndWriteMessage(reinterpret_cast<u8 *>(&raw), sizeof(HeaderWire));
@@ -587,4 +591,5 @@ std::size_t SerialBridgeNodePrivate::read(u8 *buffer, std::size_t size) {
   return result;
 }
 
-}  // namespace labrat::robot::plugins
+}  // namespace lbot::plugins
+}  // namespace labrat

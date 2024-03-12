@@ -1,11 +1,9 @@
-#include <labrat/robot/node.hpp>
-#include <labrat/robot/manager.hpp>
-#include <labrat/robot/utils/thread.hpp>
-#include <labrat/robot/utils/signal.hpp>
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/node.hpp>
+#include <labrat/lbot/utils/signal.hpp>
+#include <labrat/lbot/utils/thread.hpp>
 
 #include <cmath>
-
-using namespace labrat;
 
 // Threads
 //
@@ -13,9 +11,9 @@ using namespace labrat;
 //
 // This example showcases helper classes to make working with threads easier.
 
-class PrimeNode : public robot::Node {
+class PrimeNode : public lbot::Node {
 public:
-  PrimeNode(const robot::Node::Environment &environment) : robot::Node(environment) {
+  PrimeNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
     // Create two threads, one to continuously calculate prime numbers, and one to output the status every second.
 
     // The utils::LoopThread class will create a new thread that calls the provided function continuously.
@@ -24,8 +22,8 @@ public:
     loop_thread = utils::LoopThread(&PrimeNode::loopFunction, "loop_thread", 1, this);
 
     // The utils::TimerThread class will create a new thread that calls the provided function at a constant time interval of 1 second.
-    // You need to specify the function to be called, the time interval, the name of the thread, the scheduling priority and the function arguments.
-    // In this case only the 'this' pointer must be forwarded, as timerFunction() is a non-static function.
+    // You need to specify the function to be called, the time interval, the name of the thread, the scheduling priority and the function
+    // arguments. In this case only the 'this' pointer must be forwarded, as timerFunction() is a non-static function.
     timer_thread = utils::TimerThread(&PrimeNode::timerFunction, std::chrono::seconds(1), "timer_thread", 1, this);
   }
 
@@ -57,8 +55,8 @@ private:
 };
 
 int main(int argc, char **argv) {
-  robot::Logger logger("main");
-  robot::Manager::Ptr manager = robot::Manager::get();
+  lbot::Logger logger("main");
+  lbot::Manager::Ptr manager = lbot::Manager::get();
 
   manager->addNode<PrimeNode>("primes");
 

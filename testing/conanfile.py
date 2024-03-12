@@ -3,7 +3,7 @@ from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 from conan.tools.env import VirtualRunEnv
 import os
 
-class LabratRobotTestConan(ConanFile):
+class LbotTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
 
     def requirements(self):
@@ -38,4 +38,4 @@ class LabratRobotTestConan(ConanFile):
 
     def test(self):
         cmake = CMake(self)
-        cmake.test(cli_args=['ARGS=--output-junit report.xml'], env = "conanrun")
+        cmake.test(cli_args=['ARGS=--output-junit report.xml --output-on-failure'], env = "conanrun")

@@ -6,9 +6,9 @@
  *
  */
 
-#include <labrat/robot/exception.hpp>
-#include <labrat/robot/utils/serial.hpp>
-#include <labrat/robot/plugins/mavlink/serial_connection.hpp>
+#include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/plugins/mavlink/serial_connection.hpp>
+#include <labrat/lbot/utils/serial.hpp>
 
 #include <cstring>
 
@@ -17,7 +17,8 @@
 #include <termios.h>
 #include <unistd.h>
 
-namespace labrat::robot::plugins {
+inline namespace labrat {
+namespace lbot::plugins {
 
 MavlinkSerialConnection::MavlinkSerialConnection(const std::string &port, u64 baud_rate) {
   file_descriptor = open(port.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
@@ -117,4 +118,5 @@ std::size_t MavlinkSerialConnection::read(u8 *buffer, std::size_t size) {
   return result;
 }
 
-}  // namespace labrat::robot::plugins
+}  // namespace lbot::plugins
+}  // namespace labrat

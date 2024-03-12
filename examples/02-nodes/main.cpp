@@ -1,9 +1,7 @@
-#include <labrat/robot/node.hpp>
-#include <labrat/robot/manager.hpp>
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/node.hpp>
 
 #include <string>
-
-using namespace labrat;
 
 // Nodes
 //
@@ -11,15 +9,15 @@ using namespace labrat;
 // A component might be a sensor or an actuator.
 // There exist also more complex logical components such as motion planning controllers etc.
 // A node encapsulates the logic of one such component.
-// 
+//
 // This example showcases how to work with nodes.
 
-// Nodes must inherit from robot::Node.
-class ExampleNode : public robot::Node {
+// Nodes must inherit from lbot::Node.
+class ExampleNode : public lbot::Node {
 public:
   // The first argument (environment) must be passed onto the parent constructor.
   // Apart from that a node behaves like any other class.
-  ExampleNode(const robot::Node::Environment &environment, const std::string &param) : robot::Node(environment) {
+  ExampleNode(const lbot::Node::Environment &environment, const std::string &param) : lbot::Node(environment) {
     // Nodes have their own logger.
     getLogger().logInfo() << "Example node has been started with the parameter " << param << ".";
   }
@@ -32,7 +30,7 @@ public:
 int main(int argc, char **argv) {
   // First we create the central node manager.
   // Nodes should ALWAYS be created through the central node manager!
-  robot::Manager::Ptr manager = robot::Manager::get();
+  lbot::Manager::Ptr manager = lbot::Manager::get();
 
   // Now we can create an instance of the example node.
   // The first parameter of the addNode() function is the name of the node.

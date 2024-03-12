@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/exception.hpp>
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/node.hpp>
-#include <labrat/robot/plugin.hpp>
-#include <labrat/robot/service.hpp>
-#include <labrat/robot/topic.hpp>
-#include <labrat/robot/utils/final_ptr.hpp>
-#include <labrat/robot/utils/types.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/node.hpp>
+#include <labrat/lbot/plugin.hpp>
+#include <labrat/lbot/service.hpp>
+#include <labrat/lbot/topic.hpp>
+#include <labrat/lbot/utils/final_ptr.hpp>
+#include <labrat/lbot/utils/types.hpp>
 
 #include <concepts>
 #include <memory>
@@ -24,7 +24,8 @@
 #include <typeinfo>
 #include <unordered_map>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 class Cluster;
 
@@ -74,7 +75,9 @@ public:
    * @return std::shared_ptr<T> Pointer to the created node.
    */
   template <typename T, typename... Args>
-  std::shared_ptr<T> addNode(const std::string &name, Args &&...args) requires std::is_base_of_v<Node, T> {
+  std::shared_ptr<T> addNode(const std::string &name, Args &&...args)
+  requires std::is_base_of_v<Node, T>
+  {
     const Node::Environment environment = getEnvironment(name);
 
     const std::pair<std::unordered_map<std::string, utils::FinalPtr<Node>>::iterator, bool> result =
@@ -97,7 +100,9 @@ public:
    * @return std::shared_ptr<T> Pointer to the created cluster.
    */
   template <typename T, typename... Args>
-  std::shared_ptr<T> addCluster(const std::string &name, Args &&...args) requires std::is_base_of_v<Cluster, T> {
+  std::shared_ptr<T> addCluster(const std::string &name, Args &&...args)
+  requires std::is_base_of_v<Cluster, T>
+  {
     const std::pair<std::unordered_map<std::string, utils::FinalPtr<Cluster>>::iterator, bool> result =
       cluster_map.emplace(name, std::make_shared<T>(name, std::forward<Args>(args)...));
 
@@ -154,7 +159,7 @@ public:
 
 private:
   inline Node::Environment getEnvironment(const std::string &name) {
-    return Node::Environment {
+    return Node::Environment{
       .name = name,
       .topic_map = topic_map,
       .service_map = service_map,
@@ -163,4 +168,5 @@ private:
   }
 };
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

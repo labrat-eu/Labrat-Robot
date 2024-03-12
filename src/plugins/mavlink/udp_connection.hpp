@@ -8,16 +8,17 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/plugins/mavlink/connection.hpp>
-#include <labrat/robot/utils/types.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/plugins/mavlink/connection.hpp>
+#include <labrat/lbot/utils/types.hpp>
 
 #include <string>
 
 #include <netinet/in.h>
 #include <signal.h>
 
-namespace labrat::robot::plugins {
+inline namespace labrat {
+namespace lbot::plugins {
 
 /**
  * @brief MavlinkConnection implementation for UDP sockets.
@@ -69,4 +70,5 @@ private:
   sigset_t signal_mask;
 };
 
-}  // namespace labrat::robot::plugins
+}  // namespace lbot::plugins
+}  // namespace labrat

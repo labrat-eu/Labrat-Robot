@@ -1,13 +1,11 @@
-#include <labrat/robot/logger.hpp>
-
-using namespace labrat;
+#include <labrat/lbot/logger.hpp>
 
 // Hello world
 //
 // Minimal sample program.
 
 int main(int argc, char **argv) {
-  robot::Logger logger("main");
+  lbot::Logger logger("main");
   logger.logInfo() << "Hello world!";
 
   return 0;

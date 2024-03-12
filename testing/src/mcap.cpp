@@ -1,19 +1,20 @@
-#include <helper.hpp>
-
-#include <labrat/robot/manager.hpp>
-#include <labrat/robot/plugins/mcap/recorder.hpp>
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/plugins/mcap/recorder.hpp>
 
 #include <cmath>
-#include <thread>
 #include <filesystem>
+#include <thread>
 
 #include <gtest/gtest.h>
 
-namespace labrat::robot::test {
+#include <helper.hpp>
+
+inline namespace labrat {
+namespace lbot::test {
 
 TEST(mcap, recorder) {
   {
-    labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+    labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
     plugins::McapRecorder recorder("test.mcap");
 
@@ -51,4 +52,5 @@ TEST(mcap, recorder) {
   ASSERT_NE(0, std::filesystem::file_size("test.mcap"));
 }
 
-}  // namespace labrat::robot::test
+}  // namespace lbot::test
+}  // namespace labrat

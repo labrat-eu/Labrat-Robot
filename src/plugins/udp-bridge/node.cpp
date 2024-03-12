@@ -6,27 +6,28 @@
  *
  */
 
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/node.hpp>
-#include <labrat/robot/plugins/udp-bridge/node.hpp>
-#include <labrat/robot/utils/string.hpp>
-#include <labrat/robot/utils/thread.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/node.hpp>
+#include <labrat/lbot/plugins/udp-bridge/node.hpp>
+#include <labrat/lbot/utils/string.hpp>
+#include <labrat/lbot/utils/thread.hpp>
 
+#include <cstring>
 #include <memory>
 #include <mutex>
 #include <unordered_map>
 #include <vector>
-#include <cstring>
 
 #include <arpa/inet.h>
+#include <endian.h>
 #include <fcntl.h>
 #include <sys/epoll.h>
-#include <sys/socket.h>
-#include <endian.h>
-#include <unistd.h>
 #include <sys/signal.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
-namespace labrat::robot::plugins {
+inline namespace labrat {
+namespace lbot::plugins {
 
 class UdpBridgeNodePrivate {
 public:
@@ -65,7 +66,7 @@ private:
       topic_info = 1,
       topic_request = 2,
     } type;
-    
+
     u16 flags;
     u16 length;
 
@@ -130,7 +131,8 @@ private:
   std::mutex mutex;
 };
 
-UdpBridgeNode::UdpBridgeNode(const Node::Environment &environment, const std::string &address, u16 port, u16 local_port) : Node(environment) {
+UdpBridgeNode::UdpBridgeNode(const Node::Environment &environment, const std::string &address, u16 port, u16 local_port) :
+  Node(environment) {
   std::allocator<UdpBridgeNodePrivate> allocator;
   priv = allocator.allocate(1);
 
@@ -142,7 +144,9 @@ UdpBridgeNode::~UdpBridgeNode() {
 }
 
 void UdpBridgeNode::registerGenericSender(Node::GenericSender<UdpBridgeNode::PayloadInfo>::Ptr &&sender) {
-  if (!priv->sender.map.try_emplace(sender->getTopicInfo().topic_name, std::forward<Node::GenericSender<UdpBridgeNode::PayloadInfo>::Ptr>(sender)).second) {
+  if (!priv->sender.map
+         .try_emplace(sender->getTopicInfo().topic_name, std::forward<Node::GenericSender<UdpBridgeNode::PayloadInfo>::Ptr>(sender))
+         .second) {
     throw ManagementException("A sender has already been registered for the topic name '" + sender->getTopicInfo().topic_name + "'.");
   }
 }
@@ -187,7 +191,7 @@ UdpBridgeNodePrivate::UdpBridgeNodePrivate(const std::string &address, u16 port,
 
   sigemptyset(&signal_mask);
   sigaddset(&signal_mask, SIGINT);
-  
+
   read_thread = utils::LoopThread(&UdpBridgeNodePrivate::readLoop, "udp bridge", 1, this);
 }
 
@@ -217,7 +221,8 @@ void UdpBridgeNodePrivate::readLoop() {
     node.getLogger().logWarning() << "Received message of different minor version number.";
   }
   if (header->length != number_bytes - sizeof(HeaderWire)) {
-    node.getLogger().logCritical() << "Datagram and header length mismatch, discarding message. (" << header->length << "/" << number_bytes - sizeof(HeaderWire) << ")";
+    node.getLogger().logCritical() << "Datagram and header length mismatch, discarding message. (" << header->length << "/"
+                                   << number_bytes - sizeof(HeaderWire) << ")";
     return;
   }
 
@@ -247,7 +252,7 @@ void UdpBridgeNodePrivate::readLoop() {
 
       message.topic_name = std::string_view(reinterpret_cast<const char *>(raw->data.data()) + offset, raw->topic_name_end - offset);
       offset = raw->topic_name_end;
-      
+
       message.type_name = std::string_view(reinterpret_cast<const char *>(raw->data.data()) + offset, raw->type_name_end - offset);
 
       readTopicInfoMessage(message);
@@ -273,7 +278,7 @@ void UdpBridgeNodePrivate::readPayloadMessage(const UdpBridgeNode::PayloadInfo &
   if (iterator == sender.adapter.end()) {
     node.getLogger().logDebug() << "Received bridge message without adapter entry (remote topic hash: " << message.topic_hash << ").";
     writeTopicRequestMessage(message.topic_hash);
-    
+
     return;
   }
 
@@ -289,7 +294,8 @@ void UdpBridgeNodePrivate::readTopicInfoMessage(const TopicInfo &message) {
   }
 
   if (iterator->second->getTopicInfo().type_name != message.type_name) {
-    node.getLogger().logWarning() << "Local and remote type names do not match (" << iterator->second->getTopicInfo().type_name << "/" << message.type_name << ").";
+    node.getLogger().logWarning() << "Local and remote type names do not match (" << iterator->second->getTopicInfo().type_name << "/"
+                                  << message.type_name << ").";
     return;
   }
 
@@ -329,7 +335,7 @@ void UdpBridgeNodePrivate::writePayloadMessage(const UdpBridgeNode::PayloadInfo 
   raw.header.topic_hash = htobe64(message.topic_hash);
 
   std::memcpy(raw.data.data(), message.payload.data(), message.payload.size());
-  
+
   std::lock_guard guard(mutex);
 
   write(reinterpret_cast<u8 *>(&raw), length);
@@ -368,7 +374,7 @@ void UdpBridgeNodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
   std::memcpy(raw.data.data() + offset, message.type_name.data(), message.type_name.size());
   offset += message.type_name.size();
   raw.type_name_end = htobe16(offset);
-  
+
   std::lock_guard guard(mutex);
 
   write(reinterpret_cast<u8 *>(&raw), length);
@@ -382,7 +388,7 @@ void UdpBridgeNodePrivate::writeTopicRequestMessage(std::size_t topic_hash) {
   raw.flags = 0;
   raw.length = 0;
   raw.topic_hash = htobe64(topic_hash);
-  
+
   std::lock_guard guard(mutex);
 
   write(reinterpret_cast<u8 *>(&raw), sizeof(HeaderWire));
@@ -423,4 +429,5 @@ std::size_t UdpBridgeNodePrivate::read(u8 *buffer, std::size_t size) {
   return result;
 }
 
-}  // namespace labrat::robot::plugins
+}  // namespace lbot::plugins
+}  // namespace labrat

@@ -8,14 +8,15 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/node.hpp>
-#include <labrat/robot/plugins/mavlink/connection.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/node.hpp>
+#include <labrat/lbot/plugins/mavlink/connection.hpp>
 
 typedef struct __mavlink_message mavlink_message_t;
 
-namespace labrat::robot::plugins {
+inline namespace labrat {
+namespace lbot::plugins {
 
 class MavlinkNodePrivate;
 
@@ -45,34 +46,37 @@ public:
 
   /**
    * @brief Get the MAVLink system info about the local system.
-   * 
+   *
    * @return const SystemInfo& System information.
    */
   const SystemInfo &getSystemInfo() const;
 
   /**
    * @brief Register a sender with the MAVLink node. Incoming MAVLink messages will be forwarded onto the sender.
-   * 
+   *
    * @tparam MessageType Message type of the sender.
    * @param topic_name Name of the topic.
    * @param conversion_function Conversion function used by the sender.
    * @param id Message ID of the underlying MAVLink message.
    */
   template <typename MessageType>
-  void registerSender(const std::string topic_name, ConversionFunction<mavlink_message_t, Message<MessageType>> conversion_function, u16 id, const void *user_ptr = nullptr) {
+  void registerSender(const std::string topic_name, ConversionFunction<mavlink_message_t, Message<MessageType>> conversion_function, u16 id,
+    const void *user_ptr = nullptr) {
     registerGenericSender(addSender<Message<MessageType>, mavlink_message_t>(topic_name, conversion_function, user_ptr), id);
   }
 
   /**
    * @brief Register a receiver with the MAVLink node. Incoming messages will be forwarded onto the MAVLink network.
-   * 
+   *
    * @tparam MessageType Message type of the receiver.
    * @param topic_name Name of the topic.
    * @param conversion_function Conversion function used by the receiver.
    */
   template <typename MessageType>
-  void registerReceiver(const std::string topic_name, ConversionFunction<Message<MessageType>, mavlink_message_t> conversion_function, const void *user_ptr = nullptr) {
-    typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr receiver = addReceiver<Message<MessageType>, mavlink_message_t>(topic_name, conversion_function, user_ptr);
+  void registerReceiver(const std::string topic_name, ConversionFunction<Message<MessageType>, mavlink_message_t> conversion_function,
+    const void *user_ptr = nullptr) {
+    typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr receiver =
+      addReceiver<Message<MessageType>, mavlink_message_t>(topic_name, conversion_function, user_ptr);
     receiver->setCallback(&MavlinkNode::receiverCallback, priv);
 
     registerGenericReceiver(std::move(receiver));
@@ -89,4 +93,5 @@ private:
   friend MavlinkNodePrivate;
 };
 
-}  // namespace labrat::robot::plugins
+}  // namespace lbot::plugins
+}  // namespace labrat

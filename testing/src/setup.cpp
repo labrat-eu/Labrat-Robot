@@ -1,15 +1,16 @@
-#include <helper.hpp>
-
-#include <labrat/robot/manager.hpp>
+#include <labrat/lbot/manager.hpp>
 
 #include <thread>
 
 #include <gtest/gtest.h>
 
-namespace labrat::robot::test {
+#include <helper.hpp>
+
+inline namespace labrat {
+namespace lbot::test {
 
 TEST(setup, latest) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
@@ -43,7 +44,7 @@ TEST(setup, latest) {
   ASSERT_EQ(message_c, message_e);
 
   node_a->sender->flush();
-  ASSERT_THROW(node_b->receiver->latest(), labrat::robot::TopicNoDataAvailableException);
+  ASSERT_THROW(node_b->receiver->latest(), labrat::lbot::TopicNoDataAvailableException);
 
   node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
@@ -52,7 +53,7 @@ TEST(setup, latest) {
 }
 
 TEST(setup, next) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
@@ -100,7 +101,7 @@ TEST(setup, next) {
   ASSERT_EQ(message_f, message_g);
 
   node_a->sender->flush();
-  ASSERT_THROW(node_b->receiver->next(), labrat::robot::TopicNoDataAvailableException);
+  ASSERT_THROW(node_b->receiver->next(), labrat::lbot::TopicNoDataAvailableException);
 
   node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
@@ -109,7 +110,7 @@ TEST(setup, next) {
 }
 
 TEST(setup, move) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
@@ -129,7 +130,7 @@ TEST(setup, move) {
   message_a.integral_field = 10;
   message_a.float_field = 5.0;
   message_a.buffer = local_buffer;
-  
+
   node_a->sender->move(std::move<TestContainer &>(message_a));
 
   ASSERT_TRUE(message_a.buffer.empty());
@@ -148,7 +149,7 @@ TEST(setup, move) {
 }
 
 TEST(setup, callback) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
@@ -178,7 +179,7 @@ TEST(setup, callback) {
 }
 
 TEST(setup, server) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
@@ -203,7 +204,7 @@ TEST(setup, server) {
   ASSERT_EQ(counter, 1);
 
   server.reset(nullptr);
-  ASSERT_THROW(client->callSync(10.5), labrat::robot::ServiceUnavailableException);
+  ASSERT_THROW(client->callSync(10.5), labrat::lbot::ServiceUnavailableException);
 
   node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
@@ -211,4 +212,5 @@ TEST(setup, server) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-}  // namespace labrat::robot::test
+}  // namespace lbot::test
+}  // namespace labrat

@@ -8,7 +8,7 @@ project(test CXX)
 # Save the command line compile commands in the build output.
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-find_package(labrat-robot MODULE REQUIRED)
+find_package(lbot MODULE REQUIRED)
 find_package(GTest REQUIRED)
 include(GoogleTest)
 
@@ -35,6 +35,6 @@ set(TARGET_TEST_SOURCES
 # Create executable target for the unit test.
 add_executable(testing ${TARGET_TEST_SOURCES})
 # Link libraries to the test target.
-target_link_libraries(testing PRIVATE labrat-robot::core labrat-robot::plugins GTest::gtest pthread)
+target_link_libraries(testing PRIVATE lbot::core lbot::plugins GTest::gtest pthread)
 # Make tests available to ctest
 gtest_discover_tests(testing DISCOVERY_MODE PRE_TEST)

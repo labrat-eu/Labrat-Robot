@@ -6,15 +6,15 @@
  *
  */
 
-#include <labrat/robot/exception.hpp>
-#include <labrat/robot/logger.hpp>
-#include <labrat/robot/manager.hpp>
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/plugins/mcap/recorder.hpp>
+#include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/logger.hpp>
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/plugins/mcap/recorder.hpp>
 
 #include <chrono>
-#include <queue>
 #include <mutex>
+#include <queue>
 #include <unordered_map>
 
 #include <mcap/internal.hpp>
@@ -22,7 +22,8 @@
 #include <mcap/writer.hpp>
 #include <mcap/writer.inl>
 
-namespace labrat::robot::plugins {
+inline namespace labrat {
+namespace lbot::plugins {
 
 class McapRecorderPrivate {
 public:
@@ -151,4 +152,5 @@ inline McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleMess
   return channel_iterator;
 }
 
-}  // namespace labrat::robot::plugins
+}  // namespace lbot::plugins
+}  // namespace labrat

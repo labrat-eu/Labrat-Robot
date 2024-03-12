@@ -1,13 +1,11 @@
-#include <labrat/robot/node.hpp>
-#include <labrat/robot/manager.hpp>
-#include <labrat/robot/utils/thread.hpp>
-#include <labrat/robot/utils/signal.hpp>
-
-#include <examples/msg/numbers.fb.hpp>
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/node.hpp>
+#include <labrat/lbot/utils/signal.hpp>
+#include <labrat/lbot/utils/thread.hpp>
 
 #include <cmath>
 
-using namespace labrat;
+#include <examples/msg/numbers.fb.hpp>
 
 // Topics
 //
@@ -16,13 +14,13 @@ using namespace labrat;
 // In this example we will construct two nodes, one to send messages and one to receive them.
 // Classes and code patterns are showcased.
 
-class SenderNode : public robot::Node {
+class SenderNode : public lbot::Node {
 public:
-  SenderNode(const robot::Node::Environment &environment) : robot::Node(environment) {
+  SenderNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
     // Register a sender on the topic with the name "/examples/numbers".
     // There can only be one sender per topic.
     // The type of this sender must match any previously registered receiver on the same topic.
-    sender = addSender<robot::Message<examples::msg::Numbers>>("/examples/numbers");
+    sender = addSender<lbot::Message<examples::msg::Numbers>>("/examples/numbers");
 
     sender_thread = utils::TimerThread(&SenderNode::senderFunction, std::chrono::seconds(1), "sender_thread", 1, this);
   }
@@ -30,7 +28,7 @@ public:
 private:
   void senderFunction() {
     // Construct a message.
-    robot::Message<examples::msg::Numbers> message;
+    lbot::Message<examples::msg::Numbers> message;
     message.iteration = ++i;
     message.value = std::sin(i / 100.0);
 
@@ -38,18 +36,18 @@ private:
     sender->put(message);
   }
 
-  Sender<robot::Message<examples::msg::Numbers>>::Ptr sender;
+  Sender<lbot::Message<examples::msg::Numbers>>::Ptr sender;
   utils::TimerThread sender_thread;
 
   uint64_t i = 0;
 };
 
-class ReceiverNode : public robot::Node {
+class ReceiverNode : public lbot::Node {
 public:
-  ReceiverNode(const robot::Node::Environment &environment) : robot::Node(environment) {
+  ReceiverNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
     // Register a receiver on the topic with the name "/examples/numbers".
     // The type of this receiver must match any previously registered sender and receiver on the same topic.
-    receiver = addReceiver<robot::Message<examples::msg::Numbers>>("/examples/numbers");
+    receiver = addReceiver<lbot::Message<examples::msg::Numbers>>("/examples/numbers");
 
     receiver_thread = utils::LoopThread(&ReceiverNode::receiverFunction, "receiver_thread", 1, this);
   }
@@ -64,19 +62,20 @@ private:
       // Alternatively Receiver::latest() could also be used if a non-blocking call is required.
       // However, Receiver::latest() does not guarantee that the returned message has not already been processed.
       // The recommendation is to only use one call to Receiver::next() per thread.
-      robot::Message<examples::msg::Numbers> message = receiver->next();
+      lbot::Message<examples::msg::Numbers> message = receiver->next();
 
       getLogger().logInfo() << "Received message: " << message.value;
-    } catch (robot::TopicNoDataAvailableException &) {}
+    } catch (lbot::TopicNoDataAvailableException &) {
+    }
   }
 
-  Receiver<robot::Message<examples::msg::Numbers>>::Ptr receiver;
+  Receiver<lbot::Message<examples::msg::Numbers>>::Ptr receiver;
   utils::LoopThread receiver_thread;
 };
 
 int main(int argc, char **argv) {
-  robot::Logger logger("main");
-  robot::Manager::Ptr manager = robot::Manager::get();
+  lbot::Logger logger("main");
+  lbot::Manager::Ptr manager = lbot::Manager::get();
 
   manager->addNode<SenderNode>("sender");
   manager->addNode<ReceiverNode>("receiver");

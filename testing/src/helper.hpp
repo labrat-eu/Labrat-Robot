@@ -1,16 +1,17 @@
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/msg/test.fb.hpp>
-#include <labrat/robot/node.hpp>
-#include <labrat/robot/cluster.hpp>
+#include <labrat/lbot/cluster.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/msg/test.fb.hpp>
+#include <labrat/lbot/node.hpp>
 
 #include <atomic>
 
 #include <gtest/gtest.h>
 
-namespace labrat::robot::test {
+inline namespace labrat {
+namespace lbot::test {
 
 using TestFlatbuffer = msg::Test;
-using TestMessage = labrat::robot::Message<TestFlatbuffer>;
+using TestMessage = lbot::Message<TestFlatbuffer>;
 
 class TestContainer {
 public:
@@ -49,10 +50,10 @@ public:
   }
 };
 
-class TestNode : public labrat::robot::Node {
+class TestNode : public lbot::Node {
 public:
   TestNode(const Node::Environment environment, const std::string &sender_topic = "", const std::string &receiver_topic = "") :
-    labrat::robot::Node(environment) {
+    lbot::Node(environment) {
     if (!sender_topic.empty()) {
       sender = addSender<TestContainer>(sender_topic);
     }
@@ -61,22 +62,23 @@ public:
     }
   }
 
-  using labrat::robot::Node::addSender;
-  using labrat::robot::Node::addReceiver;
-  using labrat::robot::Node::addServer;
-  using labrat::robot::Node::addClient;
-  using labrat::robot::Node::getLogger;
+  using lbot::Node::addClient;
+  using lbot::Node::addReceiver;
+  using lbot::Node::addSender;
+  using lbot::Node::addServer;
+  using lbot::Node::getLogger;
 
   Sender<TestContainer>::Ptr sender;
   Receiver<TestContainer>::Ptr receiver;
 };
 
-class TestCluster : public labrat::robot::Cluster {
+class TestCluster : public lbot::Cluster {
 public:
-  TestCluster(const std::string &name) : labrat::robot::Cluster(name) {
+  TestCluster(const std::string &name) : lbot::Cluster(name) {
     addNode<TestNode>("node_a", "main", "void");
     addNode<TestNode>("node_b", "void", "main");
   }
 };
 
-}  // namespace labrat::robot::test
+}  // namespace lbot::test
+}  // namespace labrat

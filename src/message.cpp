@@ -6,7 +6,7 @@
  *
  */
 
-#include <labrat/robot/message.hpp>
+#include <labrat/lbot/message.hpp>
 
 #include <algorithm>
 #include <cctype>
@@ -15,7 +15,8 @@
 #include <fstream>
 #include <sstream>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 static const std::forward_list<std::string> getPaths(std::string name);
 static std::vector<std::string> toPaths(const std::string &name);
@@ -45,7 +46,7 @@ static const std::forward_list<std::string> getPaths(std::string name) {
   std::vector<std::string> paths = toPaths(name);
 
   std::forward_list<std::string> result;
-  const char *environment = std::getenv("LABRAT_ROBOT_REFLECTION_PATH");
+  const char *environment = std::getenv("LBOT_REFLECTION_PATH");
 
   if (environment == nullptr) {
     return result;
@@ -83,7 +84,7 @@ static std::vector<std::string> toPaths(const std::string &name) {
       result[1].push_back(character);
     } else {
       if (character == '.') {
-        for (std::string & path : result) {
+        for (std::string &path : result) {
           path.push_back('/');
         }
 
@@ -92,7 +93,7 @@ static std::vector<std::string> toPaths(const std::string &name) {
         continue;
       }
 
-      for (std::string & path : result) {
+      for (std::string &path : result) {
         path.push_back(character);
       }
     }
@@ -103,4 +104,5 @@ static std::vector<std::string> toPaths(const std::string &name) {
   return result;
 }
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

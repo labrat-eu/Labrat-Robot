@@ -248,14 +248,14 @@ set(TARGET_MESSAGES
 )
 
 add_library(${TARGET_NAME} SHARED ${TARGET_HEADERS} ${TARGET_SOURCES})
-add_dependencies(robot_plugins ${TARGET_NAME})
+add_dependencies(lbot_plugins ${TARGET_NAME})
 
 # Set shared object properties.
 set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${GIT_VERSION})
 set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
 
 set(TARGET_NAME_MESSAGE ${TARGET_NAME}_msg)
-labrat_robot_generate_flatbuffer(TARGET ${TARGET_NAME_MESSAGE} SCHEMAS ${TARGET_MESSAGES} TARGET_PATH mavlink/msg/common)
+lbot_generate_flatbuffer(TARGET ${TARGET_NAME_MESSAGE} SCHEMAS ${TARGET_MESSAGES} TARGET_PATH mavlink/msg/common)
 
 # Link external libraries to the library target.
 target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_msg)

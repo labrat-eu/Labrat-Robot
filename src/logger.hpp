@@ -7,18 +7,20 @@
  */
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/message.hpp>
-#include <foxglove/Log.fb.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/message.hpp>
 
 #include <chrono>
+#include <filesystem>
 #include <memory>
 #include <ostream>
 #include <sstream>
 #include <string>
-#include <filesystem>
 
-namespace labrat::robot {
+#include <foxglove/Log.fb.hpp>
+
+inline namespace labrat {
+namespace lbot {
 
 class LoggerNode;
 
@@ -31,14 +33,13 @@ struct LoggerLocation {
   }
 };
 
-#define LABRAT_LOGINIT labrat::robot::LoggerLocation(std::filesystem::path(__FILE__), __LINE__)
+#define LBOT_LOGINIT labrat::lbot::LoggerLocation(std::filesystem::path(__FILE__), __LINE__)
 
-#define logCritical() write(labrat::robot::Logger::Verbosity::critical, LABRAT_LOGINIT)
-#define logError() write(labrat::robot::Logger::Verbosity::error, LABRAT_LOGINIT)
-#define logWarning() write(labrat::robot::Logger::Verbosity::warning, LABRAT_LOGINIT)
-#define logInfo() write(labrat::robot::Logger::Verbosity::info, LABRAT_LOGINIT)
-#define logDebug() write(labrat::robot::Logger::Verbosity::debug, LABRAT_LOGINIT)
-
+#define logCritical() write(labrat::lbot::Logger::Verbosity::critical, LBOT_LOGINIT)
+#define logError() write(labrat::lbot::Logger::Verbosity::error, LBOT_LOGINIT)
+#define logWarning() write(labrat::lbot::Logger::Verbosity::warning, LBOT_LOGINIT)
+#define logInfo() write(labrat::lbot::Logger::Verbosity::info, LBOT_LOGINIT)
+#define logDebug() write(labrat::lbot::Logger::Verbosity::debug, LBOT_LOGINIT)
 
 /**
  * @brief Class to print log messages and send them out as messages.
@@ -157,8 +158,9 @@ public:
           break;
         }
       }
-      
-      destination.timestamp = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(source.timestamp).count(), (source.timestamp % std::chrono::seconds(1)).count());
+
+      destination.timestamp = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(source.timestamp).count(),
+        (source.timestamp % std::chrono::seconds(1)).count());
       destination.name = source.logger_name;
       destination.message = source.message;
       destination.file = source.file;
@@ -303,4 +305,5 @@ private:
   friend class Manager;
 };
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

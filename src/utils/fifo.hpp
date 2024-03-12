@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/utils/fifo.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/utils/fifo.hpp>
 
 #include <vector>
 

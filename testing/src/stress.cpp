@@ -1,15 +1,16 @@
-#include <helper.hpp>
-
-#include <labrat/robot/manager.hpp>
+#include <labrat/lbot/manager.hpp>
 
 #include <thread>
 
 #include <gtest/gtest.h>
 
-namespace labrat::robot::test {
+#include <helper.hpp>
+
+inline namespace labrat {
+namespace lbot::test {
 
 TEST(stress, latest) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
@@ -51,7 +52,7 @@ TEST(stress, latest) {
 }
 
 TEST(stress, next) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
@@ -99,4 +100,5 @@ TEST(stress, next) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-}  // namespace labrat::robot::test
+}  // namespace lbot::test
+}  // namespace labrat

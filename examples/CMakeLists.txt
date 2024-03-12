@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28.1)
 
-project(labrat-robot-example CXX)
+project(lbot-example CXX)
 
 # Add examples
 add_subdirectory(00-hello-world)

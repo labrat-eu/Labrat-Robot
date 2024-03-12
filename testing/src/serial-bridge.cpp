@@ -1,21 +1,22 @@
-#include <helper.hpp>
-
-#include <labrat/robot/manager.hpp>
-#include <labrat/robot/plugins/serial-bridge/node.hpp>
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/plugins/serial-bridge/node.hpp>
 
 #include <filesystem>
 #include <system_error>
 
-#include <stdlib.h> 
-#include <unistd.h>
 #include <errno.h>
-#include <sys/wait.h>
 #include <gtest/gtest.h>
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
-namespace labrat::robot::test {
+#include <helper.hpp>
+
+inline namespace labrat {
+namespace lbot::test {
 
 TEST(serial_bridge, fork) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::filesystem::remove("test0");
   std::filesystem::remove("test1");
@@ -48,7 +49,8 @@ TEST(serial_bridge, fork) {
 
   if (setup_pid == 0) {
     std::shared_ptr<TestNode> source(manager->addNode<TestNode>("source", "/network"));
-    std::shared_ptr<labrat::robot::plugins::SerialBridgeNode> bridge(manager->addNode<labrat::robot::plugins::SerialBridgeNode>("bridge", "test0"));
+    std::shared_ptr<labrat::lbot::plugins::SerialBridgeNode> bridge(
+      manager->addNode<labrat::lbot::plugins::SerialBridgeNode>("bridge", "test0"));
 
     bridge->registerReceiver<TestMessage>("/network");
 
@@ -64,13 +66,14 @@ TEST(serial_bridge, fork) {
 
     source = std::shared_ptr<TestNode>();
     manager->removeNode("source");
-    bridge = std::shared_ptr<labrat::robot::plugins::SerialBridgeNode>();
+    bridge = std::shared_ptr<labrat::lbot::plugins::SerialBridgeNode>();
     manager->removeNode("bridge");
 
     exit(0);
   } else {
     std::shared_ptr<TestNode> sink(manager->addNode<TestNode>("sink", "", "/network"));
-    std::shared_ptr<labrat::robot::plugins::SerialBridgeNode> bridge(manager->addNode<labrat::robot::plugins::SerialBridgeNode>("bridge", "test1"));
+    std::shared_ptr<labrat::lbot::plugins::SerialBridgeNode> bridge(
+      manager->addNode<labrat::lbot::plugins::SerialBridgeNode>("bridge", "test1"));
 
     bridge->registerSender<TestMessage>("/network");
 
@@ -81,7 +84,7 @@ TEST(serial_bridge, fork) {
     for (u64 i = 0; i < 5000; ++i) {
       try {
         message = sink->receiver->latest();
-      } catch (labrat::robot::TopicNoDataAvailableException &) {
+      } catch (labrat::lbot::TopicNoDataAvailableException &) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         continue;
       }
@@ -94,7 +97,7 @@ TEST(serial_bridge, fork) {
 
     sink = std::shared_ptr<TestNode>();
     ASSERT_NO_THROW(manager->removeNode("sink"));
-    bridge = std::shared_ptr<labrat::robot::plugins::SerialBridgeNode>();
+    bridge = std::shared_ptr<labrat::lbot::plugins::SerialBridgeNode>();
     ASSERT_NO_THROW(manager->removeNode("bridge"));
 
     int status;
@@ -109,4 +112,5 @@ TEST(serial_bridge, fork) {
   }
 }
 
-}  // namespace labrat::robot::test
+}  // namespace lbot::test
+}  // namespace labrat

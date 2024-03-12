@@ -8,12 +8,13 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/utils/types.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/utils/types.hpp>
 
 #include <memory>
 
-namespace labrat::robot::plugins {
+inline namespace labrat {
+namespace lbot::plugins {
 
 /**
  * @brief Abstract class to provide general means for a MavlinkNode to connect itself to a MAVLink network.
@@ -54,4 +55,5 @@ public:
   virtual std::size_t read(u8 *buffer, std::size_t size) = 0;
 };
 
-}  // namespace labrat::robot::plugins
+}  // namespace lbot::plugins
+}  // namespace labrat

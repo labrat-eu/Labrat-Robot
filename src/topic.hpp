@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/utils/atomic.hpp>
-#include <labrat/robot/utils/types.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/utils/atomic.hpp>
+#include <labrat/lbot/utils/types.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -20,7 +20,8 @@
 #include <unordered_map>
 #include <vector>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 class TopicMap {
 public:
@@ -43,9 +44,7 @@ public:
         while (true) {
           topic.use_count.fetch_add(1);
 
-          [[likely]] if (!topic.change_flag.test()) {
-            break;
-          }
+          [[likely]] if (!topic.change_flag.test()) { break; }
 
           topic.use_count.fetch_sub(1);
           topic.use_count.notify_all();
@@ -141,4 +140,5 @@ private:
   std::unordered_map<std::string, Topic> map;
 };
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

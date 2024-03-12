@@ -6,19 +6,20 @@
  *
  */
 
-#include <labrat/robot/exception.hpp>
-#include <labrat/robot/plugins/mavlink/udp_connection.hpp>
+#include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/plugins/mavlink/udp_connection.hpp>
 
 #include <cstring>
 
 #include <arpa/inet.h>
+#include <endian.h>
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
-#include <endian.h>
 #include <unistd.h>
 
-namespace labrat::robot::plugins {
+inline namespace labrat {
+namespace lbot::plugins {
 
 MavlinkUdpConnection::MavlinkUdpConnection(const std::string &address, u16 port, u16 local_port) {
   file_descriptor = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -94,4 +95,5 @@ std::size_t MavlinkUdpConnection::read(u8 *buffer, std::size_t size) {
   return result;
 }
 
-}  // namespace labrat::robot::plugins
+}  // namespace lbot::plugins
+}  // namespace labrat

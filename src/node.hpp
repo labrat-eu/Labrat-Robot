@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/exception.hpp>
-#include <labrat/robot/logger.hpp>
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/plugin.hpp>
-#include <labrat/robot/service.hpp>
-#include <labrat/robot/topic.hpp>
-#include <labrat/robot/utils/fifo.hpp>
-#include <labrat/robot/utils/types.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/logger.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/plugin.hpp>
+#include <labrat/lbot/service.hpp>
+#include <labrat/lbot/topic.hpp>
+#include <labrat/lbot/utils/fifo.hpp>
+#include <labrat/lbot/utils/types.hpp>
 
 #include <atomic>
 #include <functional>
@@ -26,7 +26,8 @@
 #include <string>
 #include <vector>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 class Manager;
 
@@ -117,7 +118,7 @@ public:
 
   protected:
     GenericSender(const Plugin::TopicInfo &topic_info, TopicMap::Topic &topic, Node &node, const void *user_ptr) :
-    topic_info(topic_info), topic(topic), node(node), user_ptr(user_ptr) {}
+      topic_info(topic_info), topic(topic), node(node), user_ptr(user_ptr) {}
 
     const Plugin::TopicInfo topic_info;
     TopicMap::Topic &topic;
@@ -146,7 +147,10 @@ public:
      */
     _Sender(const std::string &topic_name, Node &node,
       ConversionFunction<ContainerType, MessageType> conversion_function = defaultSenderConversionFunction<MessageType, ContainerType>,
-      const void *user_ptr = nullptr) : GenericSender<ContainerType>(Plugin::TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addSender<MessageType>(topic_name, this), node, user_ptr == nullptr ? dynamic_cast<GenericSender<ContainerType> *>(this) : user_ptr),
+      const void *user_ptr = nullptr) :
+      GenericSender<ContainerType>(Plugin::TopicInfo::get<MessageType>(topic_name),
+        node.environment.topic_map.addSender<MessageType>(topic_name, this), node,
+        user_ptr == nullptr ? dynamic_cast<GenericSender<ContainerType> *>(this) : user_ptr),
       conversion_function(conversion_function) {
       for (Plugin &plugin : GenericSender<ContainerType>::node.environment.plugin_list) {
         if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<ContainerType>::topic_info.topic_hash)) {
@@ -165,7 +169,7 @@ public:
     MoveFunction<ContainerType, MessageType> move_function;
 
   public:
-        /**
+    /**
      * @brief Destroy the Sender object.
      *
      */
@@ -226,7 +230,7 @@ public:
       std::size_t i = 0;
       for (Plugin::List::iterator iter = GenericSender<ContainerType>::node.environment.plugin_list.begin(); iter != plugin_end; ++iter) {
         Plugin &plugin = *iter;
-        
+
         if (!plugin.delete_flag.test() && plugin.filter.check(GenericSender<ContainerType>::topic_info.topic_hash)) {
           ++receive_count;
           plugin_iterator = iter;
@@ -238,7 +242,8 @@ public:
       if (receive_count != 1) {
         if (receive_count > 1) {
           // If you use this function properly this branch should never get executed.
-          GenericSender<ContainerType>::node.getLogger().logWarning() << "Sender move function is sending out to multiple receivers or plugins. This can cause performance issues.";
+          GenericSender<ContainerType>::node.getLogger().logWarning()
+            << "Sender move function is sending out to multiple receivers or plugins. This can cause performance issues.";
           put(container);
         }
 
@@ -247,14 +252,16 @@ public:
 
       if (plugin_iterator == plugin_end) {
         // Send to a receiver.
-        Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(*GenericSender<ContainerType>::topic.getReceivers().begin());
+        Receiver<MessageType> *receiver =
+          reinterpret_cast<Receiver<MessageType> *>(*GenericSender<ContainerType>::topic.getReceivers().begin());
 
         const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
         const std::size_t index = count & receiver->index_mask;
 
         {
           std::lock_guard guard(receiver->message_buffer[index].mutex);
-          move_function(std::forward<ContainerType>(container), receiver->message_buffer[index].message, GenericSender<ContainerType>::user_ptr);
+          move_function(std::forward<ContainerType>(container), receiver->message_buffer[index].message,
+            GenericSender<ContainerType>::user_ptr);
 
           receiver->read_count.store(count);
         }
@@ -274,11 +281,9 @@ public:
         flatbuffers::FlatBufferBuilder builder;
         builder.Finish(MessageType::Content::TableType::Pack(builder, &message));
 
-        Plugin::MessageInfo message_info = {
-          .topic_info = GenericSender<ContainerType>::topic_info,
+        Plugin::MessageInfo message_info = {.topic_info = GenericSender<ContainerType>::topic_info,
           .timestamp = message.getTimestamp(),
-          .serialized_message = builder.GetBufferSpan()
-        };
+          .serialized_message = builder.GetBufferSpan()};
 
         Plugin &plugin = *plugin_iterator;
 
@@ -312,16 +317,14 @@ public:
      */
     void trace(const ContainerType &container) {
       MessageType message;
-      Plugin::MessageInfo message_info = {
-        .topic_info = GenericSender<ContainerType>::topic_info
-      };
+      Plugin::MessageInfo message_info = {.topic_info = GenericSender<ContainerType>::topic_info};
 
       flatbuffers::FlatBufferBuilder builder;
       bool init_flag = false;
 
       for (Plugin &plugin : GenericSender<ContainerType>::node.environment.plugin_list) {
         utils::ConsumerGuard<u32> guard(plugin.use_count);
-        
+
         if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<ContainerType>::topic_info.topic_hash)) {
           continue;
         }
@@ -333,7 +336,7 @@ public:
 
           message_info.timestamp = message.getTimestamp();
           message_info.serialized_message = builder.GetBufferSpan();
-          
+
           init_flag = true;
         }
 
@@ -358,10 +361,10 @@ public:
     using Super = _Sender<MessageType, ContainerType>;
     using Ptr = std::unique_ptr<Sender<MessageType, ContainerType>>;
 
-    template<typename... Args>
-    Sender(Args &&...args) : Super(std::forward<Args>(args)...) {};
+    template <typename... Args>
+    Sender(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
-  
+
   template <typename FlatbufferType, typename ContainerType>
   requires is_flatbuffer<FlatbufferType>
   class Sender<FlatbufferType, ContainerType> final : public _Sender<Message<FlatbufferType>, ContainerType> {
@@ -369,8 +372,8 @@ public:
     using Super = _Sender<Message<FlatbufferType>, ContainerType>;
     using Ptr = std::unique_ptr<Sender<FlatbufferType, ContainerType>>;
 
-    template<typename... Args>
-    Sender(Args &&...args) : Super(std::forward<Args>(args)...) {};
+    template <typename... Args>
+    Sender(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename FlatbufferType, typename ContainerType>
@@ -380,8 +383,8 @@ public:
     using Super = _Sender<Message<FlatbufferType>, Message<FlatbufferType>>;
     using Ptr = std::unique_ptr<Sender<FlatbufferType>>;
 
-    template<typename... Args>
-    Sender(Args &&...args) : Super(std::forward<Args>(args)...) {};
+    template <typename... Args>
+    Sender(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename ContainerType, typename Placeholder>
@@ -391,8 +394,9 @@ public:
     using Super = _Sender<typename ContainerType::MessageType, ContainerType>;
     using Ptr = std::unique_ptr<Sender<ContainerType, Placeholder>>;
 
-    template<typename... Args>
-    Sender(const std::string &topic_name, Node &node, Args &&...args) : Super(topic_name, node, ContainerType::toMessage, std::forward<Args>(args)...) {};
+    template <typename... Args>
+    Sender(const std::string &topic_name, Node &node, Args &&...args) :
+      Super(topic_name, node, ContainerType::toMessage, std::forward<Args>(args)...){};
   };
 
   template <typename MessageType, typename ContainerType>
@@ -405,7 +409,7 @@ public:
   /**
    * @brief @brief Generic receiver to declare virtual functions for type specific receiver instances to define.
    * This allows access to receiver objetcs without knowledge of the underlying message types.
-   * 
+   *
    * @tparam ContainerType Type of the objects provided by the receiver to be used by the user.
    */
   template <typename ContainerType>
@@ -444,7 +448,7 @@ public:
       return (read_count.load() != next_count);
     }
 
-        /**
+    /**
      * @brief Get the internal buffer size.
      *
      * @return std::size_t
@@ -463,8 +467,10 @@ public:
     }
 
   protected:
-    GenericReceiver(const Plugin::TopicInfo &topic_info, TopicMap::Topic &topic, Node &node, const void *user_ptr, std::size_t buffer_size) :
-    topic_info(topic_info), topic(topic), node(node), user_ptr(user_ptr), index_mask(calculateBufferMask(buffer_size)), write_count(0), read_count(index_mask) {
+    GenericReceiver(const Plugin::TopicInfo &topic_info, TopicMap::Topic &topic, Node &node, const void *user_ptr,
+      std::size_t buffer_size) :
+      topic_info(topic_info), topic(topic), node(node), user_ptr(user_ptr), index_mask(calculateBufferMask(buffer_size)), write_count(0),
+      read_count(index_mask) {
       next_count = index_mask;
       flush_flag = true;
     }
@@ -541,9 +547,11 @@ public:
      */
     _Receiver(const std::string &topic_name, Node &node,
       ConversionFunction<MessageType, ContainerType> conversion_function = defaultReceiverConversionFunction<MessageType, ContainerType>,
-      const void *user_ptr = nullptr, std::size_t buffer_size = 4) : GenericReceiver<ContainerType>(Plugin::TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node, user_ptr == nullptr ? dynamic_cast<GenericReceiver<ContainerType> *>(this) : user_ptr, buffer_size),
-      conversion_function(conversion_function),
-      message_buffer(GenericReceiver<ContainerType>::calculateBufferSize(buffer_size)) {}
+      const void *user_ptr = nullptr, std::size_t buffer_size = 4) :
+      GenericReceiver<ContainerType>(Plugin::TopicInfo::get<MessageType>(topic_name),
+        node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node,
+        user_ptr == nullptr ? dynamic_cast<GenericReceiver<ContainerType> *>(this) : user_ptr, buffer_size),
+      conversion_function(conversion_function), message_buffer(GenericReceiver<ContainerType>::calculateBufferSize(buffer_size)) {}
 
     friend class Node;
     friend class Sender<MessageType>;
@@ -692,7 +700,7 @@ public:
      * @brief Get the next message sent over the topic.
      * @details This call might block. However, it is guaranteed that successive calls will yield different messages.
      * Subsequent calls to latest() are unsafe.
-     * 
+     *
      * @return ContainerType The next message sent over the topic.
      * @throw TopicNoDataAvailableException When the topic has no valid data available.
      */
@@ -719,7 +727,8 @@ public:
         conversion_function(message_buffer[index].message, result, GenericReceiver<ContainerType>::user_ptr);
       }
 
-      GenericReceiver<ContainerType>::next_count = index | (GenericReceiver<ContainerType>::read_count.load() & ~GenericReceiver<ContainerType>::index_mask);
+      GenericReceiver<ContainerType>::next_count =
+        index | (GenericReceiver<ContainerType>::read_count.load() & ~GenericReceiver<ContainerType>::index_mask);
 
       return result;
     };
@@ -756,8 +765,8 @@ public:
     using Super = _Receiver<MessageType, ContainerType>;
     using Ptr = std::unique_ptr<Receiver<MessageType, ContainerType>>;
 
-    template<typename... Args>
-    Receiver(Args &&...args) : Super(std::forward<Args>(args)...) {};
+    template <typename... Args>
+    Receiver(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename FlatbufferType, typename ContainerType>
@@ -767,8 +776,8 @@ public:
     using Super = _Receiver<Message<FlatbufferType>, ContainerType>;
     using Ptr = std::unique_ptr<Receiver<FlatbufferType, ContainerType>>;
 
-    template<typename... Args>
-    Receiver(Args &&...args) : Super(std::forward<Args>(args)...) {};
+    template <typename... Args>
+    Receiver(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename FlatbufferType, typename ContainerType>
@@ -778,7 +787,7 @@ public:
     using Super = _Receiver<Message<FlatbufferType>, Message<FlatbufferType>>;
     using Ptr = std::unique_ptr<Receiver<FlatbufferType>>;
 
-    template<typename... Args>
+    template <typename... Args>
     Receiver(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
@@ -789,8 +798,9 @@ public:
     using Super = _Receiver<typename ContainerType::MessageType, ContainerType>;
     using Ptr = std::unique_ptr<Receiver<ContainerType, Placeholder>>;
 
-    template<typename... Args>
-    Receiver(const std::string &topic_name, Node &node, Args &&...args) : Super(topic_name, node, ContainerType::fromMessage, std::forward<Args>(args)...) {};
+    template <typename... Args>
+    Receiver(const std::string &topic_name, Node &node, Args &&...args) :
+      Super(topic_name, node, ContainerType::fromMessage, std::forward<Args>(args)...){};
   };
 
   /**
@@ -936,8 +946,7 @@ public:
         } catch (...) {
           promise.set_exception(std::current_exception());
         }
-        },
-        std::move(promise), request)
+      }, std::move(promise), request)
         .detach();
 
       return future;
@@ -962,7 +971,7 @@ public:
      * A call to this function will block but is guaranteed to not exceed the specified timeout.
      *
      * @param request Object containing the data to be processed by the corresponding server.
-     * @param timeout_duration Duration of the timeout after which an exception will be thrown.
+     * @param timeout_duration Duration of the timeout after which an exception will be thrown.RequestType
      * @return ResponseType Response from the server.
      * @throw ServiceUnavailableException When no server is handling requests to the relevant service.
      * @throw ServiceTimeoutException When the timeout is exceeded.
@@ -1024,8 +1033,9 @@ protected:
    * @return Sender<MessageType, ContainerType>::Ptr Pointer to the sender.
    */
   template <typename MessageType, typename ContainerType = MessageType, typename... Args>
-  typename Sender<MessageType, ContainerType>::Ptr addSender(const std::string &topic_name,
-    Args &&...args) requires is_message<MessageType> || is_flatbuffer<MessageType> || is_container<MessageType> {
+  typename Sender<MessageType, ContainerType>::Ptr addSender(const std::string &topic_name, Args &&...args)
+  requires is_message<MessageType> || is_flatbuffer<MessageType> || is_container<MessageType>
+  {
     using Ptr = Sender<MessageType, ContainerType>::Ptr;
     return Ptr(new Sender<MessageType, ContainerType>(topic_name, *this, std::forward<Args>(args)...));
   }
@@ -1040,8 +1050,9 @@ protected:
    * @return Receiver<MessageType, ContainerType>::Ptr Pointer to the receiver.
    */
   template <typename MessageType, typename ContainerType = MessageType, typename... Args>
-  typename Receiver<MessageType, ContainerType>::Ptr addReceiver(const std::string &topic_name,
-    Args &&...args) requires is_message<MessageType> || is_flatbuffer<MessageType> || is_container<MessageType> {
+  typename Receiver<MessageType, ContainerType>::Ptr addReceiver(const std::string &topic_name, Args &&...args)
+  requires is_message<MessageType> || is_flatbuffer<MessageType> || is_container<MessageType>
+  {
     using Ptr = Receiver<MessageType, ContainerType>::Ptr;
     return Ptr(new Receiver<MessageType, ContainerType>(topic_name, *this, std::forward<Args>(args)...));
   }
@@ -1080,4 +1091,5 @@ private:
   const Environment environment;
 };
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.22.0)
 
 function(prj_add_clang_format_targets)
   set(options)
-  set(oneValueArgs SOURCEPATH)
-  set(multiValueArgs)
+  set(oneValueArgs)
+  set(multiValueArgs SOURCEPATH)
   cmake_parse_arguments(INT "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   set(ARGS)
@@ -12,7 +12,7 @@ function(prj_add_clang_format_targets)
   if(NOT DEFINED INT_SOURCEPATH)
     message(FATAL_ERROR "No source path given.")
   else()
-    list(APPEND ARGS "-p ${INT_SOURCEPATH}")
+    list(APPEND ARGS "-p '${INT_SOURCEPATH}'")
   endif()
 
   # Use verbose mode.

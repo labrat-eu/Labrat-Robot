@@ -6,29 +6,29 @@
  *
  */
 
-#include <labrat/robot/exception.hpp>
-#include <labrat/robot/logger.hpp>
-#include <labrat/robot/manager.hpp>
-#include <labrat/robot/message.hpp>
-#include <labrat/robot/plugins/foxglove-ws/server.hpp>
+#include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/logger.hpp>
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/plugins/foxglove-ws/server.hpp>
 
 #include <chrono>
-#include <queue>
 #include <mutex>
+#include <queue>
 #include <thread>
 #include <unordered_map>
 
+#include <foxglove/websocket/base64.hpp>
 #include <foxglove/websocket/server_factory.hpp>
 #include <foxglove/websocket/server_interface.hpp>
-#include <foxglove/websocket/base64.hpp>
 
-
-namespace labrat::robot::plugins {
+inline namespace labrat {
+namespace lbot::plugins {
 
 class FoxgloveServerPrivate {
 public:
   FoxgloveServerPrivate(const std::string &name, u16 port, const Plugin::Filter &filter) : logger("foxglove-ws") {
-    auto log_handler = [this](foxglove::WebSocketLogLevel level, char const* message) {
+    auto log_handler = [this](foxglove::WebSocketLogLevel level, const char *message) {
       switch (level) {
         case (foxglove::WebSocketLogLevel::Debug): {
           logger.logDebug() << message;
@@ -52,10 +52,10 @@ public:
         }
       }
     };
-    
+
     const foxglove::ServerOptions options;
     server = foxglove::ServerFactory::createServer<websocketpp::connection_hdl>(name, log_handler, options);
-    
+
     foxglove::ServerHandlers<websocketpp::connection_hdl> handlers;
     handlers.subscribeHandler = [&](foxglove::ChannelId channel_id, websocketpp::connection_hdl) {
       logger.logInfo() << "First client subscribed to " << channel_id;
@@ -176,9 +176,11 @@ inline FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handle
   }
 
   std::lock_guard guard(mutex);
-  server->broadcastMessage(channel_iterator->second, info.timestamp.count(), info.serialized_message.data(), info.serialized_message.size());
+  server->broadcastMessage(channel_iterator->second, info.timestamp.count(), info.serialized_message.data(),
+    info.serialized_message.size());
 
   return channel_iterator;
 }
 
-}  // namespace labrat::robot::plugins
+}  // namespace lbot::plugins
+}  // namespace labrat

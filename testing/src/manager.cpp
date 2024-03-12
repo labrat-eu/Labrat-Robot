@@ -1,15 +1,16 @@
-#include <helper.hpp>
-
-#include <labrat/robot/manager.hpp>
+#include <labrat/lbot/manager.hpp>
 
 #include <thread>
 
 #include <gtest/gtest.h>
 
-namespace labrat::robot::test {
+#include <helper.hpp>
+
+inline namespace labrat {
+namespace lbot::test {
 
 TEST(manager, node) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
@@ -21,7 +22,7 @@ TEST(manager, node) {
 }
 
 TEST(manager, cluster) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  lbot::Manager::Ptr manager = lbot::Manager::get();
 
   std::shared_ptr<TestCluster> test_cluster(manager->addCluster<TestCluster>("test_cluster"));
 
@@ -29,4 +30,5 @@ TEST(manager, cluster) {
   ASSERT_NO_THROW(manager->removeCluster("test_cluster"));
 }
 
-}  // namespace labrat::robot::test
+}  // namespace lbot::test
+}  // namespace labrat

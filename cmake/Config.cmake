@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22.0)
 
 # Set project name
-set(LOCAL_PROJECT_NAME robot)
+set(LOCAL_PROJECT_NAME lbot)
 set(LOCAL_PROJECT_NAMESPACE labrat)
 set(LOCAL_PROJECT_NAME_FULL ${LOCAL_PROJECT_NAMESPACE}_${LOCAL_PROJECT_NAME})
 set(LOCAL_PROJECT_DESCRIPTION "Labrat robotics framework")

@@ -1,15 +1,16 @@
-#include <helper.hpp>
-
-#include <labrat/robot/manager.hpp>
+#include <labrat/lbot/manager.hpp>
 
 #include <thread>
 
 #include <gtest/gtest.h>
 
-namespace labrat::robot::test {
+#include <helper.hpp>
+
+inline namespace labrat {
+namespace lbot::test {
 
 TEST(semantics, sender) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
 
@@ -19,7 +20,7 @@ TEST(semantics, sender) {
 }
 
 TEST(semantics, receiver) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
 
@@ -29,7 +30,7 @@ TEST(semantics, receiver) {
 }
 
 TEST(semantics, server) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
 
@@ -38,4 +39,5 @@ TEST(semantics, server) {
   Node::Receiver<TestContainer>::Ptr receiver_c = node->addReceiver<TestContainer>("topic_c");
 }
 
-}  // namespace labrat::robot::test
+}  // namespace lbot::test
+}  // namespace labrat

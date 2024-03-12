@@ -6,11 +6,12 @@
  *
  */
 
-#include <labrat/robot/exception.hpp>
+#include <labrat/lbot/exception.hpp>
 
 #include <iostream>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 Exception::Exception(std::string message) : Exception(message, Logger("generic")) {}
 
@@ -40,4 +41,5 @@ const char *Exception::what() const noexcept {
   return message.c_str();
 }
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

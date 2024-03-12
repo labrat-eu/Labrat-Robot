@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <labrat/robot/base.hpp>
-#include <labrat/robot/utils/concepts.hpp>
-#include <labrat/robot/utils/types.hpp>
+#include <labrat/lbot/base.hpp>
+#include <labrat/lbot/utils/concepts.hpp>
+#include <labrat/lbot/utils/types.hpp>
 
 #include <chrono>
 #include <concepts>
@@ -19,11 +19,12 @@
 
 #include <flatbuffers/flatbuffers.h>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 /**
  * @brief Abstract base class for Message.
- * 
+ *
  */
 class MessageBase {
 public:
@@ -39,7 +40,7 @@ public:
 protected:
   /**
    * @brief Construct a new Message Base object and set the timestamp to the current time.
-   * 
+   *
    */
   MessageBase() {
     lrob_message_base_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
@@ -88,7 +89,7 @@ public:
 
   /**
    * @brief Get the fully qualified type name.
-   * 
+   *
    * @return constexpr std::string Name of the type.
    */
   static inline constexpr std::string getName() {
@@ -100,21 +101,19 @@ template <typename T>
 concept is_message = utils::is_specialization_of_v<T, Message>;
 
 template <typename T>
-concept is_container = requires {
-  typename T::MessageType;
-};
+concept is_container = requires { typename T::MessageType; };
 
 /**
  * @brief Non-templated container to store reflection info about a Message type.
- * 
+ *
  */
 class MessageReflection {
 public:
   /**
    * @brief Construct a new Message Reflection object by type template.
-   * 
-   * @tparam T 
-   * @return requires 
+   *
+   * @tparam T
+   * @return requires
    */
   template <typename T>
   requires std::is_base_of_v<flatbuffers::Table, T>
@@ -122,15 +121,15 @@ public:
 
   /**
    * @brief Construct a new Message Reflection object by type name.
-   * 
+   *
    * @param name Name of the type.
    */
   MessageReflection(const std::string &name);
 
   /**
    * @brief Get buffer containing the type information.
-   * @details For this function to work properly, the LABRAT_ROBOT_REFLECTION_PATH environment variable must be set correctly.
-   * 
+   * @details For this function to work properly, the LBOT_REFLECTION_PATH environment variable must be set correctly.
+   *
    * @return const std::string& String contianing the binary type information.
    */
   inline const std::string &getBuffer() const {
@@ -139,7 +138,7 @@ public:
 
   /**
    * @brief Check whether or not the requested type could be found and the buffer is valid.
-   * 
+   *
    * @return true The buffer is valid.
    * @return false The type could not be found and the type is invalid.
    */
@@ -197,8 +196,9 @@ private:
  * @param destination Object to be converted to.
  */
 template <typename OriginalType, typename ConvertedType>
-inline void defaultSenderConversionFunction(const ConvertedType &source, OriginalType &destination,
-  const void *) requires std::is_same_v<OriginalType, ConvertedType> {
+inline void defaultSenderConversionFunction(const ConvertedType &source, OriginalType &destination, const void *)
+requires std::is_same_v<OriginalType, ConvertedType>
+{
   destination = source;
 }
 
@@ -226,8 +226,9 @@ inline void defaultSenderConversionFunction(const ConvertedType &source, Origina
  * @param destination Object to be converted to.
  */
 template <typename OriginalType, typename ConvertedType>
-inline void defaultReceiverConversionFunction(const OriginalType &source, ConvertedType &destination,
-  const void *) requires std::is_same_v<OriginalType, ConvertedType> {
+inline void defaultReceiverConversionFunction(const OriginalType &source, ConvertedType &destination, const void *)
+requires std::is_same_v<OriginalType, ConvertedType>
+{
   destination = source;
 }
 
@@ -259,7 +260,7 @@ public:
 
   /**
    * @brief Default-construct a new Move Function object.
-   * 
+   *
    */
   MoveFunction() : function(nullptr) {}
 
@@ -285,7 +286,7 @@ public:
 
   /**
    * @brief Check whether a valid function is stored.
-   * 
+   *
    * @return true The function is valid.
    * @return false The function is invalid.
    */
@@ -297,4 +298,5 @@ private:
   Function<void> function;
 };
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

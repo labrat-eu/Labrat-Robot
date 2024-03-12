@@ -27,11 +27,11 @@ class VersionInfo(dict):
         super().__setitem__("version", "%s.%s.%s" % (self["version_major"], self["version_minor"], self["version_patch"]))
         super().__setitem__("semver", "v%s" % (self["version"]) if at_tag else "v%s+%s" % (self["version"], self["hash_short"]))
 
-class LabratRobotConan(ConanFile):
-    name = "labrat-robot"
+class LbotConan(ConanFile):
+    name = "lbot"
     license = "GNU Lesser General Public License v3.0 (LGPL-3.0-or-later)"
     author = "Max Yvon Zimmermann (maxyvon@gmx.de)"
-    url = "https://gitlab.com/labrat.eu/robot"
+    url = "https://gitlab.com/labrat-eu/lbot"
     description = "Minimal robot framework to provide an alternative to ROS."
     topics = "robotics", "messaging"
     settings = "os", "compiler", "build_type", "arch"
@@ -136,8 +136,8 @@ class LabratRobotConan(ConanFile):
 
     def package_info(self):
         module_paths = [
-            os.path.join(self._module_path, "LabratRobotLauncher.cmake"),
-            os.path.join(self._module_path, "LabratRobotGenerateFlatbuffer.cmake")
+            os.path.join(self._module_path, "LbotLauncher.cmake"),
+            os.path.join(self._module_path, "LbotGenerateFlatbuffer.cmake")
         ]
 
         self.cpp_info.set_property("cmake_find_mode", "module")
@@ -145,7 +145,7 @@ class LabratRobotConan(ConanFile):
 
         self.cpp_info.components["core"].set_property("cmake_target_name", f"{self.name}::core")
         self.cpp_info.components["core"].set_property("cmake_module_target_name", f"{self.name}::core")
-        self.cpp_info.components["core"].libs = ["robot"]
+        self.cpp_info.components["core"].libs = ["lbot"]
         self.cpp_info.components["core"].requires = ["flatbuffers::flatbuffers"]
 
         self.cpp_info.components["plugins"].set_property("cmake_target_name", f"{self.name}::plugins")
@@ -153,4 +153,4 @@ class LabratRobotConan(ConanFile):
         self.cpp_info.components["plugins"].libs = ["plugins_mcap", "plugins_foxglove-ws", "plugins_mavlink", "plugins_udp-bridge", "plugins_serial-bridge"]
         self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "foxglove-websocket::foxglove-websocket", "crc_cpp::crc_cpp"]
 
-        self.runenv_info.append_path("LABRAT_ROBOT_REFLECTION_PATH", os.path.join(self.package_folder, "var", "run"))
+        self.runenv_info.append_path("LBOT_REFLECTION_PATH", os.path.join(self.package_folder, "var", "run"))

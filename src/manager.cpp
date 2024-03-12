@@ -6,12 +6,13 @@
  *
  */
 
-#include <labrat/robot/manager.hpp>
-#include <labrat/robot/logger.hpp>
-#include <labrat/robot/cluster.hpp>
-#include <labrat/robot/utils/atomic.hpp>
+#include <labrat/lbot/cluster.hpp>
+#include <labrat/lbot/logger.hpp>
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/utils/atomic.hpp>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 std::weak_ptr<Manager> Manager::instance;
 
@@ -21,7 +22,7 @@ Manager::~Manager() {
   topic_map.forceFlush();
 
   Logger::deinitialize();
-  
+
   cluster_map.clear();
   node_map.clear();
 }
@@ -79,4 +80,5 @@ void Manager::removePlugin(Plugin::List::iterator iterator) {
   plugin_list.erase(iterator);
 }
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.0)
 
-function(labrat_robot_add_launcher)
+function(lbot_add_launcher)
   set(options)
   set(oneValueArgs TARGET)
   set(multiValueArgs)
@@ -10,8 +10,8 @@ function(labrat_robot_add_launcher)
     message(FATAL_ERROR "No target provided.")
   endif()
 
-  set(LABRAT_ROBOT_LAUNCHER_TARGET $<TARGET_FILE:${INT_TARGET}>)
+  set(LBOT_LAUNCHER_TARGET $<TARGET_FILE:${INT_TARGET}>)
 
   configure_file(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/launcher.sh.in ${CMAKE_BINARY_DIR}/launch_${INT_TARGET}.tmp)
   file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/launch_${INT_TARGET}.sh INPUT ${CMAKE_BINARY_DIR}/launch_${INT_TARGET}.tmp FILE_PERMISSIONS OWNER_READ OWNER_EXECUTE)
-endfunction(labrat_robot_add_launcher)
+endfunction(lbot_add_launcher)

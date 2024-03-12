@@ -6,16 +6,17 @@
  *
  */
 
-#include <labrat/robot/logger.hpp>
-#include <labrat/robot/manager.hpp>
-#include <labrat/robot/node.hpp>
+#include <labrat/lbot/logger.hpp>
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/node.hpp>
 
-#include <iostream>
-#include <mutex>
 #include <ctime>
 #include <iomanip>
+#include <iostream>
+#include <mutex>
 
-namespace labrat::robot {
+inline namespace labrat {
+namespace lbot {
 
 Logger::Verbosity Logger::log_level = Verbosity::info;
 bool Logger::use_color = true;
@@ -105,7 +106,8 @@ void Logger::trace(const Entry &message) {
   }
 }
 
-Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity, LoggerLocation &&location) : logger(logger), verbosity(verbosity), location(location) {}
+Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity, LoggerLocation &&location) :
+  logger(logger), verbosity(verbosity), location(location) {}
 
 Logger::LogStream::~LogStream() {
   if (verbosity <= Logger::log_level) {
@@ -113,8 +115,9 @@ Logger::LogStream::~LogStream() {
 
     std::lock_guard guard(io_mutex);
 
-    std::cout << getVerbosityColor(verbosity) << "[" << getVerbosityShort(verbosity) << "]" << Color(isColorEnabled()) << " (" << logger.name;
-    
+    std::cout << getVerbosityColor(verbosity) << "[" << getVerbosityShort(verbosity) << "]" << Color(isColorEnabled()) << " ("
+              << logger.name;
+
     if (isLocationEnabled() || isTimeEnabled()) {
       std::cout << " @";
     }
@@ -233,4 +236,5 @@ const Color getVerbosityColor(Logger::Verbosity verbosity) {
   }
 }
 
-}  // namespace labrat::robot
+}  // namespace lbot
+}  // namespace labrat

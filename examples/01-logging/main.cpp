@@ -1,7 +1,5 @@
-#include <labrat/robot/logger.hpp>
-#include <labrat/robot/exception.hpp>
-
-using namespace labrat;
+#include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/logger.hpp>
 
 // Logging
 //
@@ -12,14 +10,14 @@ using namespace labrat;
 
 int main(int argc, char **argv) {
   // First we create a logger object.
-  robot::Logger logger("main");
+  lbot::Logger logger("main");
 
   // In order to write messages to stdout we use the created logger.
   logger.logInfo() << "Testing... " << 123;
 
   // We can also register multiple logger.
-  robot::Logger logger_a("log_a");
-  robot::Logger logger_b("log_b");
+  lbot::Logger logger_a("log_a");
+  lbot::Logger logger_b("log_b");
   logger_a.logInfo() << "This message comes from A.";
   logger_b.logInfo() << "This message comes from B.";
 
@@ -31,13 +29,14 @@ int main(int argc, char **argv) {
   logger.logDebug() << "This is a debug message.";
 
   // We can specify which messages are printed to the console.
-  robot::Logger::setLogLevel(robot::Logger::Verbosity::debug);
+  lbot::Logger::setLogLevel(lbot::Logger::Verbosity::debug);
   logger.logDebug() << "Now debug messages are also printed.";
 
   // Exceptions are also printed through the logging system.
   try {
-    throw robot::Exception("Something went wrong.");
-  } catch (robot::Exception &e) {}
+    throw lbot::Exception("Something went wrong.");
+  } catch (lbot::Exception &e) {
+  }
 
   return 0;
 }

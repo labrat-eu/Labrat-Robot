@@ -1,11 +1,9 @@
-#include <labrat/robot/node.hpp>
-#include <labrat/robot/manager.hpp>
-#include <labrat/robot/utils/thread.hpp>
-#include <labrat/robot/utils/signal.hpp>
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/node.hpp>
+#include <labrat/lbot/utils/signal.hpp>
+#include <labrat/lbot/utils/thread.hpp>
 
 #include <cmath>
-
-using namespace labrat;
 
 // Services
 //
@@ -21,9 +19,9 @@ struct Request {
 
 using Response = double;
 
-class ServerNode : public robot::Node {
+class ServerNode : public lbot::Node {
 public:
-  ServerNode(const robot::Node::Environment &environment) : robot::Node(environment) {
+  ServerNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
     // Register a server on the service with the name "/examples/power" and the handler ServerNode::handleRequest().
     // There can only be one server per service.
     // The type of this server must match any previously registered client on the same service.
@@ -44,9 +42,9 @@ private:
   Server<Request, Response>::Ptr server;
 };
 
-class ClientNode : public robot::Node {
+class ClientNode : public lbot::Node {
 public:
-  ClientNode(const robot::Node::Environment &environment) : robot::Node(environment) {
+  ClientNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
     // Register a client on the service with the name "/examples/power".
     // The type of this client must match any previously registered server or client on the same service.
     client = addClient<Request, Response>("/examples/power");
@@ -57,10 +55,7 @@ public:
 private:
   void clientFunction() {
     // Construct a request message.
-    Request request = {
-      .base = 2,
-      .exponent = ++e
-    };
+    Request request = {.base = 2, .exponent = ++e};
 
     // Client::callSync() might throw an exception.
     try {
@@ -71,8 +66,8 @@ private:
       Response response = client->callSync(request, std::chrono::seconds(1));
 
       getLogger().logInfo() << "Received response: " << response;
-    } catch (robot::ServiceUnavailableException &) {
-    } catch (robot::ServiceTimeoutException &) {
+    } catch (lbot::ServiceUnavailableException &) {
+    } catch (lbot::ServiceTimeoutException &) {
       getLogger().logWarning() << "Failed to reach service, trying again.";
     }
   }
@@ -84,8 +79,8 @@ private:
 };
 
 int main(int argc, char **argv) {
-  robot::Logger logger("main");
-  robot::Manager::Ptr manager = robot::Manager::get();
+  lbot::Logger logger("main");
+  lbot::Manager::Ptr manager = lbot::Manager::get();
 
   manager->addNode<ServerNode>("server");
   manager->addNode<ClientNode>("client");

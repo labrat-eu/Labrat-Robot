@@ -1,23 +1,25 @@
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/plugins/udp-bridge/node.hpp>
+
+#include <gtest/gtest.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
 #include <helper.hpp>
 
-#include <labrat/robot/manager.hpp>
-#include <labrat/robot/plugins/udp-bridge/node.hpp>
-
-#include <unistd.h>
-#include <sys/wait.h>
-#include <gtest/gtest.h>
-
-namespace labrat::robot::test {
+inline namespace labrat {
+namespace lbot::test {
 
 TEST(udp_bridge, fork) {
-  labrat::robot::Manager::Ptr manager = labrat::robot::Manager::get();
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   int pid = fork();
 
   if (pid == 0) {
     // Child branch.
     std::shared_ptr<TestNode> source(manager->addNode<TestNode>("source", "/network"));
-    std::shared_ptr<labrat::robot::plugins::UdpBridgeNode> bridge(manager->addNode<labrat::robot::plugins::UdpBridgeNode>("bridge", "127.0.0.1", 5001, 5002));
+    std::shared_ptr<labrat::lbot::plugins::UdpBridgeNode> bridge(
+      manager->addNode<labrat::lbot::plugins::UdpBridgeNode>("bridge", "127.0.0.1", 5001, 5002));
 
     bridge->registerReceiver<TestMessage>("/network");
 
@@ -33,14 +35,15 @@ TEST(udp_bridge, fork) {
 
     source = std::shared_ptr<TestNode>();
     manager->removeNode("source");
-    bridge = std::shared_ptr<labrat::robot::plugins::UdpBridgeNode>();
+    bridge = std::shared_ptr<labrat::lbot::plugins::UdpBridgeNode>();
     manager->removeNode("bridge");
 
     exit(0);
   } else {
     // Parent branch.
     std::shared_ptr<TestNode> sink(manager->addNode<TestNode>("sink", "", "/network"));
-    std::shared_ptr<labrat::robot::plugins::UdpBridgeNode> bridge(manager->addNode<labrat::robot::plugins::UdpBridgeNode>("bridge", "127.0.0.1", 5002, 5001));
+    std::shared_ptr<labrat::lbot::plugins::UdpBridgeNode> bridge(
+      manager->addNode<labrat::lbot::plugins::UdpBridgeNode>("bridge", "127.0.0.1", 5002, 5001));
 
     bridge->registerSender<TestMessage>("/network");
 
@@ -51,7 +54,7 @@ TEST(udp_bridge, fork) {
     for (u64 i = 0; i < 5000; ++i) {
       try {
         message = sink->receiver->latest();
-      } catch (labrat::robot::TopicNoDataAvailableException &) {
+      } catch (labrat::lbot::TopicNoDataAvailableException &) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         continue;
       }
@@ -64,7 +67,7 @@ TEST(udp_bridge, fork) {
 
     sink = std::shared_ptr<TestNode>();
     ASSERT_NO_THROW(manager->removeNode("sink"));
-    bridge = std::shared_ptr<labrat::robot::plugins::UdpBridgeNode>();
+    bridge = std::shared_ptr<labrat::lbot::plugins::UdpBridgeNode>();
     ASSERT_NO_THROW(manager->removeNode("bridge"));
 
     int status;
@@ -74,4 +77,5 @@ TEST(udp_bridge, fork) {
   }
 }
 
-}  // namespace labrat::robot::test
+}  // namespace lbot::test
+}  // namespace labrat

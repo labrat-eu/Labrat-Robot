@@ -4,11 +4,11 @@ from conan.tools.env import VirtualRunEnv
 import os
 
 
-class RobotExamplesConan(ConanFile):
-    name = "robot-examples"
+class LbotExamplesConan(ConanFile):
+    name = "lbot-examples"
     version = "<your version>"
     author = "<your name and e-mail>"
-    description = "Examples for labrat-robot"
+    description = "Examples for lbot"
     settings = "os", "compiler", "build_type", "arch"
     exports_sources = ("CMakeLists.txt", "src/*")
 
@@ -18,7 +18,7 @@ class RobotExamplesConan(ConanFile):
 
     def requirements(self):
         # You may add more dependencies here.
-        self.requires("labrat-robot/v0.0.11+3c38385")
+        self.requires("lbot/v0.0.11+f61d7ee")
 
     def build_requirements(self):
         self.tool_requires("cmake/3.28.1")
@@ -34,7 +34,7 @@ class RobotExamplesConan(ConanFile):
         toolchain.generate()
 
         environment = VirtualRunEnv(self)
-        environment.environment().append_path("LABRAT_ROBOT_REFLECTION_PATH", os.path.join(self.folders.build, "flatbuffer", "schema"))
+        environment.environment().append_path("LBOT_REFLECTION_PATH", os.path.join(self.folders.build, "flatbuffer", "schema"))
         environment.generate()
 
     def build(self):

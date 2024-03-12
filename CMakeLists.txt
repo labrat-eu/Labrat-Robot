@@ -89,7 +89,7 @@ add_subdirectory(src)
 
 if(${PRJ_OPT_ENABLE_FORMAT})
   # Add clang format targets.
-  prj_add_clang_format_targets(SOURCEPATH ${CMAKE_CURRENT_LIST_DIR}/src)
+  prj_add_clang_format_targets(SOURCEPATH ${CMAKE_CURRENT_LIST_DIR}/src ${CMAKE_CURRENT_LIST_DIR}/testing/src ${CMAKE_CURRENT_LIST_DIR}/examples/0*)
 endif()
 
 if(${PRJ_OPT_ENABLE_DOCS})
@@ -97,6 +97,6 @@ if(${PRJ_OPT_ENABLE_DOCS})
   prj_add_doxygen_targets()
 endif()
 
-install(FILES install/GenerateFlatbuffer.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake RENAME LabratRobotGenerateFlatbuffer.cmake)
-install(FILES install/Launcher.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake RENAME LabratRobotLauncher.cmake)
+install(FILES install/GenerateFlatbuffer.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake RENAME LbotGenerateFlatbuffer.cmake)
+install(FILES install/Launcher.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake RENAME LbotLauncher.cmake)
 install(FILES install/launcher.sh.in DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake)
