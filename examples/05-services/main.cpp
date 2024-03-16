@@ -3,10 +3,10 @@
 #include <labrat/lbot/utils/signal.hpp>
 #include <labrat/lbot/utils/thread.hpp>
 
+#include <cmath>
+
 #include <examples/msg/request.fb.hpp>
 #include <examples/msg/response.fb.hpp>
-
-#include <cmath>
 
 // Services
 //

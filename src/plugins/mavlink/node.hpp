@@ -35,6 +35,16 @@ public:
     u8 component_id;
   };
 
+private:
+  template <typename FlatbufferType>
+  class MavlinkMessage : public UnsafeMessage<FlatbufferType, mavlink_message_t> {
+  public:
+    static void convertFrom(const mavlink_message_t &source, MavlinkMessage<FlatbufferType> &destination);
+    static void convertTo(const MavlinkMessage<FlatbufferType> &source, mavlink_message_t &destination,
+      const MavlinkNode::SystemInfo *info);
+  };
+
+public:
   /**
    * @brief Construct a new Mavlink Node object.
    *
@@ -60,9 +70,8 @@ public:
    * @param id Message ID of the underlying MAVLink message.
    */
   template <typename MessageType>
-  void registerSender(const std::string topic_name, ConversionFunction<mavlink_message_t, Message<MessageType>> conversion_function, u16 id,
-    const void *user_ptr = nullptr) {
-    registerGenericSender(addSender<Message<MessageType>, mavlink_message_t>(topic_name, conversion_function, user_ptr), id);
+  void registerSender(const std::string topic_name, u16 id) {
+    registerGenericSender(addSender<MessageType>(topic_name), id);
   }
 
   /**
@@ -73,10 +82,8 @@ public:
    * @param conversion_function Conversion function used by the receiver.
    */
   template <typename MessageType>
-  void registerReceiver(const std::string topic_name, ConversionFunction<Message<MessageType>, mavlink_message_t> conversion_function,
-    const void *user_ptr = nullptr) {
-    typename Node::Receiver<Message<MessageType>, mavlink_message_t>::Ptr receiver =
-      addReceiver<Message<MessageType>, mavlink_message_t>(topic_name, conversion_function, user_ptr);
+  void registerReceiver(const std::string topic_name, const SystemInfo *system_info) {
+    typename Node::Receiver<MessageType>::Ptr receiver = addReceiver<MessageType>(topic_name, system_info);
     receiver->setCallback(&MavlinkNode::receiverCallback, priv);
 
     registerGenericReceiver(std::move(receiver));

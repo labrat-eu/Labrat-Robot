@@ -23,7 +23,7 @@ TopicMap::Topic::Topic(Handle handle, const std::string &name) : handle(handle),
 void TopicMap::forceFlush() {
   for (std::pair<const std::string, Topic> &entry : map) {
     for (void *pointer : entry.second.getReceivers()) {
-      Node::Receiver<flatbuffers::Table> *receiver = reinterpret_cast<Node::Receiver<flatbuffers::Table> *>(pointer);
+      Node::GenericReceiver<void> *receiver = reinterpret_cast<Node::GenericReceiver<void> *>(pointer);
 
       const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
 

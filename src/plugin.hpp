@@ -35,8 +35,7 @@ public:
    * @brief Default constructor to initialize the user count to zero.
    *
    */
-  inline Plugin() :
-    user_ptr(nullptr), topic_callback(nullptr), service_callback(nullptr), message_callback(nullptr) {
+  inline Plugin() : user_ptr(nullptr), topic_callback(nullptr), service_callback(nullptr), message_callback(nullptr) {
     use_count = 0;
   }
 
@@ -46,7 +45,8 @@ public:
    * @param rhs Object to be copied.
    */
   inline Plugin(const Plugin &rhs) :
-    user_ptr(rhs.user_ptr), topic_callback(rhs.topic_callback), service_callback(rhs.service_callback), message_callback(rhs.message_callback), filter(rhs.filter) {
+    user_ptr(rhs.user_ptr), topic_callback(rhs.topic_callback), service_callback(rhs.service_callback),
+    message_callback(rhs.message_callback), filter(rhs.filter) {
     use_count = 0;
   }
 
@@ -119,15 +119,13 @@ public:
     template <typename RequestType, typename ResponseType>
     requires is_message<RequestType> && is_message<ResponseType>
     static Plugin::ServiceInfo get(const std::string &service_name, ServiceMap::Service &service) {
-      const Plugin::ServiceInfo result = {
-        .request_type_hash = typeid(RequestType).hash_code(),
+      const Plugin::ServiceInfo result = {.request_type_hash = typeid(RequestType).hash_code(),
         .request_type_name = RequestType::getName(),
         .response_type_hash = typeid(ResponseType).hash_code(),
         .response_type_name = ResponseType::getName(),
         .service_hash = std::hash<std::string>()(service_name),
         .service_name = service_name,
-        .service = service
-      };
+        .service = service};
 
       return result;
     }

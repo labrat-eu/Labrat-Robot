@@ -21,7 +21,7 @@ TEST(udp_bridge, fork) {
     std::shared_ptr<labrat::lbot::plugins::UdpBridgeNode> bridge(
       manager->addNode<labrat::lbot::plugins::UdpBridgeNode>("bridge", "127.0.0.1", 5001, 5002));
 
-    bridge->registerReceiver<TestMessage>("/network");
+    bridge->registerReceiver<TestFlatbuffer>("/network");
 
     for (u64 i = 0; i < 5000; ++i) {
       TestContainer message;
@@ -45,7 +45,7 @@ TEST(udp_bridge, fork) {
     std::shared_ptr<labrat::lbot::plugins::UdpBridgeNode> bridge(
       manager->addNode<labrat::lbot::plugins::UdpBridgeNode>("bridge", "127.0.0.1", 5002, 5001));
 
-    bridge->registerSender<TestMessage>("/network");
+    bridge->registerSender<TestFlatbuffer>("/network");
 
     TestContainer message;
     message.integral_field = -1;

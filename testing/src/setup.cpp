@@ -115,8 +115,8 @@ TEST(setup, move) {
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
-  node_a->sender->setMove(&TestContainer::toMessageMove);
-  node_b->receiver->setMove(&TestContainer::fromMessageMove);
+  static_assert(can_convert_from<TestMessageConv>);
+  static_assert(can_move_from<TestMessageConv>);
 
   static const std::size_t size = 10000000L;
   std::vector<u8> local_buffer;

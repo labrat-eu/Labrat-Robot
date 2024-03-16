@@ -16,7 +16,7 @@ TEST(DISABLED_semantics, sender) {
 
   Node::Sender<TestFlatbuffer>::Ptr sender_a = node->addSender<TestFlatbuffer>("topic_a");
   Node::Sender<TestMessage>::Ptr sender_b = node->addSender<TestMessage>("topic_b");
-  Node::Sender<TestContainer>::Ptr sender_c = node->addSender<TestContainer>("topic_c");
+  Node::Sender<TestMessageConv>::Ptr sender_c = node->addSender<TestMessageConv>("topic_c");
 
   TestMessage message_raw;
   sender_a->put(message_raw);
@@ -33,8 +33,8 @@ TEST(DISABLED_semantics, receiver) {
 
   Node::Receiver<TestFlatbuffer>::Ptr receiver_a = node->addReceiver<TestFlatbuffer>("topic_a");
   Node::Receiver<TestMessage>::Ptr receiver_b = node->addReceiver<TestMessage>("topic_b");
-  Node::Receiver<TestContainer>::Ptr receiver_c = node->addReceiver<TestContainer>("topic_c");
-  
+  Node::Receiver<TestMessageConv>::Ptr receiver_c = node->addReceiver<TestMessageConv>("topic_c");
+
   TestMessage message_raw;
   message_raw = receiver_a->latest();
   message_raw = receiver_b->latest();

@@ -124,48 +124,6 @@ public:
     std::string message;
     std::string file;
     u32 line;
-
-    /**
-     * @brief Forward conversion function to be used by the logger node.
-     *
-     * @param source Reference to the Entry object to be converted.
-     * @param destination Reference to the foxglove::Log message to convert to.
-     */
-    static inline void toMessage(const Entry &source, Message<foxglove::Log> &destination) {
-      switch (source.verbosity) {
-        case (Verbosity::critical): {
-          destination.level = foxglove::LogLevel::FATAL;
-          break;
-        }
-
-        case (Verbosity::error): {
-          destination.level = foxglove::LogLevel::ERROR;
-          break;
-        }
-
-        case (Verbosity::warning): {
-          destination.level = foxglove::LogLevel::WARNING;
-          break;
-        }
-
-        case (Verbosity::info): {
-          destination.level = foxglove::LogLevel::INFO;
-          break;
-        }
-
-        case (Verbosity::debug): {
-          destination.level = foxglove::LogLevel::DEBUG;
-          break;
-        }
-      }
-
-      destination.timestamp = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(source.timestamp).count(),
-        (source.timestamp % std::chrono::seconds(1)).count());
-      destination.name = source.logger_name;
-      destination.message = source.message;
-      destination.file = source.file;
-      destination.line = source.line;
-    }
   };
 
   /**

@@ -138,7 +138,7 @@ void FoxgloveServerPrivate::messageCallback(void *user_ptr, const Plugin::Messag
 
 FoxgloveServerPrivate::SchemaMap::iterator FoxgloveServerPrivate::handleSchema(const std::string type_name, const std::size_t type_hash) {
   std::lock_guard guard(mutex);
-  
+
   SchemaMap::iterator schema_iterator = schema_map.find(type_hash);
   if (schema_iterator == schema_map.end()) {
     MessageReflection reflection(type_name);

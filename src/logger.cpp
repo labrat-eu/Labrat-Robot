@@ -25,13 +25,52 @@ bool Logger::print_time = true;
 
 static std::mutex io_mutex;
 
+class EntryMessage : public UnsafeMessage<foxglove::Log, Logger::Entry> {
+public:
+  static void convertFrom(const Logger::Entry &source, EntryMessage &destination) {
+    switch (source.verbosity) {
+      case (Logger::Verbosity::critical): {
+        destination.level = foxglove::LogLevel::FATAL;
+        break;
+      }
+
+      case (Logger::Verbosity::error): {
+        destination.level = foxglove::LogLevel::ERROR;
+        break;
+      }
+
+      case (Logger::Verbosity::warning): {
+        destination.level = foxglove::LogLevel::WARNING;
+        break;
+      }
+
+      case (Logger::Verbosity::info): {
+        destination.level = foxglove::LogLevel::INFO;
+        break;
+      }
+
+      case (Logger::Verbosity::debug): {
+        destination.level = foxglove::LogLevel::DEBUG;
+        break;
+      }
+    }
+
+    destination.timestamp = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(source.timestamp).count(),
+      (source.timestamp % std::chrono::seconds(1)).count());
+    destination.name = source.logger_name;
+    destination.message = source.message;
+    destination.file = source.file;
+    destination.line = source.line;
+  }
+};
+
 class LoggerNode : public Node {
 private:
-  Sender<foxglove::Log, Logger::Entry>::Ptr sender;
+  Sender<EntryMessage>::Ptr sender;
 
 public:
   LoggerNode(const Node::Environment environment) : Node(environment) {
-    sender = addSender<foxglove::Log, Logger::Entry>("/log");
+    sender = addSender<EntryMessage>("/log");
   }
 
   void send(const Logger::Entry &entry) {

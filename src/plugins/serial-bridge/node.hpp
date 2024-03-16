@@ -25,12 +25,33 @@ class SerialBridgeNodePrivate;
  *
  */
 class SerialBridgeNode final : public Node {
-public:
+private:
   struct PayloadInfo {
     std::size_t topic_hash;
     flatbuffers::span<u8> payload;
   };
 
+  template <typename T>
+  requires is_flatbuffer<T>
+  struct PayloadMessage : public UnsafeMessage<T, PayloadInfo> {
+    std::size_t topic_hash;
+    flatbuffers::span<u8> payload;
+
+    static void convertFrom(const PayloadInfo &source, PayloadMessage<T> &destination) {
+      flatbuffers::GetRoot<T>(source.payload.data())->UnPackTo(&destination);
+    }
+
+    static void convertTo(const PayloadMessage<T> &source, PayloadInfo &destination, const GenericReceiver<PayloadInfo> *receiver) {
+      destination.topic_hash = receiver->getTopicInfo().topic_hash;
+
+      flatbuffers::FlatBufferBuilder builder;
+      builder.Finish(T::Pack(builder, &source));
+
+      destination.payload = builder.GetBufferSpan();
+    }
+  };
+
+public:
   /**
    * @brief Construct a new Serial Bridge Node object.
    *
@@ -49,7 +70,7 @@ public:
    */
   template <typename MessageType>
   void registerSender(const std::string topic_name) {
-    registerGenericSender(addSender<MessageType, PayloadInfo>(topic_name, senderConversionFunction<MessageType>));
+    registerGenericSender(addSender<PayloadMessage<MessageType>>(topic_name));
   }
 
   /**
@@ -60,30 +81,13 @@ public:
    */
   template <typename MessageType>
   void registerReceiver(const std::string topic_name) {
-    typename Node::Receiver<MessageType, PayloadInfo>::Ptr receiver =
-      addReceiver<MessageType, PayloadInfo>(topic_name, receiverConversionFunction<MessageType>);
+    typename Node::Receiver<PayloadMessage<MessageType>>::Ptr receiver = addReceiver<PayloadMessage<MessageType>>(topic_name);
     receiver->setCallback(&SerialBridgeNode::receiverCallback, priv);
 
     registerGenericReceiver(std::move(receiver));
   }
 
 private:
-  template <typename MessageType>
-  static void senderConversionFunction(const PayloadInfo &source, MessageType &destination, const GenericSender<PayloadInfo> *sender) {
-    flatbuffers::GetRoot<typename MessageType::Content::TableType>(source.payload.data())->UnPackTo(&destination);
-  }
-
-  template <typename MessageType>
-  static void receiverConversionFunction(const MessageType &source, PayloadInfo &destination,
-    const GenericReceiver<PayloadInfo> *receiver) {
-    destination.topic_hash = receiver->getTopicInfo().topic_hash;
-
-    flatbuffers::FlatBufferBuilder builder;
-    builder.Finish(MessageType::Content::TableType::Pack(builder, &source));
-
-    destination.payload = builder.GetBufferSpan();
-  }
-
   void registerGenericSender(Node::GenericSender<PayloadInfo>::Ptr &&sender);
   void registerGenericReceiver(Node::GenericReceiver<PayloadInfo>::Ptr &&receiver);
 

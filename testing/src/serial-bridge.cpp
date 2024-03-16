@@ -52,7 +52,7 @@ TEST(serial_bridge, fork) {
     std::shared_ptr<labrat::lbot::plugins::SerialBridgeNode> bridge(
       manager->addNode<labrat::lbot::plugins::SerialBridgeNode>("bridge", "test0"));
 
-    bridge->registerReceiver<TestMessage>("/network");
+    bridge->registerReceiver<TestFlatbuffer>("/network");
 
     for (u64 i = 0; i < 5000; ++i) {
       TestContainer message;
@@ -75,7 +75,7 @@ TEST(serial_bridge, fork) {
     std::shared_ptr<labrat::lbot::plugins::SerialBridgeNode> bridge(
       manager->addNode<labrat::lbot::plugins::SerialBridgeNode>("bridge", "test1"));
 
-    bridge->registerSender<TestMessage>("/network");
+    bridge->registerSender<TestFlatbuffer>("/network");
 
     TestContainer message;
     message.integral_field = -1;
