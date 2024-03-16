@@ -80,7 +80,7 @@ public:
   ~FoxgloveServerPrivate() {
     Manager::get()->removePlugin(self_reference);
 
-    for (const std::pair<std::size_t, foxglove::ChannelId> channel : channel_map) {
+    for (const std::pair<std::size_t, foxglove::ChannelId> channel : channel_id_map) {
       server->removeChannels({channel.second});
     }
 
@@ -96,16 +96,17 @@ public:
 
 private:
   using SchemaMap = std::unordered_map<std::size_t, SchemaInfo>;
-  using ChannelMap = std::unordered_map<std::size_t, foxglove::ChannelId>;
+  using ChannelIdMap = std::unordered_map<std::size_t, foxglove::ChannelId>;
 
   static void topicCallback(void *user_ptr, const Plugin::TopicInfo &info);
   static void messageCallback(void *user_ptr, const Plugin::MessageInfo &info);
 
-  ChannelMap::iterator handleTopic(const Plugin::TopicInfo &info);
-  inline ChannelMap::iterator handleMessage(const Plugin::MessageInfo &info);
+  SchemaMap::iterator handleSchema(const std::string type_name, const std::size_t type_hash);
+  ChannelIdMap::iterator handleTopic(const Plugin::TopicInfo &info);
+  inline ChannelIdMap::iterator handleMessage(const Plugin::MessageInfo &info);
 
   SchemaMap schema_map;
-  ChannelMap channel_map;
+  ChannelIdMap channel_id_map;
 
   std::unique_ptr<foxglove::ServerInterface<websocketpp::connection_hdl>> server;
   std::mutex mutex;
@@ -135,23 +136,31 @@ void FoxgloveServerPrivate::messageCallback(void *user_ptr, const Plugin::Messag
   (void)self->handleMessage(info);
 }
 
-FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleTopic(const Plugin::TopicInfo &info) {
+FoxgloveServerPrivate::SchemaMap::iterator FoxgloveServerPrivate::handleSchema(const std::string type_name, const std::size_t type_hash) {
   std::lock_guard guard(mutex);
-
-  SchemaMap::iterator schema_iterator = schema_map.find(info.type_hash);
+  
+  SchemaMap::iterator schema_iterator = schema_map.find(type_hash);
   if (schema_iterator == schema_map.end()) {
-    MessageReflection reflection(info.type_name);
+    MessageReflection reflection(type_name);
 
     if (!reflection.isValid()) {
-      throw SchemaUnknownException("Unknown message schema '" + info.type_name + "'.", logger);
+      throw SchemaUnknownException("Unknown message schema '" + type_name + "'.", logger);
     }
 
-    schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
-      std::forward_as_tuple(info.type_name, foxglove::base64Encode(reflection.getBuffer())));
+    schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(type_hash),
+      std::forward_as_tuple(type_name, foxglove::base64Encode(reflection.getBuffer())));
   }
 
-  ChannelMap::iterator channel_iterator = channel_map.find(info.topic_hash);
-  if (channel_iterator == channel_map.end()) {
+  return schema_iterator;
+}
+
+FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleTopic(const Plugin::TopicInfo &info) {
+  SchemaMap::iterator schema_iterator = handleSchema(info.type_name, info.type_hash);
+
+  std::lock_guard guard(mutex);
+
+  ChannelIdMap::iterator channel_id_iterator = channel_id_map.find(info.topic_hash);
+  if (channel_id_iterator == channel_id_map.end()) {
     std::vector<foxglove::ChannelId> channel_ids = server->addChannels({{
       .topic = info.topic_name,
       .encoding = "flatbuffer",
@@ -163,23 +172,23 @@ FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleTopic(c
       throw RuntimeException("Failed to add channel.", logger);
     }
 
-    channel_iterator = channel_map.emplace_hint(channel_iterator, std::make_pair(info.topic_hash, channel_ids.front()));
+    channel_id_iterator = channel_id_map.emplace_hint(channel_id_iterator, std::make_pair(info.topic_hash, channel_ids.front()));
   }
 
-  return channel_iterator;
+  return channel_id_iterator;
 }
 
-inline FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleMessage(const Plugin::MessageInfo &info) {
-  ChannelMap::iterator channel_iterator = channel_map.find(info.topic_info.topic_hash);
-  if (channel_iterator == channel_map.end()) {
-    channel_iterator = handleTopic(info.topic_info);
+inline FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleMessage(const Plugin::MessageInfo &info) {
+  ChannelIdMap::iterator channel_id_iterator = channel_id_map.find(info.topic_info.topic_hash);
+  if (channel_id_iterator == channel_id_map.end()) {
+    channel_id_iterator = handleTopic(info.topic_info);
   }
 
   std::lock_guard guard(mutex);
-  server->broadcastMessage(channel_iterator->second, info.timestamp.count(), info.serialized_message.data(),
+  server->broadcastMessage(channel_id_iterator->second, info.timestamp.count(), info.serialized_message.data(),
     info.serialized_message.size());
 
-  return channel_iterator;
+  return channel_id_iterator;
 }
 
 }  // namespace lbot::plugins

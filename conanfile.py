@@ -64,10 +64,8 @@ class LbotConan(ConanFile):
             return
 
         self.requires("flatbuffers/23.5.26")
-
         self.requires("mcap/1.3.0")
         self.requires("crc_cpp/1.2.0")
-
         self.requires("foxglove-websocket/1.2.0")
 
     def build_requirements(self):

@@ -34,12 +34,12 @@ namespace lbot::plugins {
 
 class SerialBridgeNodePrivate {
 public:
-  struct MavlinkSender {
+  struct BridgeSender {
     std::unordered_map<std::string, Node::GenericSender<SerialBridgeNode::PayloadInfo>::Ptr> map;
     std::unordered_map<std::size_t, Node::GenericSender<SerialBridgeNode::PayloadInfo>::Ptr &> adapter;
   } sender;
 
-  struct MavlinkReceiver {
+  struct BridgeReceiver {
     std::vector<Node::GenericReceiver<SerialBridgeNode::PayloadInfo>::Ptr> vector;
   } receiver;
 

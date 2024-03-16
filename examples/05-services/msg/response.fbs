@@ -1,0 +1,7 @@
+namespace examples.msg;
+
+table Response {
+  result:float;
+}
+
+root_type Response;

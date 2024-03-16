@@ -18,7 +18,7 @@ class LbotExamplesConan(ConanFile):
 
     def requirements(self):
         # You may add more dependencies here.
-        self.requires("lbot/v0.0.11+f61d7ee")
+        self.requires("lbot/v0.0.11+9ee39ec")
 
     def build_requirements(self):
         self.tool_requires("cmake/3.28.1")

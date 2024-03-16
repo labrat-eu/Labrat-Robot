@@ -159,7 +159,9 @@ public:
 
         utils::ConsumerGuard<u32> guard(plugin.use_count);
 
-        plugin.topic_callback(plugin.user_ptr, GenericSender<ContainerType>::topic_info);
+        if (plugin.topic_callback != nullptr) {
+          plugin.topic_callback(plugin.user_ptr, GenericSender<ContainerType>::topic_info);
+        }
       }
     }
 
@@ -289,7 +291,9 @@ public:
 
         utils::ConsumerGuard<u32> guard(plugin.use_count);
 
-        plugin.message_callback(plugin.user_ptr, message_info);
+        if (plugin.message_callback != nullptr) {
+          plugin.message_callback(plugin.user_ptr, message_info);
+        }
       }
     }
 
@@ -340,7 +344,9 @@ public:
           init_flag = true;
         }
 
-        plugin.message_callback(plugin.user_ptr, message_info);
+        if (plugin.message_callback != nullptr) {
+          plugin.message_callback(plugin.user_ptr, message_info);
+        }
       }
     }
 
@@ -810,7 +816,8 @@ public:
    * @tparam ResponseType Type of the response made to by a service.
    */
   template <typename RequestType, typename ResponseType>
-  class Server {
+  requires is_message<RequestType> && is_message<ResponseType>
+  class _Server {
   public:
     /**
      * @brief Handler function to handle requests made to a service.
@@ -854,37 +861,91 @@ public:
      * @param handler_function Handler function to handle requests made to a service.
      * @param user_ptr User pointer to be used by the handler function.
      */
-    Server(const std::string &service_name, Node &node, HandlerFunction handler_function, void *user_ptr = nullptr) :
-      node(node), handler_function(handler_function), user_ptr(user_ptr == nullptr ? this : user_ptr),
-      service(node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this)) {}
+    _Server(const std::string &service_name, Node &node, HandlerFunction handler_function, void *user_ptr = nullptr) :
+      service_info(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name, node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this))),
+      node(node), handler_function(handler_function), user_ptr(user_ptr == nullptr ? this : user_ptr) {
+      for (Plugin &plugin : node.environment.plugin_list) {
+        if (plugin.delete_flag.test() || !plugin.filter.check(service_info.service_hash)) {
+          continue;
+        }
+
+        utils::ConsumerGuard<u32> guard(plugin.use_count);
+
+        if (plugin.service_callback != nullptr) {
+          plugin.service_callback(plugin.user_ptr, service_info);
+        }
+      }
+    }
 
     friend class Node;
     friend class Client;
 
+    const Plugin::ServiceInfo service_info;
     Node &node;
     const HandlerFunction handler_function;
     void *const user_ptr;
-    ServiceMap::Service &service;
 
   public:
-    using Ptr = std::unique_ptr<Server<RequestType, ResponseType>>;
-
     /**
      * @brief Destroy the Server object.
      *
      */
-    ~Server() {
-      service.removeServer(this);
+    ~_Server() {
+      service_info.service.removeServer(this);
     }
 
     /**
-     * @brief Get the name of the relevant service.
+     * @brief Get information about the relevant service.
      *
-     * @return const std::string& Name of the service.
+     * @return const Plugin::ServiceInfo& Information about the service.
      */
-    inline const std::string &getServiceName() const {
-      return service.name;
+    inline const Plugin::ServiceInfo &getTopicInfo() const {
+      return service_info;
     }
+  };
+
+  // Wrapper classes to allow flatbuffer types to also work as template arguments.
+  template <typename RequestType, typename ResponseType>
+  class Server final : public _Server<RequestType, ResponseType> {
+  public:
+    using Super = _Server<RequestType, ResponseType>;
+    using Ptr = std::unique_ptr<Server<RequestType, ResponseType>>;
+
+    template <typename... Args>
+    Server(Args &&...args) : Super(std::forward<Args>(args)...){};
+  };
+
+  template <typename RequestType, typename ResponseType>
+  requires is_flatbuffer<RequestType>
+  class Server<RequestType, ResponseType> final : public _Server<Message<RequestType>, ResponseType> {
+  public:
+    using Super = _Server<Message<RequestType>, ResponseType>;
+    using Ptr = std::unique_ptr<Server<RequestType, ResponseType>>;
+
+    template <typename... Args>
+    Server(Args &&...args) : Super(std::forward<Args>(args)...){};
+  };
+
+  template <typename RequestType, typename ResponseType>
+  requires is_flatbuffer<ResponseType>
+  class Server<RequestType, ResponseType> final : public _Server<RequestType, Message<ResponseType>> {
+  public:
+    using Super = _Server<RequestType, Message<ResponseType>>;
+    using Ptr = std::unique_ptr<Server<RequestType, ResponseType>>;
+
+    template <typename... Args>
+    Server(Args &&...args) : Super(std::forward<Args>(args)...){};
+  };
+
+  template <typename RequestType, typename ResponseType>
+  requires is_flatbuffer<RequestType> && is_flatbuffer<ResponseType>
+  class Server<RequestType, ResponseType> final : public _Server<Message<RequestType>, Message<ResponseType>> {
+  public:
+    using Super = _Server<Message<RequestType>, Message<ResponseType>>;
+    using Ptr = std::unique_ptr<Server<RequestType, ResponseType>>;
+
+    template <typename... Args>
+    Server(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   /**
@@ -894,7 +955,8 @@ public:
    * @tparam ResponseType Type of the response made to by a service.
    */
   template <typename RequestType, typename ResponseType>
-  class Client {
+  requires is_message<RequestType> && is_message<ResponseType>
+  class _Client {
   private:
     /**
      * @brief Construct a new Client object.
@@ -902,23 +964,22 @@ public:
      * @param service_name Name of the service.
      * @param node Reference to the parent node.
      */
-    Client(const std::string &service_name, Node &node) :
-      node(node), service(node.environment.service_map.getService<RequestType, ResponseType>(service_name)) {}
+    _Client(const std::string &service_name, Node &node) :
+      node(node), service_info(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name, node.environment.service_map.getService<RequestType, ResponseType>(service_name))) {}
 
     friend class Node;
 
     Node &node;
-    ServiceMap::Service &service;
+    const Plugin::ServiceInfo service_info;
 
   public:
-    using Ptr = std::unique_ptr<Client<RequestType, ResponseType>>;
     using Future = std::shared_future<ResponseType>;
 
     /**
      * @brief Destroy the Client object.
      *
      */
-    ~Client() = default;
+    ~_Client() = default;
 
     /**
      * @brief Make a request to a service asynchronously.
@@ -935,7 +996,7 @@ public:
       std::thread(
         [this](std::promise<ResponseType> promise, const RequestType request) {
         try {
-          ServiceMap::Service::ServerReference reference = service.getServer();
+          ServiceMap::Service::ServerReference reference = service_info.service.getServer();
           Server<RequestType, ResponseType> *server = reference;
 
           if (server == nullptr) {
@@ -988,13 +1049,57 @@ public:
     }
 
     /**
-     * @brief Get the name of the relevant service.
+     * @brief Get information about the relevant service.
      *
-     * @return const std::string& Name of the service.
+     * @return const Plugin::ServiceInfo& Information about the service.
      */
-    inline const std::string &getServiceName() const {
-      return service.name;
+    inline const Plugin::ServiceInfo &getServiceInfo() const {
+      return service_info;
     }
+  };
+
+  // Wrapper classes to allow flatbuffer types to also work as template arguments.
+  template <typename RequestType, typename ResponseType>
+  class Client final : public _Client<RequestType, ResponseType> {
+  public:
+    using Super = _Client<RequestType, ResponseType>;
+    using Ptr = std::unique_ptr<Client<RequestType, ResponseType>>;
+
+    template <typename... Args>
+    Client(Args &&...args) : Super(std::forward<Args>(args)...){};
+  };
+
+  template <typename RequestType, typename ResponseType>
+  requires is_flatbuffer<RequestType>
+  class Client<RequestType, ResponseType> final : public _Client<Message<RequestType>, ResponseType> {
+  public:
+    using Super = _Client<Message<RequestType>, ResponseType>;
+    using Ptr = std::unique_ptr<Client<RequestType, ResponseType>>;
+
+    template <typename... Args>
+    Client(Args &&...args) : Super(std::forward<Args>(args)...){};
+  };
+
+  template <typename RequestType, typename ResponseType>
+  requires is_flatbuffer<ResponseType>
+  class Client<RequestType, ResponseType>  final : public _Client<RequestType, Message<ResponseType>> {
+  public:
+    using Super = _Client<RequestType, Message<ResponseType>>;
+    using Ptr = std::unique_ptr<Client<RequestType, ResponseType>>;
+
+    template <typename... Args>
+    Client(Args &&...args) : Super(std::forward<Args>(args)...){};
+  };
+
+  template <typename RequestType, typename ResponseType>
+  requires is_flatbuffer<RequestType> && is_flatbuffer<ResponseType>
+  class Client<RequestType, ResponseType>  final : public _Client<Message<RequestType>, Message<ResponseType>> {
+  public:
+    using Super = _Client<Message<RequestType>, Message<ResponseType>>;
+    using Ptr = std::unique_ptr<Client<RequestType, ResponseType>>;
+
+    template <typename... Args>
+    Client(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   /**
@@ -1066,7 +1171,9 @@ protected:
    * @return Receiver<MessageType, ContainerType>::Ptr Pointer to the server.
    */
   template <typename RequestType, typename ResponseType, typename... Args>
-  typename Server<RequestType, ResponseType>::Ptr addServer(const std::string &service_name, Args &&...args) {
+  typename Server<RequestType, ResponseType>::Ptr addServer(const std::string &service_name, Args &&...args)
+  requires (is_message<RequestType> || is_flatbuffer<RequestType>) && (is_message<ResponseType> || is_flatbuffer<ResponseType>)
+  {
     using Ptr = Server<RequestType, ResponseType>::Ptr;
     return Ptr(new Server<RequestType, ResponseType>(service_name, *this, std::forward<Args>(args)...));
   }
@@ -1080,7 +1187,9 @@ protected:
    * @return Receiver<MessageType, ContainerType>::Ptr Pointer to the client.
    */
   template <typename RequestType, typename ResponseType, typename... Args>
-  typename Client<RequestType, ResponseType>::Ptr addClient(const std::string &service_name, Args &&...args) {
+  typename Client<RequestType, ResponseType>::Ptr addClient(const std::string &service_name, Args &&...args)
+  requires (is_message<RequestType> || is_flatbuffer<RequestType>) && (is_message<ResponseType> || is_flatbuffer<ResponseType>)
+  {
     using Ptr = Client<RequestType, ResponseType>::Ptr;
     return Ptr(new Client<RequestType, ResponseType>(service_name, *this, std::forward<Args>(args)...));
   }

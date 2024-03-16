@@ -9,6 +9,7 @@
 
 #include <labrat/lbot/base.hpp>
 #include <labrat/lbot/message.hpp>
+#include <labrat/lbot/service.hpp>
 #include <labrat/lbot/utils/types.hpp>
 
 #include <atomic>
@@ -34,7 +35,8 @@ public:
    * @brief Default constructor to initialize the user count to zero.
    *
    */
-  inline Plugin() {
+  inline Plugin() :
+    user_ptr(nullptr), topic_callback(nullptr), service_callback(nullptr), message_callback(nullptr) {
     use_count = 0;
   }
 
@@ -44,7 +46,7 @@ public:
    * @param rhs Object to be copied.
    */
   inline Plugin(const Plugin &rhs) :
-    user_ptr(rhs.user_ptr), topic_callback(rhs.topic_callback), message_callback(rhs.message_callback), filter(rhs.filter) {
+    user_ptr(rhs.user_ptr), topic_callback(rhs.topic_callback), service_callback(rhs.service_callback), message_callback(rhs.message_callback), filter(rhs.filter) {
     use_count = 0;
   }
 
@@ -93,6 +95,51 @@ public:
   void (*topic_callback)(void *user_ptr, const TopicInfo &info);
 
   /**
+   * @brief Information on a service provided on callbacks.
+   *
+   */
+  struct ServiceInfo {
+    const std::size_t request_type_hash;
+    const std::string request_type_name;
+    const std::size_t response_type_hash;
+    const std::string response_type_name;
+    const std::size_t service_hash;
+    const std::string service_name;
+    ServiceMap::Service &service;
+
+    /**
+     * @brief Get information about a service by name.
+     * This will not lookup any data.
+     *
+     * @tparam RequestType Type of the request message of the service.
+     * @tparam ResponseType Type of the request message of the service.
+     * @param service_name Name of the service.
+     * @return Plugin::ServiceInfo Information about the service.
+     */
+    template <typename RequestType, typename ResponseType>
+    requires is_message<RequestType> && is_message<ResponseType>
+    static Plugin::ServiceInfo get(const std::string &service_name, ServiceMap::Service &service) {
+      const Plugin::ServiceInfo result = {
+        .request_type_hash = typeid(RequestType).hash_code(),
+        .request_type_name = RequestType::getName(),
+        .response_type_hash = typeid(ResponseType).hash_code(),
+        .response_type_name = ResponseType::getName(),
+        .service_hash = std::hash<std::string>()(service_name),
+        .service_name = service_name,
+        .service = service
+      };
+
+      return result;
+    }
+  };
+
+  /**
+   * @brief Callback function pointer for when a server is created.
+   *
+   */
+  void (*service_callback)(void *user_ptr, const ServiceInfo &info);
+
+  /**
    * @brief Information on a message provided on callbacks.
    *
    */
@@ -135,24 +182,6 @@ public:
     }
 
     /**
-     * @brief Add a topic to the filter.
-     * Depending on the supplied mode this will either whitelist or blacklist the relevant topic.
-     * If the mode is changed, all previously added topics will be removed from the filter.
-     *
-     * @tparam Mode New mode of the filter.
-     * @param topic_hash Hash of the topic to be added to the filter-
-     */
-    template <bool Mode>
-    void add(std::size_t topic_hash) {
-      if (mode != Mode) {
-        set.clear();
-        mode = Mode;
-      }
-
-      set.emplace(topic_hash);
-    }
-
-    /**
      * @brief Whitelist a topic.
      * All previously blacklisted topics will be removed from the filter.
      *
@@ -173,6 +202,24 @@ public:
     }
 
   private:
+    /**
+     * @brief Add a topic to the filter.
+     * Depending on the supplied mode this will either whitelist or blacklist the relevant topic.
+     * If the mode is changed, all previously added topics will be removed from the filter.
+     *
+     * @tparam Mode New mode of the filter.
+     * @param topic_hash Hash of the topic to be added to the filter-
+     */
+    template <bool Mode>
+    void add(std::size_t topic_hash) {
+      if (mode != Mode) {
+        set.clear();
+        mode = Mode;
+      }
+
+      set.emplace(topic_hash);
+    }
+
     std::unordered_set<std::size_t> set;
 
     /**

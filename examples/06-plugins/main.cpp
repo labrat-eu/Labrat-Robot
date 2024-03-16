@@ -41,6 +41,33 @@ private:
   uint64_t i = 0;
 };
 
+class ServerNode : public lbot::Node {
+public:
+  ServerNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
+    // Register a server on the service with the name "/examples/power" and the handler ServerNode::handleRequest().
+    // There can only be one server per service.
+    // The type of this server must match any previously registered client on the same service.
+    server = addServer<examples::msg::Vector, examples::msg::Vector>("/examples/mirror", &ServerNode::handleRequest);
+  }
+
+private:
+  // When a request has been made, this function will be called to respond.
+  // Handler functions must be static.
+  static lbot::Message<examples::msg::Vector> handleRequest(const lbot::Message<examples::msg::Vector> &request, void *) {
+    // Construct a response message.
+    lbot::Message<examples::msg::Vector> response;
+    response.x = request.y;
+    response.y = request.x;
+
+    return response;
+  }
+
+  // A service consists of two messages.
+  // One is the request sent from the client to the server.
+  // The other is the response sent from the server to the client.
+  Server<examples::msg::Vector, examples::msg::Vector>::Ptr server;
+};
+
 int main(int argc, char **argv) {
   lbot::Logger logger("main");
   lbot::Manager::Ptr manager = lbot::Manager::get();
@@ -60,6 +87,7 @@ int main(int argc, char **argv) {
   std::unique_ptr<lbot::plugins::FoxgloveServer> foxglove_plugin = std::make_unique<lbot::plugins::FoxgloveServer>("Example Server", 8765);
 
   manager->addNode<SenderNode>("sender");
+  manager->addNode<ServerNode>("server");
 
   logger.logInfo() << "Press CTRL+C to exit the program.";
 

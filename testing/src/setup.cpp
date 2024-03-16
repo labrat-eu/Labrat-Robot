@@ -184,27 +184,31 @@ TEST(setup, server) {
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
-  u64 result = 0;
+  TestMessage result;
   u64 counter = 0;
 
-  auto handler = [](const double &request, u64 *user_ptr) -> u64 {
+  auto handler = [](const TestMessage &request, u64 *user_ptr) -> TestMessage {
     ++(*user_ptr);
 
-    return 10 * request;
+    TestMessage response;
+    response.float_field = 10 * request.float_field;
+    return response;
   };
 
-  u64 (*ptr)(const double &, u64 *) = handler;
+  TestMessage (*ptr)(const TestMessage &, u64 *) = handler;
 
-  Node::Server<double, u64>::Ptr server = node_a->addServer<double, u64>("test_service", ptr, &counter);
-  Node::Client<double, u64>::Ptr client = node_b->addClient<double, u64>("test_service");
+  Node::Server<TestMessage, TestMessage>::Ptr server = node_a->addServer<TestMessage, TestMessage>("test_service", ptr, &counter);
+  Node::Client<TestMessage, TestMessage>::Ptr client = node_b->addClient<TestMessage, TestMessage>("test_service");
 
-  result = client->callSync(10.5);
+  TestMessage request;
+  request.float_field = 10.5;
+  result = client->callSync(request);
 
-  ASSERT_EQ(result, 105);
+  ASSERT_EQ(result.float_field, 105);
   ASSERT_EQ(counter, 1);
 
   server.reset(nullptr);
-  ASSERT_THROW(client->callSync(10.5), labrat::lbot::ServiceUnavailableException);
+  ASSERT_THROW(client->callSync(request), labrat::lbot::ServiceUnavailableException);
 
   node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
