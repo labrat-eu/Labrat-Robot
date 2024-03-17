@@ -156,10 +156,10 @@ concept can_move_from = requires(T::Converted &&source, T::Storage &destination)
 };
 
 /**
- * @brief Abstract base class for Message.
+ * @brief Abstract time class for Message.
  *
  */
-class MessageBase {
+class MessageTime {
 public:
   /**
    * @brief Get the timestamp of the object.
@@ -175,7 +175,7 @@ protected:
    * @brief Construct a new Message Base object and set the timestamp to the current time.
    *
    */
-  MessageBase() {
+  MessageTime() {
     lbot_message_base_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
   }
 
@@ -194,20 +194,20 @@ concept is_flatbuffer = std::is_base_of_v<flatbuffers::Table, T>;
  */
 template <typename FlatbufferType, typename ConvertedType>
 requires is_flatbuffer<FlatbufferType>
-class UnsafeMessage : public MessageBase, public FlatbufferType::NativeTableType {
+class MessageBase : public MessageTime, public FlatbufferType::NativeTableType {
 public:
-  using Storage = UnsafeMessage<FlatbufferType, ConvertedType>;
+  using Storage = MessageBase<FlatbufferType, ConvertedType>;
   using FlatbufferArg = FlatbufferType;
   using ConvertedArg = ConvertedType;
   using Content = typename FlatbufferType::NativeTableType;
   using Converted =
-    typename std::conditional_t<std::is_same_v<FlatbufferType, ConvertedType>, UnsafeMessage<FlatbufferType, ConvertedType>, ConvertedType>;
+    typename std::conditional_t<std::is_same_v<FlatbufferType, ConvertedType>, MessageBase<FlatbufferType, ConvertedType>, ConvertedType>;
 
   /**
    * @brief Default constructor to only set the timestamp to the current time.
    *
    */
-  UnsafeMessage() {}
+  MessageBase() {}
 
   /**
    * @brief Construct a new Message object by specifying the contents stored within the message.
@@ -215,7 +215,7 @@ public:
    *
    * @param content Contents of the message.
    */
-  UnsafeMessage(const Content &content) : Content(content) {}
+  MessageBase(const Content &content) : Content(content) {}
 
   /**
    * @brief Construct a new Message object by specifying the contents stored within the message.
@@ -223,7 +223,7 @@ public:
    *
    * @param content Contents of the message.
    */
-  UnsafeMessage(Content &&content) : Content(std::forward<Content>(content)) {}
+  MessageBase(Content &&content) : Content(std::forward<Content>(content)) {}
 
   /**
    * @brief Get the fully qualified type name.
@@ -236,7 +236,7 @@ public:
 };
 
 template <typename T, typename FlatbufferArg = T::FlatbufferArg, typename ConvertedArg = T::ConvertedArg>
-concept is_message = std::derived_from<T, UnsafeMessage<FlatbufferArg, ConvertedArg>>;
+concept is_message = std::derived_from<T, MessageBase<FlatbufferArg, ConvertedArg>>;
 
 /**
  * @brief Safe wrapper of a flatbuf message for use within this library.
@@ -245,10 +245,9 @@ concept is_message = std::derived_from<T, UnsafeMessage<FlatbufferArg, Converted
  */
 template <typename FlatbufferType>
 requires is_flatbuffer<FlatbufferType>
-class Message final : public UnsafeMessage<FlatbufferType, FlatbufferType> {
+class Message final : public MessageBase<FlatbufferType, FlatbufferType> {
 public:
-  using Super = UnsafeMessage<FlatbufferType, FlatbufferType>;
-  using Self = Message<FlatbufferType>;
+  using Super = MessageBase<FlatbufferType, FlatbufferType>;
   using Content = typename Super::Content;
 
   /**

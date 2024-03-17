@@ -24,9 +24,9 @@ public:
   }
 };
 
-class TestMessageConv : public lbot::UnsafeMessage<TestFlatbuffer, TestContainer> {
+class TestMessageConv : public lbot::MessageBase<TestFlatbuffer, TestContainer> {
 public:
-  using Message = lbot::UnsafeMessage<TestFlatbuffer, TestContainer>;
+  using Message = lbot::MessageBase<TestFlatbuffer, TestContainer>;
 
   static void convertFrom(const TestContainer &source, Message &destination) {
     destination.integral_field = source.integral_field;
