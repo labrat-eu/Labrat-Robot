@@ -19,15 +19,15 @@
 //
 // In this example we will extend the 04-topics example to work with conversion functions.
 
-class ConversionMessage : public lbot::BaseMessage<examples::msg::Number, float> {
+class ConversionMessage : public lbot::MessageBase<examples::msg::Number, float> {
 public:
   // Convert a number message to a float.
-  static void convertTo(const ConversionMessage &source, float &destination, const void *) {
+  static void convertTo(const Storage &source, float &destination) {
     destination = source.value;
   }
 
   // Convert a float to a number message.
-  static void convertFrom(const float &source, ConversionMessage &destination, const void *) {
+  static void convertFrom(const float &source, Storage &destination) {
     destination.value = source;
   }
 };
