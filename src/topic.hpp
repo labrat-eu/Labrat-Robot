@@ -99,7 +99,7 @@ public:
 
   template <typename T>
   Topic &addSender(const std::string &topic_name, void *sender) {
-    Topic &topic = getTopicInternal(topic_name, typeid(T).hash_code());
+    Topic &topic = getTopicInternal(topic_name, typeid(typename T::Content).hash_code());
 
     topic.addSender(sender);
 
@@ -116,7 +116,7 @@ public:
 
   template <typename T>
   Topic &addReceiver(const std::string &topic_name, void *receiver) {
-    Topic &topic = getTopicInternal(topic_name, typeid(T).hash_code());
+    Topic &topic = getTopicInternal(topic_name, typeid(typename T::Content).hash_code());
 
     topic.addReceiver(receiver);
 

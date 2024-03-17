@@ -27,7 +27,7 @@ static std::mutex io_mutex;
 
 class EntryMessage : public UnsafeMessage<foxglove::Log, Logger::Entry> {
 public:
-  static void convertFrom(const Logger::Entry &source, EntryMessage &destination) {
+  static void convertFrom(const Logger::Entry &source, UnsafeMessage<foxglove::Log, Logger::Entry> &destination) {
     switch (source.verbosity) {
       case (Logger::Verbosity::critical): {
         destination.level = foxglove::LogLevel::FATAL;

@@ -136,6 +136,7 @@ public:
   requires is_message<MessageType>
   class _Sender : public GenericSender<typename MessageType::Converted> {
   public:
+    using Storage = typename MessageType::Storage;
     using Converted = typename MessageType::Converted;
 
   private:
@@ -170,8 +171,8 @@ public:
 
     friend class Node;
 
-    const ConversionFunction<Converted, MessageType> conversion_function;
-    MoveFunction<Converted, MessageType> move_function;
+    const ConversionFunction<Converted, Storage> conversion_function;
+    MoveFunction<Converted, Storage> move_function;
 
   public:
     /**
@@ -513,6 +514,7 @@ public:
   requires is_message<MessageType>
   class _Receiver : public GenericReceiver<typename MessageType::Converted> {
   public:
+    using Storage = typename MessageType::Storage;
     using Converted = typename MessageType::Converted;
 
   private:
@@ -544,7 +546,7 @@ public:
     class MessageBuffer {
     public:
       struct MessageData {
-        MessageType message;
+        Storage message;
         std::mutex mutex;
       };
 
@@ -590,8 +592,8 @@ public:
       const std::size_t size;
     };
 
-    const ConversionFunction<MessageType, Converted> conversion_function;
-    MoveFunction<MessageType, Converted> move_function;
+    const ConversionFunction<Storage, Converted> conversion_function;
+    MoveFunction<Storage, Converted> move_function;
 
     volatile MessageBuffer message_buffer;
 
@@ -699,12 +701,14 @@ public:
 
       const std::size_t index = GenericReceiver<Converted>::read_count.load() & GenericReceiver<Converted>::index_mask;
 
-      if constexpr (can_move_from<MessageType>) {
+      {
         std::lock_guard guard(message_buffer[index].mutex);
-        move_function(std::move<MessageType &>(message_buffer[index].message), result, GenericReceiver<Converted>::user_ptr);
-      } else {
-        std::lock_guard guard(message_buffer[index].mutex);
-        conversion_function(message_buffer[index].message, result, GenericReceiver<Converted>::user_ptr);
+        
+        if constexpr (can_move_from<MessageType>) {
+          move_function(std::move<Storage &>(message_buffer[index].message), result, GenericReceiver<Converted>::user_ptr);
+        } else {
+          conversion_function(message_buffer[index].message, result, GenericReceiver<Converted>::user_ptr);
+        }
       }
 
       GenericReceiver<Converted>::next_count =

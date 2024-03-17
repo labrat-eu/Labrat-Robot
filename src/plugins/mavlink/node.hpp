@@ -39,8 +39,8 @@ private:
   template <typename FlatbufferType>
   class MavlinkMessage : public UnsafeMessage<FlatbufferType, mavlink_message_t> {
   public:
-    static void convertFrom(const mavlink_message_t &source, MavlinkMessage<FlatbufferType> &destination);
-    static void convertTo(const MavlinkMessage<FlatbufferType> &source, mavlink_message_t &destination,
+    static void convertFrom(const mavlink_message_t &source, UnsafeMessage<FlatbufferType, mavlink_message_t> &destination);
+    static void convertTo(const UnsafeMessage<FlatbufferType, mavlink_message_t> &source, mavlink_message_t &destination,
       const MavlinkNode::SystemInfo *info);
   };
 

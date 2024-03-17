@@ -68,16 +68,16 @@ private:
 };
 
 template <typename T>
-concept can_convert_to = requires(const T &source, T::Converted &destination) {
+concept can_convert_to = requires(const T::Storage &source, T::Converted &destination) {
   {T::convertTo(source, destination)};
-} || requires(const T &source, T::Converted &destination) {
+} || requires(const T::Storage &source, T::Converted &destination) {
   {T::convertTo(source, destination, nullptr)};
 };
 
 template <typename T>
-concept can_convert_from = requires(const T::Converted &source, T &destination) {
+concept can_convert_from = requires(const T::Converted &source, T::Storage &destination) {
   {T::convertFrom(source, destination)};
-} || requires(const T::Converted &source, T &destination) {
+} || requires(const T::Converted &source, T::Storage &destination) {
   {T::convertFrom(source, destination, nullptr)};
 };
 
@@ -142,16 +142,16 @@ private:
 };
 
 template <typename T>
-concept can_move_to = requires(T &&source, T::Converted &destination) {
+concept can_move_to = requires(T::Storage &&source, T::Converted &destination) {
   {T::moveTo(std::move(source), destination)};
-} || requires(T &&source, T::Converted &destination) {
+} || requires(T::Storage &&source, T::Converted &destination) {
   {T::moveTo(std::move(source), destination, nullptr)};
 };
 
 template <typename T>
-concept can_move_from = requires(T::Converted &&source, T &destination) {
+concept can_move_from = requires(T::Converted &&source, T::Storage &destination) {
   {T::moveFrom(std::move(source), destination)};
-} || requires(T::Converted &&source, T &destination) {
+} || requires(T::Converted &&source, T::Storage &destination) {
   {T::moveFrom(std::move(source), destination, nullptr)};
 };
 
@@ -196,7 +196,7 @@ template <typename FlatbufferType, typename ConvertedType>
 requires is_flatbuffer<FlatbufferType>
 class UnsafeMessage : public MessageBase, public FlatbufferType::NativeTableType {
 public:
-  using Self = UnsafeMessage<FlatbufferType, ConvertedType>;
+  using Storage = UnsafeMessage<FlatbufferType, ConvertedType>;
   using FlatbufferArg = FlatbufferType;
   using ConvertedArg = ConvertedType;
   using Content = typename FlatbufferType::NativeTableType;
@@ -273,11 +273,11 @@ public:
    */
   Message(Content &&content) : Super(std::forward<Content>(content)) {}
 
-  static void convertTo(const Self &source, Super::Converted &destination) {
+  static void convertTo(const Super::Storage &source, Super::Converted &destination) {
     destination = source;
   }
 
-  static void convertFrom(const Super::Converted &source, Self &destination) {
+  static void convertFrom(const Super::Converted &source, Super::Storage &destination) {
     destination = source;
   }
 };

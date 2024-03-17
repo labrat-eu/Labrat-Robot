@@ -19,21 +19,24 @@
 //
 // In this example we will extend the 04-topics example to work with conversion functions.
 
-// Convert a number message to a float.
-void convertMessageToNumber(const lbot::Message<examples::msg::Number> &source, float &destination, const void *) {
-  destination = source.value;
-}
+class ConversionMessage : public lbot::BaseMessage<examples::msg::Number, float> {
+public:
+  // Convert a number message to a float.
+  static void convertTo(const ConversionMessage &source, float &destination, const void *) {
+    destination = source.value;
+  }
 
-// Convert a float to a number message.
-void convertNumberToMessage(const float &source, lbot::Message<examples::msg::Number> &destination, const void *) {
-  destination.value = source;
-}
+  // Convert a float to a number message.
+  static void convertFrom(const float &source, ConversionMessage &destination, const void *) {
+    destination.value = source;
+  }
+};
 
 class SenderNode : public lbot::Node {
 public:
   SenderNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
     // Register a sender with the previously defined conversion function.
-    sender = addSender<lbot::Message<examples::msg::Number>, float>("/examples/number", &convertNumberToMessage);
+    sender = addSender<ConversionMessage>("/examples/number");
 
     sender_thread = utils::TimerThread(&SenderNode::senderFunction, std::chrono::seconds(1), "sender_thread", 1, this);
   }
@@ -44,7 +47,7 @@ private:
     sender->put(std::sin(++i / 100.0));
   }
 
-  Sender<lbot::Message<examples::msg::Number>, float>::Ptr sender;
+  Sender<ConversionMessage>::Ptr sender;
   utils::TimerThread sender_thread;
 
   uint64_t i = 0;
@@ -54,7 +57,7 @@ class ReceiverNode : public lbot::Node {
 public:
   ReceiverNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
     // Register a receiver with the previously defined conversion function.
-    receiver = addReceiver<lbot::Message<examples::msg::Number>, float>("/examples/number", &convertMessageToNumber);
+    receiver = addReceiver<ConversionMessage>("/examples/number");
 
     receiver_thread = utils::TimerThread(&ReceiverNode::receiverFunction, std::chrono::seconds(1), "receiver_thread", 1, this);
   }
@@ -69,7 +72,7 @@ private:
     }
   }
 
-  Receiver<lbot::Message<examples::msg::Number>, float>::Ptr receiver;
+  Receiver<ConversionMessage>::Ptr receiver;
   utils::TimerThread receiver_thread;
 };
 

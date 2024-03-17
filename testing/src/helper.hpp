@@ -26,25 +26,27 @@ public:
 
 class TestMessageConv : public lbot::UnsafeMessage<TestFlatbuffer, TestContainer> {
 public:
-  static void convertFrom(const TestContainer &source, TestMessageConv &destination) {
+  using Message = lbot::UnsafeMessage<TestFlatbuffer, TestContainer>;
+
+  static void convertFrom(const TestContainer &source, Message &destination) {
     destination.integral_field = source.integral_field;
     destination.float_field = source.float_field;
     destination.buffer = source.buffer;
   }
 
-  static void moveFrom(TestContainer &&source, TestMessageConv &destination) {
+  static void moveFrom(TestContainer &&source, Message &destination) {
     destination.integral_field = source.integral_field;
     destination.float_field = source.float_field;
     destination.buffer = std::forward<std::vector<u8>>(source.buffer);
   }
 
-  static void convertTo(const TestMessageConv &source, TestContainer &destination) {
+  static void convertTo(const Message &source, TestContainer &destination) {
     destination.integral_field = source.integral_field;
     destination.float_field = source.float_field;
     destination.buffer = source.buffer;
   }
 
-  static void moveTo(TestMessageConv &&source, TestContainer &destination) {
+  static void moveTo(Message &&source, TestContainer &destination) {
     destination.integral_field = source.integral_field;
     destination.float_field = source.float_field;
     destination.buffer = std::forward<std::vector<u8>>(source.buffer);

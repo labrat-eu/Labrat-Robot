@@ -78,7 +78,7 @@ public:
     requires is_message<MessageType>
     static Plugin::TopicInfo get(const std::string &topic_name) {
       const Plugin::TopicInfo result = {
-        .type_hash = typeid(MessageType).hash_code(),
+        .type_hash = typeid(typename MessageType::Content).hash_code(),
         .type_name = MessageType::getName(),
         .topic_hash = std::hash<std::string>()(topic_name),
         .topic_name = topic_name,
@@ -119,9 +119,9 @@ public:
     template <typename RequestType, typename ResponseType>
     requires is_message<RequestType> && is_message<ResponseType>
     static Plugin::ServiceInfo get(const std::string &service_name, ServiceMap::Service &service) {
-      const Plugin::ServiceInfo result = {.request_type_hash = typeid(RequestType).hash_code(),
+      const Plugin::ServiceInfo result = {.request_type_hash = typeid(typename RequestType::Content).hash_code(),
         .request_type_name = RequestType::getName(),
-        .response_type_hash = typeid(ResponseType).hash_code(),
+        .response_type_hash = typeid(typename ResponseType::Content).hash_code(),
         .response_type_name = ResponseType::getName(),
         .service_hash = std::hash<std::string>()(service_name),
         .service_name = service_name,

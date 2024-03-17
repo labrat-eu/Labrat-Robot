@@ -37,11 +37,11 @@ private:
     std::size_t topic_hash;
     flatbuffers::span<u8> payload;
 
-    static void convertFrom(const PayloadInfo &source, PayloadMessage<T> &destination) {
+    static void convertFrom(const PayloadInfo &source, UnsafeMessage<T, PayloadInfo> &destination) {
       flatbuffers::GetRoot<T>(source.payload.data())->UnPackTo(&destination);
     }
 
-    static void convertTo(const PayloadMessage<T> &source, PayloadInfo &destination, const GenericReceiver<PayloadInfo> *receiver) {
+    static void convertTo(const UnsafeMessage<T, PayloadInfo> &source, PayloadInfo &destination, const GenericReceiver<PayloadInfo> *receiver) {
       destination.topic_hash = receiver->getTopicInfo().topic_hash;
 
       flatbuffers::FlatBufferBuilder builder;
