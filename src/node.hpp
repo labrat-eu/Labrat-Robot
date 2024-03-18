@@ -140,12 +140,17 @@ public:
     using Storage = typename MessageType::Storage;
     using Converted = typename MessageType::Converted;
 
+    using Reference = GenericSender<Converted>;
+
     template <auto* Function>
-    using Convert = ConversionFunction<GenericSender<Converted>, Function>;
+    using Convert = ConversionFunction<Reference, Function>;
     template <auto* Function>
-    using Move = MoveFunction<GenericSender<Converted>, Function>;
+    using Move = MoveFunction<Reference, Function>;
 
   private:
+    _Sender(_Sender &) = delete;
+    _Sender(_Sender &&) = delete;
+
     /**
      * @brief Construct a new Sender object.
      *
@@ -153,7 +158,7 @@ public:
      * @param node Reference to the parent node.
      * @param user_ptr User pointer to be used by the conversion function.
      */
-    _Sender(const std::string &topic_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<MessageType> :
+    _Sender(const std::string &topic_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<MessageType, Reference> :
       GenericSender<Converted>(Plugin::TopicInfo::get<MessageType>(topic_name),
         node.environment.topic_map.addSender<MessageType>(topic_name, this), node), user_ptr(user_ptr) {
       for (Plugin &plugin : GenericSender<Converted>::node.environment.plugin_list) {
@@ -223,7 +228,7 @@ public:
      * @param container Object containing the data to be sent out.
      */
     void move(Converted &&container) {
-      if constexpr (!can_move_from<MessageType>) {
+      if constexpr (!can_move_from<MessageType, Reference>) {
         throw ConversionException("A sender move method was called without its move function being properly set.");
       } else {
         std::size_t receive_count = GenericSender<Converted>::topic.getReceivers().size();
@@ -514,10 +519,12 @@ public:
     using Storage = typename MessageType::Storage;
     using Converted = typename MessageType::Converted;
 
+    using Reference = GenericReceiver<Converted>;
+
     template <auto* Function>
-    using Convert = ConversionFunction<GenericReceiver<Converted>, Function>;
+    using Convert = ConversionFunction<Reference, Function>;
     template <auto* Function>
-    using Move = MoveFunction<GenericReceiver<Converted>, Function>;
+    using Move = MoveFunction<Reference, Function>;
 
   private:
     /**
@@ -528,7 +535,7 @@ public:
      * @param user_ptr User pointer to be used by the conversion function.
      * @param buffer_size Size of the internal receiver buffer. It must be at least 4 and should ideally be a power of 2.
      */
-    _Receiver(const std::string &topic_name, Node &node, const void *user_ptr = nullptr, std::size_t buffer_size = 4) requires can_convert_to<MessageType> :
+    _Receiver(const std::string &topic_name, Node &node, const void *user_ptr = nullptr, std::size_t buffer_size = 4) requires can_convert_to<MessageType, Reference> :
       GenericReceiver<Converted>(Plugin::TopicInfo::get<MessageType>(topic_name),
         node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node, buffer_size), user_ptr(user_ptr),
       message_buffer(GenericReceiver<Converted>::calculateBufferSize(buffer_size)) {
@@ -595,6 +602,9 @@ public:
     volatile MessageBuffer message_buffer;
 
   public:
+    _Receiver(_Receiver &) = delete;
+    _Receiver(_Receiver &&) = delete;
+
     /**
      * @brief Callback function to be called by the corresponding sender on each put operation.
      *
@@ -700,7 +710,7 @@ public:
       {
         std::lock_guard guard(message_buffer[index].mutex);
         
-        if constexpr (can_move_from<MessageType>) {
+        if constexpr (can_move_from<MessageType, Reference>) {
           Move<MessageType::moveTo>::call(std::move(message_buffer[index].message), result, user_ptr, *dynamic_cast<GenericReceiver<Converted> *>(this));
         } else {
           Convert<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr, *dynamic_cast<GenericReceiver<Converted> *>(this));
@@ -751,6 +761,24 @@ public:
   template <typename RequestType, typename ResponseType>
   class Server;
 
+  template <typename RequestConverted, typename ResponseConverted>
+  class GenericServer {
+  protected:
+    GenericServer(const Plugin::ServiceInfo &service_info) : service_info(service_info) {}
+
+    const Plugin::ServiceInfo service_info;
+
+  public:
+    /**
+     * @brief Get information about the relevant service.
+     *
+     * @return const Plugin::ServiceInfo& Information about the service.
+     */
+    inline const Plugin::ServiceInfo &getTopicInfo() const {
+      return service_info;
+    }
+  };
+
   /**
    * @brief Generic class to handle requests made to a service.
    *
@@ -759,17 +787,19 @@ public:
    */
   template <typename RequestType, typename ResponseType>
   requires is_message<RequestType> && is_message<ResponseType>
-  class _Server {
+  class _Server : public GenericServer<typename RequestType::Converted, typename ResponseType::Converted> {
   public:
     using RequestStorage = typename RequestType::Storage;
     using ResponseStorage = typename ResponseType::Storage;
     using RequestConverted = typename RequestType::Converted;
     using ResponseConverted = typename ResponseType::Converted;
 
+    using Reference = GenericServer<RequestConverted, ResponseConverted>;
+
     template <auto* Function>
-    using Convert = ConversionFunction<Server<RequestType, ResponseType>, Function>;
+    using Convert = ConversionFunction<Reference, Function>;
     template <auto* Function>
-    using Move = MoveFunction<Server<RequestType, ResponseType>, Function>;
+    using Move = MoveFunction<Reference, Function>;
 
     /**
      * @brief Handler function to handle requests made to a service.
@@ -795,17 +825,17 @@ public:
        * @param user_ptr User pointer to access generic external data.
        * @return ResponseType Response to be sent to the client.
        */
-      inline ResponseStorage call(const RequestStorage &request, const void *user_ptr, const _Server<RequestType, ResponseType> *reference) const {
+      inline ResponseStorage call(const RequestStorage &request, const void *user_ptr, _Server<RequestType, ResponseType> *reference) const {
         RequestConverted request_converted;
-        Convert<RequestType::convertTo>::call(request, request_converted, user_ptr, *reference);
+        Convert<RequestType::convertTo>::call(request, request_converted, user_ptr, *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
 
         ResponseConverted response_converted = function(request_converted, const_cast<void *>(user_ptr));
         ResponseStorage response;
 
-        if constexpr (can_move_from<ResponseType>) {
-          Move<ResponseType::moveFrom>::call(std::move(response_converted), response, user_ptr, *reference);
+        if constexpr (can_move_from<ResponseType, Reference>) {
+          Move<ResponseType::moveFrom>::call(std::move(response_converted), response, user_ptr, *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
         } else {
-          Convert<ResponseType::convertFrom>::call(response_converted, response, user_ptr, *reference);
+          Convert<ResponseType::convertFrom>::call(response_converted, response, user_ptr, *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
         }
 
         return response;
@@ -816,6 +846,9 @@ public:
     };
 
   private:
+    _Server(_Server &) = delete;
+    _Server(_Server &&) = delete;
+
     /**
      * @brief Construct a new Server object
      *
@@ -824,19 +857,18 @@ public:
      * @param handler_function Handler function to handle requests made to a service.
      * @param user_ptr User pointer to be used by the handler function.
      */
-    _Server(const std::string &service_name, Node &node, HandlerFunction handler_function, const void *user_ptr = nullptr) requires can_convert_to<RequestType> && can_convert_from<ResponseType> :
-      service_info(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name,
-        node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this))),
+    _Server(const std::string &service_name, Node &node, HandlerFunction handler_function, const void *user_ptr = nullptr) requires can_convert_to<RequestType, Reference> && can_convert_from<ResponseType, Reference> :
+      GenericServer<RequestConverted, ResponseConverted>(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name, node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this))),
       node(node), handler_function(handler_function), user_ptr(user_ptr) {
       for (Plugin &plugin : node.environment.plugin_list) {
-        if (plugin.delete_flag.test() || !plugin.filter.check(service_info.service_hash)) {
+        if (plugin.delete_flag.test() || !plugin.filter.check(GenericServer<RequestConverted, ResponseConverted>::service_info.service_hash)) {
           continue;
         }
 
         utils::ConsumerGuard<u32> guard(plugin.use_count);
 
         if (plugin.service_callback != nullptr) {
-          plugin.service_callback(plugin.user_ptr, service_info);
+          plugin.service_callback(plugin.user_ptr, GenericServer<RequestConverted, ResponseConverted>::service_info);
         }
       }
     }
@@ -844,7 +876,6 @@ public:
     friend class Node;
     friend class Client;
 
-    const Plugin::ServiceInfo service_info;
     Node &node;
     const HandlerFunction handler_function;
     const void *const user_ptr;
@@ -855,16 +886,7 @@ public:
      *
      */
     ~_Server() {
-      service_info.service.removeServer(this);
-    }
-
-    /**
-     * @brief Get information about the relevant service.
-     *
-     * @return const Plugin::ServiceInfo& Information about the service.
-     */
-    inline const Plugin::ServiceInfo &getTopicInfo() const {
-      return service_info;
+      GenericServer<RequestConverted, ResponseConverted>::service_info.service.removeServer(this);
     }
   };
 
@@ -915,6 +937,24 @@ public:
   template <typename RequestType, typename ResponseType>
   class Client;
 
+  template <typename RequestConverted, typename ResponseConverted>
+  class GenericClient {
+  protected:
+    GenericClient(const Plugin::ServiceInfo &service_info) : service_info(service_info) {}
+
+    const Plugin::ServiceInfo service_info;
+
+  public:
+    /**
+     * @brief Get information about the relevant service.
+     *
+     * @return const Plugin::ServiceInfo& Information about the service.
+     */
+    inline const Plugin::ServiceInfo &getServiceInfo() const {
+      return service_info;
+    }
+  };
+
   /**
    * @brief Generic class to perform requests to a service.
    *
@@ -923,19 +963,24 @@ public:
    */
   template <typename RequestType, typename ResponseType>
   requires is_message<RequestType> && is_message<ResponseType>
-  class _Client {
+  class _Client : public GenericClient<typename RequestType::Converted, typename ResponseType::Converted> {
   public:
     using RequestStorage = typename RequestType::Storage;
     using ResponseStorage = typename ResponseType::Storage;
     using RequestConverted = typename RequestType::Converted;
     using ResponseConverted = typename ResponseType::Converted;
 
+    using Reference = GenericClient<RequestConverted, ResponseConverted>;
+
     template <auto* Function>
-    using Convert = ConversionFunction<Client<RequestType, ResponseType>, Function>;
+    using Convert = ConversionFunction<Reference, Function>;
     template <auto* Function>
-    using Move = MoveFunction<Client<RequestType, ResponseType>, Function>;
+    using Move = MoveFunction<Reference, Function>;
   
   private:
+    _Client(_Client &) = delete;
+    _Client(_Client &&) = delete;
+
     /**
      * @brief Construct a new Client object.
      *
@@ -943,14 +988,13 @@ public:
      * @param node Reference to the parent node.
      * @param user_ptr User pointer to be forwarded to conversion and move functions.
      */
-    _Client(const std::string &service_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from_noptr<RequestType> && can_convert_to_noptr<ResponseType> :
-      node(node), service_info(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name,
-                    node.environment.service_map.getService<RequestType, ResponseType>(service_name))), user_ptr(user_ptr) {}
+    _Client(const std::string &service_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<RequestType, Reference> && can_convert_to<ResponseType, Reference> :
+      GenericClient<RequestConverted, ResponseConverted>(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name, node.environment.service_map.getService<RequestType, ResponseType>(service_name))),
+      node(node), user_ptr(user_ptr) {}
 
     friend class Node;
 
     Node &node;
-    const Plugin::ServiceInfo service_info;
     const void *const user_ptr;
 
   public:
@@ -977,7 +1021,7 @@ public:
       std::thread(
         [this](std::promise<ResponseConverted> promise, RequestConverted request) {
         try {
-          ServiceMap::Service::ServerReference reference = service_info.service.getServer();
+          ServiceMap::Service::ServerReference reference = GenericClient<RequestConverted, ResponseConverted>::service_info.service.getServer();
           Server<RequestType, ResponseType> *server = reference;
 
           if (server == nullptr) {
@@ -986,19 +1030,19 @@ public:
 
           RequestStorage request_storage;
 
-          if constexpr (can_move_from<RequestType>) {
-            Move<RequestType::moveFrom>::call(std::move(request), request_storage, user_ptr, *this);
+          if constexpr (can_move_from<RequestType, Reference>) {
+            Move<RequestType::moveFrom>::call(std::move(request), request_storage, user_ptr, *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
           } else {
-            Convert<RequestType::convertFrom>::call(request, request_storage, user_ptr, *this);
+            Convert<RequestType::convertFrom>::call(request, request_storage, user_ptr, *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
           }
 
           ResponseStorage response_storage = server->handler_function.call(request_storage, server->user_ptr, server);
           ResponseConverted response;
 
-          if constexpr (can_move_to<ResponseType>) {
-            Move<ResponseType::moveTo>::call(std::move(response_storage), response, user_ptr, *this);
+          if constexpr (can_move_to<ResponseType, Reference>) {
+            Move<ResponseType::moveTo>::call(std::move(response_storage), response, user_ptr, *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
           } else {
-            Convert<ResponseType::convertTo>::call(response_storage, response, user_ptr, *this);
+            Convert<ResponseType::convertTo>::call(response_storage, response, user_ptr, *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
           }
 
           promise.set_value(std::move(response));
@@ -1044,15 +1088,6 @@ public:
       }
 
       return future.get();
-    }
-
-    /**
-     * @brief Get information about the relevant service.
-     *
-     * @return const Plugin::ServiceInfo& Information about the service.
-     */
-    inline const Plugin::ServiceInfo &getServiceInfo() const {
-      return service_info;
     }
   };
 

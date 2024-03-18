@@ -48,13 +48,15 @@ TEST(DISABLED_semantics, server) {
 
   std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
 
-  auto handler_a = [](const TestMessage &request, u64 *user_ptr) -> TestMessage {
+  auto handler_a = [](const TestMessage::Converted &request, u64 *user_ptr) -> TestMessage::Converted {
     return TestMessage();
   };
 
-  TestMessage (*ptr_a)(const TestMessage &, u64 *) = handler_a;
+  Node::Server<TestFlatbuffer, TestFlatbuffer>::ResponseConverted test = TestMessage();
 
-  //Node::Server<TestFlatbuffer, TestFlatbuffer>::Ptr server_a = node->addServer<TestFlatbuffer, TestFlatbuffer>("service_a", ptr_a);
+  Node::Server<TestFlatbuffer, TestFlatbuffer>::ResponseConverted (*ptr_a)(const Node::Server<TestFlatbuffer, TestFlatbuffer>::RequestConverted &, u64 *) = handler_a;
+
+  Node::Server<TestFlatbuffer, TestFlatbuffer>::Ptr server_a = node->addServer<TestFlatbuffer, TestFlatbuffer>("service_a", ptr_a);
   //Node::Server<TestMessage>::Ptr server_b = node->addReceiver<TestMessage, TestFlatbuffer>, ("service_b");
   //Node::Server<TestMessageConv>::Ptr server_c = node->addReceiver<TestMessageConv, TestFlatbuffer>("service_c");
 

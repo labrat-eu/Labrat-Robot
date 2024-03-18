@@ -80,8 +80,12 @@ template <typename T>
 concept can_convert_to_ptr = requires(const T::Storage &source, T::Converted &destination) {
   {T::convertTo(source, destination, nullptr)};
 };
-template <typename T>
-concept can_convert_to = can_convert_to_noptr<T> || can_convert_to_ptr<T>;
+template <typename T, typename R>
+concept can_convert_to_ref = requires(const T::Storage &source, T::Converted &destination, const R &reference) {
+  {T::convertTo(source, destination, nullptr, reference)};
+};
+template <typename T, typename R = void>
+concept can_convert_to = can_convert_to_noptr<T> || can_convert_to_ptr<T> || can_convert_to_ref<T, R>;
 
 template <typename T>
 concept can_convert_from_noptr = requires(const T::Converted &source, T::Storage &destination) {
@@ -91,8 +95,12 @@ template <typename T>
 concept can_convert_from_ptr = requires(const T::Converted &source, T::Storage &destination) {
   {T::convertFrom(source, destination, nullptr)};
 };
-template <typename T>
-concept can_convert_from = can_convert_from_noptr<T> || can_convert_from_ptr<T>;
+template <typename T, typename R>
+concept can_convert_from_ref = requires(const T::Converted &source, T::Storage &destination, const R &reference) {
+  {T::convertFrom(source, destination, nullptr, reference)};
+};
+template <typename T, typename R = void>
+concept can_convert_from = can_convert_from_noptr<T> || can_convert_from_ptr<T> || can_convert_from_ref<T, R>;
 
 template <typename Reference, auto* Function>
 class MoveFunction {};
@@ -151,8 +159,12 @@ template <typename T>
 concept can_move_to_ptr = requires(T::Storage &&source, T::Converted &destination) {
   {T::moveTo(std::move(source), destination, nullptr)};
 };
-template <typename T>
-concept can_move_to = can_move_to_noptr<T> || can_move_to_ptr<T>;
+template <typename T, typename R>
+concept can_move_to_ref = requires(T::Storage &&source, T::Converted &destination, const R &reference) {
+  {T::moveTo(std::move(source), destination, nullptr, reference)};
+};
+template <typename T, typename R = void>
+concept can_move_to = can_move_to_noptr<T> || can_move_to_ptr<T> || can_move_to_ref<T, R>;
 
 template <typename T>
 concept can_move_from_noptr = requires(T::Converted &&source, T::Storage &destination) {
@@ -162,8 +174,12 @@ template <typename T>
 concept can_move_from_ptr = requires(T::Converted &&source, T::Storage &destination) {
   {T::moveFrom(std::move(source), destination, nullptr)};
 };
-template <typename T>
-concept can_move_from = can_move_from_noptr<T> || can_move_from_ptr<T>;
+template <typename T, typename R>
+concept can_move_from_ref = requires(T::Converted &&source, T::Storage &destination, const R &reference) {
+  {T::moveFrom(std::move(source), destination, nullptr, reference)};
+};
+template <typename T, typename R = void>
+concept can_move_from = can_move_from_noptr<T> || can_move_from_ptr<T> || can_move_to_ref<T, R>;
 
 /**
  * @brief Abstract time class for Message.
