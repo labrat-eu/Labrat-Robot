@@ -23,11 +23,11 @@
 inline namespace labrat {
 namespace lbot {
 
-template <auto* Function>
+template <typename Reference, auto* Function>
 class ConversionFunction {};
 
-template <typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(const OriginalType &, ConvertedType &, DataType *) -> void>
-class ConversionFunction<Function> {
+template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(const OriginalType &, ConvertedType &, DataType *, const Reference &) -> void>
+class ConversionFunction<Reference, Function> {
 public:
     /**
    * @brief Call the stored conversion function.
@@ -36,14 +36,30 @@ public:
    * @param destination Object to be converted to.
    * @param user_ptr User pointer to access generic external data.
    */
-  static inline void call(const OriginalType &source, ConvertedType &destination, const void *user_ptr) {
+  static inline void call(const OriginalType &source, ConvertedType &destination, const void *user_ptr, const Reference &reference) {
+    void *ptr = const_cast<void *>(user_ptr);
+    Function(source, destination, reinterpret_cast<DataType *>(ptr), reference);
+  }
+};
+
+template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(const OriginalType &, ConvertedType &, DataType *) -> void>
+class ConversionFunction<Reference, Function> {
+public:
+    /**Reference, 
+   * @brief Call the stored conversion function.
+   *
+   * @param source Object to be converted.
+   * @param destination Object to be converted to.
+   * @param user_ptr User pointer to access generic external data.
+   */
+  static inline void call(const OriginalType &source, ConvertedType &destination, const void *user_ptr, const Reference &) {
     void *ptr = const_cast<void *>(user_ptr);
     Function(source, destination, reinterpret_cast<DataType *>(ptr));
   }
 };
 
-template <typename OriginalType, typename ConvertedType, auto (*Function)(const OriginalType &, ConvertedType &) -> void>
-class ConversionFunction<Function> {
+template <typename Reference, typename OriginalType, typename ConvertedType, auto (*Function)(const OriginalType &, ConvertedType &) -> void>
+class ConversionFunction<Reference, Function> {
 public:
     /**
    * @brief Call the stored conversion function.
@@ -51,7 +67,7 @@ public:
    * @param source Object to be converted.
    * @param destination Object to be converted to.
    */
-  static inline void call(const OriginalType &source, ConvertedType &destination, const void *) {
+  static inline void call(const OriginalType &source, ConvertedType &destination, const void *, const Reference &) {
     Function(source, destination);
   }
 };
@@ -78,11 +94,11 @@ concept can_convert_from_ptr = requires(const T::Converted &source, T::Storage &
 template <typename T>
 concept can_convert_from = can_convert_from_noptr<T> || can_convert_from_ptr<T>;
 
-template <auto* Function>
+template <typename Reference, auto* Function>
 class MoveFunction {};
 
-template <typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(OriginalType &&, ConvertedType &, DataType *) -> void>
-class MoveFunction<Function> {
+template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(OriginalType &&, ConvertedType &, DataType *, const Reference &) -> void>
+class MoveFunction<Reference, Function> {
 public:
     /**
    * @brief Call the stored conversion function.
@@ -91,14 +107,30 @@ public:
    * @param destination Object to be converted to.
    * @param user_ptr User pointer to access generic external data.
    */
-  static inline void call(OriginalType &&source, ConvertedType &destination, const void *user_ptr) {
+  static inline void call(OriginalType &&source, ConvertedType &destination, const void *user_ptr, const Reference &reference) {
+    void *ptr = const_cast<void *>(user_ptr);
+    Function(std::forward<OriginalType>(source), destination, reinterpret_cast<const DataType *>(ptr), reference);
+  }
+};
+
+template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(OriginalType &&, ConvertedType &, DataType *) -> void>
+class MoveFunction<Reference, Function> {
+public:
+    /**
+   * @brief Call the stored conversion function.
+   *
+   * @param source Object to be converted.
+   * @param destination Object to be converted to.
+   * @param user_ptr User pointer to access generic external data.
+   */
+  static inline void call(OriginalType &&source, ConvertedType &destination, const void *user_ptr, const Reference &) {
     void *ptr = const_cast<void *>(user_ptr);
     Function(std::forward<OriginalType>(source), destination, reinterpret_cast<const DataType *>(ptr));
   }
 };
 
-template <typename OriginalType, typename ConvertedType, auto (*Function)(OriginalType &&, ConvertedType &) -> void>
-class MoveFunction<Function> {
+template <typename Reference, typename OriginalType, typename ConvertedType, auto (*Function)(OriginalType &&, ConvertedType &) -> void>
+class MoveFunction<Reference, Function> {
 public:
     /**
    * @brief Call the stored conversion function.
@@ -106,7 +138,7 @@ public:
    * @param source Object to be converted.
    * @param destination Object to be converted to.
    */
-  static inline void call(OriginalType &&source, ConvertedType &destination, const void *) {
+  static inline void call(OriginalType &&source, ConvertedType &destination, const void *, const Reference &) {
     Function(std::forward<OriginalType>(source), destination);
   }
 };

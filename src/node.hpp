@@ -140,6 +140,11 @@ public:
     using Storage = typename MessageType::Storage;
     using Converted = typename MessageType::Converted;
 
+    template <auto* Function>
+    using Convert = ConversionFunction<GenericSender<Converted>, Function>;
+    template <auto* Function>
+    using Move = MoveFunction<GenericSender<Converted>, Function>;
+
   private:
     /**
      * @brief Construct a new Sender object.
@@ -150,8 +155,7 @@ public:
      */
     _Sender(const std::string &topic_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<MessageType> :
       GenericSender<Converted>(Plugin::TopicInfo::get<MessageType>(topic_name),
-        node.environment.topic_map.addSender<MessageType>(topic_name, this), node),
-        user_ptr(user_ptr == nullptr ? dynamic_cast<GenericSender<Converted> *>(this) : user_ptr) {
+        node.environment.topic_map.addSender<MessageType>(topic_name, this), node), user_ptr(user_ptr) {
       for (Plugin &plugin : GenericSender<Converted>::node.environment.plugin_list) {
         if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
           continue;
@@ -194,7 +198,7 @@ public:
 
         {
           std::lock_guard guard(receiver->message_buffer[index].mutex);
-          ConversionFunction<MessageType::convertFrom>::call(container, receiver->message_buffer[index].message, user_ptr);
+          Convert<MessageType::convertFrom>::call(container, receiver->message_buffer[index].message, user_ptr, *dynamic_cast<GenericSender<Converted> *>(this));
 
           receiver->read_count.store(count);
         }
@@ -260,7 +264,7 @@ public:
 
           {
             std::lock_guard guard(receiver->message_buffer[index].mutex);
-            MoveFunction<MessageType::moveFrom>::call(std::forward<Converted>(container), receiver->message_buffer[index].message, user_ptr);
+            Move<MessageType::moveFrom>::call(std::forward<Converted>(container), receiver->message_buffer[index].message, user_ptr, *dynamic_cast<GenericSender<Converted> *>(this));
 
             receiver->read_count.store(count);
           }
@@ -275,7 +279,7 @@ public:
           // Send to a plugin.
           MessageType message;
 
-          MoveFunction<MessageType::moveFrom>::call(std::forward<Converted>(container), message, user_ptr);
+          Move<MessageType::moveFrom>::call(std::forward<Converted>(container), message, user_ptr, *dynamic_cast<GenericSender<Converted> *>(this));
 
           flatbuffers::FlatBufferBuilder builder;
           builder.Finish(MessageType::Content::TableType::Pack(builder, &message));
@@ -332,7 +336,7 @@ public:
         }
 
         if (!init_flag) {
-          ConversionFunction<MessageType::convertFrom>::call(container, message, user_ptr);
+          Convert<MessageType::convertFrom>::call(container, message, user_ptr, *dynamic_cast<GenericSender<Converted> *>(this));
 
           builder.Finish(MessageType::Content::TableType::Pack(builder, &message));
 
@@ -510,6 +514,11 @@ public:
     using Storage = typename MessageType::Storage;
     using Converted = typename MessageType::Converted;
 
+    template <auto* Function>
+    using Convert = ConversionFunction<GenericReceiver<Converted>, Function>;
+    template <auto* Function>
+    using Move = MoveFunction<GenericReceiver<Converted>, Function>;
+
   private:
     /**
      * @brief Construct a new Receiver object.
@@ -521,8 +530,7 @@ public:
      */
     _Receiver(const std::string &topic_name, Node &node, const void *user_ptr = nullptr, std::size_t buffer_size = 4) requires can_convert_to<MessageType> :
       GenericReceiver<Converted>(Plugin::TopicInfo::get<MessageType>(topic_name),
-        node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node,
-        buffer_size), user_ptr(user_ptr == nullptr ? dynamic_cast<GenericReceiver<Converted> *>(this) : user_ptr),
+        node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node, buffer_size), user_ptr(user_ptr),
       message_buffer(GenericReceiver<Converted>::calculateBufferSize(buffer_size)) {
     }
 
@@ -660,7 +668,7 @@ public:
 
       {
         std::lock_guard guard(message_buffer[index].mutex);
-        ConversionFunction<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr);
+        Convert<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr, *dynamic_cast<GenericReceiver<Converted> *>(this));
       }
 
       return result;
@@ -693,9 +701,9 @@ public:
         std::lock_guard guard(message_buffer[index].mutex);
         
         if constexpr (can_move_from<MessageType>) {
-          MoveFunction<MessageType::moveTo>::call(std::move(message_buffer[index].message), result, user_ptr);
+          Move<MessageType::moveTo>::call(std::move(message_buffer[index].message), result, user_ptr, *dynamic_cast<GenericReceiver<Converted> *>(this));
         } else {
-          ConversionFunction<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr);
+          Convert<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr, *dynamic_cast<GenericReceiver<Converted> *>(this));
         }
       }
 
@@ -740,6 +748,9 @@ public:
     Receiver(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
+  template <typename RequestType, typename ResponseType>
+  class Server;
+
   /**
    * @brief Generic class to handle requests made to a service.
    *
@@ -754,6 +765,11 @@ public:
     using ResponseStorage = typename ResponseType::Storage;
     using RequestConverted = typename RequestType::Converted;
     using ResponseConverted = typename ResponseType::Converted;
+
+    template <auto* Function>
+    using Convert = ConversionFunction<Server<RequestType, ResponseType>, Function>;
+    template <auto* Function>
+    using Move = MoveFunction<Server<RequestType, ResponseType>, Function>;
 
     /**
      * @brief Handler function to handle requests made to a service.
@@ -779,17 +795,17 @@ public:
        * @param user_ptr User pointer to access generic external data.
        * @return ResponseType Response to be sent to the client.
        */
-      inline ResponseStorage call(const RequestStorage &request, const void *user_ptr) const {
+      inline ResponseStorage call(const RequestStorage &request, const void *user_ptr, const _Server<RequestType, ResponseType> *reference) const {
         RequestConverted request_converted;
-        ConversionFunction<RequestType::convertTo>::call(request, request_converted, user_ptr);
+        Convert<RequestType::convertTo>::call(request, request_converted, user_ptr, *reference);
 
         ResponseConverted response_converted = function(request_converted, const_cast<void *>(user_ptr));
         ResponseStorage response;
 
         if constexpr (can_move_from<ResponseType>) {
-          MoveFunction<ResponseType::moveFrom>::call(std::move(response_converted), response, user_ptr);
+          Move<ResponseType::moveFrom>::call(std::move(response_converted), response, user_ptr, *reference);
         } else {
-          ConversionFunction<ResponseType::convertFrom>::call(response_converted, response, user_ptr);
+          Convert<ResponseType::convertFrom>::call(response_converted, response, user_ptr, *reference);
         }
 
         return response;
@@ -811,7 +827,7 @@ public:
     _Server(const std::string &service_name, Node &node, HandlerFunction handler_function, const void *user_ptr = nullptr) requires can_convert_to<RequestType> && can_convert_from<ResponseType> :
       service_info(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name,
         node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this))),
-      node(node), handler_function(handler_function), user_ptr(user_ptr == nullptr ? this : user_ptr) {
+      node(node), handler_function(handler_function), user_ptr(user_ptr) {
       for (Plugin &plugin : node.environment.plugin_list) {
         if (plugin.delete_flag.test() || !plugin.filter.check(service_info.service_hash)) {
           continue;
@@ -896,6 +912,9 @@ public:
     Server(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
+  template <typename RequestType, typename ResponseType>
+  class Client;
+
   /**
    * @brief Generic class to perform requests to a service.
    *
@@ -910,6 +929,11 @@ public:
     using ResponseStorage = typename ResponseType::Storage;
     using RequestConverted = typename RequestType::Converted;
     using ResponseConverted = typename ResponseType::Converted;
+
+    template <auto* Function>
+    using Convert = ConversionFunction<Client<RequestType, ResponseType>, Function>;
+    template <auto* Function>
+    using Move = MoveFunction<Client<RequestType, ResponseType>, Function>;
   
   private:
     /**
@@ -921,7 +945,7 @@ public:
      */
     _Client(const std::string &service_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from_noptr<RequestType> && can_convert_to_noptr<ResponseType> :
       node(node), service_info(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name,
-                    node.environment.service_map.getService<RequestType, ResponseType>(service_name))), user_ptr(user_ptr == nullptr ? this : user_ptr) {}
+                    node.environment.service_map.getService<RequestType, ResponseType>(service_name))), user_ptr(user_ptr) {}
 
     friend class Node;
 
@@ -963,18 +987,18 @@ public:
           RequestStorage request_storage;
 
           if constexpr (can_move_from<RequestType>) {
-            MoveFunction<RequestType::moveFrom>::call(std::move(request), request_storage, user_ptr);
+            Move<RequestType::moveFrom>::call(std::move(request), request_storage, user_ptr, *this);
           } else {
-            ConversionFunction<RequestType::convertFrom>::call(request, request_storage, user_ptr);
+            Convert<RequestType::convertFrom>::call(request, request_storage, user_ptr, *this);
           }
 
-          ResponseStorage response_storage = server->handler_function.call(request_storage, server->user_ptr);
+          ResponseStorage response_storage = server->handler_function.call(request_storage, server->user_ptr, server);
           ResponseConverted response;
 
           if constexpr (can_move_to<ResponseType>) {
-            MoveFunction<ResponseType::moveTo>::call(std::move(response_storage), response, user_ptr);
+            Move<ResponseType::moveTo>::call(std::move(response_storage), response, user_ptr, *this);
           } else {
-            ConversionFunction<ResponseType::convertTo>::call(response_storage, response, user_ptr);
+            Convert<ResponseType::convertTo>::call(response_storage, response, user_ptr, *this);
           }
 
           promise.set_value(std::move(response));

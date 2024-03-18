@@ -54,9 +54,17 @@ TEST(DISABLED_semantics, server) {
 
   TestMessage (*ptr_a)(const TestMessage &, u64 *) = handler_a;
 
-  Node::Server<TestFlatbuffer, TestFlatbuffer>::Ptr server_a = node->addServer<TestFlatbuffer, TestFlatbuffer>("service_a", ptr_a);
+  //Node::Server<TestFlatbuffer, TestFlatbuffer>::Ptr server_a = node->addServer<TestFlatbuffer, TestFlatbuffer>("service_a", ptr_a);
   //Node::Server<TestMessage>::Ptr server_b = node->addReceiver<TestMessage, TestFlatbuffer>, ("service_b");
   //Node::Server<TestMessageConv>::Ptr server_c = node->addReceiver<TestMessageConv, TestFlatbuffer>("service_c");
+
+  auto handler_d = [](const TestContainer &request, u64 *user_ptr) -> TestContainer {
+    return TestContainer();
+  };
+
+  TestContainer (*ptr_d)(const TestContainer &, u64 *) = handler_d;
+
+  Node::Server<TestMessageConv, TestMessageConv>::Ptr server_d = node->addServer<TestMessageConv, TestMessageConv>("service_d", ptr_d);
 }
 
 }  // namespace lbot::test

@@ -41,8 +41,8 @@ private:
       flatbuffers::GetRoot<T>(source.payload.data())->UnPackTo(&destination);
     }
 
-    static void convertTo(const MessageBase<T, PayloadInfo> &source, PayloadInfo &destination, const GenericReceiver<PayloadInfo> *receiver) {
-      destination.topic_hash = receiver->getTopicInfo().topic_hash;
+    static void convertTo(const MessageBase<T, PayloadInfo> &source, PayloadInfo &destination, const void *, const GenericReceiver<PayloadInfo> &receiver) {
+      destination.topic_hash = receiver.getTopicInfo().topic_hash;
 
       flatbuffers::FlatBufferBuilder builder;
       builder.Finish(T::Pack(builder, &source));
