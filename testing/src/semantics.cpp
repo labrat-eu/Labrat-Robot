@@ -43,5 +43,21 @@ TEST(DISABLED_semantics, receiver) {
   message_container = receiver_c->latest();
 }
 
+TEST(DISABLED_semantics, server) {
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
+
+  std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
+
+  auto handler_a = [](const TestMessage &request, u64 *user_ptr) -> TestMessage {
+    return TestMessage();
+  };
+
+  TestMessage (*ptr_a)(const TestMessage &, u64 *) = handler_a;
+
+  Node::Server<TestFlatbuffer, TestFlatbuffer>::Ptr server_a = node->addServer<TestFlatbuffer, TestFlatbuffer>("service_a", ptr_a);
+  //Node::Server<TestMessage>::Ptr server_b = node->addReceiver<TestMessage, TestFlatbuffer>, ("service_b");
+  //Node::Server<TestMessageConv>::Ptr server_c = node->addReceiver<TestMessageConv, TestFlatbuffer>("service_c");
+}
+
 }  // namespace lbot::test
 }  // namespace labrat

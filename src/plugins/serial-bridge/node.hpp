@@ -81,8 +81,8 @@ public:
    */
   template <typename MessageType>
   void registerReceiver(const std::string topic_name) {
-    typename Node::Receiver<PayloadMessage<MessageType>>::Ptr receiver = addReceiver<PayloadMessage<MessageType>>(topic_name);
-    receiver->setCallback(&SerialBridgeNode::receiverCallback, priv);
+    typename Node::Receiver<PayloadMessage<MessageType>>::Ptr receiver = addReceiver<PayloadMessage<MessageType>>(topic_name, priv);
+    receiver->setCallback(&SerialBridgeNode::receiverCallback);
 
     registerGenericReceiver(std::move(receiver));
   }

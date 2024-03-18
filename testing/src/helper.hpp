@@ -80,6 +80,16 @@ public:
     }
   }
 
+  TestNode(const Node::Environment environment, const std::string &sender_topic, const std::string &receiver_topic, const void *sender_ptr, const void *receiver_ptr) :
+    lbot::Node(environment) {
+    if (!sender_topic.empty()) {
+      sender = addSender<TestMessageConv>(sender_topic, sender_ptr);
+    }
+    if (!receiver_topic.empty()) {
+      receiver = addReceiver<TestMessageConv>(receiver_topic, receiver_ptr, 10);
+    }
+  }
+
   using lbot::Node::addClient;
   using lbot::Node::addReceiver;
   using lbot::Node::addSender;

@@ -30,6 +30,7 @@ class MavlinkNodePrivate;
 class MavlinkNode final : public Node {
 public:
   struct SystemInfo {
+    MavlinkNodePrivate *node;
     u8 channel_id;
     u8 system_id;
     u8 component_id;
@@ -84,7 +85,7 @@ public:
   template <typename MessageType>
   void registerReceiver(const std::string topic_name, const SystemInfo *system_info) {
     typename Node::Receiver<MessageType>::Ptr receiver = addReceiver<MessageType>(topic_name, system_info);
-    receiver->setCallback(&MavlinkNode::receiverCallback, priv);
+    receiver->setCallback(&MavlinkNode::receiverCallback);
 
     registerGenericReceiver(std::move(receiver));
   }
@@ -93,7 +94,7 @@ private:
   void registerGenericSender(Node::GenericSender<mavlink_message_t>::Ptr &&sender, u16 id);
   void registerGenericReceiver(Node::GenericReceiver<mavlink_message_t>::Ptr &&receiver);
 
-  static void receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, MavlinkNodePrivate *node);
+  static void receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, const SystemInfo *node);
 
   MavlinkNodePrivate *priv;
 

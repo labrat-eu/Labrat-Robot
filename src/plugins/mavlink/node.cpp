@@ -84,7 +84,7 @@ public:
     struct ServerInfo;
 
     template <typename T, typename U>
-    static Message<U>::Converted handle(const Message<T>::Converted &request, ServerInfo<T, U> *info);
+    static Message<U> handle(const Message<T> &request, ServerInfo<T, U> *info);
 
     template <typename T, typename U>
     struct ServerInfo {
@@ -101,7 +101,7 @@ public:
         sender = node->addSender<T>(sender_topic);
         receiver = node->addReceiver<U>(receiver_topic);
 
-        typename Message<U>::Converted (*ptr)(const typename Message<T>::Converted &, ServerInfo<T, U> *) = handle<T, U>;
+        Message<U> (*ptr)(const Message<T> &, ServerInfo<T, U> *) = handle<T, U>;
         server = node->addServer<T, U>(service, ptr, this);
       }
     };
@@ -930,9 +930,9 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::CommandLong>::convertTo(
 }
 
 template <>
-Message<mavlink::msg::common::ParamValue>::Converted
+Message<mavlink::msg::common::ParamValue>
 MavlinkNodePrivate::MavlinkServer::handle<mavlink::msg::common::ParamRequestRead, mavlink::msg::common::ParamValue>(
-  const Message<mavlink::msg::common::ParamRequestRead>::Converted &request,
+  const Message<mavlink::msg::common::ParamRequestRead> &request,
   ServerInfo<mavlink::msg::common::ParamRequestRead, mavlink::msg::common::ParamValue> *info) {
   Message<mavlink::msg::common::ParamValue> result;
 
@@ -951,9 +951,9 @@ MavlinkNodePrivate::MavlinkServer::handle<mavlink::msg::common::ParamRequestRead
 }
 
 template <>
-Message<mavlink::msg::common::CommandAck>::Converted
+Message<mavlink::msg::common::CommandAck>
 MavlinkNodePrivate::MavlinkServer::handle<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>(
-  const Message<mavlink::msg::common::CommandInt>::Converted &request,
+  const Message<mavlink::msg::common::CommandInt> &request,
   ServerInfo<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck> *info) {
   Message<mavlink::msg::common::CommandAck> result;
 
@@ -972,9 +972,9 @@ MavlinkNodePrivate::MavlinkServer::handle<mavlink::msg::common::CommandInt, mavl
 }
 
 template <>
-Message<mavlink::msg::common::CommandAck>::Converted
+Message<mavlink::msg::common::CommandAck>
 MavlinkNodePrivate::MavlinkServer::handle<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>(
-  const Message<mavlink::msg::common::CommandLong>::Converted &request,
+  const Message<mavlink::msg::common::CommandLong> &request,
   ServerInfo<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck> *info) {
   Message<mavlink::msg::common::CommandAck> result;
 
@@ -1017,7 +1017,8 @@ void MavlinkNode::registerGenericReceiver(Node::GenericReceiver<mavlink_message_
   priv->receiver_vector.emplace_back(std::forward<Node::GenericReceiver<mavlink_message_t>::Ptr>(receiver));
 }
 
-void MavlinkNode::receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, MavlinkNodePrivate *node) {
+void MavlinkNode::receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, const SystemInfo *system_info) {
+  MavlinkNodePrivate *node = system_info->node;
   utils::CleanupLock::Guard guard = node->lock.lock();
 
   if (!guard.valid()) {
@@ -1029,6 +1030,7 @@ void MavlinkNode::receiverCallback(Node::GenericReceiver<mavlink_message_t> &rec
 
 MavlinkNodePrivate::MavlinkNodePrivate(MavlinkConnection::Ptr &&connection, MavlinkNode &node) :
   connection(std::forward<MavlinkConnection::Ptr>(connection)), node(node) {
+  system_info.node = this;
   system_info.channel_id = MAVLINK_COMM_0;
   system_info.system_id = 0xf0;
   system_info.component_id = MAV_COMP_ID_ONBOARD_COMPUTER;

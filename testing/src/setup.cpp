@@ -148,10 +148,10 @@ TEST(setup, move) {
 TEST(setup, callback) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
-
   TestContainer message_b;
+
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main", nullptr, &message_b));
 
   auto callback = [](TestNode::GenericReceiver<TestContainer> &receiver, TestContainer *message) -> void {
     *message = receiver.next();
@@ -159,7 +159,7 @@ TEST(setup, callback) {
 
   void (*ptr)(TestNode::GenericReceiver<TestContainer> &, TestContainer *) = callback;
 
-  node_b->receiver->setCallback(ptr, &message_b);
+  node_b->receiver->setCallback(ptr);
 
   TestContainer message_a;
   message_a.integral_field = 10;

@@ -23,48 +23,37 @@
 inline namespace labrat {
 namespace lbot {
 
-/**
- * @brief Conversion function to convert one data type into another.
- *
- * @tparam OriginalType Type to be converted from.
- * @tparam ConvertedType Type to be converted to.
- */
-template <typename OriginalType, typename ConvertedType>
-class ConversionFunction {
+template <auto* Function>
+class ConversionFunction {};
+
+template <typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(const OriginalType &, ConvertedType &, DataType *) -> void>
+class ConversionFunction<Function> {
 public:
-  template <typename DataType = void>
-  using Function = void (*)(const OriginalType &, ConvertedType &, const DataType *);
-  using FunctionWithoutUserPtr = void (*)(const OriginalType &, ConvertedType &);
-
-  /**
-   * @brief Construct a new conversion function.
-   *
-   * @tparam DataType Type of the data pointed to by the user pointer.
-   * @param function Function to be used as a conversion function.
-   */
-  template <typename DataType = void>
-  constexpr ConversionFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
-
-  /**
-   * @brief Construct a new conversion function.
-   *
-   * @param function Function to be used as a conversion function.
-   */
-  constexpr ConversionFunction(FunctionWithoutUserPtr function) : function(reinterpret_cast<Function<void>>(function)) {}
-
-  /**
+    /**
    * @brief Call the stored conversion function.
    *
    * @param source Object to be converted.
    * @param destination Object to be converted to.
    * @param user_ptr User pointer to access generic external data.
    */
-  inline void call(const OriginalType &source, ConvertedType &destination, const void *user_ptr) const {
-    function(source, destination, user_ptr);
+  static inline void call(const OriginalType &source, ConvertedType &destination, const void *user_ptr) {
+    void *ptr = const_cast<void *>(user_ptr);
+    Function(source, destination, reinterpret_cast<DataType *>(ptr));
   }
+};
 
-private:
-  Function<void> function;
+template <typename OriginalType, typename ConvertedType, auto (*Function)(const OriginalType &, ConvertedType &) -> void>
+class ConversionFunction<Function> {
+public:
+    /**
+   * @brief Call the stored conversion function.
+   *
+   * @param source Object to be converted.
+   * @param destination Object to be converted to.
+   */
+  static inline void call(const OriginalType &source, ConvertedType &destination, const void *) {
+    Function(source, destination);
+  }
 };
 
 template <typename T>
@@ -89,58 +78,37 @@ concept can_convert_from_ptr = requires(const T::Converted &source, T::Storage &
 template <typename T>
 concept can_convert_from = can_convert_from_noptr<T> || can_convert_from_ptr<T>;
 
-/**
- * @brief Move function to convert one data type into another.
- *
- * @tparam OriginalType Type to be converted from.
- * @tparam ConvertedType Type to be converted to.
- */
-template <typename OriginalType, typename ConvertedType>
-class MoveFunction {
+template <auto* Function>
+class MoveFunction {};
+
+template <typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(OriginalType &&, ConvertedType &, DataType *) -> void>
+class MoveFunction<Function> {
 public:
-  template <typename DataType = void>
-  using Function = void (*)(OriginalType &&, ConvertedType &, const DataType *);
-  using FunctionWithoutUserPtr = void (*)(OriginalType &&, ConvertedType &);
-
-  /**
-   * @brief Construct a new move function.
-   *
-   * @tparam DataType Type of the data pointed to by the user pointer.
-   * @param function Function to be used as a move function.
-   */
-  template <typename DataType = void>
-  constexpr MoveFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
-
-  /**
-   * @brief Construct a new move function.
-   *
-   * @param function Function to be used as a move function.
-   */
-  constexpr MoveFunction(FunctionWithoutUserPtr function) : function(reinterpret_cast<Function<void>>(function)) {}
-
-  /**
-   * @brief Call the stored move function.
+    /**
+   * @brief Call the stored conversion function.
    *
    * @param source Object to be converted.
    * @param destination Object to be converted to.
    * @param user_ptr User pointer to access generic external data.
    */
-  inline void call(OriginalType &&source, ConvertedType &destination, const void *user_ptr) const {
-    function(std::forward<OriginalType>(source), destination, user_ptr);
+  static inline void call(OriginalType &&source, ConvertedType &destination, const void *user_ptr) {
+    void *ptr = const_cast<void *>(user_ptr);
+    Function(std::forward<OriginalType>(source), destination, reinterpret_cast<const DataType *>(ptr));
   }
+};
 
-  /**
-   * @brief Check whether a valid function is stored.
+template <typename OriginalType, typename ConvertedType, auto (*Function)(OriginalType &&, ConvertedType &) -> void>
+class MoveFunction<Function> {
+public:
+    /**
+   * @brief Call the stored conversion function.
    *
-   * @return true The function is valid.
-   * @return false The function is invalid.
+   * @param source Object to be converted.
+   * @param destination Object to be converted to.
    */
-  inline operator bool() const {
-    return (function != nullptr);
+  static inline void call(OriginalType &&source, ConvertedType &destination, const void *) {
+    Function(std::forward<OriginalType>(source), destination);
   }
-
-private:
-  Function<void> function;
 };
 
 template <typename T>
@@ -207,11 +175,9 @@ requires is_flatbuffer<FlatbufferType>
 class MessageBase : public MessageTime, public FlatbufferType::NativeTableType {
 public:
   using Storage = MessageBase<FlatbufferType, ConvertedType>;
-  using FlatbufferArg = FlatbufferType;
-  using ConvertedArg = ConvertedType;
+  using Flatbuffer = FlatbufferType;
   using Content = typename FlatbufferType::NativeTableType;
-  using Converted =
-    typename std::conditional_t<std::is_same_v<FlatbufferType, ConvertedType>, MessageBase<FlatbufferType, ConvertedType>, ConvertedType>;
+  using Converted = ConvertedType;
 
   /**
    * @brief Default constructor to only set the timestamp to the current time.
@@ -245,8 +211,8 @@ public:
   }
 };
 
-template <typename T, typename FlatbufferArg = T::FlatbufferArg, typename ConvertedArg = T::ConvertedArg>
-concept is_message = std::derived_from<T, MessageBase<FlatbufferArg, ConvertedArg>>;
+template <typename T, typename Flatbuffer = T::Flatbuffer, typename Converted = T::Converted>
+concept is_message = std::derived_from<T, MessageBase<Flatbuffer, Converted>>;
 
 /**
  * @brief Safe wrapper of a flatbuf message for use within this library.
@@ -255,9 +221,9 @@ concept is_message = std::derived_from<T, MessageBase<FlatbufferArg, ConvertedAr
  */
 template <typename FlatbufferType>
 requires is_flatbuffer<FlatbufferType>
-class Message final : public MessageBase<FlatbufferType, FlatbufferType> {
+class Message final : public MessageBase<FlatbufferType, Message<FlatbufferType>> {
 public:
-  using Super = MessageBase<FlatbufferType, FlatbufferType>;
+  using Super = MessageBase<FlatbufferType, Message<FlatbufferType>>;
   using Content = typename Super::Content;
 
   /**
@@ -312,7 +278,7 @@ public:
    * @return requires
    */
   template <typename T>
-  requires std::is_base_of_v<flatbuffers::Table, T>
+  requires is_flatbuffer<T>
   MessageReflection() : MessageReflection(Message<T>::getName()) {}
 
   /**
