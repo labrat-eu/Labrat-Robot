@@ -11,7 +11,16 @@ inline namespace labrat {
 namespace lbot::test {
 
 using TestFlatbuffer = msg::Test;
+
+static_assert(is_flatbuffer<TestFlatbuffer>);
+
 using TestMessage = lbot::Message<TestFlatbuffer>;
+
+static_assert(is_message<TestMessage>);
+static_assert(can_convert_from<TestMessage>);
+static_assert(can_move_from<TestMessage>);
+static_assert(can_convert_to<TestMessage>);
+static_assert(can_move_to<TestMessage>);
 
 class TestContainer {
 public:
@@ -52,6 +61,12 @@ public:
     destination.buffer = std::forward<std::vector<u8>>(source.buffer);
   }
 };
+
+static_assert(is_message<TestMessageConv>);
+static_assert(can_convert_from<TestMessageConv>);
+static_assert(can_move_from<TestMessageConv>);
+static_assert(can_convert_to<TestMessageConv>);
+static_assert(can_move_to<TestMessageConv>);
 
 class TestNode : public lbot::Node {
 public:

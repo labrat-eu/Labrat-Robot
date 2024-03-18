@@ -115,9 +115,6 @@ TEST(setup, move) {
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
-  static_assert(can_convert_from<TestMessageConv>);
-  static_assert(can_move_from<TestMessageConv>);
-
   static const std::size_t size = 10000000L;
   std::vector<u8> local_buffer;
   local_buffer.reserve(size);
@@ -184,23 +181,23 @@ TEST(setup, server) {
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
-  TestMessage result;
+  TestContainer result;
   u64 counter = 0;
 
-  auto handler = [](const TestMessage &request, u64 *user_ptr) -> TestMessage {
+  auto handler = [](const TestContainer &request, u64 *user_ptr) -> TestContainer {
     ++(*user_ptr);
 
-    TestMessage response;
+    TestContainer response;
     response.float_field = 10 * request.float_field;
     return response;
   };
 
-  TestMessage (*ptr)(const TestMessage &, u64 *) = handler;
+  TestContainer (*ptr)(const TestContainer &, u64 *) = handler;
 
-  Node::Server<TestMessage, TestMessage>::Ptr server = node_a->addServer<TestMessage, TestMessage>("test_service", ptr, &counter);
-  Node::Client<TestMessage, TestMessage>::Ptr client = node_b->addClient<TestMessage, TestMessage>("test_service");
+  Node::Server<TestMessageConv, TestMessageConv>::Ptr server = node_a->addServer<TestMessageConv, TestMessageConv>("test_service", ptr, &counter);
+  Node::Client<TestMessageConv, TestMessageConv>::Ptr client = node_b->addClient<TestMessageConv, TestMessageConv>("test_service");
 
-  TestMessage request;
+  TestContainer request;
   request.float_field = 10.5;
   result = client->callSync(request);
 

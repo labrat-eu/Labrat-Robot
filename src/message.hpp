@@ -43,14 +43,14 @@ public:
    * @param function Function to be used as a conversion function.
    */
   template <typename DataType = void>
-  ConversionFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
+  constexpr ConversionFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
 
   /**
    * @brief Construct a new conversion function.
    *
    * @param function Function to be used as a conversion function.
    */
-  ConversionFunction(FunctionWithoutUserPtr function) : function(reinterpret_cast<Function<void>>(function)) {}
+  constexpr ConversionFunction(FunctionWithoutUserPtr function) : function(reinterpret_cast<Function<void>>(function)) {}
 
   /**
    * @brief Call the stored conversion function.
@@ -59,7 +59,7 @@ public:
    * @param destination Object to be converted to.
    * @param user_ptr User pointer to access generic external data.
    */
-  inline void operator()(const OriginalType &source, ConvertedType &destination, const void *user_ptr) const {
+  inline void call(const OriginalType &source, ConvertedType &destination, const void *user_ptr) const {
     function(source, destination, user_ptr);
   }
 
@@ -68,18 +68,26 @@ private:
 };
 
 template <typename T>
-concept can_convert_to = requires(const T::Storage &source, T::Converted &destination) {
+concept can_convert_to_noptr = requires(const T::Storage &source, T::Converted &destination) {
   {T::convertTo(source, destination)};
-} || requires(const T::Storage &source, T::Converted &destination) {
+};
+template <typename T>
+concept can_convert_to_ptr = requires(const T::Storage &source, T::Converted &destination) {
   {T::convertTo(source, destination, nullptr)};
 };
+template <typename T>
+concept can_convert_to = can_convert_to_noptr<T> || can_convert_to_ptr<T>;
 
 template <typename T>
-concept can_convert_from = requires(const T::Converted &source, T::Storage &destination) {
+concept can_convert_from_noptr = requires(const T::Converted &source, T::Storage &destination) {
   {T::convertFrom(source, destination)};
-} || requires(const T::Converted &source, T::Storage &destination) {
+};
+template <typename T>
+concept can_convert_from_ptr = requires(const T::Converted &source, T::Storage &destination) {
   {T::convertFrom(source, destination, nullptr)};
 };
+template <typename T>
+concept can_convert_from = can_convert_from_noptr<T> || can_convert_from_ptr<T>;
 
 /**
  * @brief Move function to convert one data type into another.
@@ -95,26 +103,20 @@ public:
   using FunctionWithoutUserPtr = void (*)(OriginalType &&, ConvertedType &);
 
   /**
-   * @brief Default-construct a new Move Function object.
-   *
-   */
-  MoveFunction() : function(nullptr) {}
-
-  /**
    * @brief Construct a new move function.
    *
    * @tparam DataType Type of the data pointed to by the user pointer.
    * @param function Function to be used as a move function.
    */
   template <typename DataType = void>
-  MoveFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
+  constexpr MoveFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
 
   /**
    * @brief Construct a new move function.
    *
    * @param function Function to be used as a move function.
    */
-  MoveFunction(FunctionWithoutUserPtr function) : function(reinterpret_cast<Function<void>>(function)) {}
+  constexpr MoveFunction(FunctionWithoutUserPtr function) : function(reinterpret_cast<Function<void>>(function)) {}
 
   /**
    * @brief Call the stored move function.
@@ -123,7 +125,7 @@ public:
    * @param destination Object to be converted to.
    * @param user_ptr User pointer to access generic external data.
    */
-  inline void operator()(OriginalType &&source, ConvertedType &destination, const void *user_ptr) const {
+  inline void call(OriginalType &&source, ConvertedType &destination, const void *user_ptr) const {
     function(std::forward<OriginalType>(source), destination, user_ptr);
   }
 
@@ -142,18 +144,26 @@ private:
 };
 
 template <typename T>
-concept can_move_to = requires(T::Storage &&source, T::Converted &destination) {
+concept can_move_to_noptr = requires(T::Storage &&source, T::Converted &destination) {
   {T::moveTo(std::move(source), destination)};
-} || requires(T::Storage &&source, T::Converted &destination) {
+};
+template <typename T>
+concept can_move_to_ptr = requires(T::Storage &&source, T::Converted &destination) {
   {T::moveTo(std::move(source), destination, nullptr)};
 };
+template <typename T>
+concept can_move_to = can_move_to_noptr<T> || can_move_to_ptr<T>;
 
 template <typename T>
-concept can_move_from = requires(T::Converted &&source, T::Storage &destination) {
+concept can_move_from_noptr = requires(T::Converted &&source, T::Storage &destination) {
   {T::moveFrom(std::move(source), destination)};
-} || requires(T::Converted &&source, T::Storage &destination) {
+};
+template <typename T>
+concept can_move_from_ptr = requires(T::Converted &&source, T::Storage &destination) {
   {T::moveFrom(std::move(source), destination, nullptr)};
 };
+template <typename T>
+concept can_move_from = can_move_from_noptr<T> || can_move_from_ptr<T>;
 
 /**
  * @brief Abstract time class for Message.
@@ -272,12 +282,20 @@ public:
    */
   Message(Content &&content) : Super(std::forward<Content>(content)) {}
 
-  static void convertTo(const Super::Storage &source, Super::Converted &destination) {
+  static inline void convertTo(const Super::Storage &source, Super::Converted &destination) {
     destination = source;
   }
 
-  static void convertFrom(const Super::Converted &source, Super::Storage &destination) {
+  static inline void moveTo(Super::Storage &&source, Super::Converted &destination) {
+    destination = std::move(source);
+  }
+
+  static inline void convertFrom(const Super::Converted &source, Super::Storage &destination) {
     destination = source;
+  }
+
+  static inline void moveFrom(Super::Converted &&source, Super::Storage &destination) {
+    destination = std::move(source);
   }
 };
 
