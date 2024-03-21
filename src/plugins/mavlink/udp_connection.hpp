@@ -33,13 +33,13 @@ public:
    * @param port Remote port of the socket.
    * @param local_port Local port of the socket.
    */
-  MavlinkUdpConnection(const std::string &address = "127.0.0.1", u16 port = 14580, u16 local_port = 14540);
+  explicit MavlinkUdpConnection(const std::string &address = "127.0.0.1", u16 port = 14580, u16 local_port = 14540);
 
   /**
    * @brief Destroy the Mavlink Udp Connection object.
    *
    */
-  virtual ~MavlinkUdpConnection();
+  ~MavlinkUdpConnection() override;
 
   /**
    * @brief Write bytes to the UDP socket.

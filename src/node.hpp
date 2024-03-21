@@ -26,8 +26,6 @@
 #include <string>
 #include <vector>
 
-#include <iostream>
-
 inline namespace labrat {
 namespace lbot {
 
@@ -63,7 +61,7 @@ public:
 
   template <typename MessageType>
   requires is_message<MessageType>
-  class _Sender;
+  class SenderBase;
 
   /**
    * @brief Generic sender to declare virtual functions for type specific receiver instances to define.
@@ -114,13 +112,13 @@ public:
      *
      * @return const Plugin::TopicInfo& Information about the topic.
      */
-    inline const Plugin::TopicInfo &getTopicInfo() const {
+    [[nodiscard]] inline const Plugin::TopicInfo &getTopicInfo() const {
       return topic_info;
     }
 
   protected:
-    GenericSender(const Plugin::TopicInfo &topic_info, TopicMap::Topic &topic, Node &node) :
-      topic_info(topic_info), topic(topic), node(node) {}
+    GenericSender(Plugin::TopicInfo topic_info, TopicMap::Topic &topic, Node &node) :
+      topic_info(std::move(topic_info)), topic(topic), node(node) {}
 
     const Plugin::TopicInfo topic_info;
     TopicMap::Topic &topic;
@@ -135,7 +133,7 @@ public:
    */
   template <typename MessageType>
   requires is_message<MessageType>
-  class _Sender : public GenericSender<typename MessageType::Converted> {
+  class SenderBase : public GenericSender<typename MessageType::Converted> {
   public:
     using Storage = typename MessageType::Storage;
     using Converted = typename MessageType::Converted;
@@ -147,10 +145,10 @@ public:
     template <auto* Function>
     using Move = MoveFunction<Reference, Function>;
 
-  private:
-    _Sender(_Sender &) = delete;
-    _Sender(_Sender &&) = delete;
+    SenderBase(SenderBase &) = delete;
+    SenderBase(SenderBase &&) = delete;
 
+  private:
     /**
      * @brief Construct a new Sender object.
      *
@@ -158,7 +156,7 @@ public:
      * @param node Reference to the parent node.
      * @param user_ptr User pointer to be used by the conversion function.
      */
-    _Sender(const std::string &topic_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<MessageType, Reference> :
+    SenderBase(const std::string &topic_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<MessageType, Reference> :
       GenericSender<Converted>(Plugin::TopicInfo::get<MessageType>(topic_name),
         node.environment.topic_map.addSender<MessageType>(topic_name, this), node), user_ptr(user_ptr) {
       for (Plugin &plugin : GenericSender<Converted>::node.environment.plugin_list) {
@@ -183,8 +181,8 @@ public:
      * @brief Destroy the Sender object.
      *
      */
-    ~_Sender() {
-      flush();
+    ~SenderBase() override {
+      SenderBase::flush();
 
       GenericSender<Converted>::node.environment.topic_map.removeSender(GenericSender<Converted>::topic.name, this);
     }
@@ -194,7 +192,7 @@ public:
      *
      * @param container Object containing the data to be sent out.
      */
-    void put(const Converted &container) {
+    void put(const Converted &container) override {
       for (void *pointer : GenericSender<Converted>::topic.getReceivers()) {
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
@@ -227,7 +225,7 @@ public:
      *
      * @param container Object containing the data to be sent out.
      */
-    void move(Converted &&container) {
+    void move(Converted &&container) override {
       if constexpr (!can_move_from<MessageType, Reference>) {
         throw ConversionException("A sender move method was called without its move function being properly set.");
       } else {
@@ -309,7 +307,7 @@ public:
      * This will unblock any waiting receivers calling the next() function and will invalidate the data stored in their buffers.
      *
      */
-    void flush() {
+    void flush() override {
       for (void *pointer : GenericSender<Converted>::topic.getReceivers()) {
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
@@ -326,7 +324,7 @@ public:
      *
      * @param container Object caintaining the data to be sent out.
      */
-    void trace(const Converted &container) {
+    void trace(const Converted &container) override {
       MessageType message;
       Plugin::MessageInfo message_info = {.topic_info = GenericSender<Converted>::topic_info};
 
@@ -360,24 +358,24 @@ public:
 
   // Wrapper classes to allow flatbuffer types to also work as template arguments.
   template <typename MessageType>
-  class Sender final : public _Sender<MessageType> {
+  class Sender final : public SenderBase<MessageType> {
   public:
-    using Super = _Sender<MessageType>;
+    using Super = SenderBase<MessageType>;
     using Ptr = std::unique_ptr<Sender<MessageType>>;
 
     template <typename... Args>
-    Sender(Args &&...args) : Super(std::forward<Args>(args)...){};
+    explicit Sender(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename FlatbufferType>
   requires is_flatbuffer<FlatbufferType>
-  class Sender<FlatbufferType> final : public _Sender<Message<FlatbufferType>> {
+  class Sender<FlatbufferType> final : public SenderBase<Message<FlatbufferType>> {
   public:
-    using Super = _Sender<Message<FlatbufferType>>;
+    using Super = SenderBase<Message<FlatbufferType>>;
     using Ptr = std::unique_ptr<Sender<FlatbufferType>>;
 
     template <typename... Args>
-    Sender(Args &&...args) : Super(std::forward<Args>(args)...){};
+    explicit Sender(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename MessageType>
@@ -385,7 +383,7 @@ public:
 
   template <typename MessageType>
   requires is_message<MessageType>
-  class _Receiver;
+  class ReceiverBase;
 
   /**
    * @brief @brief Generic receiver to declare virtual functions for type specific receiver instances to define.
@@ -425,7 +423,7 @@ public:
      * @return true New data is availabe, a call to next() will not block.
      * @return false No new data is availabe, a call to next() will block.
      */
-    inline bool newDataAvailable() {
+    [[nodiscard]] inline bool newDataAvailable() {
       return (read_count.load() != next_count);
     }
 
@@ -434,7 +432,7 @@ public:
      *
      * @return std::size_t
      */
-    inline std::size_t getBufferSize() const {
+    [[nodiscard]] inline std::size_t getBufferSize() const {
       return index_mask + 1;
     }
 
@@ -443,13 +441,13 @@ public:
      *
      * @return const Plugin::TopicInfo& Information about the topic.
      */
-    inline const Plugin::TopicInfo &getTopicInfo() const {
+    [[nodiscard]] inline const Plugin::TopicInfo &getTopicInfo() const {
       return topic_info;
     }
 
   protected:
-    GenericReceiver(const Plugin::TopicInfo &topic_info, TopicMap::Topic &topic, Node &node, std::size_t buffer_size) :
-      topic_info(topic_info), topic(topic), node(node), index_mask(calculateBufferMask(buffer_size)), write_count(0),
+    GenericReceiver(Plugin::TopicInfo topic_info, TopicMap::Topic &topic, Node &node, std::size_t buffer_size) :
+      topic_info(std::move(topic_info)), topic(topic), node(node), index_mask(calculateBufferMask(buffer_size)), write_count(0),
       read_count(index_mask) {
       next_count = index_mask;
       flush_flag = true;
@@ -476,7 +474,7 @@ public:
           if (mask ^ buffer_size) {
             return mask << 1;
           } else {
-            return mask;
+          return mask;
           }
         }
 
@@ -514,7 +512,7 @@ public:
    */
   template <typename MessageType>
   requires is_message<MessageType>
-  class _Receiver : public GenericReceiver<typename MessageType::Converted> {
+  class ReceiverBase : public GenericReceiver<typename MessageType::Converted> {
   public:
     using Storage = typename MessageType::Storage;
     using Converted = typename MessageType::Converted;
@@ -535,7 +533,7 @@ public:
      * @param user_ptr User pointer to be used by the conversion function.
      * @param buffer_size Size of the internal receiver buffer. It must be at least 4 and should ideally be a power of 2.
      */
-    _Receiver(const std::string &topic_name, Node &node, const void *user_ptr = nullptr, std::size_t buffer_size = 4) requires can_convert_to<MessageType, Reference> :
+    ReceiverBase(const std::string &topic_name, Node &node, const void *user_ptr = nullptr, std::size_t buffer_size = 4) requires can_convert_to<MessageType, Reference> :
       GenericReceiver<Converted>(Plugin::TopicInfo::get<MessageType>(topic_name),
         node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node, buffer_size), user_ptr(user_ptr),
       message_buffer(GenericReceiver<Converted>::calculateBufferSize(buffer_size)) {
@@ -562,7 +560,7 @@ public:
        *
        * @param size Size of the message buffer.
        */
-      MessageBuffer(std::size_t size) : size(size) {
+      explicit MessageBuffer(std::size_t size) : size(size) {
         buffer = allocator.allocate(size);
 
         for (std::size_t i = 0; i < size; ++i) {
@@ -602,8 +600,8 @@ public:
     volatile MessageBuffer message_buffer;
 
   public:
-    _Receiver(_Receiver &) = delete;
-    _Receiver(_Receiver &&) = delete;
+    ReceiverBase(ReceiverBase &) = delete;
+    ReceiverBase(ReceiverBase &&) = delete;
 
     /**
      * @brief Callback function to be called by the corresponding sender on each put operation.
@@ -656,7 +654,7 @@ public:
      * @brief Destroy the Receiver object.
      *
      */
-    ~_Receiver() {
+    ~ReceiverBase() override {
       GenericReceiver<Converted>::node.environment.topic_map.removeReceiver(GenericReceiver<Converted>::topic.name, this);
     }
 
@@ -738,24 +736,24 @@ public:
 
   // Wrapper classes to allow flatbuffer types to also work as template arguments.
   template <typename MessageType>
-  class Receiver final : public _Receiver<MessageType> {
+  class Receiver final : public ReceiverBase<MessageType> {
   public:
-    using Super = _Receiver<MessageType>;
+    using Super = ReceiverBase<MessageType>;
     using Ptr = std::unique_ptr<Receiver<MessageType>>;
 
     template <typename... Args>
-    Receiver(Args &&...args) : Super(std::forward<Args>(args)...){};
+    explicit Receiver(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename FlatbufferType>
   requires is_flatbuffer<FlatbufferType>
-  class Receiver<FlatbufferType> final : public _Receiver<Message<FlatbufferType>> {
+  class Receiver<FlatbufferType> final : public ReceiverBase<Message<FlatbufferType>> {
   public:
-    using Super = _Receiver<Message<FlatbufferType>>;
+    using Super = ReceiverBase<Message<FlatbufferType>>;
     using Ptr = std::unique_ptr<Receiver<FlatbufferType>>;
 
     template <typename... Args>
-    Receiver(Args &&...args) : Super(std::forward<Args>(args)...){};
+    explicit Receiver(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename RequestType, typename ResponseType>
@@ -764,7 +762,7 @@ public:
   template <typename RequestConverted, typename ResponseConverted>
   class GenericServer {
   protected:
-    GenericServer(const Plugin::ServiceInfo &service_info) : service_info(service_info) {}
+    explicit GenericServer(Plugin::ServiceInfo service_info) : service_info(std::move(service_info)) {}
 
     const Plugin::ServiceInfo service_info;
 
@@ -774,7 +772,7 @@ public:
      *
      * @return const Plugin::ServiceInfo& Information about the service.
      */
-    inline const Plugin::ServiceInfo &getTopicInfo() const {
+    [[nodiscard]] inline const Plugin::ServiceInfo &getTopicInfo() const {
       return service_info;
     }
   };
@@ -787,7 +785,7 @@ public:
    */
   template <typename RequestType, typename ResponseType>
   requires is_message<RequestType> && is_message<ResponseType>
-  class _Server : public GenericServer<typename RequestType::Converted, typename ResponseType::Converted> {
+  class ServerBase : public GenericServer<typename RequestType::Converted, typename ResponseType::Converted> {
   public:
     using RequestStorage = typename RequestType::Storage;
     using ResponseStorage = typename ResponseType::Storage;
@@ -825,7 +823,7 @@ public:
        * @param user_ptr User pointer to access generic external data.
        * @return ResponseType Response to be sent to the client.
        */
-      inline ResponseStorage call(const RequestStorage &request, const void *user_ptr, _Server<RequestType, ResponseType> *reference) const {
+      inline ResponseStorage call(const RequestStorage &request, const void *user_ptr, ServerBase<RequestType, ResponseType> *reference) const {
         RequestConverted request_converted;
         Convert<RequestType::convertTo>::call(request, request_converted, user_ptr, *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
 
@@ -845,10 +843,10 @@ public:
       Function<void> function;
     };
 
-  private:
-    _Server(_Server &) = delete;
-    _Server(_Server &&) = delete;
+    ServerBase(ServerBase &) = delete;
+    ServerBase(ServerBase &&) = delete;
 
+  private:
     /**
      * @brief Construct a new Server object
      *
@@ -857,7 +855,7 @@ public:
      * @param handler_function Handler function to handle requests made to a service.
      * @param user_ptr User pointer to be used by the handler function.
      */
-    _Server(const std::string &service_name, Node &node, HandlerFunction handler_function, const void *user_ptr = nullptr) requires can_convert_to<RequestType, Reference> && can_convert_from<ResponseType, Reference> :
+    ServerBase(const std::string &service_name, Node &node, HandlerFunction handler_function, const void *user_ptr = nullptr) requires can_convert_to<RequestType, Reference> && can_convert_from<ResponseType, Reference> :
       GenericServer<RequestConverted, ResponseConverted>(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name, node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this))),
       node(node), handler_function(handler_function), user_ptr(user_ptr) {
       for (Plugin &plugin : node.environment.plugin_list) {
@@ -885,53 +883,53 @@ public:
      * @brief Destroy the Server object.
      *
      */
-    ~_Server() {
+    ~ServerBase() {
       GenericServer<RequestConverted, ResponseConverted>::service_info.service.removeServer(this);
     }
   };
 
   // Wrapper classes to allow flatbuffer types to also work as template arguments.
   template <typename RequestType, typename ResponseType>
-  class Server final : public _Server<RequestType, ResponseType> {
+  class Server final : public ServerBase<RequestType, ResponseType> {
   public:
-    using Super = _Server<RequestType, ResponseType>;
+    using Super = ServerBase<RequestType, ResponseType>;
     using Ptr = std::unique_ptr<Server<RequestType, ResponseType>>;
 
     template <typename... Args>
-    Server(Args &&...args) : Super(std::forward<Args>(args)...){};
+    explicit Server(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename RequestType, typename ResponseType>
   requires is_flatbuffer<RequestType>
-  class Server<RequestType, ResponseType> final : public _Server<Message<RequestType>, ResponseType> {
+  class Server<RequestType, ResponseType> final : public ServerBase<Message<RequestType>, ResponseType> {
   public:
-    using Super = _Server<Message<RequestType>, ResponseType>;
+    using Super = ServerBase<Message<RequestType>, ResponseType>;
     using Ptr = std::unique_ptr<Server<RequestType, ResponseType>>;
 
     template <typename... Args>
-    Server(Args &&...args) : Super(std::forward<Args>(args)...){};
+    explicit Server(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename RequestType, typename ResponseType>
   requires is_flatbuffer<ResponseType>
-  class Server<RequestType, ResponseType> final : public _Server<RequestType, Message<ResponseType>> {
+  class Server<RequestType, ResponseType> final : public ServerBase<RequestType, Message<ResponseType>> {
   public:
-    using Super = _Server<RequestType, Message<ResponseType>>;
+    using Super = ServerBase<RequestType, Message<ResponseType>>;
     using Ptr = std::unique_ptr<Server<RequestType, ResponseType>>;
 
     template <typename... Args>
-    Server(Args &&...args) : Super(std::forward<Args>(args)...){};
+    explicit Server(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename RequestType, typename ResponseType>
   requires is_flatbuffer<RequestType> && is_flatbuffer<ResponseType>
-  class Server<RequestType, ResponseType> final : public _Server<Message<RequestType>, Message<ResponseType>> {
+  class Server<RequestType, ResponseType> final : public ServerBase<Message<RequestType>, Message<ResponseType>> {
   public:
-    using Super = _Server<Message<RequestType>, Message<ResponseType>>;
+    using Super = ServerBase<Message<RequestType>, Message<ResponseType>>;
     using Ptr = std::unique_ptr<Server<RequestType, ResponseType>>;
 
     template <typename... Args>
-    Server(Args &&...args) : Super(std::forward<Args>(args)...){};
+    explicit Server(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename RequestType, typename ResponseType>
@@ -940,7 +938,7 @@ public:
   template <typename RequestConverted, typename ResponseConverted>
   class GenericClient {
   protected:
-    GenericClient(const Plugin::ServiceInfo &service_info) : service_info(service_info) {}
+    explicit GenericClient(Plugin::ServiceInfo service_info) : service_info(std::move(service_info)) {}
 
     const Plugin::ServiceInfo service_info;
 
@@ -950,7 +948,7 @@ public:
      *
      * @return const Plugin::ServiceInfo& Information about the service.
      */
-    inline const Plugin::ServiceInfo &getServiceInfo() const {
+    [[nodiscard]] inline const Plugin::ServiceInfo &getServiceInfo() const {
       return service_info;
     }
   };
@@ -963,7 +961,7 @@ public:
    */
   template <typename RequestType, typename ResponseType>
   requires is_message<RequestType> && is_message<ResponseType>
-  class _Client : public GenericClient<typename RequestType::Converted, typename ResponseType::Converted> {
+  class ClientBase : public GenericClient<typename RequestType::Converted, typename ResponseType::Converted> {
   public:
     using RequestStorage = typename RequestType::Storage;
     using ResponseStorage = typename ResponseType::Storage;
@@ -976,11 +974,11 @@ public:
     using Convert = ConversionFunction<Reference, Function>;
     template <auto* Function>
     using Move = MoveFunction<Reference, Function>;
+
+    ClientBase(ClientBase &) = delete;
+    ClientBase(ClientBase &&) = delete;
   
   private:
-    _Client(_Client &) = delete;
-    _Client(_Client &&) = delete;
-
     /**
      * @brief Construct a new Client object.
      *
@@ -988,7 +986,7 @@ public:
      * @param node Reference to the parent node.
      * @param user_ptr User pointer to be forwarded to conversion and move functions.
      */
-    _Client(const std::string &service_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<RequestType, Reference> && can_convert_to<ResponseType, Reference> :
+    ClientBase(const std::string &service_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<RequestType, Reference> && can_convert_to<ResponseType, Reference> :
       GenericClient<RequestConverted, ResponseConverted>(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name, node.environment.service_map.getService<RequestType, ResponseType>(service_name))),
       node(node), user_ptr(user_ptr) {}
 
@@ -1004,7 +1002,7 @@ public:
      * @brief Destroy the Client object.
      *
      */
-    ~_Client() = default;
+    ~ClientBase() = default;
 
     /**
      * @brief Make a request to a service asynchronously.
@@ -1093,46 +1091,46 @@ public:
 
   // Wrapper classes to allow flatbuffer types to also work as template arguments.
   template <typename RequestType, typename ResponseType>
-  class Client final : public _Client<RequestType, ResponseType> {
+  class Client final : public ClientBase<RequestType, ResponseType> {
   public:
-    using Super = _Client<RequestType, ResponseType>;
+    using Super = ClientBase<RequestType, ResponseType>;
     using Ptr = std::unique_ptr<Client<RequestType, ResponseType>>;
 
     template <typename... Args>
-    Client(Args &&...args) : Super(std::forward<Args>(args)...){};
+    explicit Client(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename RequestType, typename ResponseType>
   requires is_flatbuffer<RequestType>
-  class Client<RequestType, ResponseType> final : public _Client<Message<RequestType>, ResponseType> {
+  class Client<RequestType, ResponseType> final : public ClientBase<Message<RequestType>, ResponseType> {
   public:
-    using Super = _Client<Message<RequestType>, ResponseType>;
+    using Super = ClientBase<Message<RequestType>, ResponseType>;
     using Ptr = std::unique_ptr<Client<RequestType, ResponseType>>;
 
     template <typename... Args>
-    Client(Args &&...args) : Super(std::forward<Args>(args)...){};
+    explicit Client(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename RequestType, typename ResponseType>
   requires is_flatbuffer<ResponseType>
-  class Client<RequestType, ResponseType> final : public _Client<RequestType, Message<ResponseType>> {
+  class Client<RequestType, ResponseType> final : public ClientBase<RequestType, Message<ResponseType>> {
   public:
-    using Super = _Client<RequestType, Message<ResponseType>>;
+    using Super = ClientBase<RequestType, Message<ResponseType>>;
     using Ptr = std::unique_ptr<Client<RequestType, ResponseType>>;
 
     template <typename... Args>
-    Client(Args &&...args) : Super(std::forward<Args>(args)...){};
+    explicit Client(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   template <typename RequestType, typename ResponseType>
   requires is_flatbuffer<RequestType> && is_flatbuffer<ResponseType>
-  class Client<RequestType, ResponseType> final : public _Client<Message<RequestType>, Message<ResponseType>> {
+  class Client<RequestType, ResponseType> final : public ClientBase<Message<RequestType>, Message<ResponseType>> {
   public:
-    using Super = _Client<Message<RequestType>, Message<ResponseType>>;
+    using Super = ClientBase<Message<RequestType>, Message<ResponseType>>;
     using Ptr = std::unique_ptr<Client<RequestType, ResponseType>>;
 
     template <typename... Args>
-    Client(Args &&...args) : Super(std::forward<Args>(args)...){};
+    explicit Client(Args &&...args) : Super(std::forward<Args>(args)...){};
   };
 
   /**
@@ -1150,14 +1148,14 @@ protected:
    *
    * @param environment Node environment data for the node to copy internally.
    */
-  Node(const Environment &environment) : environment(environment) {}
+  explicit Node(Environment environment) : environment(std::move(environment)) {}
 
   /**
    * @brief Get a logger with the name of the node.
    *
    * @return Logger A logger with the name of the node.
    */
-  inline Logger getLogger() const {
+  [[nodiscard]] inline Logger getLogger() const {
     return Logger(environment.name);
   }
 

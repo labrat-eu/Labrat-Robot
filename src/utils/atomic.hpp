@@ -28,7 +28,7 @@ public:
    *
    * @param object The atomic object to be guarded.
    */
-  inline ConsumerGuard(std::atomic<T> &object) : object(object) {
+  explicit inline ConsumerGuard(std::atomic<T> &object) : object(object) {
     ++object;
   }
 
@@ -57,7 +57,7 @@ public:
    *
    * @param flag The atomic flag
    */
-  inline FlagGuard(std::atomic_flag &flag) : flag(flag) {
+  explicit inline FlagGuard(std::atomic_flag &flag) : flag(flag) {
     while (flag.test_and_set()) {
       flag.wait(true);
     }

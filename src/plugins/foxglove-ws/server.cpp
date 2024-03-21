@@ -91,7 +91,7 @@ public:
     std::string name;
     std::string definition;
 
-    SchemaInfo(const std::string &name, const std::string &definition) : name(name), definition(definition) {}
+    SchemaInfo(std::string name, std::string definition) : name(std::move(name)), definition(std::move(definition)) {}
   };
 
 private:
@@ -101,7 +101,7 @@ private:
   static void topicCallback(void *user_ptr, const Plugin::TopicInfo &info);
   static void messageCallback(void *user_ptr, const Plugin::MessageInfo &info);
 
-  SchemaMap::iterator handleSchema(const std::string type_name, const std::size_t type_hash);
+  SchemaMap::iterator handleSchema(const std::string &type_name, std::size_t type_hash);
   ChannelIdMap::iterator handleTopic(const Plugin::TopicInfo &info);
   inline ChannelIdMap::iterator handleMessage(const Plugin::MessageInfo &info);
 
@@ -136,7 +136,7 @@ void FoxgloveServerPrivate::messageCallback(void *user_ptr, const Plugin::Messag
   (void)self->handleMessage(info);
 }
 
-FoxgloveServerPrivate::SchemaMap::iterator FoxgloveServerPrivate::handleSchema(const std::string type_name, const std::size_t type_hash) {
+FoxgloveServerPrivate::SchemaMap::iterator FoxgloveServerPrivate::handleSchema(const std::string &type_name, const std::size_t type_hash) {
   std::lock_guard guard(mutex);
 
   SchemaMap::iterator schema_iterator = schema_map.find(type_hash);

@@ -30,7 +30,7 @@ public:
    * @param filename Path of the output MCAP file.
    * @param filter Topic filter to specifiy which topics should be handled by the plugin.
    */
-  McapRecorder(const std::string &filename, const Plugin::Filter &filter = Plugin::Filter());
+  explicit McapRecorder(const std::string &filename, const Plugin::Filter &filter = Plugin::Filter());
 
   /**
    * @brief Destroy the Mcap Recorder object.

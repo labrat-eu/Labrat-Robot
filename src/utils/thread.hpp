@@ -15,8 +15,8 @@
 #include <chrono>
 #include <functional>
 #include <thread>
+#include <cerrno>
 
-#include <errno.h>
 #include <sched.h>
 #include <sys/prctl.h>
 
@@ -35,7 +35,7 @@ protected:
 
   static void setup(const std::string &name, i32 priority) {
     // Set name of the thread in applications like top/htop for better performance debugging.
-    if (prctl(PR_SET_NAME, name.c_str()) != 0) {
+    if (prctl(PR_SET_NAME, name.c_str())) {
       throw labrat::lbot::SystemException("Failed to set thread name.", errno);
     }
 
@@ -46,7 +46,7 @@ protected:
     try {
       // Select real-time scheduler.
       sched_param scheduler_parameter = {.sched_priority = priority};
-      if (sched_setscheduler(0, SCHED_RR, &scheduler_parameter) != 0) {
+      if (sched_setscheduler(0, SCHED_RR, &scheduler_parameter)) {
         throw labrat::lbot::SystemException("Failed to specify scheduling algorithm.", errno);
       }
     } catch (labrat::lbot::SystemException &) {
@@ -63,7 +63,7 @@ public:
   LoopThread() = default;
   LoopThread(LoopThread &) = delete;
 
-  LoopThread(LoopThread &&rhs) : thread(std::move(rhs.thread)) {};
+  LoopThread(LoopThread &&rhs) noexcept : thread(std::move(rhs.thread)) {};
 
   /**
    * @brief Start the thread.
@@ -79,12 +79,14 @@ public:
       setup(name, priority);
 
       while (!token.stop_requested()) {
-        std::invoke<Function, Args...>(std::forward<Function>(function), std::forward<Args>(args)...);
+        [](Function function, Args ...args) {
+          std::invoke<Function, Args...>(std::forward<Function>(function), std::forward<Args>(args)...);
+        }(function, args...);
       }
     }, std::forward<Function>(function), std::forward<Args>(args)...);
   }
 
-  void operator=(LoopThread &&rhs) {
+  void operator=(LoopThread &&rhs) noexcept {
     thread = std::move(rhs.thread);
   };
 
@@ -101,7 +103,7 @@ public:
   TimerThread() = default;
   TimerThread(TimerThread &) = delete;
 
-  TimerThread(TimerThread &&rhs) : thread(std::move(rhs.thread)) {};
+  TimerThread(TimerThread &&rhs) noexcept : thread(std::move(rhs.thread)) {};
 
   /**
    * @brief Start the thread.
@@ -120,7 +122,9 @@ public:
       while (true) {
         const std::chrono::time_point<std::chrono::steady_clock> time_begin = std::chrono::steady_clock::now();
 
-        std::invoke<Function, Args...>(std::forward<Function>(function), std::forward<Args>(args)...);
+        [](Function function, Args ...args) {
+          std::invoke<Function, Args...>(std::forward<Function>(function), std::forward<Args>(args)...);
+        }(function, args...);
 
         if (token.stop_requested()) {
           break;
@@ -131,7 +135,7 @@ public:
     }, std::forward<Function>(function), std::forward<Args>(args)...);
   }
 
-  void operator=(TimerThread &&rhs) {
+  void operator=(TimerThread &&rhs) noexcept {
     thread = std::move(rhs.thread);
   };
 

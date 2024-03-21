@@ -69,7 +69,7 @@ MavlinkSerialConnection::MavlinkSerialConnection(const std::string &port, u64 ba
   epoll_event event;
   event.events = EPOLLIN;
 
-  if (epoll_ctl(epoll_handle, EPOLL_CTL_ADD, file_descriptor, &event) != 0) {
+  if (epoll_ctl(epoll_handle, EPOLL_CTL_ADD, file_descriptor, &event)) {
     throw IoException("Failed to create epoll instance.", errno);
   }
 

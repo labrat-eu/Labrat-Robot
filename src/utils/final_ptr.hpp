@@ -28,7 +28,7 @@ public:
    *
    * @param ptr Shared pointer object to be moved.
    */
-  FinalPtr(std::shared_ptr<T> &&ptr) noexcept : std::shared_ptr<T>(std::forward<std::shared_ptr<T> &&>(ptr)) {}
+  explicit FinalPtr(std::shared_ptr<T> &&ptr) noexcept : std::shared_ptr<T>(std::forward<std::shared_ptr<T> &&>(ptr)) {}
 
   /**
    * @brief Destroy the Final Ptr object and assert whether this instance is indeed the last instance to point to the managed object.

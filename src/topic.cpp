@@ -14,9 +14,9 @@
 inline namespace labrat {
 namespace lbot {
 
-TopicMap::TopicMap() {}
+TopicMap::TopicMap() = default;
 
-TopicMap::Topic::Topic(Handle handle, const std::string &name) : handle(handle), name(name) {
+TopicMap::Topic::Topic(Handle handle, std::string name) : handle(handle), name(std::move(name)) {
   sender = nullptr;
 }
 

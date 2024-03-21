@@ -20,12 +20,12 @@ class Cluster {
 public:
   ~Cluster() = default;
 
-  inline const std::string &getName() const {
+  [[nodiscard]] inline const std::string &getName() const {
     return name;
   }
 
 protected:
-  Cluster(const std::string &name) : name(name) {}
+  explicit Cluster(std::string name) : name(std::move(name)) {}
 
   /**
    * @brief Construct and add a node to the internal network.

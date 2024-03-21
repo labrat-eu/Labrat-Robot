@@ -12,9 +12,9 @@
 inline namespace labrat {
 namespace lbot {
 
-ServiceMap::ServiceMap() {}
+ServiceMap::ServiceMap() = default;
 
-ServiceMap::Service::Service(Handle handle, const std::string &name) : handle(handle), name(name) {
+ServiceMap::Service::Service(Handle handle, std::string name) : handle(handle), name(std::move(name)) {
   server = nullptr;
 }
 

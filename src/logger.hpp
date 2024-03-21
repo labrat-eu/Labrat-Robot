@@ -51,7 +51,7 @@ public:
    * @brief Verbosity level of the application.
    *
    */
-  enum class Verbosity {
+  enum class Verbosity : u8 {
     critical,
     error,
     warning,
@@ -131,7 +131,7 @@ public:
    *
    * @param name Name of the logger.
    */
-  Logger(const std::string &name);
+  explicit Logger(std::string name);
 
   /**
    * @brief Destroy the Logger object.

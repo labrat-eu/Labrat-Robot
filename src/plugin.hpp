@@ -35,7 +35,7 @@ public:
    * @brief Default constructor to initialize the user count to zero.
    *
    */
-  inline Plugin() : user_ptr(nullptr), topic_callback(nullptr), service_callback(nullptr), message_callback(nullptr) {
+  inline Plugin() {
     use_count = 0;
   }
 
@@ -54,7 +54,7 @@ public:
    * @brief User pointer to be returned on any callback performed.
    *
    */
-  void *user_ptr;
+  void *user_ptr = nullptr;
 
   /**
    * @brief Information on a topic provided on callbacks.
@@ -92,7 +92,7 @@ public:
    * @brief Callback function pointer for when a sender is created.
    *
    */
-  void (*topic_callback)(void *user_ptr, const TopicInfo &info);
+  void (*topic_callback)(void *user_ptr, const TopicInfo &info) = nullptr;
 
   /**
    * @brief Information on a service provided on callbacks.
@@ -135,7 +135,7 @@ public:
    * @brief Callback function pointer for when a server is created.
    *
    */
-  void (*service_callback)(void *user_ptr, const ServiceInfo &info);
+  void (*service_callback)(void *user_ptr, const ServiceInfo &info) = nullptr;
 
   /**
    * @brief Information on a message provided on callbacks.
@@ -151,11 +151,11 @@ public:
    * @brief Callback function pointer for when a message is sent over a topic.
    *
    */
-  void (*message_callback)(void *user_ptr, const MessageInfo &info);
+  void (*message_callback)(void *user_ptr, const MessageInfo &info) = nullptr;
 
   class Filter {
   public:
-    Filter() : mode(true) {}
+    Filter() = default;
 
     /**
      * @brief Check whether a callback should be performed for the topic with the supplied hash code.
@@ -226,7 +226,7 @@ public:
      * When false specified whitelisted topics will pass and all other topics will be blocked.
      *
      */
-    bool mode;
+    bool mode = true;
   };
 
   Filter filter;

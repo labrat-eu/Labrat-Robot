@@ -54,10 +54,10 @@ private:
 
   struct ChannelInfo {
     mcap::Channel channel;
-    u64 index;
+    u64 index = 0;
 
     ChannelInfo(const std::string_view topic, const std::string_view encoding, mcap::SchemaId schema) :
-      channel(topic, encoding, schema), index(0) {}
+      channel(topic, encoding, schema) {}
   };
 
   using ChannelMap = std::unordered_map<std::size_t, ChannelInfo>;

@@ -192,7 +192,7 @@ public:
    *
    * @return std::chrono::nanoseconds
    */
-  inline std::chrono::nanoseconds getTimestamp() const {
+  [[nodiscard]] inline std::chrono::nanoseconds getTimestamp() const {
     return lbot_message_base_timestamp;
   }
 
@@ -231,7 +231,7 @@ public:
    * @brief Default constructor to only set the timestamp to the current time.
    *
    */
-  MessageBase() {}
+  MessageBase() = default;
 
   /**
    * @brief Construct a new Message object by specifying the contents stored within the message.
@@ -334,7 +334,7 @@ public:
    *
    * @param name Name of the type.
    */
-  MessageReflection(const std::string &name);
+  explicit MessageReflection(const std::string &name);
 
   /**
    * @brief Get buffer containing the type information.
@@ -342,7 +342,7 @@ public:
    *
    * @return const std::string& String contianing the binary type information.
    */
-  inline const std::string &getBuffer() const {
+  [[nodiscard]] inline const std::string &getBuffer() const {
     return buffer;
   }
 
@@ -352,7 +352,7 @@ public:
    * @return true The buffer is valid.
    * @return false The type could not be found and the type is invalid.
    */
-  inline bool isValid() const {
+  [[nodiscard]] inline bool isValid() const {
     return valid;
   }
 

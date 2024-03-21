@@ -28,7 +28,7 @@ Manager::~Manager() {
 }
 
 Manager::Ptr Manager::get() {
-  if (instance.use_count() != 0) {
+  if (instance.use_count()) {
     return instance.lock();
   }
 

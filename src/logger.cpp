@@ -69,7 +69,7 @@ private:
   Sender<EntryMessage>::Ptr sender;
 
 public:
-  LoggerNode(const Node::Environment environment) : Node(environment) {
+  explicit LoggerNode(Node::Environment environment) : Node(std::move(environment)) {
     sender = addSender<EntryMessage>("/log");
   }
 
@@ -96,16 +96,16 @@ public:
     normal = 39,
   };
 
-  Color(bool enable_color, Code code = Code::normal) : code(code), enable_color(enable_color) {}
+  explicit Color(bool enable_color, Code code = Code::normal) : code(code), enable_color(enable_color) {}
 
   friend std::ostream &
 
   operator<<(std::ostream &stream, const Color &color) {
     if (color.enable_color) {
       return stream << "\033[" << static_cast<i16>(color.code) << "m";
-    } else {
-      return stream;
     }
+
+    return stream;
   }
 
 private:
@@ -113,13 +113,13 @@ private:
   const bool enable_color;
 };
 
-const std::string getVerbosityLong(Logger::Verbosity verbosity);
-const std::string getVerbosityShort(Logger::Verbosity verbosity);
-const Color getVerbosityColor(Logger::Verbosity verbosity);
+std::string getVerbosityLong(Logger::Verbosity verbosity);
+std::string getVerbosityShort(Logger::Verbosity verbosity);
+Color getVerbosityColor(Logger::Verbosity verbosity);
 
 std::shared_ptr<LoggerNode> Logger::node;
 
-Logger::Logger(const std::string &name) : name(std::move(name)) {}
+Logger::Logger(std::string name) : name(std::move(name)) {}
 
 void Logger::initialize() {
   node = Manager::get()->addNode<LoggerNode>("logger");
@@ -133,15 +133,15 @@ Logger::LogStream Logger::write(Verbosity verbosity, LoggerLocation &&location) 
   return LogStream(*this, verbosity, std::move(location));
 }
 
-void Logger::send(const Entry &message) {
+void Logger::send(const Entry &entry) {
   if (node) {
-    node->send(message);
+    node->send(entry);
   }
 }
 
-void Logger::trace(const Entry &message) {
+void Logger::trace(const Entry &entry) {
   if (node) {
-    node->trace(message);
+    node->trace(entry);
   }
 }
 
@@ -194,7 +194,7 @@ Logger::LogStream &Logger::LogStream::operator<<(std::ostream &(*func)(std::ostr
   return *this;
 }
 
-const std::string getVerbosityLong(Logger::Verbosity verbosity) {
+std::string getVerbosityLong(Logger::Verbosity verbosity) {
   switch (verbosity) {
     case (Logger::Verbosity::critical): {
       return "critical";
@@ -222,7 +222,7 @@ const std::string getVerbosityLong(Logger::Verbosity verbosity) {
   }
 }
 
-const std::string getVerbosityShort(Logger::Verbosity verbosity) {
+std::string getVerbosityShort(Logger::Verbosity verbosity) {
   switch (verbosity) {
     case (Logger::Verbosity::critical): {
       return "CRIT";
@@ -250,7 +250,7 @@ const std::string getVerbosityShort(Logger::Verbosity verbosity) {
   }
 }
 
-const Color getVerbosityColor(Logger::Verbosity verbosity) {
+Color getVerbosityColor(Logger::Verbosity verbosity) {
   switch (verbosity) {
     case (Logger::Verbosity::critical):
     case (Logger::Verbosity::error): {

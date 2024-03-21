@@ -35,11 +35,11 @@ public:
 
     class ServerReference {
     public:
-      inline ServerReference(Service &service) : service(service) {
+      explicit inline ServerReference(Service &service) : service(service) {
         service.use_count.fetch_add(1);
       }
 
-      inline ServerReference(ServerReference &&rhs) : service(rhs.service) {
+      inline ServerReference(ServerReference &&rhs) noexcept : service(rhs.service) {
         service.use_count.fetch_add(1);
       }
 
@@ -57,7 +57,7 @@ public:
       Service &service;
     };
 
-    Service(Handle handle, const std::string &name);
+    Service(Handle handle, std::string name);
 
     ServerReference getServer() {
       return ServerReference(*this);

@@ -18,7 +18,7 @@
 inline namespace labrat {
 namespace lbot {
 
-static const std::forward_list<std::string> getPaths(std::string name);
+static std::forward_list<std::string> getPaths(const std::string &name);
 static std::vector<std::string> toPaths(const std::string &name);
 
 MessageReflection::MessageReflection(const std::string &name) {
@@ -42,7 +42,7 @@ MessageReflection::MessageReflection(const std::string &name) {
   }
 }
 
-static const std::forward_list<std::string> getPaths(std::string name) {
+static std::forward_list<std::string> getPaths(const std::string &name) {
   std::vector<std::string> paths = toPaths(name);
 
   std::forward_list<std::string> result;

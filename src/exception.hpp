@@ -28,7 +28,7 @@ public:
    *
    * @param[in] message Message of the exception.
    */
-  Exception(std::string message);
+  explicit Exception(const std::string &message);
 
   /**
    * @brief Construct a new Exception object
@@ -36,7 +36,7 @@ public:
    * @param[in] message Message of the exception.
    * @param[in] logger Logger to print the error to.
    */
-  Exception(std::string message, Logger &logger);
+  Exception(const std::string &message, Logger &logger);
 
   /**
    * @brief Construct a new Exception object
@@ -44,7 +44,7 @@ public:
    * @param[in] message Message of the exception.
    * @param[in] logger Logger to print the error to.
    */
-  Exception(std::string message, Logger &&logger);
+  Exception(const std::string &message, Logger &&logger);
 
   /**
    * @brief Construct a new Exception object
@@ -52,16 +52,7 @@ public:
    * @param[in] message Message of the exception.
    * @param[in] condition Error condition of the exception.
    */
-  Exception(std::string message, std::error_condition condition);
-
-  /**
-   * @brief Construct a new Exception object
-   *
-   * @param[in] message Message of the exception.
-   * @param[in] condition Error condition of the exception.
-   * @param[in] logger Logger to print the error to.
-   */
-  Exception(std::string message, std::error_condition condition, Logger &logger);
+  Exception(const std::string &message, std::error_condition condition);
 
   /**
    * @brief Construct a new Exception object
@@ -70,7 +61,16 @@ public:
    * @param[in] condition Error condition of the exception.
    * @param[in] logger Logger to print the error to.
    */
-  Exception(std::string message, std::error_condition condition, Logger &&logger);
+  Exception(const std::string &message, std::error_condition condition, Logger &logger);
+
+  /**
+   * @brief Construct a new Exception object
+   *
+   * @param[in] message Message of the exception.
+   * @param[in] condition Error condition of the exception.
+   * @param[in] logger Logger to print the error to.
+   */
+  Exception(const std::string &message, std::error_condition condition, Logger &&logger);
 
   /**
    * @brief Construct a new Exception object
@@ -78,7 +78,7 @@ public:
    * @param[in] message Message of the exception.
    * @param[in] code Error code (errno) of the exception.
    */
-  Exception(std::string message, int code);
+  Exception(const std::string &message, int code);
 
   /**
    * @brief Construct a new Exception object
@@ -87,7 +87,7 @@ public:
    * @param[in] code Error code (errno) of the exception.
    * @param[in] logger Logger to print the error to.
    */
-  Exception(std::string message, int code, Logger &logger);
+  Exception(const std::string &message, int code, Logger &logger);
 
   /**
    * @brief Construct a new Exception object
@@ -96,12 +96,12 @@ public:
    * @param[in] code Error code (errno) of the exception.
    * @param[in] logger Logger to print the error to.
    */
-  Exception(std::string message, int code, Logger &&logger);
+  Exception(const std::string &message, int code, Logger &&logger);
 
   /**
    * @brief Get the message of the exception.
    */
-  const char *what() const noexcept;
+  [[nodiscard]] const char *what() const noexcept final;
 
 protected:
   // Message of the exception.

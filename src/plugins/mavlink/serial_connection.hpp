@@ -32,13 +32,13 @@ public:
    * @param port Path to the serial port.
    * @param baud_rate Baud rate of the serial port. Only a limited number of values are permitted.
    */
-  MavlinkSerialConnection(const std::string &port = "/dev/ttyUSB0", u64 baud_rate = 921600);
+  explicit MavlinkSerialConnection(const std::string &port = "/dev/ttyUSB0", u64 baud_rate = 921600);
 
   /**
    * @brief Destroy the Mavlink Serial Connection object.
    *
    */
-  virtual ~MavlinkSerialConnection();
+  ~MavlinkSerialConnection() override;
 
   /**
    * @brief Write bytes to the serial port.

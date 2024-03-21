@@ -40,7 +40,7 @@ public:
 
     class ReceiverList {
     public:
-      inline ReceiverList(Topic &topic) : topic(topic) {
+      explicit inline ReceiverList(Topic &topic) : topic(topic) {
         while (true) {
           topic.use_count.fetch_add(1);
 
@@ -52,7 +52,7 @@ public:
         }
       }
 
-      inline ReceiverList(ReceiverList &&rhs) : topic(rhs.topic) {
+      inline ReceiverList(ReceiverList &&rhs) noexcept : topic(rhs.topic) {
         topic.use_count.fetch_add(1);
       }
 
@@ -61,15 +61,15 @@ public:
         topic.use_count.notify_all();
       }
 
-      inline std::vector<void *>::iterator begin() const {
+      [[nodiscard]] inline std::vector<void *>::iterator begin() const {
         return topic.receivers.begin();
       }
 
-      inline std::vector<void *>::iterator end() const {
+      [[nodiscard]] inline std::vector<void *>::iterator end() const {
         return topic.receivers.end();
       }
 
-      inline std::size_t size() const {
+      [[nodiscard]] inline std::size_t size() const {
         return topic.receivers.size();
       }
 
@@ -77,13 +77,13 @@ public:
       Topic &topic;
     };
 
-    Topic(Handle handle, const std::string &name);
+    Topic(Handle handle, std::string name);
 
-    void *getSender() const;
+    [[nodiscard]] void *getSender() const;
     void addSender(void *new_sender);
     void removeSender(void *old_sender);
 
-    inline ReceiverList getReceivers() {
+    [[nodiscard]] inline ReceiverList getReceivers() {
       return ReceiverList(*this);
     }
 

@@ -24,6 +24,10 @@ namespace lbot::plugins {
 MavlinkUdpConnection::MavlinkUdpConnection(const std::string &address, u16 port, u16 local_port) {
   file_descriptor = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
+  if (file_descriptor == -1) {
+    throw IoException("Failed to create socket.", errno);
+  }
+
   std::memset(&local_address, 0, sizeof(local_address));
   local_address.sin_family = AF_INET;
   local_address.sin_addr.s_addr = INADDR_ANY;
@@ -47,7 +51,7 @@ MavlinkUdpConnection::MavlinkUdpConnection(const std::string &address, u16 port,
   epoll_event event;
   event.events = EPOLLIN;
 
-  if (epoll_ctl(epoll_handle, EPOLL_CTL_ADD, file_descriptor, &event) != 0) {
+  if (epoll_ctl(epoll_handle, EPOLL_CTL_ADD, file_descriptor, &event)) {
     throw IoException("Failed to create epoll instance.", errno);
   }
 

@@ -28,7 +28,7 @@ public:
    *
    * @param[in] size Number of elements to be stored.
    */
-  Fifo(std::size_t size) : data(size) {
+  explicit Fifo(std::size_t size) : data(size) {
     current_index = 0;
   }
 
@@ -55,7 +55,7 @@ public:
    * @param[in] i Index relative to the last element pushed.
    * @return T Stored value.
    */
-  T peak_front(std::size_t i = 0) const {
+  T peakFront(std::size_t i = 0) const {
     return data[(current_index - (i % data.size()) + data.size()) % data.size()];
   }
 
@@ -65,7 +65,7 @@ public:
    * @param[in] i Index relative to the first element pushed.
    * @return T Stored value.
    */
-  T peak_back(std::size_t i = 0) const {
+  T peakBack(std::size_t i = 0) const {
     return data[(current_index + 1 + i) % data.size()];
   }
 

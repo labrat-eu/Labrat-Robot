@@ -130,10 +130,10 @@ public:
   /**
    * @brief Add a plugin to the manager.
    *
-   * @param Plugin Plugin to be added.
+   * @param plugin Plugin to be added.
    * @return Plugin::List::iterator Iterator to the inserted plugin item in internal plugin list.
    */
-  Plugin::List::iterator addPlugin(const Plugin &Plugin);
+  Plugin::List::iterator addPlugin(const Plugin &plugin);
 
   /**
    * @brief Remove a plugin by iterator.

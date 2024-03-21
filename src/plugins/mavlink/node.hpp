@@ -60,7 +60,7 @@ public:
    *
    * @return const SystemInfo& System information.
    */
-  const SystemInfo &getSystemInfo() const;
+  [[nodiscard]] const SystemInfo &getSystemInfo() const;
 
   /**
    * @brief Register a sender with the MAVLink node. Incoming MAVLink messages will be forwarded onto the sender.
@@ -94,7 +94,7 @@ private:
   void registerGenericSender(Node::GenericSender<mavlink_message_t>::Ptr &&sender, u16 id);
   void registerGenericReceiver(Node::GenericReceiver<mavlink_message_t>::Ptr &&receiver);
 
-  static void receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, const SystemInfo *node);
+  static void receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, const SystemInfo *system_info);
 
   MavlinkNodePrivate *priv;
 

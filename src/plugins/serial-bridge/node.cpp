@@ -15,7 +15,6 @@
 
 #include <cstring>
 #include <iomanip>
-#include <iostream>
 #include <memory>
 #include <mutex>
 #include <unordered_map>
@@ -91,15 +90,15 @@ private:
       checksum = calculateChecksum();
     }
 
-    inline bool check() const {
+    [[nodiscard]] inline bool check() const {
       return checksum == calculateChecksum();
     }
 
-    inline u16 calculateChecksum() const {
+    [[nodiscard]] inline u16 calculateChecksum() const {
       crc_cpp::crc16_arc crc;
       const u8 *buffer = reinterpret_cast<const u8 *>(this);
 
-      for (u8 i = 0; i < offsetof(HeaderWire, checksum); ++i) {
+      for (std::size_t i = 0; i < offsetof(HeaderWire, checksum); ++i) {
         crc.update(buffer[i]);
       }
 
@@ -127,7 +126,7 @@ private:
     inline u16 calculateChecksum(std::size_t offset, const u8 *buffer) const {
       crc_cpp::crc16_arc crc;
 
-      for (u8 i = 0; i < offset; ++i) {
+      for (std::size_t i = 0; i < offset; ++i) {
         crc.update(buffer[i]);
       }
 
@@ -167,8 +166,8 @@ private:
   void writeTopicInfoMessage(const TopicInfo &message);
   void writeTopicRequestMessage(std::size_t topic_hash);
 
-  std::size_t write(const u8 *buffer, std::size_t size);
-  std::size_t read(u8 *buffer, std::size_t size);
+  std::size_t write(const u8 *buffer, std::size_t size) const;
+  std::size_t read(u8 *buffer, std::size_t size) const;
 
   SerialBridgeNode &node;
 
@@ -269,7 +268,7 @@ SerialBridgeNodePrivate::SerialBridgeNodePrivate(const std::string &port, u64 ba
   epoll_event event;
   event.events = EPOLLIN;
 
-  if (epoll_ctl(epoll_handle, EPOLL_CTL_ADD, file_descriptor, &event) != 0) {
+  if (epoll_ctl(epoll_handle, EPOLL_CTL_ADD, file_descriptor, &event)) {
     throw IoException("Failed to create epoll instance.", errno);
   }
 
@@ -555,7 +554,7 @@ void SerialBridgeNodePrivate::writeTopicRequestMessage(std::size_t topic_hash) {
   escapeAndWriteMessage(reinterpret_cast<u8 *>(&raw), sizeof(HeaderWire));
 }
 
-std::size_t SerialBridgeNodePrivate::write(const u8 *buffer, std::size_t size) {
+std::size_t SerialBridgeNodePrivate::write(const u8 *buffer, std::size_t size) const {
   const ssize_t result = ::write(file_descriptor, buffer, size);
 
   if (result < 0 && errno != EAGAIN) {
@@ -568,7 +567,7 @@ std::size_t SerialBridgeNodePrivate::write(const u8 *buffer, std::size_t size) {
   return result;
 }
 
-std::size_t SerialBridgeNodePrivate::read(u8 *buffer, std::size_t size) {
+std::size_t SerialBridgeNodePrivate::read(u8 *buffer, std::size_t size) const {
   {
     epoll_event event;
     const i32 result = epoll_pwait(epoll_handle, &event, 1, timeout, &signal_mask);

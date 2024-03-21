@@ -15,13 +15,13 @@ class CleanupLock {
 public:
   class Guard {
   public:
-    Guard(CleanupLock &lock) : lock(lock), unlock_at_destroy(true) {
+    explicit Guard(CleanupLock &lock) : lock(lock) {
       if (lock.state.load() == State::unlocked) {
         lock.state.store(State::locked);
       }
     }
 
-    Guard(Guard &&rhs) : lock(rhs.lock), unlock_at_destroy(true) {
+    Guard(Guard &&rhs) noexcept : lock(rhs.lock) {
       rhs.unlock_at_destroy = false;
     }
 
@@ -31,13 +31,13 @@ public:
       }
     }
 
-    inline bool valid() const {
+    [[nodiscard]] inline bool valid() const {
       return (lock.state.load() == State::locked);
     }
 
   private:
     CleanupLock &lock;
-    bool unlock_at_destroy;
+    bool unlock_at_destroy = true;
   };
 
   CleanupLock() : state(State::unlocked) {}
