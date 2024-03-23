@@ -1,4 +1,4 @@
-namespace mavlink.msg.common;
+namespace mavlink.common;
 
 table ScaledPressure3 {
   time_boot_ms:uint;

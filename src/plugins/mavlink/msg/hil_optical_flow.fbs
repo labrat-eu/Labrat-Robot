@@ -1,4 +1,4 @@
-namespace mavlink.msg.common;
+namespace mavlink.common;
 
 table HilOpticalFlow {
   time_usec:ulong;

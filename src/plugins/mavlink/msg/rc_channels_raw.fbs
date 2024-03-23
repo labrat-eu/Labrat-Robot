@@ -1,4 +1,4 @@
-namespace mavlink.msg.common;
+namespace mavlink.common;
 
 table RcChannelsRaw {
   time_boot_ms:uint;

@@ -1,4 +1,4 @@
-namespace mavlink.msg.common;
+namespace mavlink.common;
 
 table ParamSet {
   param_value:float;

@@ -26,7 +26,7 @@ function(lbot_generate_flatbuffer)
   # Create a directory to place the generated code.
   set(generated_target_dir "${CMAKE_BINARY_DIR}/flatbuffer")
   set(generated_include_dir "${generated_target_dir}/include/${INT_TARGET_PATH}")
-  set(generated_schema_dir "${generated_target_dir}/schema/${INT_TARGET_PATH}")
+  set(generated_schema_dir "${generated_target_dir}/schema")
 
   # Generate the include files parameters.
   set(include_params -I ${generated_target_dir}/include)
@@ -58,8 +58,19 @@ function(lbot_generate_flatbuffer)
   # Create rules to generate the code for each schema.
   foreach(schema ${INT_SCHEMAS})
     get_filename_component(filename ${schema} NAME_WLE)
-    set(generated_include "${generated_include_dir}/${filename}${suffix}.${extension}")
 
+    # This does not protect from comments. Hopefully this wont be a problem, as this cannot be fixed with regex.
+    file(READ ${schema} schema_file)
+    string(REGEX MATCH "namespace ([a-zA-Z0-9\.]*);" schema_namespace_def "${schema_file}")
+    string(REGEX REPLACE "namespace ([a-zA-Z0-9\.]*);" "\\1" schema_namespace "${schema_namespace_def}")
+    string(REPLACE "." "/" schema_namepath "${schema_namespace}")
+  
+    string(COMPARE EQUAL "${schema_namespace}" "" check_result)
+    if (check_result)
+      message(FATAL_ERROR "The flatbuffer file '${schema}' does not contain a namespace.")
+    endif()
+
+    set(generated_include "${generated_include_dir}/${filename}${suffix}.${extension}")
     add_custom_command(
       OUTPUT ${generated_include}
       COMMAND ${FLATC} ${FLATC_ARGS}
@@ -75,12 +86,14 @@ function(lbot_generate_flatbuffer)
     list(APPEND all_generated_header_files ${generated_include})
 
     # Geneate the binary flatbuffers schemas.
+    set(binary_schema_dir
+        "${generated_schema_dir}/${schema_namepath}")
     set(binary_schema
-        "${generated_schema_dir}/${filename}.bfbs")
+        "${binary_schema_dir}/${filename}.bfbs")
     add_custom_command(
       OUTPUT ${binary_schema}
       COMMAND ${FLATC} -b --schema
-      -o ${generated_schema_dir}
+      -o ${binary_schema_dir}
       ${include_params}
       ${schema}
       DEPENDS ${FLATC_TARGET} ${schema}
@@ -106,5 +119,5 @@ function(lbot_generate_flatbuffer)
 
   install(FILES ${INT_SCHEMAS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${INT_TARGET_PATH})
   install(FILES ${all_generated_header_files} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${INT_TARGET_PATH})
-  install(FILES ${all_generated_binary_files} DESTINATION ${CMAKE_INSTALL_RUNSTATEDIR}/${INT_TARGET_PATH})
+  install(DIRECTORY ${generated_schema_dir} DESTINATION ${CMAKE_INSTALL_RUNSTATEDIR}/lbot)
 endfunction(lbot_generate_flatbuffer)

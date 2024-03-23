@@ -1,4 +1,4 @@
-namespace mavlink.msg.common;
+namespace mavlink.common;
 
 table AutopilotStateForGimbalDevice {
   time_boot_us:ulong;

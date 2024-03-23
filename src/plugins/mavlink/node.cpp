@@ -23,53 +23,53 @@
 
 #include <mavlink/common/mavlink.h>
 
-#include <mavlink/msg/common/actuator_control_target.fb.hpp>
-#include <mavlink/msg/common/altitude.fb.hpp>
-#include <mavlink/msg/common/attitude.fb.hpp>
-#include <mavlink/msg/common/attitude_quaternion.fb.hpp>
-#include <mavlink/msg/common/attitude_target.fb.hpp>
-#include <mavlink/msg/common/autopilot_version.fb.hpp>
-#include <mavlink/msg/common/battery_status.fb.hpp>
-#include <mavlink/msg/common/command_ack.fb.hpp>
-#include <mavlink/msg/common/command_int.fb.hpp>
-#include <mavlink/msg/common/command_long.fb.hpp>
-#include <mavlink/msg/common/current_event_sequence.fb.hpp>
-#include <mavlink/msg/common/esc_info.fb.hpp>
-#include <mavlink/msg/common/esc_status.fb.hpp>
-#include <mavlink/msg/common/estimator_status.fb.hpp>
-#include <mavlink/msg/common/extended_sys_state.fb.hpp>
-#include <mavlink/msg/common/global_position_int.fb.hpp>
-#include <mavlink/msg/common/gps_raw_int.fb.hpp>
-#include <mavlink/msg/common/gps_status.fb.hpp>
-#include <mavlink/msg/common/heartbeat.fb.hpp>
-#include <mavlink/msg/common/highres_imu.fb.hpp>
-#include <mavlink/msg/common/home_position.fb.hpp>
-#include <mavlink/msg/common/link_node_status.fb.hpp>
-#include <mavlink/msg/common/local_position_ned.fb.hpp>
-#include <mavlink/msg/common/local_position_ned_system_global_offset.fb.hpp>
-#include <mavlink/msg/common/odometry.fb.hpp>
-#include <mavlink/msg/common/open_drone_id_location.fb.hpp>
-#include <mavlink/msg/common/open_drone_id_system.fb.hpp>
-#include <mavlink/msg/common/param_request_read.fb.hpp>
-#include <mavlink/msg/common/param_set.fb.hpp>
-#include <mavlink/msg/common/param_value.fb.hpp>
-#include <mavlink/msg/common/ping.fb.hpp>
-#include <mavlink/msg/common/position_target_global_int.fb.hpp>
-#include <mavlink/msg/common/position_target_local_ned.fb.hpp>
-#include <mavlink/msg/common/raw_imu.fb.hpp>
-#include <mavlink/msg/common/rc_channels.fb.hpp>
-#include <mavlink/msg/common/rc_channels_raw.fb.hpp>
-#include <mavlink/msg/common/scaled_imu.fb.hpp>
-#include <mavlink/msg/common/scaled_pressure.fb.hpp>
-#include <mavlink/msg/common/servo_output_raw.fb.hpp>
-#include <mavlink/msg/common/set_position_target_local_ned.fb.hpp>
-#include <mavlink/msg/common/sys_status.fb.hpp>
-#include <mavlink/msg/common/system_time.fb.hpp>
-#include <mavlink/msg/common/time_estimate_to_target.fb.hpp>
-#include <mavlink/msg/common/timesync.fb.hpp>
-#include <mavlink/msg/common/utm_global_position.fb.hpp>
-#include <mavlink/msg/common/vfr_hud.fb.hpp>
-#include <mavlink/msg/common/vibration.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/actuator_control_target.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/altitude.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/attitude.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/attitude_quaternion.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/attitude_target.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/autopilot_version.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/battery_status.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/command_ack.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/command_int.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/command_long.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/current_event_sequence.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/esc_info.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/esc_status.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/estimator_status.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/extended_sys_state.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/global_position_int.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/gps_raw_int.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/gps_status.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/heartbeat.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/highres_imu.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/home_position.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/link_node_status.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/local_position_ned.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/local_position_ned_system_global_offset.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/odometry.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/open_drone_id_location.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/open_drone_id_system.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/param_request_read.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/param_set.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/param_value.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/ping.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/position_target_global_int.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/position_target_local_ned.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/raw_imu.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/rc_channels.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/rc_channels_raw.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/scaled_imu.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/scaled_pressure.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/servo_output_raw.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/set_position_target_local_ned.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/sys_status.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/system_time.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/time_estimate_to_target.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/timesync.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/utm_global_position.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/vfr_hud.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/vibration.fb.hpp>
 
 inline namespace labrat {
 namespace lbot::plugins {
@@ -106,9 +106,9 @@ public:
       }
     };
 
-    ServerInfo<mavlink::msg::common::ParamRequestRead, mavlink::msg::common::ParamValue>::Ptr param_request_read;
-    ServerInfo<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>::Ptr command_int;
-    ServerInfo<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>::Ptr command_long;
+    ServerInfo<mavlink::common::ParamRequestRead, mavlink::common::ParamValue>::Ptr param_request_read;
+    ServerInfo<mavlink::common::CommandInt, mavlink::common::CommandAck>::Ptr command_int;
+    ServerInfo<mavlink::common::CommandLong, mavlink::common::CommandAck>::Ptr command_long;
   } server;
 
   MavlinkNodePrivate(MavlinkConnection::Ptr &&connection, MavlinkNode &node);
@@ -158,7 +158,7 @@ public:
 };
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::Heartbeat>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::Heartbeat>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.type = mavlink_msg_heartbeat_get_type(&source);
   destination.autopilot = mavlink_msg_heartbeat_get_autopilot(&source);
@@ -169,7 +169,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::Heartbeat>::convertFrom(c
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::SysStatus>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::SysStatus>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.onboard_control_sensors_present = mavlink_msg_sys_status_get_onboard_control_sensors_present(&source);
   destination.onboard_control_sensors_enabled = mavlink_msg_sys_status_get_onboard_control_sensors_enabled(&source);
@@ -190,14 +190,14 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::SysStatus>::convertFrom(c
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::SystemTime>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::SystemTime>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_unix_usec = mavlink_msg_system_time_get_time_unix_usec(&source);
   destination.time_boot_ms = mavlink_msg_system_time_get_time_boot_ms(&source);
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::Ping>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::Ping>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_usec = mavlink_msg_ping_get_time_usec(&source);
   destination.seq = mavlink_msg_ping_get_seq(&source);
@@ -206,7 +206,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::Ping>::convertFrom(const 
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::LinkNodeStatus>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::LinkNodeStatus>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.timestamp = mavlink_msg_link_node_status_get_timestamp(&source);
   destination.tx_rate = mavlink_msg_link_node_status_get_tx_rate(&source);
@@ -222,7 +222,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::LinkNodeStatus>::convertF
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::ParamValue>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::ParamValue>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.param_value = mavlink_msg_param_value_get_param_value(&source);
   destination.param_count = mavlink_msg_param_value_get_param_count(&source);
@@ -236,7 +236,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::ParamValue>::convertFrom(
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::ParamSet>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::ParamSet>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.param_value = mavlink_msg_param_set_get_param_value(&source);
   destination.target_system = mavlink_msg_param_set_get_target_system(&source);
@@ -250,7 +250,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::ParamSet>::convertFrom(co
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::GpsRawInt>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::GpsRawInt>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_usec = mavlink_msg_gps_raw_int_get_time_usec(&source);
   destination.lat = mavlink_msg_gps_raw_int_get_lat(&source);
@@ -271,7 +271,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::GpsRawInt>::convertFrom(c
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::GpsStatus>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::GpsStatus>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.satellites_visible = mavlink_msg_gps_status_get_satellites_visible(&source);
 
@@ -292,7 +292,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::GpsStatus>::convertFrom(c
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::ScaledImu>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::ScaledImu>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_boot_ms = mavlink_msg_scaled_imu_get_time_boot_ms(&source);
   destination.xacc = mavlink_msg_scaled_imu_get_xacc(&source);
@@ -308,7 +308,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::ScaledImu>::convertFrom(c
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::RawImu>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::RawImu>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_usec = mavlink_msg_raw_imu_get_time_usec(&source);
   destination.xacc = mavlink_msg_raw_imu_get_xacc(&source);
@@ -325,7 +325,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::RawImu>::convertFrom(cons
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::ScaledPressure>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::ScaledPressure>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_boot_ms = mavlink_msg_scaled_pressure_get_time_boot_ms(&source);
   destination.press_abs = mavlink_msg_scaled_pressure_get_press_abs(&source);
@@ -335,7 +335,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::ScaledPressure>::convertF
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::Attitude>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::Attitude>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_boot_ms = mavlink_msg_attitude_get_time_boot_ms(&source);
   destination.roll = mavlink_msg_attitude_get_roll(&source);
@@ -347,7 +347,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::Attitude>::convertFrom(co
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::AttitudeQuaternion>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::AttitudeQuaternion>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_boot_ms = mavlink_msg_attitude_quaternion_get_time_boot_ms(&source);
   destination.q1 = mavlink_msg_attitude_quaternion_get_q1(&source);
@@ -363,7 +363,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::AttitudeQuaternion>::conv
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::LocalPositionNed>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::LocalPositionNed>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_boot_ms = mavlink_msg_local_position_ned_get_time_boot_ms(&source);
   destination.x = mavlink_msg_local_position_ned_get_x(&source);
@@ -375,7 +375,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::LocalPositionNed>::conver
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::GlobalPositionInt>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::GlobalPositionInt>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_boot_ms = mavlink_msg_global_position_int_get_time_boot_ms(&source);
   destination.lat = mavlink_msg_global_position_int_get_lat(&source);
@@ -389,7 +389,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::GlobalPositionInt>::conve
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::RcChannelsRaw>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::RcChannelsRaw>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_boot_ms = mavlink_msg_rc_channels_raw_get_time_boot_ms(&source);
   destination.chan1_raw = mavlink_msg_rc_channels_raw_get_chan1_raw(&source);
@@ -405,7 +405,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::RcChannelsRaw>::convertFr
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::RcChannels>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::RcChannels>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_boot_ms = mavlink_msg_rc_channels_get_time_boot_ms(&source);
   destination.chan1_raw = mavlink_msg_rc_channels_get_chan1_raw(&source);
@@ -431,7 +431,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::RcChannels>::convertFrom(
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::ServoOutputRaw>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::ServoOutputRaw>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_usec = mavlink_msg_servo_output_raw_get_time_usec(&source);
   destination.servo1_raw = mavlink_msg_servo_output_raw_get_servo1_raw(&source);
@@ -454,7 +454,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::ServoOutputRaw>::convertF
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::VfrHud>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::VfrHud>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.airspeed = mavlink_msg_vfr_hud_get_airspeed(&source);
   destination.groundspeed = mavlink_msg_vfr_hud_get_groundspeed(&source);
@@ -465,7 +465,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::VfrHud>::convertFrom(cons
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::CommandInt>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::CommandInt>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.param1 = mavlink_msg_command_int_get_param1(&source);
   destination.param2 = mavlink_msg_command_int_get_param2(&source);
@@ -483,7 +483,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::CommandInt>::convertFrom(
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::CommandLong>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::CommandLong>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.param1 = mavlink_msg_command_long_get_param1(&source);
   destination.param2 = mavlink_msg_command_long_get_param2(&source);
@@ -499,7 +499,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::CommandLong>::convertFrom
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::CommandAck>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::CommandAck>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.command = mavlink_msg_command_ack_get_command(&source);
   destination.result = mavlink_msg_command_ack_get_result(&source);
@@ -510,7 +510,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::CommandAck>::convertFrom(
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::PositionTargetLocalNed>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::PositionTargetLocalNed>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_boot_ms = mavlink_msg_position_target_local_ned_get_time_boot_ms(&source);
   destination.x = mavlink_msg_position_target_local_ned_get_x(&source);
@@ -529,7 +529,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::PositionTargetLocalNed>::
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::AttitudeTarget>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::AttitudeTarget>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_boot_ms = mavlink_msg_attitude_target_get_time_boot_ms(&source);
 
@@ -544,7 +544,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::AttitudeTarget>::convertF
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::PositionTargetGlobalInt>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::PositionTargetGlobalInt>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_boot_ms = mavlink_msg_position_target_global_int_get_time_boot_ms(&source);
   destination.lat_int = mavlink_msg_position_target_global_int_get_lat_int(&source);
@@ -563,7 +563,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::PositionTargetGlobalInt>:
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::LocalPositionNedSystemGlobalOffset>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::LocalPositionNedSystemGlobalOffset>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_boot_ms = mavlink_msg_local_position_ned_system_global_offset_get_time_boot_ms(&source);
   destination.x = mavlink_msg_local_position_ned_system_global_offset_get_x(&source);
@@ -575,7 +575,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::LocalPositionNedSystemGlo
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::HighresImu>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::HighresImu>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_usec = mavlink_msg_highres_imu_get_time_usec(&source);
   destination.xacc = mavlink_msg_highres_imu_get_xacc(&source);
@@ -596,7 +596,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::HighresImu>::convertFrom(
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::Timesync>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::Timesync>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.tc1 = mavlink_msg_timesync_get_tc1(&source);
   destination.ts1 = mavlink_msg_timesync_get_ts1(&source);
@@ -605,7 +605,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::Timesync>::convertFrom(co
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::ActuatorControlTarget>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::ActuatorControlTarget>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_usec = mavlink_msg_actuator_control_target_get_time_usec(&source);
 
@@ -616,7 +616,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::ActuatorControlTarget>::c
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::Altitude>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::Altitude>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_usec = mavlink_msg_altitude_get_time_usec(&source);
   destination.altitude_monotonic = mavlink_msg_altitude_get_altitude_monotonic(&source);
@@ -628,7 +628,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::Altitude>::convertFrom(co
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::BatteryStatus>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::BatteryStatus>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.current_consumed = mavlink_msg_battery_status_get_current_consumed(&source);
   destination.energy_consumed = mavlink_msg_battery_status_get_energy_consumed(&source);
@@ -653,7 +653,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::BatteryStatus>::convertFr
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::AutopilotVersion>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::AutopilotVersion>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.capabilities = mavlink_msg_autopilot_version_get_capabilities(&source);
   destination.uid = mavlink_msg_autopilot_version_get_uid(&source);
@@ -678,7 +678,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::AutopilotVersion>::conver
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::EstimatorStatus>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::EstimatorStatus>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_usec = mavlink_msg_estimator_status_get_time_usec(&source);
   destination.vel_ratio = mavlink_msg_estimator_status_get_vel_ratio(&source);
@@ -693,7 +693,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::EstimatorStatus>::convert
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::Vibration>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::Vibration>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_usec = mavlink_msg_vibration_get_time_usec(&source);
   destination.vibration_x = mavlink_msg_vibration_get_vibration_x(&source);
@@ -705,7 +705,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::Vibration>::convertFrom(c
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::HomePosition>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::HomePosition>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.latitude = mavlink_msg_home_position_get_latitude(&source);
   destination.longitude = mavlink_msg_home_position_get_longitude(&source);
@@ -724,14 +724,14 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::HomePosition>::convertFro
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::ExtendedSysState>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::ExtendedSysState>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.vtol_state = mavlink_msg_extended_sys_state_get_vtol_state(&source);
   destination.landed_state = mavlink_msg_extended_sys_state_get_landed_state(&source);
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::EscInfo>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::EscInfo>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_usec = mavlink_msg_esc_info_get_time_usec(&source);
 
@@ -753,7 +753,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::EscInfo>::convertFrom(con
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::EscStatus>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::EscStatus>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time_usec = mavlink_msg_esc_status_get_time_usec(&source);
 
@@ -770,7 +770,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::EscStatus>::convertFrom(c
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::Odometry>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::Odometry>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.x = mavlink_msg_odometry_get_x(&source);
   destination.y = mavlink_msg_odometry_get_y(&source);
@@ -800,7 +800,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::Odometry>::convertFrom(co
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::UtmGlobalPosition>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::UtmGlobalPosition>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.time = mavlink_msg_utm_global_position_get_time(&source);
   destination.lat = mavlink_msg_utm_global_position_get_lat(&source);
@@ -826,7 +826,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::UtmGlobalPosition>::conve
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::TimeEstimateToTarget>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::TimeEstimateToTarget>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.safe_return = mavlink_msg_time_estimate_to_target_get_safe_return(&source);
   destination.land = mavlink_msg_time_estimate_to_target_get_land(&source);
@@ -836,14 +836,14 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::TimeEstimateToTarget>::co
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::CurrentEventSequence>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::CurrentEventSequence>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.sequence = mavlink_msg_current_event_sequence_get_sequence(&source);
   destination.flags = mavlink_msg_current_event_sequence_get_flags(&source);
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::OpenDroneIdLocation>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::OpenDroneIdLocation>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.latitude = mavlink_msg_open_drone_id_location_get_latitude(&source);
   destination.longitude = mavlink_msg_open_drone_id_location_get_longitude(&source);
@@ -870,7 +870,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::OpenDroneIdLocation>::con
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::OpenDroneIdSystem>::convertFrom(const Converted &source,
+void MavlinkNode::MavlinkMessage<mavlink::common::OpenDroneIdSystem>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.operator_latitude = mavlink_msg_open_drone_id_system_get_operator_latitude(&source);
   destination.operator_longitude = mavlink_msg_open_drone_id_system_get_operator_longitude(&source);
@@ -893,7 +893,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::OpenDroneIdSystem>::conve
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::ParamRequestRead>::convertTo(
+void MavlinkNode::MavlinkMessage<mavlink::common::ParamRequestRead>::convertTo(
   const Storage &source, Converted &destination,
   const MavlinkNode::SystemInfo *info) {
   if (source.param_id.size() > 16) {
@@ -905,7 +905,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::ParamRequestRead>::conver
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::SetPositionTargetLocalNed>::convertTo(
+void MavlinkNode::MavlinkMessage<mavlink::common::SetPositionTargetLocalNed>::convertTo(
   const Storage &source, Converted &destination,
   const MavlinkNode::SystemInfo *info) {
   mavlink_msg_set_position_target_local_ned_pack_chan(info->system_id, info->component_id, info->channel_id, &destination,
@@ -914,7 +914,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::SetPositionTargetLocalNed
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::CommandInt>::convertTo(
+void MavlinkNode::MavlinkMessage<mavlink::common::CommandInt>::convertTo(
   const Storage &source, Converted &destination, const MavlinkNode::SystemInfo *info) {
   mavlink_msg_command_int_pack_chan(info->system_id, info->component_id, info->channel_id, &destination, source.target_system,
     source.target_component, source.frame, source.command, source.current, source.autocontinue, source.param1, source.param2, source.param3,
@@ -922,7 +922,7 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::CommandInt>::convertTo(
 }
 
 template <>
-void MavlinkNode::MavlinkMessage<mavlink::msg::common::CommandLong>::convertTo(
+void MavlinkNode::MavlinkMessage<mavlink::common::CommandLong>::convertTo(
   const Storage &source, Converted &destination, const MavlinkNode::SystemInfo *info) {
   mavlink_msg_command_long_pack_chan(info->system_id, info->component_id, info->channel_id, &destination, source.target_system,
     source.target_component, source.command, source.confirmation, source.param1, source.param2, source.param3, source.param4, source.param5,
@@ -930,11 +930,11 @@ void MavlinkNode::MavlinkMessage<mavlink::msg::common::CommandLong>::convertTo(
 }
 
 template <>
-Message<mavlink::msg::common::ParamValue>
-MavlinkNodePrivate::MavlinkServer::handle<mavlink::msg::common::ParamRequestRead, mavlink::msg::common::ParamValue>(
-  const Message<mavlink::msg::common::ParamRequestRead> &request,
-  ServerInfo<mavlink::msg::common::ParamRequestRead, mavlink::msg::common::ParamValue> *info) {
-  Message<mavlink::msg::common::ParamValue> result;
+Message<mavlink::common::ParamValue>
+MavlinkNodePrivate::MavlinkServer::handle<mavlink::common::ParamRequestRead, mavlink::common::ParamValue>(
+  const Message<mavlink::common::ParamRequestRead> &request,
+  ServerInfo<mavlink::common::ParamRequestRead, mavlink::common::ParamValue> *info) {
+  Message<mavlink::common::ParamValue> result;
 
   do {
     info->sender->put(request);
@@ -951,11 +951,11 @@ MavlinkNodePrivate::MavlinkServer::handle<mavlink::msg::common::ParamRequestRead
 }
 
 template <>
-Message<mavlink::msg::common::CommandAck>
-MavlinkNodePrivate::MavlinkServer::handle<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>(
-  const Message<mavlink::msg::common::CommandInt> &request,
-  ServerInfo<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck> *info) {
-  Message<mavlink::msg::common::CommandAck> result;
+Message<mavlink::common::CommandAck>
+MavlinkNodePrivate::MavlinkServer::handle<mavlink::common::CommandInt, mavlink::common::CommandAck>(
+  const Message<mavlink::common::CommandInt> &request,
+  ServerInfo<mavlink::common::CommandInt, mavlink::common::CommandAck> *info) {
+  Message<mavlink::common::CommandAck> result;
 
   do {
     info->sender->put(request);
@@ -972,11 +972,11 @@ MavlinkNodePrivate::MavlinkServer::handle<mavlink::msg::common::CommandInt, mavl
 }
 
 template <>
-Message<mavlink::msg::common::CommandAck>
-MavlinkNodePrivate::MavlinkServer::handle<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>(
-  const Message<mavlink::msg::common::CommandLong> &request,
-  ServerInfo<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck> *info) {
-  Message<mavlink::msg::common::CommandAck> result;
+Message<mavlink::common::CommandAck>
+MavlinkNodePrivate::MavlinkServer::handle<mavlink::common::CommandLong, mavlink::common::CommandAck>(
+  const Message<mavlink::common::CommandLong> &request,
+  ServerInfo<mavlink::common::CommandLong, mavlink::common::CommandAck> *info) {
+  Message<mavlink::common::CommandAck> result;
 
   do {
     info->sender->put(request);
@@ -1035,65 +1035,65 @@ MavlinkNodePrivate::MavlinkNodePrivate(MavlinkConnection::Ptr &&connection, Mavl
   system_info.system_id = 0xf0;
   system_info.component_id = MAV_COMP_ID_ONBOARD_COMPUTER;
 
-  addSender<mavlink::msg::common::Heartbeat>("/mavlink/in/heartbeat", MAVLINK_MSG_ID_HEARTBEAT);
-  addSender<mavlink::msg::common::SysStatus>("/mavlink/in/sys_status", MAVLINK_MSG_ID_SYS_STATUS);
-  addSender<mavlink::msg::common::SystemTime>("/mavlink/in/system_time", MAVLINK_MSG_ID_SYSTEM_TIME);
-  addSender<mavlink::msg::common::Ping>("/mavlink/in/ping", MAVLINK_MSG_ID_PING);
-  addSender<mavlink::msg::common::LinkNodeStatus>("/mavlink/in/link_node_status", MAVLINK_MSG_ID_LINK_NODE_STATUS);
-  addSender<mavlink::msg::common::ParamValue>("/mavlink/in/param_value", MAVLINK_MSG_ID_PARAM_VALUE);
-  addSender<mavlink::msg::common::ParamSet>("/mavlink/in/param_set", MAVLINK_MSG_ID_PARAM_SET);
-  addSender<mavlink::msg::common::GpsRawInt>("/mavlink/in/gps_raw_int", MAVLINK_MSG_ID_GPS_RAW_INT);
-  addSender<mavlink::msg::common::GpsStatus>("/mavlink/in/gps_status", MAVLINK_MSG_ID_GPS_STATUS);
-  addSender<mavlink::msg::common::ScaledImu>("/mavlink/in/scaled_imu", MAVLINK_MSG_ID_SCALED_IMU);
-  addSender<mavlink::msg::common::RawImu>("/mavlink/in/raw_imu", MAVLINK_MSG_ID_RAW_IMU);
-  addSender<mavlink::msg::common::ScaledPressure>("/mavlink/in/scaled_pressure", MAVLINK_MSG_ID_SCALED_PRESSURE);
-  addSender<mavlink::msg::common::Attitude>("/mavlink/in/attitude", MAVLINK_MSG_ID_ATTITUDE);
-  addSender<mavlink::msg::common::AttitudeQuaternion>("/mavlink/in/attitude_quaternion", MAVLINK_MSG_ID_ATTITUDE_QUATERNION);
-  addSender<mavlink::msg::common::LocalPositionNed>("/mavlink/in/local_position_ned", MAVLINK_MSG_ID_LOCAL_POSITION_NED);
-  addSender<mavlink::msg::common::GlobalPositionInt>("/mavlink/in/global_position_int", MAVLINK_MSG_ID_GLOBAL_POSITION_INT);
-  addSender<mavlink::msg::common::RcChannels>("/mavlink/in/rc_channels", MAVLINK_MSG_ID_RC_CHANNELS);
-  addSender<mavlink::msg::common::RcChannelsRaw>("/mavlink/in/rc_channels_raw", MAVLINK_MSG_ID_RC_CHANNELS_RAW);
-  addSender<mavlink::msg::common::ServoOutputRaw>("/mavlink/in/servo_output_raw", MAVLINK_MSG_ID_SERVO_OUTPUT_RAW);
-  addSender<mavlink::msg::common::VfrHud>("/mavlink/in/vfr_hud", MAVLINK_MSG_ID_VFR_HUD);
-  addSender<mavlink::msg::common::CommandInt>("/mavlink/in/command_int", MAVLINK_MSG_ID_COMMAND_INT);
-  addSender<mavlink::msg::common::CommandLong>("/mavlink/in/command_long", MAVLINK_MSG_ID_COMMAND_LONG);
-  addSender<mavlink::msg::common::CommandAck>("/mavlink/in/command_ack", MAVLINK_MSG_ID_COMMAND_ACK);
-  addSender<mavlink::msg::common::PositionTargetLocalNed>("/mavlink/in/position_target_local_ned",
+  addSender<mavlink::common::Heartbeat>("/mavlink/in/heartbeat", MAVLINK_MSG_ID_HEARTBEAT);
+  addSender<mavlink::common::SysStatus>("/mavlink/in/sys_status", MAVLINK_MSG_ID_SYS_STATUS);
+  addSender<mavlink::common::SystemTime>("/mavlink/in/system_time", MAVLINK_MSG_ID_SYSTEM_TIME);
+  addSender<mavlink::common::Ping>("/mavlink/in/ping", MAVLINK_MSG_ID_PING);
+  addSender<mavlink::common::LinkNodeStatus>("/mavlink/in/link_node_status", MAVLINK_MSG_ID_LINK_NODE_STATUS);
+  addSender<mavlink::common::ParamValue>("/mavlink/in/param_value", MAVLINK_MSG_ID_PARAM_VALUE);
+  addSender<mavlink::common::ParamSet>("/mavlink/in/param_set", MAVLINK_MSG_ID_PARAM_SET);
+  addSender<mavlink::common::GpsRawInt>("/mavlink/in/gps_raw_int", MAVLINK_MSG_ID_GPS_RAW_INT);
+  addSender<mavlink::common::GpsStatus>("/mavlink/in/gps_status", MAVLINK_MSG_ID_GPS_STATUS);
+  addSender<mavlink::common::ScaledImu>("/mavlink/in/scaled_imu", MAVLINK_MSG_ID_SCALED_IMU);
+  addSender<mavlink::common::RawImu>("/mavlink/in/raw_imu", MAVLINK_MSG_ID_RAW_IMU);
+  addSender<mavlink::common::ScaledPressure>("/mavlink/in/scaled_pressure", MAVLINK_MSG_ID_SCALED_PRESSURE);
+  addSender<mavlink::common::Attitude>("/mavlink/in/attitude", MAVLINK_MSG_ID_ATTITUDE);
+  addSender<mavlink::common::AttitudeQuaternion>("/mavlink/in/attitude_quaternion", MAVLINK_MSG_ID_ATTITUDE_QUATERNION);
+  addSender<mavlink::common::LocalPositionNed>("/mavlink/in/local_position_ned", MAVLINK_MSG_ID_LOCAL_POSITION_NED);
+  addSender<mavlink::common::GlobalPositionInt>("/mavlink/in/global_position_int", MAVLINK_MSG_ID_GLOBAL_POSITION_INT);
+  addSender<mavlink::common::RcChannels>("/mavlink/in/rc_channels", MAVLINK_MSG_ID_RC_CHANNELS);
+  addSender<mavlink::common::RcChannelsRaw>("/mavlink/in/rc_channels_raw", MAVLINK_MSG_ID_RC_CHANNELS_RAW);
+  addSender<mavlink::common::ServoOutputRaw>("/mavlink/in/servo_output_raw", MAVLINK_MSG_ID_SERVO_OUTPUT_RAW);
+  addSender<mavlink::common::VfrHud>("/mavlink/in/vfr_hud", MAVLINK_MSG_ID_VFR_HUD);
+  addSender<mavlink::common::CommandInt>("/mavlink/in/command_int", MAVLINK_MSG_ID_COMMAND_INT);
+  addSender<mavlink::common::CommandLong>("/mavlink/in/command_long", MAVLINK_MSG_ID_COMMAND_LONG);
+  addSender<mavlink::common::CommandAck>("/mavlink/in/command_ack", MAVLINK_MSG_ID_COMMAND_ACK);
+  addSender<mavlink::common::PositionTargetLocalNed>("/mavlink/in/position_target_local_ned",
     MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED);
-  addSender<mavlink::msg::common::AttitudeTarget>("/mavlink/in/attitude_target", MAVLINK_MSG_ID_ATTITUDE_TARGET);
-  addSender<mavlink::msg::common::PositionTargetGlobalInt>("/mavlink/in/position_target_global_int",
+  addSender<mavlink::common::AttitudeTarget>("/mavlink/in/attitude_target", MAVLINK_MSG_ID_ATTITUDE_TARGET);
+  addSender<mavlink::common::PositionTargetGlobalInt>("/mavlink/in/position_target_global_int",
     MAVLINK_MSG_ID_POSITION_TARGET_GLOBAL_INT);
-  addSender<mavlink::msg::common::LocalPositionNedSystemGlobalOffset>("/mavlink/in/local_position_ned_system_global_offset",
+  addSender<mavlink::common::LocalPositionNedSystemGlobalOffset>("/mavlink/in/local_position_ned_system_global_offset",
     MAVLINK_MSG_ID_LOCAL_POSITION_NED_SYSTEM_GLOBAL_OFFSET);
-  addSender<mavlink::msg::common::HighresImu>("/mavlink/in/highres_imu", MAVLINK_MSG_ID_HIGHRES_IMU);
-  addSender<mavlink::msg::common::Timesync>("/mavlink/in/timesync", MAVLINK_MSG_ID_TIMESYNC);
-  addSender<mavlink::msg::common::ActuatorControlTarget>("/mavlink/in/actuator_control_target", MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET);
-  addSender<mavlink::msg::common::Altitude>("/mavlink/in/altitude", MAVLINK_MSG_ID_ALTITUDE);
-  addSender<mavlink::msg::common::BatteryStatus>("/mavlink/in/battery_status", MAVLINK_MSG_ID_BATTERY_STATUS);
-  addSender<mavlink::msg::common::AutopilotVersion>("/mavlink/in/autopilot_version", MAVLINK_MSG_ID_AUTOPILOT_VERSION);
-  addSender<mavlink::msg::common::EstimatorStatus>("/mavlink/in/estimator_status", MAVLINK_MSG_ID_ESTIMATOR_STATUS);
-  addSender<mavlink::msg::common::Vibration>("/mavlink/in/vibration", MAVLINK_MSG_ID_VIBRATION);
-  addSender<mavlink::msg::common::HomePosition>("/mavlink/in/home_position", MAVLINK_MSG_ID_HOME_POSITION);
-  addSender<mavlink::msg::common::ExtendedSysState>("/mavlink/in/extended_sys_state", MAVLINK_MSG_ID_EXTENDED_SYS_STATE);
-  addSender<mavlink::msg::common::EscInfo>("/mavlink/in/esc_info", MAVLINK_MSG_ID_ESC_INFO);
-  addSender<mavlink::msg::common::EscStatus>("/mavlink/in/esc_status", MAVLINK_MSG_ID_ESC_STATUS);
-  addSender<mavlink::msg::common::Odometry>("/mavlink/in/odometry", MAVLINK_MSG_ID_ODOMETRY);
-  addSender<mavlink::msg::common::UtmGlobalPosition>("/mavlink/in/utm_global_position", MAVLINK_MSG_ID_UTM_GLOBAL_POSITION);
-  addSender<mavlink::msg::common::TimeEstimateToTarget>("/mavlink/in/time_estimate_to_target", MAVLINK_MSG_ID_TIME_ESTIMATE_TO_TARGET);
-  addSender<mavlink::msg::common::CurrentEventSequence>("/mavlink/in/current_event_sequence", MAVLINK_MSG_ID_CURRENT_EVENT_SEQUENCE);
-  addSender<mavlink::msg::common::OpenDroneIdLocation>("/mavlink/in/open_drone_id_location", MAVLINK_MSG_ID_OPEN_DRONE_ID_LOCATION);
-  addSender<mavlink::msg::common::OpenDroneIdSystem>("/mavlink/in/open_drone_id_system", MAVLINK_MSG_ID_OPEN_DRONE_ID_SYSTEM);
+  addSender<mavlink::common::HighresImu>("/mavlink/in/highres_imu", MAVLINK_MSG_ID_HIGHRES_IMU);
+  addSender<mavlink::common::Timesync>("/mavlink/in/timesync", MAVLINK_MSG_ID_TIMESYNC);
+  addSender<mavlink::common::ActuatorControlTarget>("/mavlink/in/actuator_control_target", MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET);
+  addSender<mavlink::common::Altitude>("/mavlink/in/altitude", MAVLINK_MSG_ID_ALTITUDE);
+  addSender<mavlink::common::BatteryStatus>("/mavlink/in/battery_status", MAVLINK_MSG_ID_BATTERY_STATUS);
+  addSender<mavlink::common::AutopilotVersion>("/mavlink/in/autopilot_version", MAVLINK_MSG_ID_AUTOPILOT_VERSION);
+  addSender<mavlink::common::EstimatorStatus>("/mavlink/in/estimator_status", MAVLINK_MSG_ID_ESTIMATOR_STATUS);
+  addSender<mavlink::common::Vibration>("/mavlink/in/vibration", MAVLINK_MSG_ID_VIBRATION);
+  addSender<mavlink::common::HomePosition>("/mavlink/in/home_position", MAVLINK_MSG_ID_HOME_POSITION);
+  addSender<mavlink::common::ExtendedSysState>("/mavlink/in/extended_sys_state", MAVLINK_MSG_ID_EXTENDED_SYS_STATE);
+  addSender<mavlink::common::EscInfo>("/mavlink/in/esc_info", MAVLINK_MSG_ID_ESC_INFO);
+  addSender<mavlink::common::EscStatus>("/mavlink/in/esc_status", MAVLINK_MSG_ID_ESC_STATUS);
+  addSender<mavlink::common::Odometry>("/mavlink/in/odometry", MAVLINK_MSG_ID_ODOMETRY);
+  addSender<mavlink::common::UtmGlobalPosition>("/mavlink/in/utm_global_position", MAVLINK_MSG_ID_UTM_GLOBAL_POSITION);
+  addSender<mavlink::common::TimeEstimateToTarget>("/mavlink/in/time_estimate_to_target", MAVLINK_MSG_ID_TIME_ESTIMATE_TO_TARGET);
+  addSender<mavlink::common::CurrentEventSequence>("/mavlink/in/current_event_sequence", MAVLINK_MSG_ID_CURRENT_EVENT_SEQUENCE);
+  addSender<mavlink::common::OpenDroneIdLocation>("/mavlink/in/open_drone_id_location", MAVLINK_MSG_ID_OPEN_DRONE_ID_LOCATION);
+  addSender<mavlink::common::OpenDroneIdSystem>("/mavlink/in/open_drone_id_system", MAVLINK_MSG_ID_OPEN_DRONE_ID_SYSTEM);
 
-  addReceiver<mavlink::msg::common::ParamRequestRead>("/mavlink/out/param_request_read");
-  addReceiver<mavlink::msg::common::SetPositionTargetLocalNed>("/mavlink/out/set_position_target_local_ned");
-  addReceiver<mavlink::msg::common::CommandInt>("/mavlink/out/command_int");
-  addReceiver<mavlink::msg::common::CommandLong>("/mavlink/out/command_long");
+  addReceiver<mavlink::common::ParamRequestRead>("/mavlink/out/param_request_read");
+  addReceiver<mavlink::common::SetPositionTargetLocalNed>("/mavlink/out/set_position_target_local_ned");
+  addReceiver<mavlink::common::CommandInt>("/mavlink/out/command_int");
+  addReceiver<mavlink::common::CommandLong>("/mavlink/out/command_long");
 
-  server.param_request_read = addServer<mavlink::msg::common::ParamRequestRead, mavlink::msg::common::ParamValue>(
+  server.param_request_read = addServer<mavlink::common::ParamRequestRead, mavlink::common::ParamValue>(
     "/mavlink/srv/param_request_read", "/mavlink/out/param_request_read", "/mavlink/in/param_value");
-  server.command_int = addServer<mavlink::msg::common::CommandInt, mavlink::msg::common::CommandAck>("/mavlink/srv/command_int",
+  server.command_int = addServer<mavlink::common::CommandInt, mavlink::common::CommandAck>("/mavlink/srv/command_int",
     "/mavlink/out/command_int", "/mavlink/in/command_ack");
-  server.command_long = addServer<mavlink::msg::common::CommandLong, mavlink::msg::common::CommandAck>("/mavlink/srv/command_long",
+  server.command_long = addServer<mavlink::common::CommandLong, mavlink::common::CommandAck>("/mavlink/srv/command_long",
     "/mavlink/out/command_long", "/mavlink/in/command_ack");
 
   read_thread = utils::LoopThread(&MavlinkNodePrivate::readLoop, "mavlink read", 1, this);

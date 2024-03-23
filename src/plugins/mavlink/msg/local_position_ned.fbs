@@ -1,4 +1,4 @@
-namespace mavlink.msg.common;
+namespace mavlink.common;
 
 table LocalPositionNed {
   time_boot_ms:uint;

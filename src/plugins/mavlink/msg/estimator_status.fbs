@@ -1,4 +1,4 @@
-namespace mavlink.msg.common;
+namespace mavlink.common;
 
 table EstimatorStatus {
   time_usec:ulong;

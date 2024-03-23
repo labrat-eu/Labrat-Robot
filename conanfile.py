@@ -151,4 +151,4 @@ class LbotConan(ConanFile):
         self.cpp_info.components["plugins"].libs = ["plugins_mcap", "plugins_foxglove-ws", "plugins_mavlink", "plugins_udp-bridge", "plugins_serial-bridge"]
         self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "foxglove-websocket::foxglove-websocket", "crc_cpp::crc_cpp"]
 
-        self.runenv_info.append_path("LBOT_REFLECTION_PATH", os.path.join(self.package_folder, "var", "run"))
+        self.runenv_info.append_path("LBOT_REFLECTION_PATH", os.path.join(self.package_folder, "var", "run", "lbot", "schema"))

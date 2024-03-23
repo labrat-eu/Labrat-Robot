@@ -10,7 +10,7 @@
 inline namespace labrat {
 namespace lbot::test {
 
-using TestFlatbuffer = msg::Test;
+using TestFlatbuffer = lbot::Test;
 
 static_assert(is_flatbuffer<TestFlatbuffer>);
 

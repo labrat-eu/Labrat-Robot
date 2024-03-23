@@ -1,4 +1,4 @@
-namespace labrat.lbot.msg;
+namespace labrat.lbot;
 
 table Test {
   integral_field:ulong;

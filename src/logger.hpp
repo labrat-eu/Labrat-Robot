@@ -17,7 +17,7 @@
 #include <sstream>
 #include <string>
 
-#include <foxglove/Log.fb.hpp>
+#include <labrat/lbot/msg/foxglove/Log.fb.hpp>
 
 inline namespace labrat {
 namespace lbot {

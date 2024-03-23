@@ -1,4 +1,4 @@
-namespace mavlink.msg.common;
+namespace mavlink.common;
 
 table SmartBatteryInfo {
   discharge_minimum_voltage:float;
