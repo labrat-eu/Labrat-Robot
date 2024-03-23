@@ -1091,7 +1091,7 @@ MavlinkNodePrivate::MavlinkNodePrivate(MavlinkConnection::Ptr &&connection, Mavl
   addSender<mavlink::common::ExtendedSysState>("/mavlink/in/extended_sys_state", MAVLINK_MSG_ID_EXTENDED_SYS_STATE);
   addSender<mavlink::common::EscInfo>("/mavlink/in/esc_info", MAVLINK_MSG_ID_ESC_INFO);
   addSender<mavlink::common::EscStatus>("/mavlink/in/esc_status", MAVLINK_MSG_ID_ESC_STATUS);
-  addSender<mavlink::common::MissionCurrent>("/mavlink/in/mission_count", MAVLINK_MSG_ID_MISSION_CURRENT);
+  addSender<mavlink::common::MissionCurrent>("/mavlink/in/mission_current", MAVLINK_MSG_ID_MISSION_CURRENT);
   addSender<mavlink::common::Odometry>("/mavlink/in/odometry", MAVLINK_MSG_ID_ODOMETRY);
   addSender<mavlink::common::UtmGlobalPosition>("/mavlink/in/utm_global_position", MAVLINK_MSG_ID_UTM_GLOBAL_POSITION);
   addSender<mavlink::common::TimeEstimateToTarget>("/mavlink/in/time_estimate_to_target", MAVLINK_MSG_ID_TIME_ESTIMATE_TO_TARGET);
