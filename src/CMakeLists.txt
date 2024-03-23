@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.22.0)
 
 
 find_package(flatbuffers MODULE REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 # Set the target name from the project name.
 set(TARGET_NAME ${LOCAL_PROJECT_NAME})
@@ -16,6 +17,7 @@ set(TARGET_SOURCES
   service.cpp
   logger.cpp
   exception.cpp
+  config.cpp
 )
 
 set(TARGET_HEADERS
@@ -29,6 +31,7 @@ set(TARGET_HEADERS
   exception.hpp
   plugin.hpp
   cluster.hpp
+  config.hpp
 )
 
 set(TARGET_MESSAGES
@@ -99,7 +102,7 @@ set(TARGET_NAME_MESSAGE_EXTERNAL ${TARGET_NAME}_msg_external)
 lbot_generate_flatbuffer(TARGET ${TARGET_NAME_MESSAGE_EXTERNAL} SCHEMAS ${TARGET_MESSAGES_EXTERNAL} TARGET_PATH ${LOCAL_PROJECT_PATH_FULL}/${TARGET_RELATIVE_PATH}/msg/foxglove)
 
 # Link external libraries to the library target.
-target_link_libraries(${TARGET_NAME} PRIVATE pthread)
+target_link_libraries(${TARGET_NAME} PRIVATE pthread yaml-cpp::yaml-cpp)
 # Link internal libraries to the library target.
 target_link_libraries(${TARGET_NAME} PUBLIC ${TARGET_NAME_MESSAGE} ${TARGET_NAME_MESSAGE_EXTERNAL} flatbuffers::flatbuffers)
 

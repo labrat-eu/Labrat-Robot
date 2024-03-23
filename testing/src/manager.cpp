@@ -10,7 +10,7 @@ inline namespace labrat {
 namespace lbot::test {
 
 TEST(manager, node) {
-  lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
+  lbot::Manager::Ptr manager = lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));

@@ -156,5 +156,13 @@ class SchemaUnknownException : public Exception {
   using Exception::Exception;
 };
 
+class ConfigAccessException : public Exception {
+  using Exception::Exception;
+};
+
+class ConfigParseException : public Exception {
+  using Exception::Exception;
+};
+
 }  // namespace lbot
 }  // namespace labrat

@@ -64,6 +64,7 @@ class LbotConan(ConanFile):
             return
 
         self.requires("flatbuffers/23.5.26")
+        self.requires("yaml-cpp/0.8.0")
         self.requires("mcap/1.3.0")
         self.requires("crc_cpp/1.2.0")
         self.requires("foxglove-websocket/1.2.0")
@@ -144,7 +145,7 @@ class LbotConan(ConanFile):
         self.cpp_info.components["core"].set_property("cmake_target_name", f"{self.name}::core")
         self.cpp_info.components["core"].set_property("cmake_module_target_name", f"{self.name}::core")
         self.cpp_info.components["core"].libs = ["lbot"]
-        self.cpp_info.components["core"].requires = ["flatbuffers::flatbuffers"]
+        self.cpp_info.components["core"].requires = ["flatbuffers::flatbuffers", "yaml-cpp::yaml-cpp"]
 
         self.cpp_info.components["plugins"].set_property("cmake_target_name", f"{self.name}::plugins")
         self.cpp_info.components["plugins"].set_property("cmake_module_target_name", f"{self.name}::plugins")
