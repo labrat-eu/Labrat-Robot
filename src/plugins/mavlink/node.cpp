@@ -47,6 +47,7 @@
 #include <labrat/lbot/plugins/mavlink/msg/link_node_status.fb.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/local_position_ned.fb.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/local_position_ned_system_global_offset.fb.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_current.fb.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/odometry.fb.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/open_drone_id_location.fb.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/open_drone_id_system.fb.hpp>
@@ -770,6 +771,19 @@ void MavlinkNode::MavlinkMessage<mavlink::common::EscStatus>::convertFrom(const 
 }
 
 template <>
+void MavlinkNode::MavlinkMessage<mavlink::common::MissionCurrent>::convertFrom(const Converted &source,
+  Storage &destination) {
+  destination.seq = mavlink_msg_mission_current_get_seq(&source);
+  destination.total = mavlink_msg_mission_current_get_total(&source);
+  destination.mission_state = mavlink_msg_mission_current_get_mission_state(&source);
+  destination.mission_mode = mavlink_msg_mission_current_get_mission_mode(&source);
+  destination.mission_id = mavlink_msg_mission_current_get_mission_id(&source);
+  destination.fence_id = mavlink_msg_mission_current_get_fence_id(&source);
+  destination.rally_points_id = mavlink_msg_mission_current_get_rally_points_id(&source);
+}
+
+
+template <>
 void MavlinkNode::MavlinkMessage<mavlink::common::Odometry>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.x = mavlink_msg_odometry_get_x(&source);
@@ -1077,6 +1091,7 @@ MavlinkNodePrivate::MavlinkNodePrivate(MavlinkConnection::Ptr &&connection, Mavl
   addSender<mavlink::common::ExtendedSysState>("/mavlink/in/extended_sys_state", MAVLINK_MSG_ID_EXTENDED_SYS_STATE);
   addSender<mavlink::common::EscInfo>("/mavlink/in/esc_info", MAVLINK_MSG_ID_ESC_INFO);
   addSender<mavlink::common::EscStatus>("/mavlink/in/esc_status", MAVLINK_MSG_ID_ESC_STATUS);
+  addSender<mavlink::common::MissionCurrent>("/mavlink/in/mission_count", MAVLINK_MSG_ID_MISSION_CURRENT);
   addSender<mavlink::common::Odometry>("/mavlink/in/odometry", MAVLINK_MSG_ID_ODOMETRY);
   addSender<mavlink::common::UtmGlobalPosition>("/mavlink/in/utm_global_position", MAVLINK_MSG_ID_UTM_GLOBAL_POSITION);
   addSender<mavlink::common::TimeEstimateToTarget>("/mavlink/in/time_estimate_to_target", MAVLINK_MSG_ID_TIME_ESTIMATE_TO_TARGET);
