@@ -1,10 +1,12 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table SerialControl {
   baudrate:uint;
   timeout:ushort;
-  device:ubyte;
-  flags:ubyte;
+  device:SerialControlDev;
+  flags:SerialControlFlag;
   count:ubyte;
   data:[ubyte];
   target_system:ubyte;

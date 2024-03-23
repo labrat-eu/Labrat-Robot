@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table LocalPositionNedCov {
@@ -12,7 +14,7 @@ table LocalPositionNedCov {
   ay:float;
   az:float;
   covariance:[float];
-  estimator_type:ubyte;
+  estimator_type:EstimatorType;
 }
 
 root_type LocalPositionNedCov;

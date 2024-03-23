@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table GimbalDeviceInformation {
@@ -11,7 +13,7 @@ table GimbalDeviceInformation {
   pitch_max:float;
   yaw_min:float;
   yaw_max:float;
-  cap_flags:ushort;
+  cap_flags:GimbalDeviceCapFlags;
   custom_cap_flags:ushort;
   vendor_name:string;
   model_name:string;

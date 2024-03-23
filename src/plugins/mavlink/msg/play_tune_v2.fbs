@@ -1,7 +1,9 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table PlayTuneV2 {
-  format:uint;
+  format:TuneFormat;
   target_system:ubyte;
   target_component:ubyte;
   tune:string;

@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table HighLatency2 {
@@ -9,9 +11,9 @@ table HighLatency2 {
   target_altitude:short;
   target_distance:ushort;
   wp_num:ushort;
-  failure_flags:ushort;
-  type:ubyte;
-  autopilot:ubyte;
+  failure_flags:HlFailureFlag;
+  type:Type;
+  autopilot:Autopilot;
   heading:ubyte;
   target_heading:ubyte;
   throttle:ubyte;

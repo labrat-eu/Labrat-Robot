@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table GlobalPositionIntCov {
@@ -10,7 +12,7 @@ table GlobalPositionIntCov {
   vy:float;
   vz:float;
   covariance:[float];
-  estimator_type:ubyte;
+  estimator_type:EstimatorType;
 }
 
 root_type GlobalPositionIntCov;

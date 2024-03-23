@@ -1,9 +1,11 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table PowerStatus {
   vcc:ushort;
   vservo:ushort;
-  flags:ushort;
+  flags:PowerStatusFlags;
 }
 
 root_type PowerStatus;

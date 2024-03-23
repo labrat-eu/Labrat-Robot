@@ -1,7 +1,9 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table SupportedTunes {
-  format:uint;
+  format:TuneFormat;
   target_system:ubyte;
   target_component:ubyte;
 }

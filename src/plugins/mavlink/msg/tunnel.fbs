@@ -1,7 +1,9 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table Tunnel {
-  payload_type:ushort;
+  payload_type:TunnelPayloadType;
   target_system:ubyte;
   target_component:ubyte;
   payload_length:ubyte;

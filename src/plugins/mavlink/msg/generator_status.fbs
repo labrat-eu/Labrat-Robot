@@ -1,7 +1,9 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table GeneratorStatus {
-  status:ulong;
+  status:GeneratorStatusFlag;
   battery_current:float;
   load_current:float;
   power_generated:float;

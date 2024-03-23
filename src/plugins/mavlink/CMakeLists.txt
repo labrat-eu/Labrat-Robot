@@ -24,6 +24,7 @@ set(TARGET_SOURCES
 )
 
 set(TARGET_MESSAGES
+  msg/common.fbs
   msg/actuator_control_target.fbs
   msg/actuator_output_status.fbs
   msg/adsb_vehicle.fbs

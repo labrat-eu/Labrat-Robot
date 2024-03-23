@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table SmartBatteryInfo {
@@ -14,8 +16,8 @@ table SmartBatteryInfo {
   cycle_count:ushort;
   weight:ushort;
   id:ubyte;
-  battery_function:ubyte;
-  type:ubyte;
+  battery_function:BatteryFunction;
+  type:BatteryType;
   state_of_health:ubyte;
   cells_in_series:ubyte;
   manufacture_date:string;

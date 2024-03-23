@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table CameraTrackingImageStatus {
@@ -8,9 +10,9 @@ table CameraTrackingImageStatus {
   rec_top_y:float;
   rec_bottom_x:float;
   rec_bottom_y:float;
-  tracking_status:ubyte;
-  tracking_mode:ubyte;
-  target_data:ubyte;
+  tracking_status:CameraTrackingStatusFlags;
+  tracking_mode:CameraTrackingMode;
+  target_data:CameraTrackingTargetData;
 }
 
 root_type CameraTrackingImageStatus;

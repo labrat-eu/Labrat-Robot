@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table Odometry {
@@ -14,10 +16,10 @@ table Odometry {
   yawspeed:float;
   pose_covariance:[float];
   velocity_covariance:[float];
-  frame_id:ubyte;
-  child_frame_id:ubyte;
+  frame_id:Frame;
+  child_frame_id:Frame;
   reset_counter:ubyte;
-  estimator_type:ubyte;
+  estimator_type:EstimatorType;
   quality:byte;
 }
 

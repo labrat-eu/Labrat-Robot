@@ -1,8 +1,10 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table GimbalManagerInformation {
   time_boot_ms:uint;
-  cap_flags:uint;
+  cap_flags:GimbalManagerCapFlags;
   roll_min:float;
   roll_max:float;
   pitch_min:float;

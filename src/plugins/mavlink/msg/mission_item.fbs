@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table MissionItem {
@@ -9,13 +11,13 @@ table MissionItem {
   y:float;
   z:float;
   seq:ushort;
-  command:ushort;
+  command:Cmd;
   target_system:ubyte;
   target_component:ubyte;
-  frame:ubyte;
+  frame:Frame;
   current:ubyte;
   autocontinue:ubyte;
-  mission_type:ubyte;
+  mission_type:MissionType;
 }
 
 root_type MissionItem;

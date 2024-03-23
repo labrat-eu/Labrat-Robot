@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table MagCalReport {
@@ -13,11 +15,11 @@ table MagCalReport {
   offdiag_z:float;
   compass_id:ubyte;
   cal_mask:ubyte;
-  cal_status:ubyte;
+  cal_status:MagCalStatus;
   autosaved:ubyte;
   orientation_confidence:float;
-  old_orientation:ubyte;
-  new_orientation:ubyte;
+  old_orientation:SensorOrientation;
+  new_orientation:SensorOrientation;
   scale_factor:float;
 }
 

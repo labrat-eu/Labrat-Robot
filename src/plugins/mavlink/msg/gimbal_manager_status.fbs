@@ -1,8 +1,10 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table GimbalManagerStatus {
   time_boot_ms:uint;
-  flags:uint;
+  flags:GimbalManagerFlags;
   gimbal_device_id:ubyte;
   primary_control_sysid:ubyte;
   primary_control_compid:ubyte;

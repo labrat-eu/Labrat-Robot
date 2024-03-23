@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table PositionTargetGlobalInt {
@@ -13,8 +15,8 @@ table PositionTargetGlobalInt {
   afz:float;
   yaw:float;
   yaw_rate:float;
-  type_mask:ushort;
-  coordinate_frame:ubyte;
+  type_mask:PositionTargetTypemask;
+  coordinate_frame:Frame;
 }
 
 root_type PositionTargetGlobalInt;

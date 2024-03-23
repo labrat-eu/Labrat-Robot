@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table WinchStatus {
@@ -7,7 +9,7 @@ table WinchStatus {
   tension:float;
   voltage:float;
   current:float;
-  status:uint;
+  status:WinchStatusFlag;
   temperature:short;
 }
 

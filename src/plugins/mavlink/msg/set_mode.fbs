@@ -1,9 +1,11 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table SetMode {
   custom_mode:uint;
   target_system:ubyte;
-  base_mode:ubyte;
+  base_mode:Mode;
 }
 
 root_type SetMode;

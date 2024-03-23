@@ -1,12 +1,14 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table CellularStatus {
   mcc:ushort;
   mnc:ushort;
   lac:ushort;
-  status:ubyte;
-  failure_reason:ubyte;
-  type:ubyte;
+  status:CellularStatusFlag;
+  failure_reason:CellularNetworkFailedReason;
+  type:CellularNetworkRadioType;
   quality:ubyte;
 }
 

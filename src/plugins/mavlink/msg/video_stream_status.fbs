@@ -1,9 +1,11 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table VideoStreamStatus {
   framerate:float;
   bitrate:uint;
-  flags:ushort;
+  flags:VideoStreamStatus;
   resolution_h:ushort;
   resolution_v:ushort;
   rotation:ushort;

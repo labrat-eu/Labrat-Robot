@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table DistanceSensor {
@@ -5,9 +7,9 @@ table DistanceSensor {
   min_distance:ushort;
   max_distance:ushort;
   current_distance:ushort;
-  type:ubyte;
+  type:DistanceSensorType;
   id:ubyte;
-  orientation:ubyte;
+  orientation:SensorOrientation;
   covariance:ubyte;
   horizontal_fov:float;
   vertical_fov:float;

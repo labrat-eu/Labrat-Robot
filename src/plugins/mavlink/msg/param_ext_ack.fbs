@@ -1,10 +1,12 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table ParamExtAck {
   param_id:string;
   param_value:string;
-  param_type:ubyte;
-  param_result:ubyte;
+  param_type:ParamExtType;
+  param_result:ParamExtAck;
 }
 
 root_type ParamExtAck;

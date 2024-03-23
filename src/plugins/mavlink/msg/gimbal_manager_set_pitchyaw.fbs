@@ -1,7 +1,9 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table GimbalManagerSetPitchyaw {
-  flags:uint;
+  flags:GimbalManagerFlags;
   pitch:float;
   yaw:float;
   pitch_rate:float;

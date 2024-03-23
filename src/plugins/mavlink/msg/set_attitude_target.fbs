@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table SetAttitudeTarget {
@@ -9,7 +11,7 @@ table SetAttitudeTarget {
   thrust:float;
   target_system:ubyte;
   target_component:ubyte;
-  type_mask:ubyte;
+  type_mask:AttitudeTargetTypemask;
   thrust_body:[float];
 }
 

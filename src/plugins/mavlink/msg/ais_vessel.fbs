@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table AisVessel {
@@ -10,10 +12,10 @@ table AisVessel {
   dimension_bow:ushort;
   dimension_stern:ushort;
   tslc:ushort;
-  flags:ushort;
+  flags:AisFlags;
   turn_rate:byte;
-  navigational_status:ubyte;
-  type:ubyte;
+  navigational_status:AisNavStatus;
+  type:AisType;
   dimension_port:ubyte;
   dimension_starboard:ubyte;
   callsign:string;

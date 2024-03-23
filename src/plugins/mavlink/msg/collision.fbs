@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table Collision {
@@ -5,9 +7,9 @@ table Collision {
   time_to_minimum_delta:float;
   altitude_minimum_delta:float;
   horizontal_minimum_delta:float;
-  src:ubyte;
-  action:ubyte;
-  threat_level:ubyte;
+  src:CollisionSrc;
+  action:CollisionAction;
+  threat_level:CollisionThreatLevel;
 }
 
 root_type Collision;

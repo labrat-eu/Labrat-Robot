@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table EstimatorStatus {
@@ -10,7 +12,7 @@ table EstimatorStatus {
   tas_ratio:float;
   pos_horiz_accuracy:float;
   pos_vert_accuracy:float;
-  flags:ushort;
+  flags:EstimatorStatusFlags;
 }
 
 root_type EstimatorStatus;

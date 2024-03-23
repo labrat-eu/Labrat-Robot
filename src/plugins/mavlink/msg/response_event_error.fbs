@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table ResponseEventError {
@@ -5,7 +7,7 @@ table ResponseEventError {
   sequence_oldest_available:ushort;
   target_system:ubyte;
   target_component:ubyte;
-  reason:ubyte;
+  reason:EventErrorReason;
 }
 
 root_type ResponseEventError;

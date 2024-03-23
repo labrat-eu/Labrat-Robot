@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table HilSensor {
@@ -15,7 +17,7 @@ table HilSensor {
   diff_pressure:float;
   pressure_alt:float;
   temperature:float;
-  fields_updated:uint;
+  fields_updated:HilSensorUpdatedFlags;
   id:ubyte;
 }
 

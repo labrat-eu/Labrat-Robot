@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table CommandInt {
@@ -8,10 +10,10 @@ table CommandInt {
   x:int;
   y:int;
   z:float;
-  command:ushort;
+  command:Cmd;
   target_system:ubyte;
   target_component:ubyte;
-  frame:ubyte;
+  frame:Frame;
   current:ubyte;
   autocontinue:ubyte;
 }

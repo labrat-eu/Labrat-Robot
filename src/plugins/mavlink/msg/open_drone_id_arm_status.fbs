@@ -1,7 +1,9 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table OpenDroneIdArmStatus {
-  status:ubyte;
+  status:OdidArmStatus;
   error:string;
 }
 

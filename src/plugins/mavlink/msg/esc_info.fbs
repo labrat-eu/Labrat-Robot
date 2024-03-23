@@ -1,14 +1,16 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table EscInfo {
   time_usec:ulong;
   error_count:[uint];
   counter:ushort;
-  failure_flags:[ushort];
+  failure_flags:[EscFailureFlags];
   temperature:[short];
   index:ubyte;
   count:ubyte;
-  connection_type:ubyte;
+  connection_type:EscConnectionType;
   info:ubyte;
 }
 

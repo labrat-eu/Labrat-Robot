@@ -172,9 +172,9 @@ void MavlinkNode::MavlinkMessage<mavlink::common::Heartbeat>::convertFrom(const 
 template <>
 void MavlinkNode::MavlinkMessage<mavlink::common::SysStatus>::convertFrom(const Converted &source,
   Storage &destination) {
-  destination.onboard_control_sensors_present = mavlink_msg_sys_status_get_onboard_control_sensors_present(&source);
-  destination.onboard_control_sensors_enabled = mavlink_msg_sys_status_get_onboard_control_sensors_enabled(&source);
-  destination.onboard_control_sensors_health = mavlink_msg_sys_status_get_onboard_control_sensors_health(&source);
+  destination.onboard_control_sensors_present = static_cast<mavlink::common::SysStatusSensor>(mavlink_msg_sys_status_get_onboard_control_sensors_present(&source));
+  destination.onboard_control_sensors_enabled = static_cast<mavlink::common::SysStatusSensor>(mavlink_msg_sys_status_get_onboard_control_sensors_enabled(&source));
+  destination.onboard_control_sensors_health = static_cast<mavlink::common::SysStatusSensor>(mavlink_msg_sys_status_get_onboard_control_sensors_health(&source));
   destination.load = mavlink_msg_sys_status_get_load(&source);
   destination.voltage_battery = mavlink_msg_sys_status_get_voltage_battery(&source);
   destination.current_battery = mavlink_msg_sys_status_get_current_battery(&source);
@@ -185,9 +185,9 @@ void MavlinkNode::MavlinkMessage<mavlink::common::SysStatus>::convertFrom(const 
   destination.errors_count3 = mavlink_msg_sys_status_get_errors_count3(&source);
   destination.errors_count4 = mavlink_msg_sys_status_get_errors_count4(&source);
   destination.battery_remaining = mavlink_msg_sys_status_get_battery_remaining(&source);
-  destination.onboard_control_sensors_present_extended = mavlink_msg_sys_status_get_onboard_control_sensors_present_extended(&source);
-  destination.onboard_control_sensors_enabled_extended = mavlink_msg_sys_status_get_onboard_control_sensors_enabled_extended(&source);
-  destination.onboard_control_sensors_health_extended = mavlink_msg_sys_status_get_onboard_control_sensors_health_extended(&source);
+  destination.onboard_control_sensors_present_extended = static_cast<mavlink::common::SysStatusSensorExtended>(mavlink_msg_sys_status_get_onboard_control_sensors_present_extended(&source));
+  destination.onboard_control_sensors_enabled_extended = static_cast<mavlink::common::SysStatusSensorExtended>(mavlink_msg_sys_status_get_onboard_control_sensors_enabled_extended(&source));
+  destination.onboard_control_sensors_health_extended = static_cast<mavlink::common::SysStatusSensorExtended>(mavlink_msg_sys_status_get_onboard_control_sensors_health_extended(&source));
 }
 
 template <>
@@ -233,7 +233,7 @@ void MavlinkNode::MavlinkMessage<mavlink::common::ParamValue>::convertFrom(const
   mavlink_msg_param_value_get_param_id(&source, destination.param_id.data());
   utils::shrinkString(destination.param_id);
 
-  destination.param_type = mavlink_msg_param_value_get_param_type(&source);
+  destination.param_type = static_cast<mavlink::common::ParamType>(mavlink_msg_param_value_get_param_type(&source));
 }
 
 template <>
@@ -247,7 +247,7 @@ void MavlinkNode::MavlinkMessage<mavlink::common::ParamSet>::convertFrom(const C
   mavlink_msg_param_set_get_param_id(&source, destination.param_id.data());
   utils::shrinkString(destination.param_id);
 
-  destination.param_type = mavlink_msg_param_set_get_param_type(&source);
+  destination.param_type = static_cast<mavlink::common::ParamType>(mavlink_msg_param_set_get_param_type(&source));
 }
 
 template <>
@@ -261,7 +261,7 @@ void MavlinkNode::MavlinkMessage<mavlink::common::GpsRawInt>::convertFrom(const 
   destination.epv = mavlink_msg_gps_raw_int_get_epv(&source);
   destination.vel = mavlink_msg_gps_raw_int_get_vel(&source);
   destination.cog = mavlink_msg_gps_raw_int_get_cog(&source);
-  destination.fix_type = mavlink_msg_gps_raw_int_get_fix_type(&source);
+  destination.fix_type = static_cast<mavlink::common::GpsFixType>(mavlink_msg_gps_raw_int_get_fix_type(&source));
   destination.satellites_visible = mavlink_msg_gps_raw_int_get_satellites_visible(&source);
   destination.alt_ellipsoid = mavlink_msg_gps_raw_int_get_alt_ellipsoid(&source);
   destination.h_acc = mavlink_msg_gps_raw_int_get_h_acc(&source);
@@ -475,10 +475,10 @@ void MavlinkNode::MavlinkMessage<mavlink::common::CommandInt>::convertFrom(const
   destination.x = mavlink_msg_command_int_get_x(&source);
   destination.y = mavlink_msg_command_int_get_y(&source);
   destination.z = mavlink_msg_command_int_get_z(&source);
-  destination.command = mavlink_msg_command_int_get_command(&source);
+  destination.command = static_cast<mavlink::common::Cmd>(mavlink_msg_command_int_get_command(&source));
   destination.target_system = mavlink_msg_command_int_get_target_system(&source);
   destination.target_component = mavlink_msg_command_int_get_target_component(&source);
-  destination.frame = mavlink_msg_command_int_get_frame(&source);
+  destination.frame = static_cast<mavlink::common::Frame>(mavlink_msg_command_int_get_frame(&source));
   destination.current = mavlink_msg_command_int_get_current(&source);
   destination.autocontinue = mavlink_msg_command_int_get_autocontinue(&source);
 }
@@ -493,7 +493,7 @@ void MavlinkNode::MavlinkMessage<mavlink::common::CommandLong>::convertFrom(cons
   destination.param5 = mavlink_msg_command_long_get_param5(&source);
   destination.param6 = mavlink_msg_command_long_get_param6(&source);
   destination.param7 = mavlink_msg_command_long_get_param7(&source);
-  destination.command = mavlink_msg_command_long_get_command(&source);
+  destination.command = static_cast<mavlink::common::Cmd>(mavlink_msg_command_long_get_command(&source));
   destination.target_system = mavlink_msg_command_long_get_target_system(&source);
   destination.target_component = mavlink_msg_command_long_get_target_component(&source);
   destination.confirmation = mavlink_msg_command_long_get_confirmation(&source);
@@ -502,8 +502,8 @@ void MavlinkNode::MavlinkMessage<mavlink::common::CommandLong>::convertFrom(cons
 template <>
 void MavlinkNode::MavlinkMessage<mavlink::common::CommandAck>::convertFrom(const Converted &source,
   Storage &destination) {
-  destination.command = mavlink_msg_command_ack_get_command(&source);
-  destination.result = mavlink_msg_command_ack_get_result(&source);
+  destination.command = static_cast<mavlink::common::Cmd>(mavlink_msg_command_ack_get_command(&source));
+  destination.result = static_cast<mavlink::common::Result>(mavlink_msg_command_ack_get_result(&source));
   destination.progress = mavlink_msg_command_ack_get_progress(&source);
   destination.result_param2 = mavlink_msg_command_ack_get_result_param2(&source);
   destination.target_system = mavlink_msg_command_ack_get_target_system(&source);
@@ -525,8 +525,8 @@ void MavlinkNode::MavlinkMessage<mavlink::common::PositionTargetLocalNed>::conve
   destination.afz = mavlink_msg_position_target_local_ned_get_afz(&source);
   destination.yaw = mavlink_msg_position_target_local_ned_get_yaw(&source);
   destination.yaw_rate = mavlink_msg_position_target_local_ned_get_yaw_rate(&source);
-  destination.type_mask = mavlink_msg_position_target_local_ned_get_type_mask(&source);
-  destination.coordinate_frame = mavlink_msg_position_target_local_ned_get_coordinate_frame(&source);
+  destination.type_mask = static_cast<mavlink::common::PositionTargetTypemask>(mavlink_msg_position_target_local_ned_get_type_mask(&source));
+  destination.coordinate_frame = static_cast<mavlink::common::Frame>(mavlink_msg_position_target_local_ned_get_coordinate_frame(&source));
 }
 
 template <>
@@ -541,7 +541,7 @@ void MavlinkNode::MavlinkMessage<mavlink::common::AttitudeTarget>::convertFrom(c
   destination.body_pitch_rate = mavlink_msg_attitude_target_get_body_pitch_rate(&source);
   destination.body_yaw_rate = mavlink_msg_attitude_target_get_body_yaw_rate(&source);
   destination.thrust = mavlink_msg_attitude_target_get_thrust(&source);
-  destination.type_mask = mavlink_msg_attitude_target_get_type_mask(&source);
+  destination.type_mask = static_cast<mavlink::common::AttitudeTargetTypemask>(mavlink_msg_attitude_target_get_type_mask(&source));
 }
 
 template <>
@@ -559,8 +559,8 @@ void MavlinkNode::MavlinkMessage<mavlink::common::PositionTargetGlobalInt>::conv
   destination.afz = mavlink_msg_position_target_global_int_get_afz(&source);
   destination.yaw = mavlink_msg_position_target_global_int_get_yaw(&source);
   destination.yaw_rate = mavlink_msg_position_target_global_int_get_yaw_rate(&source);
-  destination.type_mask = mavlink_msg_position_target_global_int_get_type_mask(&source);
-  destination.coordinate_frame = mavlink_msg_position_target_global_int_get_coordinate_frame(&source);
+  destination.type_mask = static_cast<mavlink::common::PositionTargetTypemask>(mavlink_msg_position_target_global_int_get_type_mask(&source));
+  destination.coordinate_frame = static_cast<mavlink::common::Frame>(mavlink_msg_position_target_global_int_get_coordinate_frame(&source));
 }
 
 template <>
@@ -592,7 +592,7 @@ void MavlinkNode::MavlinkMessage<mavlink::common::HighresImu>::convertFrom(const
   destination.diff_pressure = mavlink_msg_highres_imu_get_diff_pressure(&source);
   destination.pressure_alt = mavlink_msg_highres_imu_get_pressure_alt(&source);
   destination.temperature = mavlink_msg_highres_imu_get_temperature(&source);
-  destination.fields_updated = mavlink_msg_highres_imu_get_fields_updated(&source);
+  destination.fields_updated = static_cast<mavlink::common::HighresImuUpdatedFlags>(mavlink_msg_highres_imu_get_fields_updated(&source));
   destination.id = mavlink_msg_highres_imu_get_id(&source);
 }
 
@@ -640,23 +640,23 @@ void MavlinkNode::MavlinkMessage<mavlink::common::BatteryStatus>::convertFrom(co
 
   destination.current_battery = mavlink_msg_battery_status_get_current_battery(&source);
   destination.id = mavlink_msg_battery_status_get_id(&source);
-  destination.battery_function = mavlink_msg_battery_status_get_battery_function(&source);
-  destination.type = mavlink_msg_battery_status_get_type(&source);
+  destination.battery_function = static_cast<mavlink::common::BatteryFunction>(mavlink_msg_battery_status_get_battery_function(&source));
+  destination.type = static_cast<mavlink::common::BatteryType>(mavlink_msg_battery_status_get_type(&source));
   destination.battery_remaining = mavlink_msg_battery_status_get_battery_remaining(&source);
   destination.time_remaining = mavlink_msg_battery_status_get_time_remaining(&source);
-  destination.charge_state = mavlink_msg_battery_status_get_charge_state(&source);
+  destination.charge_state = static_cast<mavlink::common::BatteryChargeState>(mavlink_msg_battery_status_get_charge_state(&source));
 
   destination.voltages_ext.resize(4);
   mavlink_msg_battery_status_get_voltages_ext(&source, destination.voltages_ext.data());
 
-  destination.mode = mavlink_msg_battery_status_get_mode(&source);
-  destination.fault_bitmask = mavlink_msg_battery_status_get_fault_bitmask(&source);
+  destination.mode = static_cast<mavlink::common::BatteryMode>(mavlink_msg_battery_status_get_mode(&source));
+  destination.fault_bitmask = static_cast<mavlink::common::BatteryFault>(mavlink_msg_battery_status_get_fault_bitmask(&source));
 }
 
 template <>
 void MavlinkNode::MavlinkMessage<mavlink::common::AutopilotVersion>::convertFrom(const Converted &source,
   Storage &destination) {
-  destination.capabilities = mavlink_msg_autopilot_version_get_capabilities(&source);
+  destination.capabilities = static_cast<mavlink::common::ProtocolCapability>(mavlink_msg_autopilot_version_get_capabilities(&source));
   destination.uid = mavlink_msg_autopilot_version_get_uid(&source);
   destination.flight_sw_version = mavlink_msg_autopilot_version_get_flight_sw_version(&source);
   destination.middleware_sw_version = mavlink_msg_autopilot_version_get_middleware_sw_version(&source);
@@ -690,7 +690,7 @@ void MavlinkNode::MavlinkMessage<mavlink::common::EstimatorStatus>::convertFrom(
   destination.tas_ratio = mavlink_msg_estimator_status_get_tas_ratio(&source);
   destination.pos_horiz_accuracy = mavlink_msg_estimator_status_get_pos_horiz_accuracy(&source);
   destination.pos_vert_accuracy = mavlink_msg_estimator_status_get_pos_vert_accuracy(&source);
-  destination.flags = mavlink_msg_estimator_status_get_flags(&source);
+  destination.flags = static_cast<mavlink::common::EstimatorStatusFlags>(mavlink_msg_estimator_status_get_flags(&source));
 }
 
 template <>
@@ -727,8 +727,8 @@ void MavlinkNode::MavlinkMessage<mavlink::common::HomePosition>::convertFrom(con
 template <>
 void MavlinkNode::MavlinkMessage<mavlink::common::ExtendedSysState>::convertFrom(const Converted &source,
   Storage &destination) {
-  destination.vtol_state = mavlink_msg_extended_sys_state_get_vtol_state(&source);
-  destination.landed_state = mavlink_msg_extended_sys_state_get_landed_state(&source);
+  destination.vtol_state = static_cast<mavlink::common::VtolState>(mavlink_msg_extended_sys_state_get_vtol_state(&source));
+  destination.landed_state = static_cast<mavlink::common::LandedState>(mavlink_msg_extended_sys_state_get_landed_state(&source));
 }
 
 template <>
@@ -742,14 +742,14 @@ void MavlinkNode::MavlinkMessage<mavlink::common::EscInfo>::convertFrom(const Co
   destination.counter = mavlink_msg_esc_info_get_counter(&source);
 
   destination.failure_flags.resize(4);
-  mavlink_msg_esc_info_get_failure_flags(&source, destination.failure_flags.data());
+  mavlink_msg_esc_info_get_failure_flags(&source, reinterpret_cast<u16 *>(destination.failure_flags.data()));
 
   destination.temperature.resize(4);
   mavlink_msg_esc_info_get_temperature(&source, destination.temperature.data());
 
   destination.index = mavlink_msg_esc_info_get_index(&source);
   destination.count = mavlink_msg_esc_info_get_count(&source);
-  destination.connection_type = mavlink_msg_esc_info_get_connection_type(&source);
+  destination.connection_type = static_cast<mavlink::common::EscConnectionType>(mavlink_msg_esc_info_get_connection_type(&source));
   destination.info = mavlink_msg_esc_info_get_info(&source);
 }
 
@@ -775,7 +775,7 @@ void MavlinkNode::MavlinkMessage<mavlink::common::MissionCurrent>::convertFrom(c
   Storage &destination) {
   destination.seq = mavlink_msg_mission_current_get_seq(&source);
   destination.total = mavlink_msg_mission_current_get_total(&source);
-  destination.mission_state = mavlink_msg_mission_current_get_mission_state(&source);
+  destination.mission_state = static_cast<mavlink::common::MissionState>(mavlink_msg_mission_current_get_mission_state(&source));
   destination.mission_mode = mavlink_msg_mission_current_get_mission_mode(&source);
   destination.mission_id = mavlink_msg_mission_current_get_mission_id(&source);
   destination.fence_id = mavlink_msg_mission_current_get_fence_id(&source);
@@ -806,10 +806,10 @@ void MavlinkNode::MavlinkMessage<mavlink::common::Odometry>::convertFrom(const C
   destination.velocity_covariance.resize(21);
   mavlink_msg_odometry_get_velocity_covariance(&source, destination.velocity_covariance.data());
 
-  destination.frame_id = mavlink_msg_odometry_get_frame_id(&source);
-  destination.child_frame_id = mavlink_msg_odometry_get_child_frame_id(&source);
+  destination.frame_id = static_cast<mavlink::common::Frame>(mavlink_msg_odometry_get_frame_id(&source));
+  destination.child_frame_id = static_cast<mavlink::common::Frame>(mavlink_msg_odometry_get_child_frame_id(&source));
   destination.reset_counter = mavlink_msg_odometry_get_reset_counter(&source);
-  destination.estimator_type = mavlink_msg_odometry_get_estimator_type(&source);
+  destination.estimator_type = static_cast<mavlink::common::EstimatorType>(mavlink_msg_odometry_get_estimator_type(&source));
   destination.quality = mavlink_msg_odometry_get_quality(&source);
 }
 
@@ -835,8 +835,8 @@ void MavlinkNode::MavlinkMessage<mavlink::common::UtmGlobalPosition>::convertFro
   destination.uas_id.resize(18);
   mavlink_msg_utm_global_position_get_uas_id(&source, destination.uas_id.data());
 
-  destination.flight_state = mavlink_msg_utm_global_position_get_flight_state(&source);
-  destination.flags = mavlink_msg_utm_global_position_get_flags(&source);
+  destination.flight_state = static_cast<mavlink::common::UtmFlightState>(mavlink_msg_utm_global_position_get_flight_state(&source));
+  destination.flags = static_cast<mavlink::common::UtmDataAvailFlags>(mavlink_msg_utm_global_position_get_flags(&source));
 }
 
 template <>
@@ -853,7 +853,7 @@ template <>
 void MavlinkNode::MavlinkMessage<mavlink::common::CurrentEventSequence>::convertFrom(const Converted &source,
   Storage &destination) {
   destination.sequence = mavlink_msg_current_event_sequence_get_sequence(&source);
-  destination.flags = mavlink_msg_current_event_sequence_get_flags(&source);
+  destination.flags = static_cast<mavlink::common::EventCurrentSequenceFlags>(mavlink_msg_current_event_sequence_get_flags(&source));
 }
 
 template <>
@@ -874,13 +874,13 @@ void MavlinkNode::MavlinkMessage<mavlink::common::OpenDroneIdLocation>::convertF
   destination.id_or_mac.resize(20);
   mavlink_msg_open_drone_id_location_get_id_or_mac(&source, destination.id_or_mac.data());
 
-  destination.status = mavlink_msg_open_drone_id_location_get_status(&source);
-  destination.height_reference = mavlink_msg_open_drone_id_location_get_height_reference(&source);
-  destination.horizontal_accuracy = mavlink_msg_open_drone_id_location_get_horizontal_accuracy(&source);
-  destination.vertical_accuracy = mavlink_msg_open_drone_id_location_get_vertical_accuracy(&source);
-  destination.barometer_accuracy = mavlink_msg_open_drone_id_location_get_barometer_accuracy(&source);
-  destination.speed_accuracy = mavlink_msg_open_drone_id_location_get_speed_accuracy(&source);
-  destination.timestamp_accuracy = mavlink_msg_open_drone_id_location_get_timestamp_accuracy(&source);
+  destination.status = static_cast<mavlink::common::OdidStatus>(mavlink_msg_open_drone_id_location_get_status(&source));
+  destination.height_reference = static_cast<mavlink::common::OdidHeightRef>(mavlink_msg_open_drone_id_location_get_height_reference(&source));
+  destination.horizontal_accuracy = static_cast<mavlink::common::OdidHorAcc>(mavlink_msg_open_drone_id_location_get_horizontal_accuracy(&source));
+  destination.vertical_accuracy = static_cast<mavlink::common::OdidVerAcc>(mavlink_msg_open_drone_id_location_get_vertical_accuracy(&source));
+  destination.barometer_accuracy = static_cast<mavlink::common::OdidVerAcc>(mavlink_msg_open_drone_id_location_get_barometer_accuracy(&source));
+  destination.speed_accuracy = static_cast<mavlink::common::OdidSpeedAcc>(mavlink_msg_open_drone_id_location_get_speed_accuracy(&source));
+  destination.timestamp_accuracy = static_cast<mavlink::common::OdidTimeAcc>(mavlink_msg_open_drone_id_location_get_timestamp_accuracy(&source));
 }
 
 template <>
@@ -900,10 +900,10 @@ void MavlinkNode::MavlinkMessage<mavlink::common::OpenDroneIdSystem>::convertFro
   destination.id_or_mac.resize(20);
   mavlink_msg_open_drone_id_system_get_id_or_mac(&source, destination.id_or_mac.data());
 
-  destination.operator_location_type = mavlink_msg_open_drone_id_system_get_operator_location_type(&source);
-  destination.classification_type = mavlink_msg_open_drone_id_system_get_classification_type(&source);
-  destination.category_eu = mavlink_msg_open_drone_id_system_get_category_eu(&source);
-  destination.class_eu = mavlink_msg_open_drone_id_system_get_class_eu(&source);
+  destination.operator_location_type = static_cast<mavlink::common::OdidOperatorLocationType>(mavlink_msg_open_drone_id_system_get_operator_location_type(&source));
+  destination.classification_type = static_cast<mavlink::common::OdidClassificationType>(mavlink_msg_open_drone_id_system_get_classification_type(&source));
+  destination.category_eu = static_cast<mavlink::common::OdidCategoryEu>(mavlink_msg_open_drone_id_system_get_category_eu(&source));
+  destination.class_eu = static_cast<mavlink::common::OdidClassEu>(mavlink_msg_open_drone_id_system_get_class_eu(&source));
 }
 
 template <>
@@ -923,7 +923,7 @@ void MavlinkNode::MavlinkMessage<mavlink::common::SetPositionTargetLocalNed>::co
   const Storage &source, Converted &destination,
   const MavlinkNode::SystemInfo *info) {
   mavlink_msg_set_position_target_local_ned_pack_chan(info->system_id, info->component_id, info->channel_id, &destination,
-    source.time_boot_ms, source.target_system, source.target_component, source.coordinate_frame, source.type_mask, source.x, source.y,
+    source.time_boot_ms, source.target_system, source.target_component, static_cast<u8>(source.coordinate_frame), static_cast<u16>(source.type_mask), source.x, source.y,
     source.z, source.vx, source.vy, source.vz, source.afx, source.afy, source.afz, source.yaw, source.yaw_rate);
 }
 
@@ -931,7 +931,7 @@ template <>
 void MavlinkNode::MavlinkMessage<mavlink::common::CommandInt>::convertTo(
   const Storage &source, Converted &destination, const MavlinkNode::SystemInfo *info) {
   mavlink_msg_command_int_pack_chan(info->system_id, info->component_id, info->channel_id, &destination, source.target_system,
-    source.target_component, source.frame, source.command, source.current, source.autocontinue, source.param1, source.param2, source.param3,
+    source.target_component, static_cast<u8>(source.frame), static_cast<u16>(source.command), source.current, source.autocontinue, source.param1, source.param2, source.param3,
     source.param4, source.x, source.y, source.z);
 }
 
@@ -939,7 +939,7 @@ template <>
 void MavlinkNode::MavlinkMessage<mavlink::common::CommandLong>::convertTo(
   const Storage &source, Converted &destination, const MavlinkNode::SystemInfo *info) {
   mavlink_msg_command_long_pack_chan(info->system_id, info->component_id, info->channel_id, &destination, source.target_system,
-    source.target_component, source.command, source.confirmation, source.param1, source.param2, source.param3, source.param4, source.param5,
+    source.target_component, static_cast<u16>(source.command), source.confirmation, source.param1, source.param2, source.param3, source.param4, source.param5,
     source.param6, source.param7);
 }
 

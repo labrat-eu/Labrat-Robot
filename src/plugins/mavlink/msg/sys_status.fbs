@@ -1,9 +1,11 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table SysStatus {
-  onboard_control_sensors_present:uint;
-  onboard_control_sensors_enabled:uint;
-  onboard_control_sensors_health:uint;
+  onboard_control_sensors_present:SysStatusSensor;
+  onboard_control_sensors_enabled:SysStatusSensor;
+  onboard_control_sensors_health:SysStatusSensor;
   load:ushort;
   voltage_battery:ushort;
   current_battery:short;
@@ -14,9 +16,9 @@ table SysStatus {
   errors_count3:ushort;
   errors_count4:ushort;
   battery_remaining:byte;
-  onboard_control_sensors_present_extended:uint;
-  onboard_control_sensors_enabled_extended:uint;
-  onboard_control_sensors_health_extended:uint;
+  onboard_control_sensors_present_extended:SysStatusSensorExtended;
+  onboard_control_sensors_enabled_extended:SysStatusSensorExtended;
+  onboard_control_sensors_health_extended:SysStatusSensorExtended;
 }
 
 root_type SysStatus;

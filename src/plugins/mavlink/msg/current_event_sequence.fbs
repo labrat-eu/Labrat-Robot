@@ -1,8 +1,10 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table CurrentEventSequence {
   sequence:ushort;
-  flags:ubyte;
+  flags:EventCurrentSequenceFlags;
 }
 
 root_type CurrentEventSequence;

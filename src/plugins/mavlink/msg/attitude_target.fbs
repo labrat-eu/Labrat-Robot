@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table AttitudeTarget {
@@ -7,7 +9,7 @@ table AttitudeTarget {
   body_pitch_rate:float;
   body_yaw_rate:float;
   thrust:float;
-  type_mask:ubyte;
+  type_mask:AttitudeTargetTypemask;
 }
 
 root_type AttitudeTarget;

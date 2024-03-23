@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table BatteryStatus {
@@ -7,14 +9,14 @@ table BatteryStatus {
   voltages:[ushort];
   current_battery:short;
   id:ubyte;
-  battery_function:ubyte;
-  type:ubyte;
+  battery_function:BatteryFunction;
+  type:BatteryType;
   battery_remaining:byte;
   time_remaining:int;
-  charge_state:ubyte;
+  charge_state:BatteryChargeState;
   voltages_ext:[ushort];
-  mode:ubyte;
-  fault_bitmask:uint;
+  mode:BatteryMode;
+  fault_bitmask:BatteryFault;
 }
 
 root_type BatteryStatus;

@@ -1,7 +1,9 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table GimbalManagerSetAttitude {
-  flags:uint;
+  flags:GimbalManagerFlags;
   q:[float];
   angular_velocity_x:float;
   angular_velocity_y:float;

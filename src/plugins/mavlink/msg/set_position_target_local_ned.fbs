@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table SetPositionTargetLocalNed {
@@ -13,10 +15,10 @@ table SetPositionTargetLocalNed {
   afz:float;
   yaw:float;
   yaw_rate:float;
-  type_mask:ushort;
+  type_mask:PositionTargetTypemask;
   target_system:ubyte;
   target_component:ubyte;
-  coordinate_frame:ubyte;
+  coordinate_frame:Frame;
 }
 
 root_type SetPositionTargetLocalNed;

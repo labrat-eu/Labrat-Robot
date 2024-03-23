@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table CellularConfig {
@@ -8,7 +10,7 @@ table CellularConfig {
   apn:string;
   puk:string;
   roaming:ubyte;
-  response:ubyte;
+  response:CellularConfigResponse;
 }
 
 root_type CellularConfig;

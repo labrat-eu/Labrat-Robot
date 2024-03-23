@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table Gps2Rtk {
@@ -13,7 +15,7 @@ table Gps2Rtk {
   rtk_health:ubyte;
   rtk_rate:ubyte;
   nsats:ubyte;
-  baseline_coords_type:ubyte;
+  baseline_coords_type:RtkBaselineCoordinateSystem;
 }
 
 root_type Gps2Rtk;

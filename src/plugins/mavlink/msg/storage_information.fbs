@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table StorageInformation {
@@ -9,10 +11,10 @@ table StorageInformation {
   write_speed:float;
   storage_id:ubyte;
   storage_count:ubyte;
-  status:ubyte;
-  type:ubyte;
+  status:StorageStatus;
+  type:StorageType;
   name:string;
-  storage_usage:ubyte;
+  storage_usage:StorageUsageFlag;
 }
 
 root_type StorageInformation;

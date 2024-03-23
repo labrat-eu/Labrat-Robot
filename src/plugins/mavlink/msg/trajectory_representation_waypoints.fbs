@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table TrajectoryRepresentationWaypoints {
@@ -13,7 +15,7 @@ table TrajectoryRepresentationWaypoints {
   acc_z:[float];
   pos_yaw:[float];
   vel_yaw:[float];
-  command:[ushort];
+  command:[Cmd];
   valid_points:ubyte;
 }
 

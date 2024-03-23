@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table SafetySetAllowedArea {
@@ -9,7 +11,7 @@ table SafetySetAllowedArea {
   p2z:float;
   target_system:ubyte;
   target_component:ubyte;
-  frame:ubyte;
+  frame:Frame;
 }
 
 root_type SafetySetAllowedArea;

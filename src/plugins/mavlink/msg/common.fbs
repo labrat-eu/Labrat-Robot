@@ -1,0 +1,1716 @@
+namespace mavlink.common;
+
+enum FirmwareVersionType : ubyte {
+  Dev = 0,
+  Alpha = 64,
+  Beta = 128,
+  Rc = 192,
+  Official = 255,
+}
+
+attribute bit_flags;
+enum HlFailureFlag : ushort {
+  Gps,
+  DifferentialPressure,
+  AbsolutePressure,
+  D3Accel,
+  D3Gyro,
+  D3Mag,
+  Terrain,
+  Battery,
+  RcReceiver,
+  OffboardLink,
+  Engine,
+  Geofence,
+  Estimator,
+  Mission,
+}
+
+enum Goto : ubyte {
+  DoHold = 0,
+  DoContinue = 1,
+  HoldAtCurrentPosition = 2,
+  HoldAtSpecifiedPosition = 3,
+}
+
+enum Mode : ubyte {
+  Preflight = 0,
+  ManualDisarmed = 64,
+  TestDisarmed = 66,
+  StabilizeDisarmed = 80,
+  GuidedDisarmed = 88,
+  AutoDisarmed = 92,
+  ManualArmed = 192,
+  TestArmed = 194,
+  StabilizeArmed = 208,
+  GuidedArmed = 216,
+  AutoArmed = 220,
+}
+
+attribute bit_flags;
+enum SysStatusSensor : ulong {
+  D3Gyro,
+  D3Accel,
+  D3Mag,
+  AbsolutePressure,
+  DifferentialPressure,
+  Gps,
+  OpticalFlow,
+  VisionPosition,
+  LaserPosition,
+  ExternalGroundTruth,
+  AngularRateControl,
+  AttitudeStabilization,
+  YawPosition,
+  ZAltitudeControl,
+  XyPositionControl,
+  MotorOutputs,
+  RcReceiver,
+  D3Gyro2,
+  D3Accel2,
+  D3Mag2,
+  Geofence,
+  Ahrs,
+  Terrain,
+  ReverseMotor,
+  Logging,
+  Battery,
+  Proximity,
+  Satcom,
+  PrearmCheck,
+  ObstacleAvoidance,
+  Propulsion,
+  ExtensionUsed,
+}
+
+attribute bit_flags;
+enum SysStatusSensorExtended : ubyte {
+  RecoverySystem,
+}
+
+enum Frame : ubyte {
+  Global = 0,
+  LocalNed = 1,
+  Mission = 2,
+  GlobalRelativeAlt = 3,
+  LocalEnu = 4,
+  GlobalInt = 5,
+  GlobalRelativeAltInt = 6,
+  LocalOffsetNed = 7,
+  BodyNed = 8,
+  BodyOffsetNed = 9,
+  GlobalTerrainAlt = 10,
+  GlobalTerrainAltInt = 11,
+  BodyFrd = 12,
+  LocalFrd = 20,
+  LocalFlu = 21,
+}
+
+enum DataStreamType : ubyte {
+  ImgJpeg = 0,
+  ImgBmp = 1,
+  ImgRaw8u = 2,
+  ImgRaw32u = 3,
+  ImgPgm = 4,
+  ImgPng = 5,
+}
+
+enum FenceAction : ubyte {
+  None = 0,
+  Guided = 1,
+  Report = 2,
+  GuidedThrPass = 3,
+  Rtl = 4,
+  Hold = 5,
+  Terminate = 6,
+  Land = 7,
+}
+
+enum FenceBreach : ubyte {
+  None = 0,
+  Minalt = 1,
+  Maxalt = 2,
+  Boundary = 3,
+}
+
+enum FenceMitigate : ubyte {
+  Unknown = 0,
+  None = 1,
+  VelLimit = 2,
+}
+
+enum MountMode : ubyte {
+  Retract = 0,
+  Neutral = 1,
+  Targeting = 2,
+  RcTargeting = 3,
+  GpsPoint = 4,
+  SysidTarget = 5,
+  HomeLocation = 6,
+}
+
+attribute bit_flags;
+enum GimbalDeviceCapFlags : ushort {
+  HasRetract,
+  HasNeutral,
+  HasRollAxis,
+  HasRollFollow,
+  HasRollLock,
+  HasPitchAxis,
+  HasPitchFollow,
+  HasPitchLock,
+  HasYawAxis,
+  HasYawFollow,
+  HasYawLock,
+  SupportsInfiniteYaw,
+  SupportsYawInEarthFrame,
+  HasRcInputs,
+}
+
+attribute bit_flags;
+enum GimbalManagerCapFlags : ulong {
+  HasRetract,
+  HasNeutral,
+  HasRollAxis,
+  HasRollFollow,
+  HasRollLock,
+  HasPitchAxis,
+  HasPitchFollow,
+  HasPitchLock,
+  HasYawAxis,
+  HasYawFollow,
+  HasYawLock,
+  SupportsInfiniteYaw,
+  SupportsYawInEarthFrame,
+  HasRcInputs,
+  CanPointLocationLocal,
+  CanPointLocationGlobal,
+}
+
+attribute bit_flags;
+enum GimbalDeviceFlags : ushort {
+  Retract,
+  Neutral,
+  RollLock,
+  PitchLock,
+  YawLock,
+  YawInVehicleFrame,
+  YawInEarthFrame,
+  AcceptsYawInEarthFrame,
+  RcExclusive,
+  RcMixed,
+}
+
+attribute bit_flags;
+enum GimbalManagerFlags : ushort {
+  Retract,
+  Neutral,
+  RollLock,
+  PitchLock,
+  YawLock,
+  YawInVehicleFrame,
+  YawInEarthFrame,
+  AcceptsYawInEarthFrame,
+  RcExclusive,
+  RcMixed,
+}
+
+attribute bit_flags;
+enum GimbalDeviceErrorFlags : ushort {
+  AtRollLimit,
+  AtPitchLimit,
+  AtYawLimit,
+  EncoderError,
+  PowerError,
+  MotorError,
+  SoftwareError,
+  CommsError,
+  CalibrationRunning,
+  NoManager,
+}
+
+enum GripperActions : ubyte {
+  Release = 0,
+  Grab = 1,
+}
+
+enum WinchActions : ubyte {
+  Relaxed = 0,
+  RelativeLengthControl = 1,
+  RateControl = 2,
+  Lock = 3,
+  Deliver = 4,
+  Hold = 5,
+  Retract = 6,
+  LoadLine = 7,
+  AbandonLine = 8,
+  LoadPayload = 9,
+}
+
+enum UavcanNodeHealth : ubyte {
+  Ok = 0,
+  Warning = 1,
+  Error = 2,
+  Critical = 3,
+}
+
+enum UavcanNodeMode : ubyte {
+  Operational = 0,
+  Initialization = 1,
+  Maintenance = 2,
+  SoftwareUpdate = 3,
+  Offline = 7,
+}
+
+enum EscConnectionType : ubyte {
+  Ppm = 0,
+  Serial = 1,
+  Oneshot = 2,
+  I2c = 3,
+  Can = 4,
+  Dshot = 5,
+}
+
+attribute bit_flags;
+enum EscFailureFlags : ubyte {
+  None,
+  OverCurrent,
+  OverVoltage,
+  OverTemperature,
+  OverRpm,
+  InconsistentCmd,
+  MotorStuck,
+  Generic,
+}
+
+enum StorageStatus : ubyte {
+  Empty = 0,
+  Unformatted = 1,
+  Ready = 2,
+  NotSupported = 3,
+}
+
+enum StorageType : ubyte {
+  Unknown = 0,
+  UsbStick = 1,
+  Sd = 2,
+  Microsd = 3,
+  Cf = 4,
+  Cfe = 5,
+  Xqd = 6,
+  Hd = 7,
+  Other = 254,
+}
+
+attribute bit_flags;
+enum StorageUsageFlag : ubyte {
+  Set,
+  Photo,
+  Video,
+  Logs,
+}
+
+enum OrbitYawBehaviour : ubyte {
+  HoldFrontToCircleCenter = 0,
+  HoldInitialHeading = 1,
+  Uncontrolled = 2,
+  HoldFrontTangentToCircle = 3,
+  RcControlled = 4,
+}
+
+enum WifiConfigApResponse : ubyte {
+  Undefined = 0,
+  Accepted = 1,
+  Rejected = 2,
+  ModeError = 3,
+  SsidError = 4,
+  PasswordError = 5,
+}
+
+enum CellularConfigResponse : ubyte {
+  ResponseAccepted = 0,
+  ResponseApnError = 1,
+  ResponsePinError = 2,
+  ResponseRejected = 3,
+  BlockedPukRequired = 4,
+}
+
+enum WifiConfigApMode : ubyte {
+  Undefined = 0,
+  Ap = 1,
+  Station = 2,
+  Disabled = 3,
+}
+
+enum CompMetadataType : ubyte {
+  General = 0,
+  Parameter = 1,
+  Commands = 2,
+  Peripherals = 3,
+  Events = 4,
+  Actuators = 5,
+}
+
+enum ActuatorConfiguration : ubyte {
+  None = 0,
+  Beep = 1,
+  D3ModeOn = 2,
+  D3ModeOff = 3,
+  SpinDirection1 = 4,
+  SpinDirection2 = 5,
+}
+
+enum ActuatorOutputFunction : ubyte {
+  None = 0,
+  Motor1 = 1,
+  Motor2 = 2,
+  Motor3 = 3,
+  Motor4 = 4,
+  Motor5 = 5,
+  Motor6 = 6,
+  Motor7 = 7,
+  Motor8 = 8,
+  Motor9 = 9,
+  Motor10 = 10,
+  Motor11 = 11,
+  Motor12 = 12,
+  Motor13 = 13,
+  Motor14 = 14,
+  Motor15 = 15,
+  Motor16 = 16,
+  Servo1 = 33,
+  Servo2 = 34,
+  Servo3 = 35,
+  Servo4 = 36,
+  Servo5 = 37,
+  Servo6 = 38,
+  Servo7 = 39,
+  Servo8 = 40,
+  Servo9 = 41,
+  Servo10 = 42,
+  Servo11 = 43,
+  Servo12 = 44,
+  Servo13 = 45,
+  Servo14 = 46,
+  Servo15 = 47,
+  Servo16 = 48,
+}
+
+enum AutotuneAxis : ubyte {
+  Default = 0,
+  Roll = 1,
+  Pitch = 2,
+  Yaw = 4,
+}
+
+enum PreflightStorageParameterAction : ubyte {
+  ReadPersistent = 0,
+  WritePersistent = 1,
+  ResetConfigDefault = 2,
+  ResetSensorDefault = 3,
+  ResetAllDefault = 4,
+}
+
+enum PreflightStorageMissionAction : ubyte {
+  ReadPersistent = 0,
+  WritePersistent = 1,
+  ResetDefault = 2,
+}
+
+enum Cmd : ushort {
+  None = 0,
+  NavWaypoint = 16,
+  NavLoiterUnlim = 17,
+  NavLoiterTurns = 18,
+  NavLoiterTime = 19,
+  NavReturnToLaunch = 20,
+  NavLand = 21,
+  NavTakeoff = 22,
+  NavLandLocal = 23,
+  NavTakeoffLocal = 24,
+  NavFollow = 25,
+  NavContinueAndChangeAlt = 30,
+  NavLoiterToAlt = 31,
+  DoFollow = 32,
+  DoFollowReposition = 33,
+  DoOrbit = 34,
+  NavRoi = 80,
+  NavPathplanning = 81,
+  NavSplineWaypoint = 82,
+  NavVtolTakeoff = 84,
+  NavVtolLand = 85,
+  NavGuidedEnable = 92,
+  NavDelay = 93,
+  NavPayloadPlace = 94,
+  NavLast = 95,
+  ConditionDelay = 112,
+  ConditionChangeAlt = 113,
+  ConditionDistance = 114,
+  ConditionYaw = 115,
+  ConditionLast = 159,
+  DoSetMode = 176,
+  DoJump = 177,
+  DoChangeSpeed = 178,
+  DoSetHome = 179,
+  DoSetParameter = 180,
+  DoSetRelay = 181,
+  DoRepeatRelay = 182,
+  DoSetServo = 183,
+  DoRepeatServo = 184,
+  DoFlighttermination = 185,
+  DoChangeAltitude = 186,
+  DoSetActuator = 187,
+  DoLandStart = 189,
+  DoRallyLand = 190,
+  DoGoAround = 191,
+  DoReposition = 192,
+  DoPauseContinue = 193,
+  DoSetReverse = 194,
+  DoSetRoiLocation = 195,
+  DoSetRoiWpnextOffset = 196,
+  DoSetRoiNone = 197,
+  DoSetRoiSysid = 198,
+  DoControlVideo = 200,
+  DoSetRoi = 201,
+  DoDigicamConfigure = 202,
+  DoDigicamControl = 203,
+  DoMountConfigure = 204,
+  DoMountControl = 205,
+  DoSetCamTriggDist = 206,
+  DoFenceEnable = 207,
+  DoParachute = 208,
+  DoMotorTest = 209,
+  DoInvertedFlight = 210,
+  DoGripper = 211,
+  DoAutotuneEnable = 212,
+  NavSetYawSpeed = 213,
+  DoSetCamTriggInterval = 214,
+  DoMountControlQuat = 220,
+  DoGuidedMaster = 221,
+  DoGuidedLimits = 222,
+  DoEngineControl = 223,
+  DoSetMissionCurrent = 224,
+  DoLast = 240,
+  PreflightCalibration = 241,
+  PreflightSetSensorOffsets = 242,
+  PreflightUavcan = 243,
+  PreflightStorage = 245,
+  PreflightRebootShutdown = 246,
+  Override = 252,
+  ObliqueSurvey = 260,
+  MissionStart = 300,
+  ActuatorTest = 310,
+  ConfigureActuator = 311,
+  ComponentArmDisarm = 400,
+  RunPrearmChecks = 401,
+  IlluminatorOnOff = 405,
+  GetHomePosition = 410,
+  InjectFailure = 420,
+  StartRxPair = 500,
+  GetMessageInterval = 510,
+  SetMessageInterval = 511,
+  RequestMessage = 512,
+  RequestProtocolVersion = 519,
+  RequestAutopilotCapabilities = 520,
+  RequestCameraInformation = 521,
+  RequestCameraSettings = 522,
+  RequestStorageInformation = 525,
+  StorageFormat = 526,
+  RequestCameraCaptureStatus = 527,
+  RequestFlightInformation = 528,
+  ResetCameraSettings = 529,
+  SetCameraMode = 530,
+  SetCameraZoom = 531,
+  SetCameraFocus = 532,
+  SetStorageUsage = 533,
+  JumpTag = 600,
+  DoJumpTag = 601,
+  DoGimbalManagerPitchyaw = 1000,
+  DoGimbalManagerConfigure = 1001,
+  ImageStartCapture = 2000,
+  ImageStopCapture = 2001,
+  RequestCameraImageCapture = 2002,
+  DoTriggerControl = 2003,
+  CameraTrackPoint = 2004,
+  CameraTrackRectangle = 2005,
+  CameraStopTracking = 2010,
+  VideoStartCapture = 2500,
+  VideoStopCapture = 2501,
+  VideoStartStreaming = 2502,
+  VideoStopStreaming = 2503,
+  RequestVideoStreamInformation = 2504,
+  RequestVideoStreamStatus = 2505,
+  LoggingStart = 2510,
+  LoggingStop = 2511,
+  AirframeConfiguration = 2520,
+  ControlHighLatency = 2600,
+  PanoramaCreate = 2800,
+  DoVtolTransition = 3000,
+  ArmAuthorizationRequest = 3001,
+  SetGuidedSubmodeStandard = 4000,
+  SetGuidedSubmodeCircle = 4001,
+  ConditionGate = 4501,
+  NavFenceReturnPoint = 5000,
+  NavFencePolygonVertexInclusion = 5001,
+  NavFencePolygonVertexExclusion = 5002,
+  NavFenceCircleInclusion = 5003,
+  NavFenceCircleExclusion = 5004,
+  NavRallyPoint = 5100,
+  UavcanGetNodeInfo = 5200,
+  DoSetSafetySwitchState = 5300,
+  DoAdsbOutIdent = 10001,
+  PayloadPrepareDeploy = 30001,
+  PayloadControlDeploy = 30002,
+  WaypointUser1 = 31000,
+  WaypointUser2 = 31001,
+  WaypointUser3 = 31002,
+  WaypointUser4 = 31003,
+  WaypointUser5 = 31004,
+  SpatialUser1 = 31005,
+  SpatialUser2 = 31006,
+  SpatialUser3 = 31007,
+  SpatialUser4 = 31008,
+  SpatialUser5 = 31009,
+  User1 = 31010,
+  User2 = 31011,
+  User3 = 31012,
+  User4 = 31013,
+  User5 = 31014,
+  CanForward = 32000,
+  FixedMagCalYaw = 42006,
+  DoWinch = 42600,
+  ExternalPositionEstimate = 43003,
+}
+
+enum DataStreamSource : ubyte {
+  All = 0,
+  RawSensors = 1,
+  ExtendedStatus = 2,
+  RcChannels = 3,
+  RawController = 4,
+  Position = 6,
+  Extra1 = 10,
+  Extra2 = 11,
+  Extra3 = 12,
+}
+
+enum Roi : ubyte {
+  None = 0,
+  Wpnext = 1,
+  Wpindex = 2,
+  Location = 3,
+  Target = 4,
+}
+
+enum ParamType : ubyte {
+  None = 0,
+  Uint8,
+  Int8 = 2,
+  Uint16 = 3,
+  Int16 = 4,
+  Uint32 = 5,
+  Int32 = 6,
+  Uint64 = 7,
+  Int64 = 8,
+  Real32 = 9,
+  Real64 = 10,
+}
+
+enum ParamExtType : ubyte {
+  None = 0,
+  Uint8,
+  Int8 = 2,
+  Uint16 = 3,
+  Int16 = 4,
+  Uint32 = 5,
+  Int32 = 6,
+  Uint64 = 7,
+  Int64 = 8,
+  Real32 = 9,
+  Real64 = 10,
+  Custom = 11,
+}
+
+enum Result : ubyte {
+  Accepted = 0,
+  TemporarilyRejected = 1,
+  Denied = 2,
+  Unsupported = 3,
+  Failed = 4,
+  InProgress = 5,
+  Cancelled = 6,
+  CommandLongOnly = 7,
+  CommandIntOnly = 8,
+  CommandUnsupportedFrame = 9,
+}
+
+enum MissionResult : ubyte {
+  Accepted = 0,
+  Error = 1,
+  UnsupportedFrame = 2,
+  Unsupported = 3,
+  NoSpace = 4,
+  Invalid = 5,
+  InvalidParam1 = 6,
+  InvalidParam2 = 7,
+  InvalidParam3 = 8,
+  InvalidParam4 = 9,
+  InvalidParam5X = 10,
+  InvalidParam6Y = 11,
+  InvalidParam7 = 12,
+  InvalidSequence = 13,
+  Denied = 14,
+  OperationCancelled = 15,
+}
+
+enum Severity : ubyte {
+  Emergency = 0,
+  Alert = 1,
+  Critical = 2,
+  Error = 3,
+  Warning = 4,
+  Notice = 5,
+  Info = 6,
+  Debug = 7,
+}
+
+attribute bit_flags;
+enum PowerStatusFlags : ubyte {
+  BrickValid,
+  ServoValid,
+  UsbConnected,
+  PeriphOvercurrent,
+  PeriphHipowerOvercurrent,
+  Changed,
+}
+
+enum SerialControlDev : ubyte {
+  DevTelem1 = 0,
+  DevTelem2 = 1,
+  DevGps1 = 2,
+  DevGps2 = 3,
+  DevShell = 10,
+  Serial0 = 100,
+  Serial1 = 101,
+  Serial2 = 102,
+  Serial3 = 103,
+  Serial4 = 104,
+  Serial5 = 105,
+  Serial6 = 106,
+  Serial7 = 107,
+  Serial8 = 108,
+  Serial9 = 109,
+}
+
+attribute bit_flags;
+enum SerialControlFlag : ubyte {
+  Reply,
+  Respond,
+  Exclusive,
+  Blocking,
+  Multi,
+}
+
+enum DistanceSensorType : ubyte {
+  Laser = 0,
+  Ultrasound = 1,
+  Infrared = 2,
+  Radar = 3,
+  Unknown = 4,
+}
+
+enum SensorOrientation : ubyte {
+  None = 0,
+  Yaw45 = 1,
+  Yaw90 = 2,
+  Yaw135 = 3,
+  Yaw180 = 4,
+  Yaw225 = 5,
+  Yaw270 = 6,
+  Yaw315 = 7,
+  Roll180 = 8,
+  Roll180Yaw45 = 9,
+  Roll180Yaw90 = 10,
+  Roll180Yaw135 = 11,
+  Pitch180 = 12,
+  Roll180Yaw225 = 13,
+  Roll180Yaw270 = 14,
+  Roll180Yaw315 = 15,
+  Roll90 = 16,
+  Roll90Yaw45 = 17,
+  Roll90Yaw90 = 18,
+  Roll90Yaw135 = 19,
+  Roll270 = 20,
+  Roll270Yaw45 = 21,
+  Roll270Yaw90 = 22,
+  Roll270Yaw135 = 23,
+  Pitch90 = 24,
+  Pitch270 = 25,
+  Pitch180Yaw90 = 26,
+  Pitch180Yaw270 = 27,
+  Roll90Pitch90 = 28,
+  Roll180Pitch90 = 29,
+  Roll270Pitch90 = 30,
+  Roll90Pitch180 = 31,
+  Roll270Pitch180 = 32,
+  Roll90Pitch270 = 33,
+  Roll180Pitch270 = 34,
+  Roll270Pitch270 = 35,
+  Roll90Pitch180Yaw90 = 36,
+  Roll90Yaw270 = 37,
+  Roll90Pitch68Yaw293 = 38,
+  Pitch315 = 39,
+  Roll90Pitch315 = 40,
+  Custom = 100,
+}
+
+attribute bit_flags;
+enum ProtocolCapability : ulong {
+  MissionFloat = 0,
+  ParamFloat = 1,
+  MissionInt = 2,
+  CommandInt = 3,
+  ParamEncodeBytewise = 4,
+  Ftp = 5,
+  SetAttitudeTarget = 6,
+  SetPositionTargetLocalNed = 7,
+  SetPositionTargetGlobalInt = 8,
+  Terrain = 9,
+  FlightTermination = 11,
+  CompassCalibration = 12,
+  Mavlink2 = 13,
+  MissionFence = 14,
+  MissionRally = 15,
+  ParamEncodeCCast = 17,
+}
+
+enum MissionType : ubyte {
+  Mission = 0,
+  Fence = 1,
+  Rally = 2,
+  All = 255,
+}
+
+enum EstimatorType : ubyte {
+  Unknown = 0,
+  Naive = 1,
+  Vision = 2,
+  Vio = 3,
+  Gps = 4,
+  GpsIns = 5,
+  Mocap = 6,
+  Lidar = 7,
+  Autopilot = 8,
+}
+
+enum BatteryType : ubyte {
+  Unknown = 0,
+  Lipo = 1,
+  Life = 2,
+  Lion = 3,
+  Nimh = 4,
+}
+
+enum BatteryFunction : ubyte {
+  Unknown = 0,
+  All = 1,
+  Propulsion = 2,
+  Avionics = 3,
+  Payload = 4,
+}
+
+enum BatteryChargeState : ubyte {
+  Undefined = 0,
+  Ok = 1,
+  Low = 2,
+  Critical = 3,
+  Emergency = 4,
+  Failed = 5,
+  Unhealthy = 6,
+  Charging = 7,
+}
+
+enum BatteryMode : ubyte {
+  Unknown = 0,
+  AutoDischarging = 1,
+  HotSwap = 2,
+}
+
+attribute bit_flags;
+enum BatteryFault : ushort {
+  DeepDischarge,
+  Spikes,
+  CellFail,
+  OverCurrent,
+  OverTemperature,
+  UnderTemperature,
+  IncompatibleVoltage,
+  IncompatibleFirmware,
+  IncompatibleCellsConfiguration,
+}
+
+attribute bit_flags;
+enum GeneratorStatusFlag : ulong {
+  Off,
+  Ready,
+  Generating,
+  Charging,
+  ReducedPower,
+  Maxpower,
+  OvertempWarning,
+  OvertempFault,
+  ElectronicsOvertempWarning,
+  ElectronicsOvertempFault,
+  ElectronicsFault,
+  PowersourceFault,
+  CommunicationWarning,
+  CoolingWarning,
+  PowerRailFault,
+  OvercurrentFault,
+  BatteryOverchargeCurrentFault,
+  OvervoltageFault,
+  BatteryUndervoltFault,
+  StartInhibited,
+  MaintenanceRequired,
+  WarmingUp,
+  Idle,
+}
+
+enum VtolState : ubyte {
+  Undefined = 0,
+  TransitionToFw = 1,
+  TransitionToMc = 2,
+  Mc = 3,
+  Fw = 4,
+}
+
+enum LandedState : ubyte {
+  Undefined = 0,
+  OnGround = 1,
+  InAir = 2,
+  Takeoff = 3,
+  Landing = 4,
+}
+
+enum AdsbAltitudeType : ubyte {
+  PressureQnh = 0,
+  Geometric = 1,
+}
+
+enum AdsbEmitterType : ubyte {
+  NoInfo = 0,
+  Light = 1,
+  Small = 2,
+  Large = 3,
+  HighVortexLarge = 4,
+  Heavy = 5,
+  HighlyManuv = 6,
+  Rotocraft = 7,
+  Unassigned = 8,
+  Glider = 9,
+  LighterAir = 10,
+  Parachute = 11,
+  UltraLight = 12,
+  Unassigned2 = 13,
+  Uav = 14,
+  Space = 15,
+  Unassgined3 = 16,
+  EmergencySurface = 17,
+  ServiceSurface = 18,
+  PointObstacle = 19,
+}
+
+attribute bit_flags;
+enum AdsbFlags : ushort {
+  ValidCoords = 0,
+  ValidAltitude = 1,
+  ValidHeading = 2,
+  ValidVelocity = 3,
+  ValidCallsign = 4,
+  ValidSquawk = 5,
+  Simulated = 6,
+  VerticalVelocityValid = 7,
+  BaroValid = 8,
+  SourceUat = 15,
+}
+
+attribute bit_flags;
+enum DoRepositionFlags : ubyte {
+  ChangeMode,
+}
+
+enum SpeedType : ubyte {
+  Airspeed = 0,
+  Groundspeed = 1,
+  ClimbSpeed = 2,
+  DescentSpeed = 3,
+}
+
+attribute bit_flags;
+enum EstimatorStatusFlags : ushort {
+  Attitude,
+  VelocityHoriz,
+  VelocityVert,
+  PosHorizRel,
+  PosHorizAbs,
+  PosVertAbs,
+  PosVertAgl,
+  ConstPosMode,
+  PredPosHorizRel,
+  PredPosHorizAbs,
+  GpsGlitch,
+  AccelError,
+}
+
+enum MotorTestOrder : ubyte {
+  Default = 0,
+  Sequence = 1,
+  Board = 2,
+}
+
+enum MotorTestThrottleType : ubyte {
+  ThrottlePercent = 0,
+  ThrottlePwm = 1,
+  ThrottlePilot = 2,
+  CompassCal = 3,
+}
+
+attribute bit_flags;
+enum GpsInputIgnoreFlags : ubyte {
+  Alt,
+  Hdop,
+  Vdop,
+  VelHoriz,
+  VelVert,
+  SpeedAccuracy,
+  HorizontalAccuracy,
+  VerticalAccuracy,
+}
+
+enum CollisionAction : ubyte {
+  None = 0,
+  Report = 1,
+  AscendOrDescend = 2,
+  MoveHorizontally = 3,
+  MovePerpendicular = 4,
+  Rtl = 5,
+  Hover = 6,
+}
+
+enum CollisionThreatLevel : ubyte {
+  None = 0,
+  Low = 1,
+  High = 2,
+}
+
+enum CollisionSrc : ubyte {
+  Adsb = 0,
+  GpsGlobalInt = 1,
+}
+
+enum GpsFixType : ubyte {
+  NoGps = 0,
+  NoFix = 1,
+  D2Fix = 2,
+  D3Fix = 3,
+  Dgps = 4,
+  RtkFloat = 5,
+  RtkFixed = 6,
+  Static = 7,
+  Ppp = 8,
+}
+
+enum RtkBaselineCoordinateSystem : ubyte {
+  Ecef = 0,
+  Ned = 1,
+}
+
+enum LandingTargetType : ubyte {
+  LightBeacon = 0,
+  RadioBeacon = 1,
+  VisionFiducial = 2,
+  VisionOther = 3,
+}
+
+enum VtolTransitionHeading : ubyte {
+  VehicleDefault = 0,
+  NextWaypoint = 1,
+  Takeoff = 2,
+  Specified = 3,
+  Any = 4,
+}
+
+attribute bit_flags;
+enum CameraCapFlags : ushort {
+  CaptureVideo,
+  CaptureImage,
+  HasModes,
+  CanCaptureImageInVideoMode,
+  CanCaptureVideoInImageMode,
+  HasImageSurveyMode,
+  HasBasicZoom,
+  HasBasicFocus,
+  HasVideoStream,
+  HasTrackingPoint,
+  HasTrackingRectangle,
+  HasTrackingGeoStatus,
+}
+
+attribute bit_flags;
+enum VideoStreamStatusFlags : ubyte {
+  Running,
+  Thermal,
+}
+
+enum VideoStreamType : ubyte {
+  Rtsp = 0,
+  Rtpudp = 1,
+  TcpMpeg = 2,
+  MpegTsH264 = 3,
+}
+
+enum CameraTrackingStatusFlags : ubyte {
+  Idle = 0,
+  Active = 1,
+  Error = 2,
+}
+
+enum CameraTrackingMode : ubyte {
+  None = 0,
+  Point = 1,
+  Rectangle = 2,
+}
+
+enum CameraTrackingTargetData : ubyte {
+  None = 0,
+  Embedded = 1,
+  Rendered = 2,
+  InStatus = 4,
+}
+
+enum CameraZoomType : ubyte {
+  Step = 0,
+  Continuous = 1,
+  Range = 2,
+  FocalLength = 3,
+  HorizontalFov = 4,
+}
+
+enum SetFocusType : ubyte {
+  Step = 0,
+  Continuous = 1,
+  Range = 2,
+  Meters = 3,
+  Auto = 4,
+  AutoSingle = 5,
+  AutoContinuous = 6,
+}
+
+enum ParamAck : ubyte {
+  Accepted = 0,
+  ValueUnsupported = 1,
+  Failed = 2,
+  InProgress = 3,
+}
+
+enum CameraMode : ubyte {
+  Image = 0,
+  Video = 1,
+  ImageSurvey = 2,
+}
+
+enum ArmAuthDeniedReason : ubyte {
+  Generic = 0,
+  None = 1,
+  InvalidWaypoint = 2,
+  Timeout = 3,
+  AirspaceInUse = 4,
+  BadWeather = 5,
+}
+
+enum RcType : ubyte {
+  SpektrumDsm2 = 0,
+  SpektrumDsmx = 1,
+}
+
+attribute bit_flags;
+enum PositionTargetTypemask : ushort {
+  XIgnore,
+  YIgnore,
+  ZIgnore,
+  VxIgnore,
+  VyIgnore,
+  VzIgnore,
+  AxIgnore,
+  AyIgnore,
+  AzIgnore,
+  ForceSet,
+  YawIgnore,
+  YawRateIgnore,
+}
+
+attribute bit_flags;
+enum AttitudeTargetTypemask : ubyte {
+  BodyRollRateIgnore,
+  BodyPitchRateIgnore,
+  BodyYawRateIgnore,
+  ThrustBodySet,
+  ThrottleIgnore,
+  AttitudeIgnore,
+}
+
+enum UtmFlightState : ubyte {
+  Unknown = 1,
+  Ground = 2,
+  Airborne = 3,
+  Emergency = 16,
+  Noctrl = 32,
+}
+
+attribute bit_flags;
+enum UtmDataAvailFlags : ubyte {
+  TimeValid,
+  UasIdAvailable,
+  PositionAvailable,
+  AltitudeAvailable,
+  RelativeAltitudeAvailable,
+  HorizontalVeloAvailable,
+  VerticalVeloAvailable,
+  NextWaypointAvailable,
+}
+
+enum CellularStatusFlag : ubyte {
+  Unknown = 0,
+  Failed = 1,
+  Initializing = 2,
+  Locked = 3,
+  Disabled = 4,
+  Disabling = 5,
+  Enabling = 6,
+  Enabled = 7,
+  Searching = 8,
+  Registered = 9,
+  Disconnecting = 10,
+  Connecting = 11,
+  Connected = 12,
+}
+
+enum CellularNetworkFailedReason : ubyte {
+  None = 0,
+  Unknown = 1,
+  SimMissing = 2,
+  SimError = 3,
+}
+
+enum CellularNetworkRadioType : ubyte {
+  None = 0,
+  Gsm = 1,
+  Cdma = 2,
+  Wcdma = 3,
+  Lte = 4,
+}
+
+enum PrecisionLandMode : ubyte {
+  Disabled = 0,
+  Opportunistic = 1,
+  Required = 2,
+}
+
+enum ParachuteAction : ubyte {
+  Disable = 0,
+  Enable = 1,
+  Release = 2,
+}
+
+enum TunnelPayloadType : ubyte {
+  Unknown = 0,
+}
+
+enum OdidIdType : ubyte {
+  None = 0,
+  SerialNumber = 1,
+  CaaRegistrationId = 2,
+  UtmAssignedUuid = 3,
+  SpecificSessionId = 4,
+}
+
+enum OdidUaType : ubyte {
+  None = 0,
+  Aeroplane = 1,
+  HelicopterOrMultirotor = 2,
+  Gyroplane = 3,
+  HybridLift = 4,
+  Ornithopter = 5,
+  Glider = 6,
+  Kite = 7,
+  FreeBalloon = 8,
+  CaptiveBalloon = 9,
+  Airship = 10,
+  FreeFallParachute = 11,
+  Rocket = 12,
+  TetheredPoweredAircraft = 13,
+  GroundObstacle = 14,
+  Other = 15,
+}
+
+enum OdidStatus : ubyte {
+  Undeclared = 0,
+  Ground = 1,
+  Airborne = 2,
+  Emergency = 3,
+  RemoteIdSystemFailure = 4,
+}
+
+enum OdidHeightRef : ubyte {
+  OverTakeoff = 0,
+  OverGround = 1,
+}
+
+enum OdidHorAcc : ubyte {
+  Unknown = 0,
+  nm10 = 1,
+  nm4 = 2,
+  nm2 = 3,
+  nm1 = 4,
+  nm05 = 5,
+  nm03 = 6,
+  nm01 = 7,
+  nm005 = 8,
+  Meter30 = 9,
+  Meter10 = 10,
+  Meter3 = 11,
+  Meter1 = 12,
+}
+
+enum OdidVerAcc : ubyte {
+  Unknown = 0,
+  Meter150 = 1,
+  Meter45 = 2,
+  Meter25 = 3,
+  Meter10 = 4,
+  Meter3 = 5,
+  Meter1 = 6,
+}
+
+enum OdidSpeedAcc : ubyte {
+  Unknown = 0,
+  MetersPerSecond10 = 1,
+  MetersPerSecond3 = 2,
+  MetersPerSecond1 = 3,
+  MetersPerSecond03 = 4,
+}
+
+enum OdidTimeAcc : ubyte {
+  Unknown = 0,
+  Second01 = 1,
+  Second02 = 2,
+  Second03 = 3,
+  Second04 = 4,
+  Second05 = 5,
+  Second06 = 6,
+  Second07 = 7,
+  Second08 = 8,
+  Second09 = 9,
+  Second10 = 10,
+  Second11 = 11,
+  Second12 = 12,
+  Second13 = 13,
+  Second14 = 14,
+  Second15 = 15,
+}
+
+enum OdidAuthType : ubyte {
+  None = 0,
+  UasIdSignature = 1,
+  OperatorIdSignature = 2,
+  MessageSetSignature = 3,
+  NetworkRemoteId = 4,
+  SpecificAuthentication = 5,
+}
+
+enum OdidDescType : ubyte {
+  Text = 0,
+  Emergency = 1,
+  ExtendedStatus = 2,
+}
+
+enum OdidOperatorLocationType : ubyte {
+  Takeoff = 0,
+  LiveGnss = 1,
+  Fixed = 2,
+}
+
+enum OdidClassificationType : ubyte {
+  Undeclared = 0,
+  Eu = 1,
+}
+
+enum OdidCategoryEu : ubyte {
+  Undeclared = 0,
+  Open = 1,
+  Specific = 2,
+  Certified = 3,
+}
+
+enum OdidClassEu : ubyte {
+  Undeclared = 0,
+  Class0 = 1,
+  Class1 = 2,
+  Class2 = 3,
+  Class3 = 4,
+  Class4 = 5,
+  Class5 = 6,
+  Class6 = 7,
+}
+
+enum OdidOperatorIdType : ubyte {
+  Caa = 0,
+}
+
+enum OdidArmStatus : ubyte {
+  GoodToArm = 0,
+  PreArmFailGeneric = 1,
+}
+
+enum TuneFormat : ubyte {
+  None = 0,
+  Qbasic11,
+  MmlModern = 2,
+}
+
+enum AisType : ubyte {
+  Unknown = 0,
+  Wig = 20,
+  WigHazardousA = 21,
+  WigHazardousB = 22,
+  WigHazardousC = 23,
+  WigHazardousD = 24,
+  Fishing = 30,
+  Towing = 31,
+  TowingLarge = 32,
+  Dredging = 33,
+  Diving = 34,
+  Military = 35,
+  Sailing = 36,
+  Pleasure = 37,
+  Hsc = 40,
+  HscHazardousA = 41,
+  HscHazardousB = 42,
+  HscHazardousC = 43,
+  HscHazardousD = 44,
+  HscUnknown = 49,
+  Pilot = 50,
+  Sar = 51,
+  Tug = 52,
+  PortTender = 53,
+  AntiPollution = 54,
+  LawEnforcement = 55,
+  SpareLocal1 = 56,
+  SpareLocal2 = 57,
+  MedicalTransport = 58,
+  Nonecombatant = 59,
+  Passenger = 60,
+  PassengerHazardousA = 61,
+  PassengerHazardousB = 62,
+  PassengerHazardousC = 63,
+  PassengerHazardousD = 64,
+  PassengerUnknown = 69,
+  Cargo = 70,
+  CargoHazardousA = 71,
+  CargoHazardousB = 72,
+  CargoHazardousC = 73,
+  CargoHazardousD = 74,
+  CargoUnknown = 79,
+  Tanker = 80,
+  TankerHazardousA = 81,
+  TankerHazardousB = 82,
+  TankerHazardousC = 83,
+  TankerHazardousD = 84,
+  TankerUnknown = 89,
+  Other = 90,
+  OtherHazardousA = 91,
+  OtherHazardousB = 92,
+  OtherHazardousC = 93,
+  OtherHazardousD = 94,
+  OtherUnknown = 99,
+}
+
+enum AisNavStatus : ubyte {
+  UnderWay = 0,
+  Anchored = 1,
+  UnCommanded = 2,
+  RestrictedManoeuverability = 3,
+  DraughtConstrained = 4,
+  Moored = 5,
+  Aground = 6,
+  Fishing = 7,
+  Sailing = 8,
+  ReservedHsc = 9,
+  ReservedWig = 10,
+  AisSart = 14,
+  Unknown = 15,
+}
+
+attribute bit_flags;
+enum AisFlags : ushort {
+  PositionAccuracy,
+  ValidCog,
+  ValidVelocity,
+  HighVelocity,
+  ValidTurnRate,
+  TurnRateSignOnly,
+  ValidDimensions,
+  LargeBowDimension,
+  LargeSternDimension,
+  LargePortDimension,
+  LargeStarboardDimension,
+  ValidCallsign,
+  ValidName,
+}
+
+enum FailureUnit : ubyte {
+  SensorGyro = 0,
+  SensorAccel = 1,
+  SensorMag = 2,
+  SensorBaro = 3,
+  SensorGps = 4,
+  SensorOpticalFlow = 5,
+  SensorVio = 6,
+  SensorDistanceSensor = 7,
+  SensorAirspeed = 8,
+  SystemBattery = 100,
+  SystemMotor = 101,
+  SystemServo = 102,
+  SystemAvoidance = 103,
+  SystemRcSignal = 104,
+  SystemSignal = 105,
+}
+
+enum FailureType : ubyte {
+  Ok = 0,
+  Off = 1,
+  Stuck = 2,
+  Garbage = 3,
+  Wrong = 4,
+  Slow = 5,
+  Delayed = 6,
+  Intermittent = 7,
+}
+
+enum NavVtolLandOptions : ubyte {
+  Default = 0,
+  FwDescent = 1,
+  HoverDescent = 2,
+}
+
+attribute bit_flags;
+enum WinchStatusFlag : ushort {
+  Healthy,
+  FullyRetracted,
+  Moving,
+  ClutchEngaged,
+  Locked,
+  Dropping,
+  Arresting,
+  GroundSense,
+  Retracting,
+  Redeliver,
+  AbandonLine,
+  Locking,
+  LoadLine,
+  LoadPayload,
+}
+
+enum MagCalStatus : ubyte {
+  NotStarted = 0,
+  WaitingToStart = 1,
+  RunningStepOne = 2,
+  RunningStepTwo = 3,
+  Success = 4,
+  Failed = 5,
+  BadOrientation = 6,
+  BadRadius = 7,
+}
+
+enum EventErrorReason : ubyte {
+  Unavailable = 0,
+}
+
+attribute bit_flags;
+enum EventCurrentSequenceFlags : ubyte {
+  Reset,
+}
+
+attribute bit_flags;
+enum HilSensorUpdatedFlags : ulong {
+  Xacc = 0,
+  Yacc = 1,
+  Zacc = 2,
+  Xgyro = 3,
+  Ygyro = 4,
+  Zgyro = 5,
+  Xmag = 6,
+  Ymag = 7,
+  Zmag = 8,
+  AbsPressure = 9,
+  DiffPressure = 10,
+  PressureAlt = 11,
+  Temperature = 12,
+  Reset = 31,
+}
+
+attribute bit_flags;
+enum HighresImuUpdatedFlags : ushort {
+  Xacc = 0,
+  Yacc = 1,
+  Zacc = 2,
+  Xgyro = 3,
+  Ygyro = 4,
+  Zgyro = 5,
+  Xmag = 6,
+  Ymag = 7,
+  Zmag = 8,
+  AbsPressure = 9,
+  DiffPressure = 10,
+  PressureAlt = 11,
+  Temperature = 12,
+  All = 15,
+}
+
+enum CanFilterOp : ubyte {
+  Replace = 0,
+  Add = 1,
+  Remove = 2,
+}
+
+enum FtpErr : ubyte {
+  None = 0,
+  Fail = 1,
+  Failerrno = 2,
+  Invaliddatasize = 3,
+  Invalidsession = 4,
+  Nosessionsavailable = 5,
+  Eof = 6,
+  Unknowncommand = 7,
+  Fileexists = 8,
+  Fileprotected = 9,
+  Filenotfound = 10,
+}
+
+enum FtpOpcode : ubyte {
+  None = 0,
+  Terminatesession = 1,
+  Resetsession = 2,
+  Listdirectory = 3,
+  Openfilero = 4,
+  Readfile = 5,
+  Createfile = 6,
+  Writefile = 7,
+  Removefile = 8,
+  Createdirectory = 9,
+  Removedirectory = 10,
+  Openfilewo = 11,
+  Truncatefile = 12,
+  Rename = 13,
+  Calcfilecrc = 14,
+  Burstreadfile = 15,
+  Ack = 128,
+  Nak = 129,
+}
+
+enum MissionState : ubyte {
+  Unknown = 0,
+  NoMission = 1,
+  NotStarted = 2,
+  Active = 3,
+  Paused = 4,
+  Complete = 5,
+}
+
+enum SafetySwitchState : ubyte {
+  Safe = 0,
+  Dangerous = 1,
+}
+
+enum Autopilot : ubyte {
+	GeneriC = 0,
+	ReserveD = 1,
+	SlugS = 2,
+	ArdupilotmegA = 3,
+	OpenpiloT = 4,
+	GenericWaypointsOnlY = 5,
+	GenericWaypointsAndSimpleNavigationOnlY = 6,
+	GenericMissionFulL = 7,
+	InvaliD = 8,
+	PpZ = 9,
+	Udb = 10,
+	Fp = 11,
+	Px4 = 12,
+	Smaccmpilot = 13,
+	Autoquad = 14,
+	Armazila = 15,
+	Aerob = 16,
+	Asluav = 17,
+	Smartap = 18,
+	Airrails = 19,
+	Reflex = 20,
+}
+
+enum Type : ubyte {
+	GeneriC = 0,
+	FixedWinG = 1,
+	QuadrotoR = 2,
+	CoaxiaL = 3,
+	HelicopteR = 4,
+	AntennaTrackeR = 5,
+	GcS = 6,
+	AirshiP = 7,
+	FreeBallooN = 8,
+	RockeT = 9,
+	GroundRover = 10,
+	SurfaceBoat = 11,
+	Submarine = 12,
+	Hexarotor = 13,
+	Octorotor = 14,
+	Tricopter = 15,
+	FlappingWing = 16,
+	Kite = 17,
+	OnboardController = 18,
+	VtolTailsitterDuorotor = 19,
+	VtolTailsitterQuadrotor = 20,
+	VtolTiltrotor = 21,
+	VtolFixedrotor = 22,
+	VtolTailsitter = 23,
+	VtolTiltwing = 24,
+	VtolReserved5 = 25,
+	Gimbal = 26,
+	Adsb = 27,
+	Parafoil = 28,
+	Dodecarotor = 29,
+	Camera = 30,
+	ChargingStation = 31,
+	Flarm = 32,
+	Servo = 33,
+	Odid = 34,
+	Decarotor = 35,
+	Battery = 36,
+	Parachute = 37,
+	Log = 38,
+	Osd = 39,
+	Imu = 40,
+	Gps = 41,
+	Winch = 42,
+	GenericMultiroto = 43,
+}
+
+attribute bit_flags;
+enum ModeFlag : ubyte {
+  CustomModeEnabled,
+  TestEnabled,
+  AutoEnabled,
+  GuidedEnabled,
+  StabilizeEnabled,
+  HilEnabled,
+  ManualInputEnabled,
+  SafetyArmed,
+}

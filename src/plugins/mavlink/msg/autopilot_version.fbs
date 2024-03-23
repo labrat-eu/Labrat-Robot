@@ -1,7 +1,9 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table AutopilotVersion {
-  capabilities:ulong;
+  capabilities:ProtocolCapability;
   uid:ulong;
   flight_sw_version:uint;
   middleware_sw_version:uint;

@@ -1,8 +1,10 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table CameraSettings {
   time_boot_ms:uint;
-  mode_id:ubyte;
+  mode_id:CameraMode;
   zoom_level:float;
   focus_level:float;
 }

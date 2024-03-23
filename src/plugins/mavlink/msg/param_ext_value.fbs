@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table ParamExtValue {
@@ -5,7 +7,7 @@ table ParamExtValue {
   param_index:ushort;
   param_id:string;
   param_value:string;
-  param_type:ubyte;
+  param_type:ParamExtType;
 }
 
 root_type ParamExtValue;

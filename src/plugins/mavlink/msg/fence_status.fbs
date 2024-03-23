@@ -1,11 +1,13 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table FenceStatus {
   breach_time:uint;
   breach_count:ushort;
   breach_status:ubyte;
-  breach_type:ubyte;
-  breach_mitigation:ubyte;
+  breach_type:FenceBreach;
+  breach_mitigation:FenceMitigate;
 }
 
 root_type FenceStatus;

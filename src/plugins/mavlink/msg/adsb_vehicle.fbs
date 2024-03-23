@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table AdsbVehicle {
@@ -8,11 +10,11 @@ table AdsbVehicle {
   heading:ushort;
   hor_velocity:ushort;
   ver_velocity:short;
-  flags:ushort;
+  flags:AdsbFlags;
   squawk:ushort;
-  altitude_type:ubyte;
+  altitude_type:AdsbAltitudeType;
   callsign:string;
-  emitter_type:ubyte;
+  emitter_type:AdsbEmitterType;
   tslc:ubyte;
 }
 

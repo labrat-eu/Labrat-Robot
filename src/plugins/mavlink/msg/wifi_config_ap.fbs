@@ -1,10 +1,12 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table WifiConfigAp {
   ssid:string;
   password:string;
-  mode:byte;
-  response:byte;
+  mode:WifiConfigApMode;
+  response:WifiConfigApResponse;
 }
 
 root_type WifiConfigAp;

@@ -1,7 +1,9 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table Statustext {
-  severity:ubyte;
+  severity:Severity;
   text:string;
   id:ushort;
   chunk_seq:ubyte;

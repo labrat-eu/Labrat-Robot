@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table LandingTarget {
@@ -8,12 +10,12 @@ table LandingTarget {
   size_x:float;
   size_y:float;
   target_num:ubyte;
-  frame:ubyte;
+  frame:Frame;
   x:float;
   y:float;
   z:float;
   q:[float];
-  type:ubyte;
+  type:LandingTargetType;
   position_valid:ubyte;
 }
 

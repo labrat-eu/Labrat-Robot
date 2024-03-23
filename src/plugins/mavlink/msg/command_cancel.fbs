@@ -1,7 +1,9 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table CommandCancel {
-  command:ushort;
+  command:Cmd;
   target_system:ubyte;
   target_component:ubyte;
 }

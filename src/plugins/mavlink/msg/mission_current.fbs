@@ -1,9 +1,11 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table MissionCurrent {
   seq:ushort;
   total:ushort;
-  mission_state:ubyte;
+  mission_state:MissionState;
   mission_mode:ubyte;
   mission_id:uint;
   fence_id:uint;

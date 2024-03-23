@@ -1,10 +1,12 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table MissionRequest {
   seq:ushort;
   target_system:ubyte;
   target_component:ubyte;
-  mission_type:ubyte;
+  mission_type:MissionType;
 }
 
 root_type MissionRequest;

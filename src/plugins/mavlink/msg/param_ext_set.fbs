@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table ParamExtSet {
@@ -5,7 +7,7 @@ table ParamExtSet {
   target_component:ubyte;
   param_id:string;
   param_value:string;
-  param_type:ubyte;
+  param_type:ParamExtType;
 }
 
 root_type ParamExtSet;

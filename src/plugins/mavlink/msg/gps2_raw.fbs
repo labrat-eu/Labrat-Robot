@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table Gps2Raw {
@@ -10,7 +12,7 @@ table Gps2Raw {
   epv:ushort;
   vel:ushort;
   cog:ushort;
-  fix_type:ubyte;
+  fix_type:GpsFixType;
   satellites_visible:ubyte;
   dgps_numch:ubyte;
   yaw:ushort;

@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table AutopilotStateForGimbalDevice {
@@ -9,10 +11,10 @@ table AutopilotStateForGimbalDevice {
   vz:float;
   v_estimated_delay_us:uint;
   feed_forward_angular_velocity_z:float;
-  estimator_status:ushort;
+  estimator_status:EstimatorStatusFlags;
   target_system:ubyte;
   target_component:ubyte;
-  landed_state:ubyte;
+  landed_state:LandedState;
   angular_velocity_z:float;
 }
 

@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table DataTransmissionHandshake {
@@ -5,7 +7,7 @@ table DataTransmissionHandshake {
   width:ushort;
   height:ushort;
   packets:ushort;
-  type:ubyte;
+  type:DataStreamType;
   payload:ubyte;
   jpg_quality:ubyte;
 }

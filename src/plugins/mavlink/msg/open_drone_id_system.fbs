@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table OpenDroneIdSystem {
@@ -12,10 +14,10 @@ table OpenDroneIdSystem {
   target_system:ubyte;
   target_component:ubyte;
   id_or_mac:[ubyte];
-  operator_location_type:ubyte;
-  classification_type:ubyte;
-  category_eu:ubyte;
-  class_eu:ubyte;
+  operator_location_type:OdidOperatorLocationType;
+  classification_type:OdidClassificationType;
+  category_eu:OdidCategoryEu;
+  class_eu:OdidClassEu;
 }
 
 root_type OpenDroneIdSystem;

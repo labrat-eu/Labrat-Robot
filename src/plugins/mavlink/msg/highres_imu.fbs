@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table HighresImu {
@@ -15,7 +17,7 @@ table HighresImu {
   diff_pressure:float;
   pressure_alt:float;
   temperature:float;
-  fields_updated:ushort;
+  fields_updated:HighresImuUpdatedFlags;
   id:ubyte;
 }
 

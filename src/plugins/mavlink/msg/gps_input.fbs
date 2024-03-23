@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table GpsInput {
@@ -14,7 +16,7 @@ table GpsInput {
   speed_accuracy:float;
   horiz_accuracy:float;
   vert_accuracy:float;
-  ignore_flags:ushort;
+  ignore_flags:GpsInputIgnoreFlags;
   time_week:ushort;
   gps_id:ubyte;
   fix_type:ubyte;

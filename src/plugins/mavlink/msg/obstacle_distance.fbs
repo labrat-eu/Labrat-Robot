@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table ObstacleDistance {
@@ -5,11 +7,11 @@ table ObstacleDistance {
   distances:[ushort];
   min_distance:ushort;
   max_distance:ushort;
-  sensor_type:ubyte;
+  sensor_type:DistanceSensorType;
   increment:ubyte;
   increment_f:float;
   angle_offset:float;
-  frame:ubyte;
+  frame:Frame;
 }
 
 root_type ObstacleDistance;

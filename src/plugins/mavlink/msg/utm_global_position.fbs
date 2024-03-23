@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table UtmGlobalPosition {
@@ -17,8 +19,8 @@ table UtmGlobalPosition {
   vel_acc:ushort;
   update_rate:ushort;
   uas_id:[ubyte];
-  flight_state:ubyte;
-  flags:ubyte;
+  flight_state:UtmFlightState = Unknown;
+  flags:UtmDataAvailFlags;
 }
 
 root_type UtmGlobalPosition;

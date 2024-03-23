@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table HighLatency {
@@ -11,15 +13,15 @@ table HighLatency {
   altitude_amsl:short;
   altitude_sp:short;
   wp_distance:ushort;
-  base_mode:ubyte;
-  landed_state:ubyte;
+  base_mode:ModeFlag;
+  landed_state:LandedState;
   throttle:byte;
   airspeed:ubyte;
   airspeed_sp:ubyte;
   groundspeed:ubyte;
   climb_rate:byte;
   gps_nsat:ubyte;
-  gps_fix_type:ubyte;
+  gps_fix_type:GpsFixType;
   battery_remaining:ubyte;
   temperature:byte;
   temperature_air:byte;

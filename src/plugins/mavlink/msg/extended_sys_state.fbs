@@ -1,8 +1,10 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table ExtendedSysState {
-  vtol_state:ubyte;
-  landed_state:ubyte;
+  vtol_state:VtolState;
+  landed_state:LandedState;
 }
 
 root_type ExtendedSysState;

@@ -1,3 +1,5 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table OpenDroneIdAuthentication {
@@ -5,7 +7,7 @@ table OpenDroneIdAuthentication {
   target_system:ubyte;
   target_component:ubyte;
   id_or_mac:[ubyte];
-  authentication_type:ubyte;
+  authentication_type:OdidAuthType;
   data_page:ubyte;
   last_page_index:ubyte;
   length:ubyte;

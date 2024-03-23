@@ -1,8 +1,10 @@
+include "common.fbs";
+
 namespace mavlink.common;
 
 table CommandAck {
-  command:ushort;
-  result:ubyte;
+  command:Cmd;
+  result:Result;
   progress:ubyte;
   result_param2:int;
   target_system:ubyte;
