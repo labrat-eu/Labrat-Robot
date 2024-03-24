@@ -21,6 +21,8 @@ namespace lbot {
 
 class ConfigValue {
 public:
+  using Sequence = std::vector<ConfigValue>;
+
   ConfigValue();
   ConfigValue(const ConfigValue &rhs);
   ConfigValue(ConfigValue &&rhs);
@@ -29,8 +31,8 @@ public:
   ConfigValue(double value);
   ConfigValue(const std::string &value);
   ConfigValue(std::string &&value);
-  ConfigValue(const std::vector<ConfigValue> &value);
-  ConfigValue(std::vector<ConfigValue> &&value);
+  ConfigValue(const Sequence &value);
+  ConfigValue(Sequence &&value);
 
   constexpr ConfigValue &operator=(const ConfigValue &rhs);
   constexpr ConfigValue &operator=(ConfigValue &&rhs);
@@ -69,14 +71,14 @@ public:
   template<typename T>
   inline const T &get() const {
     try {
-      std::get<T>(value);
+      return std::get<T>(value);
     } catch (const std::bad_variant_access &) {
       throw ConfigAccessException("Failed to access config value. The expected type does not match the contained type.");
     }
   }
 
 private:
-  std::variant<std::monostate, bool, i64, double, std::string, std::vector<ConfigValue>> value;
+  std::variant<std::monostate, bool, i64, double, std::string, Sequence> value;
 };
 
 /**
@@ -142,6 +144,9 @@ public:
    * @brief Remove all parameters.
    */
   void clear() noexcept;
+
+  ParameterMap::const_iterator begin() const;
+  ParameterMap::const_iterator end() const;
 
   /**
    * @brief Parse parameters from a configuration file. This will remove all existing parameters.

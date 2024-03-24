@@ -43,7 +43,7 @@ struct convert<labrat::lbot::ConfigValue> {
       }
 
       case YAML::NodeType::Sequence: {
-        std::vector<labrat::lbot::ConfigValue> sequence;
+        labrat::lbot::ConfigValue::Sequence sequence;
         sequence.reserve(node.size());
 
         for (YAML::const_iterator iter = node.begin(); iter != node.end(); ++iter) {
@@ -86,9 +86,9 @@ ConfigValue::ConfigValue(const std::string &value) : value(value) {}
 
 ConfigValue::ConfigValue(std::string &&value) : value(std::forward<std::string>(value)) {}
 
-ConfigValue::ConfigValue(const std::vector<ConfigValue> &value) : value(value) {}
+ConfigValue::ConfigValue(const Sequence &value) : value(value) {}
 
-ConfigValue::ConfigValue(std::vector<ConfigValue> &&value) : value(std::forward<std::vector<ConfigValue>>(value)) {}
+ConfigValue::ConfigValue(Sequence &&value) : value(std::forward<Sequence>(value)) {}
 
 constexpr ConfigValue &ConfigValue::operator=(const ConfigValue &rhs) {
   value = rhs.value;
@@ -155,6 +155,14 @@ void Config::removeParameter(const std::string &name) {
 
 void Config::clear() noexcept {
   parameter_map.clear();
+}
+
+Config::ParameterMap::const_iterator Config::begin() const {
+  return parameter_map.begin();
+}
+
+Config::ParameterMap::const_iterator Config::end() const {
+  return parameter_map.end();
 }
 
 void Config::load(const std::string &filename) {

@@ -10,6 +10,7 @@
 #include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/message.hpp>
+#include <labrat/lbot/config.hpp>
 #include <labrat/lbot/plugins/foxglove-ws/server.hpp>
 
 #include <chrono>
@@ -24,6 +25,30 @@
 
 inline namespace labrat {
 namespace lbot::plugins {
+
+static foxglove::ParameterValue convertParameterValue(const ConfigValue &source) {
+  if (source.contains<bool>()) {
+    return foxglove::ParameterValue(source.get<bool>());
+  } else if (source.contains<i64>()) {
+    return foxglove::ParameterValue(source.get<i64>());
+  } else if (source.contains<double>()) {
+    return foxglove::ParameterValue(source.get<double>());
+  } else if (source.contains<std::string>()) {
+    return foxglove::ParameterValue(source.get<std::string>());
+  } else if (source.contains<ConfigValue::Sequence>()) {
+    const ConfigValue::Sequence &source_sequence = source.get<ConfigValue::Sequence>();
+    std::vector<foxglove::ParameterValue> destination_sequence;
+    destination_sequence.reserve(source_sequence.size());
+
+    for (const ConfigValue &value : source_sequence) {
+      destination_sequence.emplace_back(convertParameterValue(value));
+    }
+
+    return foxglove::ParameterValue(destination_sequence);
+  } else {
+    return foxglove::ParameterValue();
+  }
+}
 
 class FoxgloveServerPrivate {
 public:
@@ -53,15 +78,23 @@ public:
       }
     };
 
-    const foxglove::ServerOptions options;
+    const foxglove::ServerOptions options = {
+      .capabilities = {foxglove::CAPABILITY_PARAMETERS},
+    };
+
     server = foxglove::ServerFactory::createServer<websocketpp::connection_hdl>(name, log_handler, options);
 
     foxglove::ServerHandlers<websocketpp::connection_hdl> handlers;
-    handlers.subscribeHandler = [&](foxglove::ChannelId channel_id, websocketpp::connection_hdl) {
-      logger.logInfo() << "First client subscribed to " << channel_id;
+    handlers.subscribeHandler = [&](foxglove::ChannelId channel_id, websocketpp::connection_hdl) -> void {
+      logger.logInfo() << "Client subscribed to " << channel_id;
     };
-    handlers.unsubscribeHandler = [&](foxglove::ChannelId channel_id, websocketpp::connection_hdl) {
-      logger.logInfo() << "Last client unsubscribed from " << channel_id;
+    handlers.unsubscribeHandler = [&](foxglove::ChannelId channel_id, websocketpp::connection_hdl) -> void {
+      logger.logInfo() << "Client unsubscribed from " << channel_id;
+    };
+    handlers.parameterRequestHandler = [&](const std::vector<std::string> &names, const std::optional<std::string>& command, websocketpp::connection_hdl handle) -> void {
+      logger.logInfo() << "Parameter request received";
+
+      handleParameterRequest(names, command, handle);
     };
 
     server->setHandlers(std::move(handlers));
@@ -103,7 +136,8 @@ private:
 
   SchemaMap::iterator handleSchema(const std::string &type_name, std::size_t type_hash);
   ChannelIdMap::iterator handleTopic(const Plugin::TopicInfo &info);
-  inline ChannelIdMap::iterator handleMessage(const Plugin::MessageInfo &info);
+  ChannelIdMap::iterator handleMessage(const Plugin::MessageInfo &info);
+  void handleParameterRequest(const std::vector<std::string> &names, const std::optional<std::string>& command, websocketpp::connection_hdl handle);
 
   SchemaMap schema_map;
   ChannelIdMap channel_id_map;
@@ -178,7 +212,7 @@ FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleTopic
   return channel_id_iterator;
 }
 
-inline FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleMessage(const Plugin::MessageInfo &info) {
+FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleMessage(const Plugin::MessageInfo &info) {
   ChannelIdMap::iterator channel_id_iterator = channel_id_map.find(info.topic_info.topic_hash);
   if (channel_id_iterator == channel_id_map.end()) {
     channel_id_iterator = handleTopic(info.topic_info);
@@ -189,6 +223,30 @@ inline FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::hand
     info.serialized_message.size());
 
   return channel_id_iterator;
+}
+
+void FoxgloveServerPrivate::handleParameterRequest(const std::vector<std::string> &names, const std::optional<std::string>& command, websocketpp::connection_hdl handle) {
+  std::vector<foxglove::Parameter> parameters;
+
+  if (command == "get-all-params") {
+    for (std::pair<const std::string &, ConfigValue> parameter : *Config::get()) {
+      parameters.emplace_back(parameter.first, convertParameterValue(parameter.second));
+    }
+  } else {
+    Config::Ptr config = Config::get();
+    parameters.reserve(names.size());
+
+    for (const std::string &name : names) {
+      try {
+        parameters.emplace_back(name, convertParameterValue(config->getParameter(name)));
+      } catch (ConfigAccessException &) {
+        parameters.emplace_back(name);
+      }
+    }
+  }
+
+  std::lock_guard guard(mutex);
+  server->publishParameterValues(handle, parameters, command);
 }
 
 }  // namespace lbot::plugins
