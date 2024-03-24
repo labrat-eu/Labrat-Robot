@@ -8,10 +8,8 @@
 
 #include <labrat/lbot/config.hpp>
 
-#include <ctime>
-#include <iomanip>
-#include <iostream>
-#include <mutex>
+#include <list>
+#include <ranges>
 
 #include <yaml-cpp/yaml.h>
 
@@ -166,20 +164,55 @@ Config::ParameterMap::const_iterator Config::end() const {
 }
 
 void Config::load(const std::string &filename) {
+  YAML::Node file;
+
   try {
-    YAML::Node file = YAML::LoadFile(filename);
-
-    for(YAML::const_iterator iter = file.begin(); iter != file.end(); ++iter) {
-      ConfigValue value;
-
-      try {
-        setParameter(iter->first.as<std::string>(), iter->second.as<ConfigValue>());
-      } catch (YAML::TypedBadConversion<ConfigValue> &) {
-        throw ConfigParseException("Failed to parse '" + filename + "'. Invalid value on key '" + iter->first.as<std::string>() + "'.");
-      }
-    }
+    file = YAML::LoadFile(filename);
   } catch (YAML::BadFile &) {
     throw ConfigParseException("Failed to load '" + filename + "'.");
+  }
+
+  struct NodeInfo {
+    const std::string name;
+    YAML::const_iterator iter;
+    YAML::const_iterator end;
+  };
+  std::list<NodeInfo> node_stack;
+  node_stack.emplace_back("/", file.begin(), file.end());
+
+  while (!node_stack.empty()) {
+    NodeInfo &top = node_stack.back();
+
+    if (top.iter == top.end) {
+      node_stack.pop_back();
+      ++(node_stack.back().iter);
+      
+      continue;
+    }
+
+    const YAML::Node &node = top.iter->second;
+    const std::string &name = top.iter->first.as<std::string>();
+
+    if (node.IsMap()) {
+      node_stack.emplace_back(name + "/", node.begin(), node.end());
+      continue;
+    }
+
+    auto to_string = [](const NodeInfo &info) -> std::string {
+      return info.name;
+    };
+
+    std::string full_name;
+    std::ranges::copy(std::views::transform(node_stack, to_string) | std::views::join, std::back_inserter(full_name));
+    full_name += name;
+
+    try {
+      setParameter(full_name, node.as<ConfigValue>());
+    } catch (YAML::TypedBadConversion<ConfigValue> &) {
+      throw ConfigParseException("Failed to parse '" + filename + "'. Invalid value on key '" + full_name + "'.");
+    }
+
+    ++(top.iter);
   }
 }
 

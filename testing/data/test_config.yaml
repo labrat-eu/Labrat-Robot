@@ -9,3 +9,7 @@ sequence:
  - test
  -
    - true
+
+path:
+  to:
+    value: 42
