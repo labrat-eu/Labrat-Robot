@@ -12,7 +12,7 @@ variables:
 
 
 .init-docker: &init-docker |
-  docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin <<<$CI_JOB_TOKEN
 
 
 .init-generic: &init-generic |
