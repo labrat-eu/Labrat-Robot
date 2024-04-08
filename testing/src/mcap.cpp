@@ -1,4 +1,5 @@
 #include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/config.hpp>
 #include <labrat/lbot/plugins/mcap/recorder.hpp>
 
 #include <cmath>
@@ -16,7 +17,10 @@ TEST(mcap, recorder) {
   {
     labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-    plugins::McapRecorder recorder("test.mcap");
+    labrat::lbot::Config::Ptr config = labrat::lbot::Config::get();
+    config->setParameter("/lbot/plugins/mcap/tracefile", "test.mcap");
+
+    plugins::McapRecorder recorder;
 
     std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "/topic_a", "/topic_b"));
     std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "/topic_b", "/topic_a"));

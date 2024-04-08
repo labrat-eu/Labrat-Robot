@@ -80,11 +80,9 @@ ConfigValue::ConfigValue(i64 value) : value(value) {}
 
 ConfigValue::ConfigValue(double value) : value(value) {}
 
-ConfigValue::ConfigValue(const std::string &value) : value(value) {}
+ConfigValue::ConfigValue(const char *value) : value(std::string(value)) {}
 
 ConfigValue::ConfigValue(std::string &&value) : value(std::forward<std::string>(value)) {}
-
-ConfigValue::ConfigValue(const Sequence &value) : value(value) {}
 
 ConfigValue::ConfigValue(Sequence &&value) : value(std::forward<Sequence>(value)) {}
 
