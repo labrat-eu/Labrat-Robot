@@ -15,7 +15,7 @@ RUN python3 -m pip install --upgrade conan
 RUN python3 -m pip install regex
 
 # Install toolchain
-RUN apt-get install -y clang-17 libstdc++-12-dev
+RUN apt-get install -y clang-17 libc++-17-dev libc++abi-17-dev
 
 # Clear the unused apt files.
 RUN rm -rf /var/lib/apt/lists/*

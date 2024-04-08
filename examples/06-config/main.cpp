@@ -8,14 +8,17 @@ int main(int argc, char **argv) {
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
   lbot::Config::Ptr config = lbot::Config::get();
-  config->load("07-config/config.yaml");
+  config->load("06-config/config.yaml");
 
-  std::unique_ptr<lbot::plugins::FoxgloveServer> foxglove_plugin = std::make_unique<lbot::plugins::FoxgloveServer>("Example Server", 8765);
+  config->setParameter("/test_param", 1L);
+  logger.logInfo() << "Read parameter '/test_param': " << config->getParameter("/test_param").get<i64>();
 
-  logger.logInfo() << "Press CTRL+C to exit the program.";
+  config->removeParameter("/test_param");
+  logger.logInfo() << "Read parameter '/test_param': " << config->getParameterFallback("/test_param", 2L).get<i64>();
 
-  int signal = utils::signalWait();
-  logger.logInfo() << "Caught signal (" << signal << "), shutting down.";
+  config->setParameter("/test_param", 1L);
+  config->clear();
+  logger.logInfo() << "Read parameter '/test_param': " << config->getParameterFallback("/test_param", 3L).get<i64>();
 
   return 0;
 }

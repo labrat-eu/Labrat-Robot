@@ -78,13 +78,13 @@ int main(int argc, char **argv) {
   // If you want to see what this program has been doing, you might:
   //  1. Install and open Foxglove Studio (https://foxglove.dev/)
   //  2. Open a local file with the path trace.mcap
-  std::unique_ptr<lbot::plugins::McapRecorder> mcap_plugin = std::make_unique<lbot::plugins::McapRecorder>("trace.mcap");
+  std::unique_ptr<lbot::plugins::McapRecorder> mcap_plugin = std::make_unique<lbot::plugins::McapRecorder>();
 
   // The FoxgloveServer plugin allows you to trace messages live via Foxglove Studio.
   // If you want to see what this program is doing, you might:
   //  1. Install and open Foxglove Studio (https://foxglove.dev/)
   //  2. Open a connection via Foxglove WebSocket with the URL ws://localhost:8765
-  std::unique_ptr<lbot::plugins::FoxgloveServer> foxglove_plugin = std::make_unique<lbot::plugins::FoxgloveServer>("Example Server", 8765);
+  std::unique_ptr<lbot::plugins::FoxgloveServer> foxglove_plugin = std::make_unique<lbot::plugins::FoxgloveServer>();
 
   manager->addNode<SenderNode>("sender");
   manager->addNode<ServerNode>("server");

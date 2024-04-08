@@ -52,7 +52,11 @@ static foxglove::ParameterValue convertParameterValue(const ConfigValue &source)
 
 class FoxgloveServerPrivate {
 public:
-  FoxgloveServerPrivate(const std::string &name, u16 port, const Plugin::Filter &filter) : logger("foxglove-ws") {
+  FoxgloveServerPrivate(const Plugin::Filter &filter) : logger("foxglove-ws") {
+    Config::Ptr config = Config::get();
+    const std::string name = config->getParameterFallback("/lbot/plugins/foxglove-ws/name", "lbot").get<std::string>();
+    const u16 port = config->getParameterFallback("/lbot/plugins/foxglove-ws/port", 8765L).get<i64>();
+
     auto log_handler = [this](foxglove::WebSocketLogLevel level, const char *message) {
       switch (level) {
         case (foxglove::WebSocketLogLevel::Debug): {
@@ -150,8 +154,8 @@ private:
   Logger logger;
 };
 
-FoxgloveServer::FoxgloveServer(const std::string &name, u16 port, const Plugin::Filter &filter) {
-  priv = new FoxgloveServerPrivate(name, port, filter);
+FoxgloveServer::FoxgloveServer(const Plugin::Filter &filter) {
+  priv = new FoxgloveServerPrivate(filter);
 }
 
 FoxgloveServer::~FoxgloveServer() {

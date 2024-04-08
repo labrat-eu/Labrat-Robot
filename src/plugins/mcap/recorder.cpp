@@ -6,6 +6,7 @@
  *
  */
 
+#include <labrat/lbot/config.hpp>
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/manager.hpp>
@@ -27,7 +28,10 @@ namespace lbot::plugins {
 
 class McapRecorderPrivate {
 public:
-  McapRecorderPrivate(const std::string &filename, const Plugin::Filter &filter) : logger("mcap") {
+  McapRecorderPrivate(const Plugin::Filter &filter) : logger("mcap") {
+    Config::Ptr config = Config::get();
+    const std::string filename = config->getParameterFallback("/lbot/plugins/mcap/tracefile", "trace_" + std::to_string(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count())).get<std::string>();
+
     const mcap::McapWriterOptions options("");
     const mcap::Status result = writer.open(filename, options);
 
@@ -79,8 +83,8 @@ private:
   Logger logger;
 };
 
-McapRecorder::McapRecorder(const std::string &filename, const Plugin::Filter &filter) {
-  priv = new McapRecorderPrivate(filename, filter);
+McapRecorder::McapRecorder(const Plugin::Filter &filter) {
+  priv = new McapRecorderPrivate(filter);
 }
 
 McapRecorder::~McapRecorder() {

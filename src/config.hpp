@@ -134,6 +134,15 @@ public:
   const ConfigValue &getParameter(const std::string &name) const;
 
   /**
+   * @brief Get a parameter. Return the provided fallback in case the parameter is not set.
+   * 
+   * @param name Name of the parameter
+   * @param fallback Value of the fallback parameter
+   * @return const ConfigValue& Value of the parameter
+   */
+  const ConfigValue &getParameterFallback(const std::string &name, ConfigValue &&fallback) const;
+
+  /**
    * @brief Remove a parameter. If it does not exist, do nothing.
    * 
    * @param name Name of the parameter
