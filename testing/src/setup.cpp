@@ -103,6 +103,18 @@ TEST(setup, next) {
   node_a->sender->flush();
   ASSERT_THROW(node_b->receiver->next(), labrat::lbot::TopicNoDataAvailableException);
 
+  TestContainer message_h;
+  node_a->sender->put(message_h);
+
+  TestContainer message_i = node_b->receiver->next();
+
+  ASSERT_THROW(node_b->receiver->latest(), labrat::lbot::TopicNoDataAvailableException);
+
+  TestContainer message_j;
+  node_a->sender->put(message_j);
+
+  ASSERT_NO_THROW(node_b->receiver->latest());
+
   node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
   node_b = std::shared_ptr<TestNode>();

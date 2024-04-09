@@ -666,18 +666,25 @@ public:
      * @throw TopicNoDataAvailableException When the topic has no valid data available.
      */
     Converted latest() override {
-      Converted result;
-
-      const std::size_t index = GenericReceiver<Converted>::read_count.load() & GenericReceiver<Converted>::index_mask;
-
       if (GenericReceiver<Converted>::flush_flag) {
         throw TopicNoDataAvailableException("Topic was flushed.", GenericReceiver<Converted>::node.getLogger());
+      }
+
+      Converted result;
+
+      const std::size_t read_index = GenericReceiver<Converted>::read_count.load();
+      const std::size_t index = read_index & GenericReceiver<Converted>::index_mask;
+
+      if (read_index == GenericReceiver<Converted>::next_count && mode == Mode::next) {
+        throw TopicNoDataAvailableException("No new data after next() call.", GenericReceiver<Converted>::node.getLogger());
       }
 
       {
         std::lock_guard guard(message_buffer[index].mutex);
         Convert<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr, *dynamic_cast<GenericReceiver<Converted> *>(this));
       }
+
+      mode = Mode::latest;
 
       return result;
     };
@@ -703,7 +710,8 @@ public:
         throw TopicNoDataAvailableException("Topic was flushed during wait operation.", GenericReceiver<Converted>::node.getLogger());
       }
 
-      const std::size_t index = GenericReceiver<Converted>::read_count.load() & GenericReceiver<Converted>::index_mask;
+      const std::size_t read_index = GenericReceiver<Converted>::read_count.load();
+      const std::size_t index = read_index & GenericReceiver<Converted>::index_mask;
 
       {
         std::lock_guard guard(message_buffer[index].mutex);
@@ -715,8 +723,8 @@ public:
         }
       }
 
-      GenericReceiver<Converted>::next_count =
-        index | (GenericReceiver<Converted>::read_count.load() & ~GenericReceiver<Converted>::index_mask);
+      mode = Mode::next;
+      GenericReceiver<Converted>::next_count = read_index;
 
       return result;
     };
@@ -732,6 +740,11 @@ public:
 
   private:
     CallbackFunction callback;
+
+    enum class Mode : u8 {
+      latest,
+      next,
+    } mode = Mode::latest;
   };
 
   // Wrapper classes to allow flatbuffer types to also work as template arguments.
