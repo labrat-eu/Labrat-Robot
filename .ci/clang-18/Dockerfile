@@ -1,6 +1,6 @@
 # Dockerfile to generate a build image for Ubuntu including all build dependencies.
 
-FROM ubuntu:rolling
+FROM ubuntu:devel
 LABEL maintainer="labrat.eu"
 
 # Install common packages
@@ -15,7 +15,7 @@ RUN python3 -m pip install --upgrade conan
 RUN python3 -m pip install regex
 
 # Install toolchain
-RUN apt-get install -y clang-17 libc++-17-dev libc++abi-17-dev
+RUN apt-get install -y clang-18 libc++-18-dev libc++abi-18-dev
 
 # Clear the unused apt files.
 RUN rm -rf /var/lib/apt/lists/*

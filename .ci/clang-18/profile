@@ -4,12 +4,12 @@ build_type=Release
 compiler=clang
 compiler.cppstd=20
 compiler.libcxx=libc++
-compiler.version=17
+compiler.version=18
 os=Linux
 
 [buildenv]
-CC=clang-17
-CXX=clang-17
+CC=clang-18
+CXX=clang-18
 
 [conf]
 tools.build:cxxflags=['-fexperimental-library']
