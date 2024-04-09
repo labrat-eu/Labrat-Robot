@@ -51,6 +51,10 @@ variables:
   CTEST_OUTPUT_ON_FAILURE=1 conan test -b=missing -pr:h=ci -pr:b=ci testing $CONAN_NAME/$(conan inspect . | grep -Po "(?<=version: ).*" | head -n1)@$CONAN_USER/$CONAN_CHANNEL
   cp `find -L testing/build/ -name report.xml` test_report.xml
 
+.examples-generic: &examples-generic |
+  cd examples
+  conan build . -b=missing -pr:h=ci -pr:b=ci
+
 .deploy-generic: &deploy-generic |
   conan upload $CONAN_NAME/$(conan inspect . | grep -Po "(?<=version: ).*" | head -n1)@$CONAN_USER/$CONAN_CHANNEL --all -r gitlab --retry 5 --retry-wait 10
 
@@ -125,6 +129,14 @@ test:clang-18:
   script:
     - *test-generic
 
+examples:clang-18:
+  stage: test
+  needs: ["build:clang-18"]
+  image: $CI_REGISTRY_IMAGE:clang-18
+  <<: *init-clang
+  script:
+    - *examples-generic
+
 # Hidden until GitLab supports conan 2.0
 .deploy:clang-18:
   stage: deploy
@@ -157,6 +169,14 @@ test:gcc-13:
   <<: *init-gcc
   script:
     - *test-generic
+
+examples:gcc-13:
+  stage: test
+  needs: ["build:gcc-13"]
+  image: $CI_REGISTRY_IMAGE:gcc-13
+  <<: *init-gcc
+  script:
+    - *examples-generic
 
 # Hidden until GitLab supports conan 2.0
 .deploy:gcc-13:
