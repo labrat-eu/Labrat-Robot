@@ -7,8 +7,6 @@ stages:
 
 variables:
   CONAN_NAME: "lbot"
-  CONAN_USER: "labrat-eu+lbot"
-  CONAN_CHANNEL: "alpha"
 
 
 .init-docker: &init-docker |
@@ -45,10 +43,10 @@ variables:
 .build-generic: &build-generic |
   if [ $LBOT_NIGHTLY_PIPELINE ]; then rm -rf $CONAN_USER_HOME/.conan/data; fi
   conan remove -c $CONAN_NAME/*
-  conan create . --name $CONAN_NAME --user $CONAN_USER --channel $CONAN_CHANNEL -b=missing -pr:h=ci -pr:b=ci
+  conan create . --name $CONAN_NAME -b=missing -pr:h=ci -pr:b=ci
 
 .test-generic: &test-generic |
-  CTEST_OUTPUT_ON_FAILURE=1 conan test -b=missing -pr:h=ci -pr:b=ci testing $CONAN_NAME/$(conan inspect . | grep -Po "(?<=version: ).*" | head -n1)@$CONAN_USER/$CONAN_CHANNEL
+  CTEST_OUTPUT_ON_FAILURE=1 conan test -b=missing -pr:h=ci -pr:b=ci testing $CONAN_NAME/$(conan inspect . | grep -Po "(?<=version: ).*" | head -n1)
   cp `find -L testing/build/ -name report.xml` test_report.xml
 
 .examples-generic: &examples-generic |
@@ -56,7 +54,7 @@ variables:
   conan build . -b=missing -pr:h=ci -pr:b=ci
 
 .deploy-generic: &deploy-generic |
-  conan upload $CONAN_NAME/$(conan inspect . | grep -Po "(?<=version: ).*" | head -n1)@$CONAN_USER/$CONAN_CHANNEL --all -r gitlab --retry 5 --retry-wait 10
+  conan upload $CONAN_NAME/$(conan inspect . | grep -Po "(?<=version: ).*" | head -n1) --all -r gitlab --retry 5 --retry-wait 10
 
 
 setup:clang-18:
