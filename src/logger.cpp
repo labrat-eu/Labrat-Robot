@@ -8,12 +8,14 @@
 
 #include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/message.hpp>
 #include <labrat/lbot/node.hpp>
 
 #include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <cstdlib>
 
 inline namespace labrat {
 namespace lbot {
@@ -70,6 +72,12 @@ private:
 
 public:
   explicit LoggerNode(Node::Environment environment) : Node(std::move(environment)) {
+    const MessageReflection reflection = MessageReflection(EntryMessage::getName());
+    if (!reflection.isValid()) {
+      getLogger().logCritical() << "Message schema of the log message is unknown. Please set the LBOT_REFLECTION_PATH environment variable.";
+      exit(1);
+    }
+
     sender = addSender<EntryMessage>("/log");
   }
 

@@ -320,16 +320,6 @@ public:
 class MessageReflection {
 public:
   /**
-   * @brief Construct a new Message Reflection object by type template.
-   *
-   * @tparam T
-   * @return requires
-   */
-  template <typename T>
-  requires is_flatbuffer<T>
-  MessageReflection() : MessageReflection(Message<T>::getName()) {}
-
-  /**
    * @brief Construct a new Message Reflection object by type name.
    *
    * @param name Name of the type.
