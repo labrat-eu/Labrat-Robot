@@ -13,4 +13,4 @@ CXX=clang-18
 
 [conf]
 tools.build:cxxflags=['-fexperimental-library']
-tools.build:exelinkflags=['-lstdc++', '-lm']
+tools.build:exelinkflags=['-lc++', '-lm']
