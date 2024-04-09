@@ -2,6 +2,16 @@ from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 from conan.tools.env import VirtualRunEnv
 import os
+import subprocess
+import regex
+
+
+def get_lbot_version():
+    output = subprocess.run(["conan", "inspect", ".."], stdout=subprocess.PIPE)
+    print(output)
+    pattern = regex.compile('version: (.*)\n')
+    search = pattern.search(output.stdout.decode('utf-8'))
+    return search.group(1)
 
 
 class LbotExamplesConan(ConanFile):
@@ -18,7 +28,7 @@ class LbotExamplesConan(ConanFile):
 
     def requirements(self):
         # You may add more dependencies here.
-        self.requires("lbot/v0.0.11+acd6841")
+        self.requires("lbot/" + get_lbot_version())
 
     def build_requirements(self):
         self.tool_requires("cmake/3.28.1")
