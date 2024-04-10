@@ -30,7 +30,7 @@ class McapRecorderPrivate {
 public:
   McapRecorderPrivate(const Plugin::Filter &filter) : logger("mcap") {
     Config::Ptr config = Config::get();
-    const std::string filename = config->getParameterFallback("/lbot/plugins/mcap/tracefile", "trace_" + std::to_string(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count())).get<std::string>();
+    const std::string filename = config->getParameterFallback("/lbot/plugins/mcap/tracefile", "trace_" + std::to_string(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count()) + ".mcap").get<std::string>();
 
     const mcap::McapWriterOptions options("");
     const mcap::Status result = writer.open(filename, options);
