@@ -189,6 +189,10 @@ Logger::LogStream::~LogStream() {
   entry.file = location.file;
   entry.line = location.line;
 
+  if (verbosity > logger.trace_log_level) {
+    return;
+  }
+
   if (verbosity <= Verbosity::info) {
     logger.send(entry);
   } else {

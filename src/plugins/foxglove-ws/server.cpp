@@ -53,6 +53,8 @@ static foxglove::ParameterValue convertParameterValue(const ConfigValue &source)
 class FoxgloveServerPrivate {
 public:
   FoxgloveServerPrivate(const Plugin::Filter &filter) : logger("foxglove-ws") {
+    logger.setTraceLogLevel(Logger::Verbosity::warning);
+
     Config::Ptr config = Config::get();
     const std::string name = config->getParameterFallback("/lbot/plugins/foxglove-ws/name", "lbot").get<std::string>();
     const u16 port = config->getParameterFallback("/lbot/plugins/foxglove-ws/port", 8765L).get<i64>();

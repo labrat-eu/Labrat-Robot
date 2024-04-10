@@ -166,6 +166,23 @@ public:
   }
 
   /**
+   * @brief Set the trace log level of this logger instance.
+   *
+   * @param level The verbosity below no log entries are sent out to the /log topic.
+   */
+  inline void setTraceLogLevel(Verbosity level) {
+    trace_log_level = level;
+  }
+
+  /**
+   * @brief Get the trace log level of this logger instance.
+   *
+   */
+  inline Verbosity getTraceLogLevel() {
+    return trace_log_level;
+  }
+
+  /**
    * @brief Enable colored console output.
    */
   static inline void enableColor() {
@@ -252,6 +269,7 @@ private:
   friend class LogStream;
 
   const std::string name;
+  Verbosity trace_log_level = Verbosity::info;
 
   static std::shared_ptr<LoggerNode> node;
 
