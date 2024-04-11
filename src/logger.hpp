@@ -166,20 +166,25 @@ public:
   }
 
   /**
-   * @brief Set the trace log level of this logger instance.
-   *
-   * @param level The verbosity below no log entries are sent out to the /log topic.
+   * @brief Enable the generation of messages onto the /log topic from this instance.
    */
-  inline void setTraceLogLevel(Verbosity level) {
-    trace_log_level = level;
+  inline void enableTopic() {
+    send_topic = true;
   }
 
   /**
-   * @brief Get the trace log level of this logger instance.
+   * @brief Disable the generation of messages onto the /log topic from this instance.
+   */
+  inline void disableTopic() {
+    send_topic = false;
+  }
+
+  /**
+   * @brief Check whether the generation of messages onto the /log topic from this instance is enabled.
    *
    */
-  inline Verbosity getTraceLogLevel() {
-    return trace_log_level;
+  inline bool isTopicEnabled() {
+    return send_topic;
   }
 
   /**
@@ -269,7 +274,7 @@ private:
   friend class LogStream;
 
   const std::string name;
-  Verbosity trace_log_level = Verbosity::info;
+  bool send_topic = true;
 
   static std::shared_ptr<LoggerNode> node;
 
