@@ -1,0 +1,7 @@
+namespace examples.msg;
+
+table Array {
+  values:[float];
+}
+
+root_type Array;
