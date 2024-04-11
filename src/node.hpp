@@ -1161,15 +1161,15 @@ protected:
    *
    * @param environment Node environment data for the node to copy internally.
    */
-  explicit Node(Environment environment) : environment(std::move(environment)) {}
+  explicit Node(Environment environment) : environment(std::move(environment)), logger(environment.name) {}
 
   /**
    * @brief Get a logger with the name of the node.
    *
    * @return Logger A logger with the name of the node.
    */
-  [[nodiscard]] inline Logger getLogger() const {
-    return Logger(environment.name);
+  [[nodiscard]] inline Logger &getLogger() {
+    return logger;
   }
 
   /**
@@ -1240,6 +1240,7 @@ protected:
 
 private:
   const Environment environment;
+  Logger logger;
 };
 
 }  // namespace lbot

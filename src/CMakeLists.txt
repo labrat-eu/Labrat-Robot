@@ -18,6 +18,7 @@ set(TARGET_SOURCES
   logger.cpp
   exception.cpp
   config.cpp
+  utils/performance.cpp
 )
 
 set(TARGET_HEADERS
@@ -32,6 +33,20 @@ set(TARGET_HEADERS
   plugin.hpp
   cluster.hpp
   config.hpp
+)
+
+set(TARGET_HEADERS_UTILS
+  utils/atomic.hpp
+  utils/cleanup.hpp
+  utils/types.hpp
+  utils/fifo.hpp
+  utils/final_ptr.hpp
+  utils/thread.hpp
+  utils/concepts.hpp
+  utils/string.hpp
+  utils/serial.hpp
+  utils/signal.hpp
+  utils/performance.hpp
 )
 
 set(TARGET_MESSAGES
@@ -83,7 +98,7 @@ set(TARGET_MESSAGES_EXTERNAL
 )
 
 # Create library target for the project.
-add_library(${TARGET_NAME} SHARED ${TARGET_HEADERS} ${TARGET_SOURCES})
+add_library(${TARGET_NAME} SHARED ${TARGET_HEADERS} ${TARGET_HEADERS_UTILS} ${TARGET_SOURCES})
 
 # Set shared object properties.
 set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${GIT_VERSION})
@@ -92,7 +107,6 @@ set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
 
 # Add subtarget source directory.
 add_subdirectory(plugins)
-add_subdirectory(utils)
 
 
 set(TARGET_NAME_MESSAGE ${TARGET_NAME}_msg)
@@ -109,3 +123,4 @@ target_link_libraries(${TARGET_NAME} PUBLIC ${TARGET_NAME_MESSAGE} ${TARGET_NAME
 # Add a install targets.
 install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES ${TARGET_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LOCAL_PROJECT_PATH_FULL}/${TARGET_RELATIVE_PATH})
+install(FILES ${TARGET_HEADERS_UTILS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LOCAL_PROJECT_PATH_FULL}/utils/${TARGET_RELATIVE_PATH})

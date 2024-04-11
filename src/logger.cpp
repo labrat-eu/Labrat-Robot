@@ -17,6 +17,8 @@
 #include <mutex>
 #include <cstdlib>
 
+#include <labrat/lbot/msg/foxglove/Log.fb.hpp>
+
 inline namespace labrat {
 namespace lbot {
 

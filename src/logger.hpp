@@ -8,7 +8,7 @@
 #pragma once
 
 #include <labrat/lbot/base.hpp>
-#include <labrat/lbot/message.hpp>
+#include <labrat/lbot/utils/types.hpp>
 
 #include <chrono>
 #include <filesystem>
@@ -16,8 +16,6 @@
 #include <ostream>
 #include <sstream>
 #include <string>
-
-#include <labrat/lbot/msg/foxglove/Log.fb.hpp>
 
 inline namespace labrat {
 namespace lbot {
