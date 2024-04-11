@@ -47,7 +47,6 @@ variables:
 
 .test-generic: &test-generic |
   CTEST_OUTPUT_ON_FAILURE=1 conan test -b=missing -pr:h=ci -pr:b=ci testing $CONAN_NAME/$(conan inspect . | grep -Po "(?<=version: ).*" | head -n1)
-  cp `find -L testing/build/ -name report.xml` test_report.xml
 
 .examples-generic: &examples-generic |
   cd examples
@@ -126,6 +125,8 @@ test:clang-18:
   <<: *init-clang
   script:
     - *test-generic
+  after_script:
+    - cp `find -L testing/build/ -name report.xml` test_report.xml
 
 examples:clang-18:
   stage: test
@@ -167,6 +168,8 @@ test:gcc-13:
   <<: *init-gcc
   script:
     - *test-generic
+  after_script:
+    - cp `find -L testing/build/ -name report.xml` test_report.xml
 
 examples:gcc-13:
   stage: test
