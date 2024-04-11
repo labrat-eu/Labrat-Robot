@@ -196,7 +196,7 @@ public:
       for (void *pointer : GenericSender<Converted>::topic.getReceivers()) {
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
-        const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_acq_rel);
+        const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_acquire);
         const std::size_t index = count & receiver->index_mask;
 
         {
@@ -262,7 +262,7 @@ public:
           Receiver<MessageType> *receiver =
             reinterpret_cast<Receiver<MessageType> *>(*GenericSender<Converted>::topic.getReceivers().begin());
 
-          const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_acq_rel);
+          const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_acquire);
           const std::size_t index = count & receiver->index_mask;
 
           {
@@ -311,7 +311,7 @@ public:
       for (void *pointer : GenericSender<Converted>::topic.getReceivers()) {
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
-        const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_acq_rel);
+        const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_acquire);
 
         receiver->flush_flag = true;
         receiver->read_count.store(count, std::memory_order_release);
