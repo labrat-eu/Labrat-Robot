@@ -15,6 +15,7 @@
 #include <vector>
 #include <string>
 #include <variant>
+#include <unordered_map>
 
 inline namespace labrat {
 namespace lbot {
