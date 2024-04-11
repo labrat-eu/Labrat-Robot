@@ -15,7 +15,7 @@ TEST(stress, latest) {
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
-  const u64 limit = 1000000;
+  const u64 limit = 10000000;
 
   auto sender_lambda = [&node_a]() {
     for (u64 i = 1; i <= limit; ++i) {
@@ -57,7 +57,7 @@ TEST(stress, next) {
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
   std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
-  const u64 limit = 1000000;
+  const u64 limit = 10000000;
   std::atomic_flag done;
 
   auto sender_lambda = [&node_a, &done]() {

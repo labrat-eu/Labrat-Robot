@@ -196,14 +196,14 @@ public:
       for (void *pointer : GenericSender<Converted>::topic.getReceivers()) {
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
-        const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
+        const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_acq_rel);
         const std::size_t index = count & receiver->index_mask;
 
         {
           std::lock_guard guard(receiver->message_buffer[index].mutex);
           Convert<MessageType::convertFrom>::call(container, receiver->message_buffer[index].message, user_ptr, *dynamic_cast<GenericSender<Converted> *>(this));
 
-          receiver->read_count.store(count);
+          receiver->read_count.store(count, std::memory_order_release);
         }
 
         receiver->flush_flag = false;
@@ -262,14 +262,14 @@ public:
           Receiver<MessageType> *receiver =
             reinterpret_cast<Receiver<MessageType> *>(*GenericSender<Converted>::topic.getReceivers().begin());
 
-          const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
+          const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_acq_rel);
           const std::size_t index = count & receiver->index_mask;
 
           {
             std::lock_guard guard(receiver->message_buffer[index].mutex);
             Move<MessageType::moveFrom>::call(std::forward<Converted>(container), receiver->message_buffer[index].message, user_ptr, *dynamic_cast<GenericSender<Converted> *>(this));
 
-            receiver->read_count.store(count);
+            receiver->read_count.store(count, std::memory_order_release);
           }
 
           receiver->flush_flag = false;
@@ -311,10 +311,10 @@ public:
       for (void *pointer : GenericSender<Converted>::topic.getReceivers()) {
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
-        const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_relaxed);
+        const std::size_t count = receiver->write_count.fetch_add(1, std::memory_order_acq_rel);
 
         receiver->flush_flag = true;
-        receiver->read_count.store(count);
+        receiver->read_count.store(count, std::memory_order_release);
         receiver->read_count.notify_one();
       }
     }
@@ -672,7 +672,7 @@ public:
 
       Converted result;
 
-      const std::size_t read_index = GenericReceiver<Converted>::read_count.load();
+      const std::size_t read_index = GenericReceiver<Converted>::read_count.load(std::memory_order_acquire);
       const std::size_t index = read_index & GenericReceiver<Converted>::index_mask;
 
       if (read_index == GenericReceiver<Converted>::next_count && mode == Mode::next) {
@@ -704,13 +704,13 @@ public:
 
       Converted result;
 
-      GenericReceiver<Converted>::read_count.wait(GenericReceiver<Converted>::next_count);
+      GenericReceiver<Converted>::read_count.wait(GenericReceiver<Converted>::next_count, std::memory_order_acquire);
 
       if (GenericReceiver<Converted>::flush_flag) {
         throw TopicNoDataAvailableException("Topic was flushed during wait operation.", GenericReceiver<Converted>::node.getLogger());
       }
 
-      const std::size_t read_index = GenericReceiver<Converted>::read_count.load();
+      const std::size_t read_index = GenericReceiver<Converted>::read_count.load(std::memory_order_acquire);
       const std::size_t index = read_index & GenericReceiver<Converted>::index_mask;
 
       {
