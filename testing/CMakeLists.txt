@@ -29,6 +29,7 @@ set(TARGET_TEST_SOURCES
   src/manager.cpp
   src/performance.cpp
   src/stress.cpp
+  src/deadlock.cpp
   src/mcap.cpp
   src/udp-bridge.cpp
   src/serial-bridge.cpp

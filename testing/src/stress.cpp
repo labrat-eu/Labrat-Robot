@@ -13,7 +13,7 @@ TEST(stress, latest) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main", 4));
 
   const u64 limit = 10000000;
 
@@ -55,9 +55,9 @@ TEST(stress, next) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main", 4));
 
-  const u64 limit = 10000000;
+  const u64 limit = 1000000000;
   std::atomic_flag done;
 
   auto sender_lambda = [&node_a, &done]() {

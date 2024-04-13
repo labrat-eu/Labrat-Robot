@@ -70,23 +70,23 @@ static_assert(can_move_to<TestMessageConv>);
 
 class TestNode : public lbot::Node {
 public:
-  TestNode(const Node::Environment environment, const std::string &sender_topic = "", const std::string &receiver_topic = "") :
+  TestNode(const Node::Environment environment, const std::string &sender_topic = "", const std::string &receiver_topic = "", int buffer_size = 10) :
     lbot::Node(environment) {
     if (!sender_topic.empty()) {
       sender = addSender<TestMessageConv>(sender_topic);
     }
     if (!receiver_topic.empty()) {
-      receiver = addReceiver<TestMessageConv>(receiver_topic, nullptr, 10);
+      receiver = addReceiver<TestMessageConv>(receiver_topic, nullptr, buffer_size);
     }
   }
 
-  TestNode(const Node::Environment environment, const std::string &sender_topic, const std::string &receiver_topic, const void *sender_ptr, const void *receiver_ptr) :
+  TestNode(const Node::Environment environment, const std::string &sender_topic, const std::string &receiver_topic, const void *sender_ptr, const void *receiver_ptr, int buffer_size = 10) :
     lbot::Node(environment) {
     if (!sender_topic.empty()) {
       sender = addSender<TestMessageConv>(sender_topic, sender_ptr);
     }
     if (!receiver_topic.empty()) {
-      receiver = addReceiver<TestMessageConv>(receiver_topic, receiver_ptr, 10);
+      receiver = addReceiver<TestMessageConv>(receiver_topic, receiver_ptr, buffer_size);
     }
   }
 

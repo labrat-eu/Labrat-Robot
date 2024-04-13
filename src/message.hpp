@@ -29,7 +29,7 @@ class ConversionFunction {};
 template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(const OriginalType &, ConvertedType &, DataType *, const Reference &) -> void>
 class ConversionFunction<Reference, Function> {
 public:
-    /**
+  /**
    * @brief Call the stored conversion function.
    *
    * @param source Object to be converted.
@@ -45,7 +45,7 @@ public:
 template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(const OriginalType &, ConvertedType &, DataType *) -> void>
 class ConversionFunction<Reference, Function> {
 public:
-    /**Reference, 
+  /**
    * @brief Call the stored conversion function.
    *
    * @param source Object to be converted.
@@ -61,7 +61,7 @@ public:
 template <typename Reference, typename OriginalType, typename ConvertedType, auto (*Function)(const OriginalType &, ConvertedType &) -> void>
 class ConversionFunction<Reference, Function> {
 public:
-    /**
+  /**
    * @brief Call the stored conversion function.
    *
    * @param source Object to be converted.
@@ -108,7 +108,7 @@ class MoveFunction {};
 template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(OriginalType &&, ConvertedType &, DataType *, const Reference &) -> void>
 class MoveFunction<Reference, Function> {
 public:
-    /**
+  /**
    * @brief Call the stored conversion function.
    *
    * @param source Object to be converted.
@@ -124,7 +124,7 @@ public:
 template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(OriginalType &&, ConvertedType &, DataType *) -> void>
 class MoveFunction<Reference, Function> {
 public:
-    /**
+  /**
    * @brief Call the stored conversion function.
    *
    * @param source Object to be converted.
@@ -140,7 +140,7 @@ public:
 template <typename Reference, typename OriginalType, typename ConvertedType, auto (*Function)(OriginalType &&, ConvertedType &) -> void>
 class MoveFunction<Reference, Function> {
 public:
-    /**
+  /**
    * @brief Call the stored conversion function.
    *
    * @param source Object to be converted.
