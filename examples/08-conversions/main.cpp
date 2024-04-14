@@ -34,7 +34,7 @@ public:
 
 class SenderNode : public lbot::Node {
 public:
-  SenderNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
+  SenderNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
     // Register a sender with the previously defined conversion function.
     sender = addSender<ConversionMessage>("/examples/number");
 
@@ -55,7 +55,7 @@ private:
 
 class ReceiverNode : public lbot::Node {
 public:
-  ReceiverNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
+  ReceiverNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
     // Register a receiver with the previously defined conversion function.
     receiver = addReceiver<ConversionMessage>("/examples/number");
 

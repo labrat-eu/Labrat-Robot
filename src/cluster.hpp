@@ -21,11 +21,11 @@ public:
   ~Cluster() = default;
 
   [[nodiscard]] inline const std::string &getName() const {
-    return name;
+    return environment.name;
   }
 
 protected:
-  explicit Cluster(std::string name) : name(std::move(name)) {}
+  explicit Cluster(const ClusterEnvironment environment) : environment(std::move(environment)) {}
 
   /**
    * @brief Construct and add a node to the internal network.
@@ -48,7 +48,7 @@ protected:
 
 private:
   std::vector<std::shared_ptr<Node>> nodes;
-  const std::string name;
+  const ClusterEnvironment environment;
 
   friend class Manager;
 };

@@ -12,6 +12,7 @@
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/message.hpp>
+#include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/plugin.hpp>
 #include <labrat/lbot/service.hpp>
 #include <labrat/lbot/topic.hpp>
@@ -37,19 +38,6 @@ class Manager;
  */
 class Node {
 public:
-  /**
-   * @brief Information on the environment in which the node is created.
-   * This data will be copied by a node upon construction.
-   *
-   */
-  struct Environment {
-    const std::string name;
-
-    TopicMap &topic_map;
-    ServiceMap &service_map;
-    Plugin::List &plugin_list;
-  };
-
   /**
    * @brief Destroy the Node object.
    *
@@ -1156,7 +1144,7 @@ protected:
    *
    * @param environment Node environment data for the node to copy internally.
    */
-  explicit Node(Environment environment) : environment(std::move(environment)), logger(environment.name) {}
+  explicit Node(const NodeEnvironment environment) : environment(std::move(environment)), logger(environment.name) {}
 
   /**
    * @brief Get a logger with the name of the node.
@@ -1234,7 +1222,7 @@ protected:
   friend class Manager;
 
 private:
-  const Environment environment;
+  const NodeEnvironment environment;
   Logger logger;
 };
 

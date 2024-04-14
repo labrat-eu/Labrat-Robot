@@ -18,7 +18,7 @@
 
 class SenderNode : public lbot::Node {
 public:
-  SenderNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
+  SenderNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
     sender = addSender<lbot::Message<examples::msg::Vector>>("/examples/number");
 
     sender_thread = utils::TimerThread(&SenderNode::senderFunction, std::chrono::milliseconds(50), "sender_thread", 1, this);
@@ -43,7 +43,7 @@ private:
 
 class ServerNode : public lbot::Node {
 public:
-  ServerNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
+  ServerNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
     // Register a server on the service with the name "/examples/power" and the handler ServerNode::handleRequest().
     // There can only be one server per service.
     // The type of this server must match any previously registered client on the same service.

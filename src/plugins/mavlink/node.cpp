@@ -1006,7 +1006,7 @@ MavlinkNodePrivate::MavlinkServer::handle<mavlink::common::CommandLong, mavlink:
   return result;
 }
 
-MavlinkNode::MavlinkNode(const Node::Environment &environment, MavlinkConnection::Ptr &&connection) : Node(environment) {
+MavlinkNode::MavlinkNode(const NodeEnvironment &environment, MavlinkConnection::Ptr &&connection) : Node(environment) {
   std::allocator<MavlinkNodePrivate> allocator;
   priv = allocator.allocate(1);
 

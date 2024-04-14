@@ -192,7 +192,7 @@ private:
   static constexpr u8 esc_offset = 0x10;
 };
 
-SerialBridgeNode::SerialBridgeNode(const Node::Environment &environment, const std::string &port, u64 baud_rate) : Node(environment) {
+SerialBridgeNode::SerialBridgeNode(const NodeEnvironment &environment, const std::string &port, u64 baud_rate) : Node(environment) {
   std::allocator<SerialBridgeNodePrivate> allocator;
   priv = allocator.allocate(1);
 

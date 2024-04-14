@@ -70,7 +70,7 @@ static_assert(can_move_to<TestMessageConv>);
 
 class TestNode : public lbot::Node {
 public:
-  TestNode(const Node::Environment environment, const std::string &sender_topic = "", const std::string &receiver_topic = "", int buffer_size = 10) :
+  TestNode(const NodeEnvironment environment, const std::string &sender_topic = "", const std::string &receiver_topic = "", int buffer_size = 10) :
     lbot::Node(environment) {
     if (!sender_topic.empty()) {
       sender = addSender<TestMessageConv>(sender_topic);
@@ -80,7 +80,7 @@ public:
     }
   }
 
-  TestNode(const Node::Environment environment, const std::string &sender_topic, const std::string &receiver_topic, const void *sender_ptr, const void *receiver_ptr, int buffer_size = 10) :
+  TestNode(const NodeEnvironment environment, const std::string &sender_topic, const std::string &receiver_topic, const void *sender_ptr, const void *receiver_ptr, int buffer_size = 10) :
     lbot::Node(environment) {
     if (!sender_topic.empty()) {
       sender = addSender<TestMessageConv>(sender_topic, sender_ptr);
@@ -102,7 +102,7 @@ public:
 
 class TestCluster : public lbot::Cluster {
 public:
-  TestCluster(const std::string &name) : lbot::Cluster(name) {
+  TestCluster(const ClusterEnvironment environment) : lbot::Cluster(environment) {
     addNode<TestNode>("node_a", "main", "void");
     addNode<TestNode>("node_b", "void", "main");
   }

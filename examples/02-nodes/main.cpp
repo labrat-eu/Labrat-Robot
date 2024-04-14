@@ -17,7 +17,7 @@ class ExampleNode : public lbot::Node {
 public:
   // The first argument (environment) must be passed onto the parent constructor.
   // Apart from that a node behaves like any other class.
-  ExampleNode(const lbot::Node::Environment &environment, const std::string &param) : lbot::Node(environment) {
+  ExampleNode(const lbot::NodeEnvironment &environment, const std::string &param) : lbot::Node(environment) {
     // Nodes have their own logger.
     getLogger().logInfo() << "Example node has been started with the parameter " << param << ".";
   }

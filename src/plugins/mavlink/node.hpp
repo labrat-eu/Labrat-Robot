@@ -52,7 +52,7 @@ public:
    * @param environment Node environment.
    * @param connection MavlinkConnection to be used by this instance.
    */
-  MavlinkNode(const Node::Environment &environment, MavlinkConnection::Ptr &&connection);
+  MavlinkNode(const NodeEnvironment &environment, MavlinkConnection::Ptr &&connection);
   ~MavlinkNode();
 
   /**

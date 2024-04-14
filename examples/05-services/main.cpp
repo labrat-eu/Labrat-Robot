@@ -17,7 +17,7 @@
 
 class ServerNode : public lbot::Node {
 public:
-  ServerNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
+  ServerNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
     // Register a server on the service with the name "/examples/power" and the handler ServerNode::handleRequest().
     // There can only be one server per service.
     // The type of this server must match any previously registered client on the same service.
@@ -43,7 +43,7 @@ private:
 
 class ClientNode : public lbot::Node {
 public:
-  ClientNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
+  ClientNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
     // Register a client on the service with the name "/examples/power".
     // The type of this client must match any previously registered server or client on the same service.
     client = addClient<examples::msg::Request, examples::msg::Response>("/examples/power");

@@ -13,7 +13,7 @@
 
 class PrimeNode : public lbot::Node {
 public:
-  PrimeNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
+  PrimeNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
     // Create two threads, one to continuously calculate prime numbers, and one to output the status every second.
 
     // The utils::LoopThread class will create a new thread that calls the provided function continuously.

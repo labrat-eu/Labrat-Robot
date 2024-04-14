@@ -11,7 +11,6 @@
 #include <labrat/lbot/base.hpp>
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/message.hpp>
-#include <labrat/lbot/node.hpp>
 #include <labrat/lbot/plugin.hpp>
 #include <labrat/lbot/service.hpp>
 #include <labrat/lbot/topic.hpp>
@@ -27,7 +26,30 @@
 inline namespace labrat {
 namespace lbot {
 
+class Node;
 class Cluster;
+
+/**
+ * @brief Information on the environment in which the node is created.
+ * This data will be copied by a node upon construction.
+ *
+ */
+struct NodeEnvironment {
+  const std::string name;
+
+  TopicMap &topic_map;
+  ServiceMap &service_map;
+  Plugin::List &plugin_list;
+};
+
+/**
+ * @brief Information on the environment in which the cluster is created.
+ * This data will be copied by a node upon construction.
+ *
+ */
+struct ClusterEnvironment {
+  const std::string name;
+};
 
 /**
  * @brief Central class to manage nodes, plugins, topics and services.
@@ -78,10 +100,10 @@ public:
   std::shared_ptr<T> addNode(const std::string &name, Args &&...args)
   requires std::is_base_of_v<Node, T>
   {
-    const Node::Environment environment = getEnvironment(name);
+    const NodeEnvironment environment = getNodeEnvironment(name);
 
     const std::pair<std::unordered_map<std::string, utils::FinalPtr<Node>>::iterator, bool> result =
-      node_map.emplace(name, std::make_shared<T>(environment, std::forward<Args>(args)...));
+      node_map.emplace(name, std::make_shared<T>(std::move(environment), std::forward<Args>(args)...));
 
     if (!result.second) {
       throw ManagementException("Node not added.");
@@ -103,8 +125,10 @@ public:
   std::shared_ptr<T> addCluster(const std::string &name, Args &&...args)
   requires std::is_base_of_v<Cluster, T>
   {
+    const ClusterEnvironment environment = getClusterEnvironment(name);
+
     const std::pair<std::unordered_map<std::string, utils::FinalPtr<Cluster>>::iterator, bool> result =
-      cluster_map.emplace(name, std::make_shared<T>(name, std::forward<Args>(args)...));
+      cluster_map.emplace(name, std::make_shared<T>(std::move(environment), std::forward<Args>(args)...));
 
     if (!result.second) {
       throw ManagementException("Cluster not added.");
@@ -158,12 +182,18 @@ public:
   void flushAllTopics();
 
 private:
-  inline Node::Environment getEnvironment(const std::string &name) {
-    return Node::Environment{
+  inline NodeEnvironment getNodeEnvironment(const std::string &name) {
+    return NodeEnvironment{
       .name = name,
       .topic_map = topic_map,
       .service_map = service_map,
       .plugin_list = plugin_list,
+    };
+  }
+
+  inline ClusterEnvironment getClusterEnvironment(const std::string &name) {
+    return ClusterEnvironment{
+      .name = name
     };
   }
 };

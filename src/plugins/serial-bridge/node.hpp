@@ -59,7 +59,7 @@ public:
    * @param port Path to the serial port.
    * @param baud_rate Baud rate of the serial port. Only a limited number of values are permitted.
    */
-  explicit SerialBridgeNode(const Node::Environment &environment, const std::string &port = "/dev/ttyUSB0", u64 baud_rate = 921600);
+  explicit SerialBridgeNode(const NodeEnvironment &environment, const std::string &port = "/dev/ttyUSB0", u64 baud_rate = 921600);
   ~SerialBridgeNode();
 
   /**

@@ -59,7 +59,7 @@ public:
    * @param port Remote port of the socket.
    * @param local_port Local port of the socket.
    */
-  UdpBridgeNode(const Node::Environment &environment, const std::string &address, u16 port, u16 local_port);
+  UdpBridgeNode(const NodeEnvironment &environment, const std::string &address, u16 port, u16 local_port);
   ~UdpBridgeNode();
 
   /**

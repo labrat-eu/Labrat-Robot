@@ -16,7 +16,7 @@
 
 class SenderNode : public lbot::Node {
 public:
-  SenderNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
+  SenderNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
     // Register a sender on the topic with the name "/examples/numbers".
     // There can only be one sender per topic.
     // The type of this sender must match any previously registered receiver on the same topic.
@@ -44,7 +44,7 @@ private:
 
 class ReceiverNode : public lbot::Node {
 public:
-  ReceiverNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
+  ReceiverNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
     // Register a receiver on the topic with the name "/examples/numbers".
     // The type of this receiver must match any previously registered sender and receiver on the same topic.
     receiver = addReceiver<lbot::Message<examples::msg::Numbers>>("/examples/numbers");
