@@ -48,30 +48,30 @@ class SenderNode : public lbot::Node {
 public:
   SenderNode(const lbot::Node::Environment &environment) : lbot::Node(environment) {
     // Register a sender with the previously defined move function.
-    sender = addSender<ConversionMessage>("/examples/vector");
+    sender = addSender<examples::msg::Array>("/examples/vector");
 
     sender_thread = utils::TimerThread(&SenderNode::senderFunction, std::chrono::seconds(1), "sender_thread", 1, this);
   }
 
 private:
   void senderFunction() {
-    std::vector<float> data;
-    data.resize(10000000L);
+    lbot::Message<examples::msg::Array> message;
+    message.values.resize(10000000L);
 
     {
       utils::TimerTrace<std::chrono::microseconds> trace("Sender::put()", getLogger());
-      sender->put(data);
+      sender->put(message);
     }
 
     {
-      utils::TimerTrace<std::chrono::microseconds> trace("Sender::move()", getLogger());
-      sender->move(std::move(data));
+      utils::TimerTrace<std::chrono::microseconds> trace("Sender::put(std::move())", getLogger());
+      sender->put(std::move(message));
     }
 
-    // 'data' may no longer be used.
+    // 'message' may no longer be used.
   }
 
-  Sender<ConversionMessage>::Ptr sender;
+  Sender<examples::msg::Array>::Ptr sender;
   utils::TimerThread sender_thread;
 };
 

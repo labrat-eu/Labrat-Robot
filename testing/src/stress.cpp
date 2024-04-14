@@ -113,7 +113,7 @@ TEST(stress, move_latest) {
       TestContainer message;
       message.integral_field = i;
 
-      node_a->sender->move(std::move(message));
+      node_a->sender->put(std::move(message));
     }
   };
 
@@ -156,7 +156,7 @@ TEST(stress, move_next) {
       TestContainer message;
       message.integral_field = i;
 
-      node_a->sender->move(std::move(message));
+      node_a->sender->put(std::move(message));
     }
 
     while (!done.test()) {

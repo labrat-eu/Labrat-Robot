@@ -140,7 +140,7 @@ TEST(setup, move) {
   message_a.float_field = 5.0;
   message_a.buffer = local_buffer;
 
-  node_a->sender->move(std::move<TestContainer &>(message_a));
+  node_a->sender->put(std::move<TestContainer &>(message_a));
 
   ASSERT_TRUE(message_a.buffer.empty());
 

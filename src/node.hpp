@@ -91,7 +91,7 @@ public:
      *
      * @param container Object containing the data to be sent out.
      */
-    virtual void move(ConvertedType &&container) = 0;
+    virtual void put(ConvertedType &&container) = 0;
 
     /**
      * @brief Flush all receivers of the relevant topic.
@@ -225,9 +225,9 @@ public:
      *
      * @param container Object containing the data to be sent out.
      */
-    void move(Converted &&container) override {
+    void put(Converted &&container) override {
       if constexpr (!can_move_from<MessageType, Reference>) {
-        throw ConversionException("A sender move method was called without its move function being properly set.");
+        throw ConversionException("A sender put() move method was called without its move function being properly set.");
       } else {
         std::size_t receive_count = GenericSender<Converted>::topic.getReceivers().size();
 
