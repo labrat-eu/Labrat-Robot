@@ -9,6 +9,9 @@ DeriveLineEnding: false
 DerivePointerAlignment: false
 UseCRLF: false
 UseTab: Never
+LineEnding: LF
+InsertNewlineAtEOF: true
+KeepEmptyLinesAtEOF: false
 
 # Line width rules.
 ColumnLimit: 140
@@ -24,11 +27,15 @@ IndentExternBlock: NoIndent
 IndentGotoLabels: true
 IndentRequires: false
 IndentWrappedFunctionNames: false
+IndentRequiresClause: false
 LambdaBodyIndentation: OuterScope
 NamespaceIndentation: None
+RequiresExpressionIndentation: OuterScope
 
 # Brace rules.
 BreakBeforeBraces: Attach
+InsertBraces: true
+RemoveParentheses: ReturnStatement
 
 # Function signature line brake rules.
 AllowAllArgumentsOnNextLine: false
@@ -38,6 +45,7 @@ AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: true
 BinPackParameters: true
 BreakBeforeBinaryOperators: NonAssignment
+RequiresClausePosition: SingleLine
 
 # Block line break rules.
 AllowShortBlocksOnASingleLine: Never
@@ -50,12 +58,17 @@ CompactNamespaces: false
 # Other line break rules.
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortEnumsOnASingleLine: false
+AllowShortCompoundRequirementOnASingleLine: false
 AlwaysBreakBeforeMultilineStrings: false
 BreakBeforeConceptDeclarations: true
 BreakBeforeTernaryOperators: false
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
+BreakAfterAttributes: Never
 BreakStringLiterals: true
+BreakAdjacentStringLiterals: true
+BreakArrays: false
+BreakBeforeInlineASMColon: OnlyMultiline
 Cpp11BracedListStyle: true
 ReflowComments: true
 
@@ -69,6 +82,8 @@ AlignConsecutiveMacros: None
 AlignEscapedNewlines: DontAlign
 AlignOperands: DontAlign
 AlignTrailingComments: false
+AlignConsecutiveShortCaseStatements:
+  Enabled: false
 
 # Line spacing rules.
 EmptyLineAfterAccessModifier: Never
@@ -133,3 +148,6 @@ IncludeCategories:
     CaseSensitive: true
 IndentPPDirectives: None
 SortIncludes: true
+
+# Other rules
+RemoveSemicolon: true

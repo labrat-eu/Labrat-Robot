@@ -7,7 +7,7 @@ namespace lbot::test {
 
 TEST(config, parse) {
   lbot::Config::Ptr config = lbot::Config::get();
-  
+
   ASSERT_NO_THROW(config->load("../../data/test_config.yaml"));
 
   EXPECT_EQ(config->getParameter("/bool").get<bool>(), true);

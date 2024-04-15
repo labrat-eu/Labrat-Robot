@@ -23,13 +23,15 @@ protected:
   static labrat::lbot::Logger default_logger;
 };
 
-template<typename DurationResolution = std::chrono::milliseconds>
+template <typename DurationResolution = std::chrono::milliseconds>
 class TimerTrace : public TimerTraceBase {
 public:
-  TimerTrace(std::string &&description, labrat::lbot::Logger &logger = default_logger) : logger(logger), description(std::forward<std::string>(description)), start_time(std::chrono::high_resolution_clock::now()) {}
+  TimerTrace(std::string &&description, labrat::lbot::Logger &logger = default_logger) :
+    logger(logger), description(std::forward<std::string>(description)), start_time(std::chrono::high_resolution_clock::now()) {}
 
   ~TimerTrace() {
-    const DurationResolution duration = std::chrono::duration_cast<DurationResolution>(std::chrono::high_resolution_clock::now() - start_time);
+    const DurationResolution duration =
+      std::chrono::duration_cast<DurationResolution>(std::chrono::high_resolution_clock::now() - start_time);
 
     std::string suffix;
 

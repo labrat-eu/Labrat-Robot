@@ -9,15 +9,14 @@
 #include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/message.hpp>
+#include <labrat/lbot/msg/foxglove/Log.fb.hpp>
 #include <labrat/lbot/node.hpp>
 
+#include <cstdlib>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <mutex>
-#include <cstdlib>
-
-#include <labrat/lbot/msg/foxglove/Log.fb.hpp>
 
 inline namespace labrat {
 namespace lbot {
@@ -76,7 +75,8 @@ public:
   explicit LoggerNode(NodeEnvironment environment) : Node(std::move(environment)) {
     const MessageReflection reflection = MessageReflection(EntryMessage::getName());
     if (!reflection.isValid()) {
-      getLogger().logCritical() << "Message schema of the log message is unknown. Please set the LBOT_REFLECTION_PATH environment variable.";
+      getLogger().logCritical()
+        << "Message schema of the log message is unknown. Please set the LBOT_REFLECTION_PATH environment variable.";
       exit(1);
     }
 

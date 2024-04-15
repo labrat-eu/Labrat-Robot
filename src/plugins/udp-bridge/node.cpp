@@ -131,8 +131,7 @@ private:
   std::mutex mutex;
 };
 
-UdpBridgeNode::UdpBridgeNode(const NodeEnvironment &environment, const std::string &address, u16 port, u16 local_port) :
-  Node(environment) {
+UdpBridgeNode::UdpBridgeNode(const NodeEnvironment &environment, const std::string &address, u16 port, u16 local_port) : Node(environment) {
   std::allocator<UdpBridgeNodePrivate> allocator;
   priv = allocator.allocate(1);
 

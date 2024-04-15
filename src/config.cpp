@@ -15,27 +15,31 @@
 
 namespace YAML {
 
-template<>
+template <>
 struct convert<labrat::lbot::ConfigValue> {
-  static bool decode(const Node& node, labrat::lbot::ConfigValue& rhs) {
+  static bool decode(const Node &node, labrat::lbot::ConfigValue &rhs) {
     switch (node.Type()) {
       case YAML::NodeType::Scalar: {
         try {
           rhs = node.as<bool>();
           return true;
-        } catch (TypedBadConversion<bool> &) {}
+        } catch (TypedBadConversion<bool> &) {
+        }
         try {
           rhs = node.as<i64>();
           return true;
-        } catch (TypedBadConversion<i64> &) {}
+        } catch (TypedBadConversion<i64> &) {
+        }
         try {
           rhs = node.as<double>();
           return true;
-        } catch (TypedBadConversion<double> &) {}
+        } catch (TypedBadConversion<double> &) {
+        }
         try {
           rhs = node.as<std::string>();
           return true;
-        } catch (TypedBadConversion<std::string> &) {}
+        } catch (TypedBadConversion<std::string> &) {
+        }
 
         return false;
       }
@@ -59,11 +63,11 @@ struct convert<labrat::lbot::ConfigValue> {
       default: {
         return false;
       }
-    }    
+    }
   }
 };
 
-}
+}  // namespace YAML
 
 inline namespace labrat {
 namespace lbot {
@@ -72,7 +76,7 @@ ConfigValue::ConfigValue() = default;
 
 ConfigValue::ConfigValue(const ConfigValue &rhs) : value(rhs.value) {}
 
-ConfigValue::ConfigValue(ConfigValue &&rhs) : value (std::move(rhs.value)) {}
+ConfigValue::ConfigValue(ConfigValue &&rhs) : value(std::move(rhs.value)) {}
 
 ConfigValue::ConfigValue(bool value) : value(value) {}
 
@@ -192,7 +196,7 @@ void Config::load(const std::string &filename) {
     if (top.iter == top.end) {
       node_stack.pop_back();
       ++(node_stack.back().iter);
-      
+
       continue;
     }
 

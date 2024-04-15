@@ -32,7 +32,7 @@ public:
     }
 
     [[nodiscard]] inline bool valid() const {
-      return (lock.state.load() == State::locked);
+      return lock.state.load() == State::locked;
     }
 
   private:

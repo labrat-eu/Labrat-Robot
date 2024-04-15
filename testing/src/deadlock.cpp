@@ -1,12 +1,12 @@
 #include <labrat/lbot/manager.hpp>
 
+#include <atomic>
+#include <chrono>
+#include <thread>
+
 #include <gtest/gtest.h>
 
 #include <helper.hpp>
-
-#include <atomic>
-#include <thread>
-#include <chrono>
 
 inline namespace labrat {
 namespace lbot::test {
@@ -27,7 +27,7 @@ TEST(deadlock, next) {
 
   ASSERT_EQ(message_a, message_b);
 
-  for (int i = 0 ; i < 4; ++i) {
+  for (int i = 0; i < 4; ++i) {
     TestContainer message_c;
     message_c.integral_field = 5;
     message_c.float_field = 10.0;
@@ -37,7 +37,7 @@ TEST(deadlock, next) {
 
   std::atomic_flag exit_flag;
 
-  std::thread([&](){
+  std::thread([&]() {
     TestContainer message_d = node_b->receiver->next();
     exit_flag.test_and_set();
   }).detach();

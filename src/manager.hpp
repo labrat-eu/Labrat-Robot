@@ -97,9 +97,7 @@ public:
    * @return std::shared_ptr<T> Pointer to the created node.
    */
   template <typename T, typename... Args>
-  std::shared_ptr<T> addNode(const std::string &name, Args &&...args)
-  requires std::is_base_of_v<Node, T>
-  {
+  std::shared_ptr<T> addNode(const std::string &name, Args &&...args) requires std::is_base_of_v<Node, T> {
     const NodeEnvironment environment = getNodeEnvironment(name);
 
     const std::pair<std::unordered_map<std::string, utils::FinalPtr<Node>>::iterator, bool> result =
@@ -122,9 +120,7 @@ public:
    * @return std::shared_ptr<T> Pointer to the created cluster.
    */
   template <typename T, typename... Args>
-  std::shared_ptr<T> addCluster(const std::string &name, Args &&...args)
-  requires std::is_base_of_v<Cluster, T>
-  {
+  std::shared_ptr<T> addCluster(const std::string &name, Args &&...args) requires std::is_base_of_v<Cluster, T> {
     const ClusterEnvironment environment = getClusterEnvironment(name);
 
     const std::pair<std::unordered_map<std::string, utils::FinalPtr<Cluster>>::iterator, bool> result =
@@ -192,9 +188,7 @@ private:
   }
 
   inline ClusterEnvironment getClusterEnvironment(const std::string &name) {
-    return ClusterEnvironment{
-      .name = name
-    };
+    return ClusterEnvironment{.name = name};
   }
 };
 

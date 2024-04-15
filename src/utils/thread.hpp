@@ -12,10 +12,10 @@
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/utils/types.hpp>
 
+#include <cerrno>
 #include <chrono>
 #include <functional>
 #include <thread>
-#include <cerrno>
 
 #include <sched.h>
 #include <sys/prctl.h>
@@ -63,7 +63,7 @@ public:
   LoopThread() = default;
   LoopThread(LoopThread &) = delete;
 
-  LoopThread(LoopThread &&rhs) noexcept : thread(std::move(rhs.thread)) {};
+  LoopThread(LoopThread &&rhs) noexcept : thread(std::move(rhs.thread)){};
 
   /**
    * @brief Start the thread.
@@ -79,7 +79,7 @@ public:
       setup(name, priority);
 
       while (!token.stop_requested()) {
-        [](Function function, Args ...args) {
+        [](Function function, Args... args) {
           std::invoke<Function, Args...>(std::forward<Function>(function), std::forward<Args>(args)...);
         }(function, args...);
       }
@@ -88,7 +88,7 @@ public:
 
   void operator=(LoopThread &&rhs) noexcept {
     thread = std::move(rhs.thread);
-  };
+  }
 
 private:
   std::jthread thread;
@@ -103,7 +103,7 @@ public:
   TimerThread() = default;
   TimerThread(TimerThread &) = delete;
 
-  TimerThread(TimerThread &&rhs) noexcept : thread(std::move(rhs.thread)) {};
+  TimerThread(TimerThread &&rhs) noexcept : thread(std::move(rhs.thread)){};
 
   /**
    * @brief Start the thread.
@@ -122,7 +122,7 @@ public:
       while (true) {
         const std::chrono::time_point<std::chrono::steady_clock> time_begin = std::chrono::steady_clock::now();
 
-        [](Function function, Args ...args) {
+        [](Function function, Args... args) {
           std::invoke<Function, Args...>(std::forward<Function>(function), std::forward<Args>(args)...);
         }(function, args...);
 
@@ -137,7 +137,7 @@ public:
 
   void operator=(TimerThread &&rhs) noexcept {
     thread = std::move(rhs.thread);
-  };
+  }
 
 private:
   std::jthread thread;

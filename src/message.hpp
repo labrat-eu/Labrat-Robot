@@ -23,10 +23,11 @@
 inline namespace labrat {
 namespace lbot {
 
-template <typename Reference, auto* Function>
+template <typename Reference, auto *Function>
 class ConversionFunction {};
 
-template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(const OriginalType &, ConvertedType &, DataType *, const Reference &) -> void>
+template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType,
+  auto (*Function)(const OriginalType &, ConvertedType &, DataType *, const Reference &)->void>
 class ConversionFunction<Reference, Function> {
 public:
   /**
@@ -42,7 +43,8 @@ public:
   }
 };
 
-template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(const OriginalType &, ConvertedType &, DataType *) -> void>
+template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType,
+  auto (*Function)(const OriginalType &, ConvertedType &, DataType *)->void>
 class ConversionFunction<Reference, Function> {
 public:
   /**
@@ -58,7 +60,7 @@ public:
   }
 };
 
-template <typename Reference, typename OriginalType, typename ConvertedType, auto (*Function)(const OriginalType &, ConvertedType &) -> void>
+template <typename Reference, typename OriginalType, typename ConvertedType, auto (*Function)(const OriginalType &, ConvertedType &)->void>
 class ConversionFunction<Reference, Function> {
 public:
   /**
@@ -74,38 +76,51 @@ public:
 
 template <typename T>
 concept can_convert_to_noptr = requires(const T::Storage &source, T::Converted &destination) {
-  {T::convertTo(source, destination)};
+  {
+    T::convertTo(source, destination)
+  };
 };
 template <typename T>
 concept can_convert_to_ptr = requires(const T::Storage &source, T::Converted &destination) {
-  {T::convertTo(source, destination, nullptr)};
+  {
+    T::convertTo(source, destination, nullptr)
+  };
 };
 template <typename T, typename R>
 concept can_convert_to_ref = requires(const T::Storage &source, T::Converted &destination, const R &reference) {
-  {T::convertTo(source, destination, nullptr, reference)};
+  {
+    T::convertTo(source, destination, nullptr, reference)
+  };
 };
 template <typename T, typename R = void>
 concept can_convert_to = can_convert_to_noptr<T> || can_convert_to_ptr<T> || can_convert_to_ref<T, R>;
 
 template <typename T>
 concept can_convert_from_noptr = requires(const T::Converted &source, T::Storage &destination) {
-  {T::convertFrom(source, destination)};
+  {
+    T::convertFrom(source, destination)
+  };
 };
 template <typename T>
 concept can_convert_from_ptr = requires(const T::Converted &source, T::Storage &destination) {
-  {T::convertFrom(source, destination, nullptr)};
+  {
+    T::convertFrom(source, destination, nullptr)
+  };
 };
 template <typename T, typename R>
 concept can_convert_from_ref = requires(const T::Converted &source, T::Storage &destination, const R &reference) {
-  {T::convertFrom(source, destination, nullptr, reference)};
+  {
+    T::convertFrom(source, destination, nullptr, reference)
+  };
 };
 template <typename T, typename R = void>
 concept can_convert_from = can_convert_from_noptr<T> || can_convert_from_ptr<T> || can_convert_from_ref<T, R>;
 
-template <typename Reference, auto* Function>
+template <typename Reference, auto *Function>
 class MoveFunction {};
 
-template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(OriginalType &&, ConvertedType &, DataType *, const Reference &) -> void>
+template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType,
+  auto (*Function)(OriginalType &&, ConvertedType &, DataType *, const Reference &)->void>
 class MoveFunction<Reference, Function> {
 public:
   /**
@@ -121,7 +136,8 @@ public:
   }
 };
 
-template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType, auto (*Function)(OriginalType &&, ConvertedType &, DataType *) -> void>
+template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType,
+  auto (*Function)(OriginalType &&, ConvertedType &, DataType *)->void>
 class MoveFunction<Reference, Function> {
 public:
   /**
@@ -137,7 +153,7 @@ public:
   }
 };
 
-template <typename Reference, typename OriginalType, typename ConvertedType, auto (*Function)(OriginalType &&, ConvertedType &) -> void>
+template <typename Reference, typename OriginalType, typename ConvertedType, auto (*Function)(OriginalType &&, ConvertedType &)->void>
 class MoveFunction<Reference, Function> {
 public:
   /**
@@ -153,30 +169,42 @@ public:
 
 template <typename T>
 concept can_move_to_noptr = requires(T::Storage &&source, T::Converted &destination) {
-  {T::moveTo(std::move(source), destination)};
+  {
+    T::moveTo(std::move(source), destination)
+  };
 };
 template <typename T>
 concept can_move_to_ptr = requires(T::Storage &&source, T::Converted &destination) {
-  {T::moveTo(std::move(source), destination, nullptr)};
+  {
+    T::moveTo(std::move(source), destination, nullptr)
+  };
 };
 template <typename T, typename R>
 concept can_move_to_ref = requires(T::Storage &&source, T::Converted &destination, const R &reference) {
-  {T::moveTo(std::move(source), destination, nullptr, reference)};
+  {
+    T::moveTo(std::move(source), destination, nullptr, reference)
+  };
 };
 template <typename T, typename R = void>
 concept can_move_to = can_move_to_noptr<T> || can_move_to_ptr<T> || can_move_to_ref<T, R>;
 
 template <typename T>
 concept can_move_from_noptr = requires(T::Converted &&source, T::Storage &destination) {
-  {T::moveFrom(std::move(source), destination)};
+  {
+    T::moveFrom(std::move(source), destination)
+  };
 };
 template <typename T>
 concept can_move_from_ptr = requires(T::Converted &&source, T::Storage &destination) {
-  {T::moveFrom(std::move(source), destination, nullptr)};
+  {
+    T::moveFrom(std::move(source), destination, nullptr)
+  };
 };
 template <typename T, typename R>
 concept can_move_from_ref = requires(T::Converted &&source, T::Storage &destination, const R &reference) {
-  {T::moveFrom(std::move(source), destination, nullptr, reference)};
+  {
+    T::moveFrom(std::move(source), destination, nullptr, reference)
+  };
 };
 template <typename T, typename R = void>
 concept can_move_from = can_move_from_noptr<T> || can_move_from_ptr<T> || can_move_to_ref<T, R>;
@@ -219,8 +247,7 @@ concept is_flatbuffer = std::is_base_of_v<flatbuffers::Table, T>;
  * @tparam T
  */
 template <typename FlatbufferType, typename ConvertedType>
-requires is_flatbuffer<FlatbufferType>
-class MessageBase : public MessageTime, public FlatbufferType::NativeTableType {
+requires is_flatbuffer<FlatbufferType> class MessageBase : public MessageTime, public FlatbufferType::NativeTableType {
 public:
   using Storage = MessageBase<FlatbufferType, ConvertedType>;
   using Flatbuffer = FlatbufferType;
@@ -268,8 +295,7 @@ concept is_message = std::derived_from<T, MessageBase<Flatbuffer, Converted>>;
  * @tparam T
  */
 template <typename FlatbufferType>
-requires is_flatbuffer<FlatbufferType>
-class Message final : public MessageBase<FlatbufferType, Message<FlatbufferType>> {
+requires is_flatbuffer<FlatbufferType> class Message final : public MessageBase<FlatbufferType, Message<FlatbufferType>> {
 public:
   using Super = MessageBase<FlatbufferType, Message<FlatbufferType>>;
   using Content = typename Super::Content;

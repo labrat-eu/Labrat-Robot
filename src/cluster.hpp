@@ -37,9 +37,7 @@ protected:
    * @return std::shared_ptr<T> Pointer to the created node.
    */
   template <typename T, typename... Args>
-  std::shared_ptr<T> addNode(const std::string &name, Args &&...args)
-  requires std::is_base_of_v<Node, T>
-  {
+  std::shared_ptr<T> addNode(const std::string &name, Args &&...args) requires std::is_base_of_v<Node, T> {
     std::shared_ptr<T> result = Manager::get()->addNode<T>(name, std::forward<Args>(args)...);
     nodes.emplace_back(result);
 

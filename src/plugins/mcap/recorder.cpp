@@ -30,7 +30,13 @@ class McapRecorderPrivate {
 public:
   McapRecorderPrivate(const Plugin::Filter &filter) : logger("mcap") {
     Config::Ptr config = Config::get();
-    const std::string filename = config->getParameterFallback("/lbot/plugins/mcap/tracefile", "trace_" + std::to_string(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count()) + ".mcap").get<std::string>();
+    const std::string filename =
+      config
+        ->getParameterFallback("/lbot/plugins/mcap/tracefile",
+          "trace_"
+            + std::to_string(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count())
+            + ".mcap")
+        .get<std::string>();
 
     const mcap::McapWriterOptions options("");
     const mcap::Status result = writer.open(filename, options);
@@ -60,8 +66,7 @@ private:
     mcap::Channel channel;
     u64 index = 0;
 
-    ChannelInfo(const std::string_view topic, const std::string_view encoding, mcap::SchemaId schema) :
-      channel(topic, encoding, schema) {}
+    ChannelInfo(const std::string_view topic, const std::string_view encoding, mcap::SchemaId schema) : channel(topic, encoding, schema) {}
   };
 
   using ChannelMap = std::unordered_map<std::size_t, ChannelInfo>;

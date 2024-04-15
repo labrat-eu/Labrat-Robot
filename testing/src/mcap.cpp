@@ -1,5 +1,5 @@
-#include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/config.hpp>
+#include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/plugins/mcap/recorder.hpp>
 
 #include <cmath>

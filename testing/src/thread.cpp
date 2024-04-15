@@ -1,7 +1,7 @@
 #include <labrat/lbot/utils/thread.hpp>
 
-#include <thread>
 #include <atomic>
+#include <thread>
 
 #include <gtest/gtest.h>
 
@@ -21,7 +21,7 @@ TEST(thread, loop) {
   std::vector<int> vec = {1, 2, 3, 4, 5};
   int loop_count = 0;
   std::atomic_bool exit_flag;
-  
+
   {
     utils::LoopThread thread(&test_func, "name", 1, std::move(vec), &loop_count, &exit_flag);
     exit_flag.wait(false);
@@ -32,7 +32,7 @@ TEST(thread, timer) {
   std::vector<int> vec = {1, 2, 3, 4, 5};
   int loop_count = 0;
   std::atomic_bool exit_flag;
-  
+
   {
     utils::TimerThread thread(&test_func, std::chrono::seconds(0), "name", 1, std::move(vec), &loop_count, &exit_flag);
     exit_flag.wait(false);

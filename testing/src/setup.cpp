@@ -206,7 +206,8 @@ TEST(setup, server) {
 
   TestContainer (*ptr)(const TestContainer &, u64 *) = handler;
 
-  Node::Server<TestMessageConv, TestMessageConv>::Ptr server = node_a->addServer<TestMessageConv, TestMessageConv>("test_service", ptr, &counter);
+  Node::Server<TestMessageConv, TestMessageConv>::Ptr server =
+    node_a->addServer<TestMessageConv, TestMessageConv>("test_service", ptr, &counter);
   Node::Client<TestMessageConv, TestMessageConv>::Ptr client = node_b->addClient<TestMessageConv, TestMessageConv>("test_service");
 
   TestContainer request;

@@ -1,8 +1,8 @@
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/node.hpp>
+#include <labrat/lbot/utils/performance.hpp>
 #include <labrat/lbot/utils/signal.hpp>
 #include <labrat/lbot/utils/thread.hpp>
-#include <labrat/lbot/utils/performance.hpp>
 
 #include <vector>
 

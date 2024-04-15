@@ -12,10 +12,10 @@
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/utils/types.hpp>
 
-#include <vector>
 #include <string>
-#include <variant>
 #include <unordered_map>
+#include <variant>
+#include <vector>
 
 inline namespace labrat {
 namespace lbot {
@@ -39,7 +39,7 @@ public:
 
   /**
    * @brief Check whether a valid value is contained.
-   * 
+   *
    * @return true A valid value is contained
    * @return false No value is contained
    */
@@ -52,23 +52,23 @@ public:
 
   /**
    * @brief Check if the specified type is contained in the ConfigValue.
-   * 
+   *
    * @tparam T Type to check
    * @return true The specified type is contained
    * @return false The specified type is not contained
    */
-  template<typename T>
+  template <typename T>
   inline bool contains() const {
     return std::holds_alternative<T>(value);
   }
 
   /**
    * @brief Get the contents.
-   * 
+   *
    * @tparam T Type to get
    * @return const T& Contents
    */
-  template<typename T>
+  template <typename T>
   inline const T &get() const {
     try {
       return std::get<T>(value);
@@ -116,7 +116,7 @@ public:
 
   /**
    * @brief Set a parameter.
-   * 
+   *
    * @param name Name of the parameter
    * @param value Value of the parameter
    * @return ConfigValue& Value of the created parameter
@@ -125,17 +125,17 @@ public:
 
   /**
    * @brief Get a parameter.
-   * 
+   *
    * @param name Name of the parameter
    * @return const ConfigValue& Value of the parameter
-   * 
+   *
    * @throw ConfigAccessException If the requested parameter does not exist
    */
   const ConfigValue &getParameter(const std::string &name) const;
 
   /**
    * @brief Get a parameter. Return the provided fallback in case the parameter is not set.
-   * 
+   *
    * @param name Name of the parameter
    * @param fallback Value of the fallback parameter
    * @return const ConfigValue& Value of the parameter
@@ -144,7 +144,7 @@ public:
 
   /**
    * @brief Remove a parameter. If it does not exist, do nothing.
-   * 
+   *
    * @param name Name of the parameter
    */
   void removeParameter(const std::string &name);

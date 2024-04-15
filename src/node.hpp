@@ -11,8 +11,8 @@
 #include <labrat/lbot/base.hpp>
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/logger.hpp>
-#include <labrat/lbot/message.hpp>
 #include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/message.hpp>
 #include <labrat/lbot/plugin.hpp>
 #include <labrat/lbot/service.hpp>
 #include <labrat/lbot/topic.hpp>
@@ -48,8 +48,7 @@ public:
   class Sender;
 
   template <typename MessageType>
-  requires is_message<MessageType>
-  class SenderBase;
+  requires is_message<MessageType> class SenderBase;
 
   /**
    * @brief Generic sender to declare virtual functions for type specific receiver instances to define.
@@ -120,17 +119,16 @@ public:
    * @tparam MessageType Type of the messages sent over the topic.
    */
   template <typename MessageType>
-  requires is_message<MessageType>
-  class SenderBase : public GenericSender<typename MessageType::Converted> {
+  requires is_message<MessageType> class SenderBase : public GenericSender<typename MessageType::Converted> {
   public:
     using Storage = typename MessageType::Storage;
     using Converted = typename MessageType::Converted;
 
     using Reference = GenericSender<Converted>;
 
-    template <auto* Function>
+    template <auto *Function>
     using Convert = ConversionFunction<Reference, Function>;
-    template <auto* Function>
+    template <auto *Function>
     using Move = MoveFunction<Reference, Function>;
 
     SenderBase(SenderBase &) = delete;
@@ -144,9 +142,11 @@ public:
      * @param node Reference to the parent node.
      * @param user_ptr User pointer to be used by the conversion function.
      */
-    SenderBase(const std::string &topic_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<MessageType, Reference> :
+    SenderBase(const std::string &topic_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<MessageType, Reference>
+      :
       GenericSender<Converted>(Plugin::TopicInfo::get<MessageType>(topic_name),
-        node.environment.topic_map.addSender<MessageType>(topic_name, this), node), user_ptr(user_ptr) {
+        node.environment.topic_map.addSender<MessageType>(topic_name, this), node),
+      user_ptr(user_ptr) {
       for (Plugin &plugin : GenericSender<Converted>::node.environment.plugin_list) {
         if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
           continue;
@@ -189,7 +189,8 @@ public:
 
         {
           std::lock_guard guard(receiver->message_buffer[index].mutex);
-          Convert<MessageType::convertFrom>::call(container, receiver->message_buffer[index].message, user_ptr, *dynamic_cast<GenericSender<Converted> *>(this));
+          Convert<MessageType::convertFrom>::call(container, receiver->message_buffer[index].message, user_ptr,
+            *dynamic_cast<GenericSender<Converted> *>(this));
           receiver->message_buffer[index].update_flag = true;
           receiver->count.store(local_count, std::memory_order_release);
         }
@@ -255,7 +256,8 @@ public:
 
           {
             std::lock_guard guard(receiver->message_buffer[index].mutex);
-            Move<MessageType::moveFrom>::call(std::forward<Converted>(container), receiver->message_buffer[index].message, user_ptr, *dynamic_cast<GenericSender<Converted> *>(this));
+            Move<MessageType::moveFrom>::call(std::forward<Converted>(container), receiver->message_buffer[index].message, user_ptr,
+              *dynamic_cast<GenericSender<Converted> *>(this));
             receiver->message_buffer[index].update_flag = true;
             receiver->count.store(local_count, std::memory_order_release);
           }
@@ -270,7 +272,8 @@ public:
           // Send to a plugin.
           MessageType message;
 
-          Move<MessageType::moveFrom>::call(std::forward<Converted>(container), message, user_ptr, *dynamic_cast<GenericSender<Converted> *>(this));
+          Move<MessageType::moveFrom>::call(std::forward<Converted>(container), message, user_ptr,
+            *dynamic_cast<GenericSender<Converted> *>(this));
 
           flatbuffers::FlatBufferBuilder builder;
           builder.Finish(MessageType::Content::TableType::Pack(builder, &message));
@@ -354,8 +357,7 @@ public:
   };
 
   template <typename FlatbufferType>
-  requires is_flatbuffer<FlatbufferType>
-  class Sender<FlatbufferType> final : public SenderBase<Message<FlatbufferType>> {
+  requires is_flatbuffer<FlatbufferType> class Sender<FlatbufferType> final : public SenderBase<Message<FlatbufferType>> {
   public:
     using Super = SenderBase<Message<FlatbufferType>>;
     using Ptr = std::unique_ptr<Sender<FlatbufferType>>;
@@ -368,8 +370,7 @@ public:
   class Receiver;
 
   template <typename MessageType>
-  requires is_message<MessageType>
-  class ReceiverBase;
+  requires is_message<MessageType> class ReceiverBase;
 
   /**
    * @brief @brief Generic receiver to declare virtual functions for type specific receiver instances to define.
@@ -423,8 +424,7 @@ public:
 
   protected:
     GenericReceiver(Plugin::TopicInfo topic_info, TopicMap::Topic &topic, Node &node, std::size_t buffer_size) :
-      topic_info(std::move(topic_info)), topic(topic), node(node), index_mask(calculateBufferMask(buffer_size)),
-      count(index_mask) {
+      topic_info(std::move(topic_info)), topic(topic), node(node), index_mask(calculateBufferMask(buffer_size)), count(index_mask) {
       next_count = index_mask;
       flush_flag = true;
     }
@@ -450,7 +450,7 @@ public:
           if (mask ^ buffer_size) {
             return mask << 1;
           } else {
-          return mask;
+            return mask;
           }
         }
 
@@ -486,17 +486,16 @@ public:
    * @tparam MessageType Type of the messages sent over the topic.
    */
   template <typename MessageType>
-  requires is_message<MessageType>
-  class ReceiverBase : public GenericReceiver<typename MessageType::Converted> {
+  requires is_message<MessageType> class ReceiverBase : public GenericReceiver<typename MessageType::Converted> {
   public:
     using Storage = typename MessageType::Storage;
     using Converted = typename MessageType::Converted;
 
     using Reference = GenericReceiver<Converted>;
 
-    template <auto* Function>
+    template <auto *Function>
     using Convert = ConversionFunction<Reference, Function>;
-    template <auto* Function>
+    template <auto *Function>
     using Move = MoveFunction<Reference, Function>;
 
   private:
@@ -508,11 +507,11 @@ public:
      * @param user_ptr User pointer to be used by the conversion function.
      * @param buffer_size Size of the internal receiver buffer. It must be at least 4 and should ideally be a power of 2.
      */
-    ReceiverBase(const std::string &topic_name, Node &node, const void *user_ptr = nullptr, std::size_t buffer_size = 4) requires can_convert_to<MessageType, Reference> :
+    ReceiverBase(const std::string &topic_name, Node &node, const void *user_ptr = nullptr, std::size_t buffer_size = 4)
+      requires can_convert_to<MessageType, Reference> :
       GenericReceiver<Converted>(Plugin::TopicInfo::get<MessageType>(topic_name),
-        node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node, buffer_size), user_ptr(user_ptr),
-      message_buffer(GenericReceiver<Converted>::calculateBufferSize(buffer_size)) {
-    }
+        node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node, buffer_size),
+      user_ptr(user_ptr), message_buffer(GenericReceiver<Converted>::calculateBufferSize(buffer_size)) {}
 
     friend class Node;
     friend class Sender<MessageType>;
@@ -657,14 +656,15 @@ public:
 
       {
         std::lock_guard guard(message_buffer[index].mutex);
-        Convert<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr, *dynamic_cast<GenericReceiver<Converted> *>(this));
+        Convert<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr,
+          *dynamic_cast<GenericReceiver<Converted> *>(this));
         message_buffer[index].update_flag = false;
       }
 
       mode = Mode::latest;
 
       return result;
-    };
+    }
 
     /**
      * @brief Get the next message sent over the topic.
@@ -692,16 +692,18 @@ public:
         }
 
         local_count = GenericReceiver<Converted>::count.load(std::memory_order_acquire);
-        index  = local_count & GenericReceiver<Converted>::index_mask;
+        index = local_count & GenericReceiver<Converted>::index_mask;
       } while (!message_buffer[index].update_flag);
 
       {
         std::lock_guard guard(message_buffer[index].mutex);
-        
+
         if constexpr (can_move_from<MessageType, Reference>) {
-          Move<MessageType::moveTo>::call(std::move(message_buffer[index].message), result, user_ptr, *dynamic_cast<GenericReceiver<Converted> *>(this));
+          Move<MessageType::moveTo>::call(std::move(message_buffer[index].message), result, user_ptr,
+            *dynamic_cast<GenericReceiver<Converted> *>(this));
         } else {
-          Convert<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr, *dynamic_cast<GenericReceiver<Converted> *>(this));
+          Convert<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr,
+            *dynamic_cast<GenericReceiver<Converted> *>(this));
         }
         message_buffer[index].update_flag = false;
       }
@@ -710,7 +712,7 @@ public:
       GenericReceiver<Converted>::next_count = local_count;
 
       return result;
-    };
+    }
 
     /**
      * @brief Register a callback function.
@@ -742,8 +744,7 @@ public:
   };
 
   template <typename FlatbufferType>
-  requires is_flatbuffer<FlatbufferType>
-  class Receiver<FlatbufferType> final : public ReceiverBase<Message<FlatbufferType>> {
+  requires is_flatbuffer<FlatbufferType> class Receiver<FlatbufferType> final : public ReceiverBase<Message<FlatbufferType>> {
   public:
     using Super = ReceiverBase<Message<FlatbufferType>>;
     using Ptr = std::unique_ptr<Receiver<FlatbufferType>>;
@@ -790,9 +791,9 @@ public:
 
     using Reference = GenericServer<RequestConverted, ResponseConverted>;
 
-    template <auto* Function>
+    template <auto *Function>
     using Convert = ConversionFunction<Reference, Function>;
-    template <auto* Function>
+    template <auto *Function>
     using Move = MoveFunction<Reference, Function>;
 
     /**
@@ -819,17 +820,21 @@ public:
        * @param user_ptr User pointer to access generic external data.
        * @return ResponseType Response to be sent to the client.
        */
-      inline ResponseStorage call(const RequestStorage &request, const void *user_ptr, ServerBase<RequestType, ResponseType> *reference) const {
+      inline ResponseStorage call(const RequestStorage &request, const void *user_ptr,
+        ServerBase<RequestType, ResponseType> *reference) const {
         RequestConverted request_converted;
-        Convert<RequestType::convertTo>::call(request, request_converted, user_ptr, *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
+        Convert<RequestType::convertTo>::call(request, request_converted, user_ptr,
+          *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
 
         ResponseConverted response_converted = function(request_converted, const_cast<void *>(user_ptr));
         ResponseStorage response;
 
         if constexpr (can_move_from<ResponseType, Reference>) {
-          Move<ResponseType::moveFrom>::call(std::move(response_converted), response, user_ptr, *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
+          Move<ResponseType::moveFrom>::call(std::move(response_converted), response, user_ptr,
+            *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
         } else {
-          Convert<ResponseType::convertFrom>::call(response_converted, response, user_ptr, *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
+          Convert<ResponseType::convertFrom>::call(response_converted, response, user_ptr,
+            *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
         }
 
         return response;
@@ -851,11 +856,14 @@ public:
      * @param handler_function Handler function to handle requests made to a service.
      * @param user_ptr User pointer to be used by the handler function.
      */
-    ServerBase(const std::string &service_name, Node &node, HandlerFunction handler_function, const void *user_ptr = nullptr) requires can_convert_to<RequestType, Reference> && can_convert_from<ResponseType, Reference> :
-      GenericServer<RequestConverted, ResponseConverted>(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name, node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this))),
+    ServerBase(const std::string &service_name, Node &node, HandlerFunction handler_function, const void *user_ptr = nullptr)
+      requires can_convert_to<RequestType, Reference> && can_convert_from<ResponseType, Reference> :
+      GenericServer<RequestConverted, ResponseConverted>(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name,
+        node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this))),
       node(node), handler_function(handler_function), user_ptr(user_ptr) {
       for (Plugin &plugin : node.environment.plugin_list) {
-        if (plugin.delete_flag.test() || !plugin.filter.check(GenericServer<RequestConverted, ResponseConverted>::service_info.service_hash)) {
+        if (plugin.delete_flag.test()
+          || !plugin.filter.check(GenericServer<RequestConverted, ResponseConverted>::service_info.service_hash)) {
           continue;
         }
 
@@ -966,14 +974,14 @@ public:
 
     using Reference = GenericClient<RequestConverted, ResponseConverted>;
 
-    template <auto* Function>
+    template <auto *Function>
     using Convert = ConversionFunction<Reference, Function>;
-    template <auto* Function>
+    template <auto *Function>
     using Move = MoveFunction<Reference, Function>;
 
     ClientBase(ClientBase &) = delete;
     ClientBase(ClientBase &&) = delete;
-  
+
   private:
     /**
      * @brief Construct a new Client object.
@@ -982,8 +990,10 @@ public:
      * @param node Reference to the parent node.
      * @param user_ptr User pointer to be forwarded to conversion and move functions.
      */
-    ClientBase(const std::string &service_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<RequestType, Reference> && can_convert_to<ResponseType, Reference> :
-      GenericClient<RequestConverted, ResponseConverted>(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name, node.environment.service_map.getService<RequestType, ResponseType>(service_name))),
+    ClientBase(const std::string &service_name, Node &node, const void *user_ptr = nullptr)
+      requires can_convert_from<RequestType, Reference> && can_convert_to<ResponseType, Reference> :
+      GenericClient<RequestConverted, ResponseConverted>(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name,
+        node.environment.service_map.getService<RequestType, ResponseType>(service_name))),
       node(node), user_ptr(user_ptr) {}
 
     friend class Node;
@@ -1015,7 +1025,8 @@ public:
       std::thread(
         [this](std::promise<ResponseConverted> promise, RequestConverted request) {
         try {
-          ServiceMap::Service::ServerReference reference = GenericClient<RequestConverted, ResponseConverted>::service_info.service.getServer();
+          ServiceMap::Service::ServerReference reference =
+            GenericClient<RequestConverted, ResponseConverted>::service_info.service.getServer();
           Server<RequestType, ResponseType> *server = reference;
 
           if (server == nullptr) {
@@ -1025,18 +1036,22 @@ public:
           RequestStorage request_storage;
 
           if constexpr (can_move_from<RequestType, Reference>) {
-            Move<RequestType::moveFrom>::call(std::move(request), request_storage, user_ptr, *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
+            Move<RequestType::moveFrom>::call(std::move(request), request_storage, user_ptr,
+              *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
           } else {
-            Convert<RequestType::convertFrom>::call(request, request_storage, user_ptr, *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
+            Convert<RequestType::convertFrom>::call(request, request_storage, user_ptr,
+              *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
           }
 
           ResponseStorage response_storage = server->handler_function.call(request_storage, server->user_ptr, server);
           ResponseConverted response;
 
           if constexpr (can_move_to<ResponseType, Reference>) {
-            Move<ResponseType::moveTo>::call(std::move(response_storage), response, user_ptr, *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
+            Move<ResponseType::moveTo>::call(std::move(response_storage), response, user_ptr,
+              *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
           } else {
-            Convert<ResponseType::convertTo>::call(response_storage, response, user_ptr, *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
+            Convert<ResponseType::convertTo>::call(response_storage, response, user_ptr,
+              *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
           }
 
           promise.set_value(std::move(response));
@@ -1165,8 +1180,7 @@ protected:
    */
   template <typename MessageType, typename... Args>
   typename Sender<MessageType>::Ptr addSender(const std::string &topic_name, Args &&...args)
-  requires is_message<MessageType> || is_flatbuffer<MessageType>
-  {
+    requires is_message<MessageType> || is_flatbuffer<MessageType> {
     using Ptr = Sender<MessageType>::Ptr;
     return Ptr(new Sender<MessageType>(topic_name, *this, std::forward<Args>(args)...));
   }
@@ -1181,8 +1195,7 @@ protected:
    */
   template <typename MessageType, typename... Args>
   typename Receiver<MessageType>::Ptr addReceiver(const std::string &topic_name, Args &&...args)
-  requires is_message<MessageType> || is_flatbuffer<MessageType>
-  {
+    requires is_message<MessageType> || is_flatbuffer<MessageType> {
     using Ptr = Receiver<MessageType>::Ptr;
     return Ptr(new Receiver<MessageType>(topic_name, *this, std::forward<Args>(args)...));
   }
@@ -1197,8 +1210,7 @@ protected:
    */
   template <typename RequestType, typename ResponseType, typename... Args>
   typename Server<RequestType, ResponseType>::Ptr addServer(const std::string &service_name, Args &&...args)
-  requires(is_message<RequestType> || is_flatbuffer<RequestType>) && (is_message<ResponseType> || is_flatbuffer<ResponseType>)
-  {
+    requires(is_message<RequestType> || is_flatbuffer<RequestType>) && (is_message<ResponseType> || is_flatbuffer<ResponseType>) {
     using Ptr = Server<RequestType, ResponseType>::Ptr;
     return Ptr(new Server<RequestType, ResponseType>(service_name, *this, std::forward<Args>(args)...));
   }
@@ -1213,8 +1225,7 @@ protected:
    */
   template <typename RequestType, typename ResponseType, typename... Args>
   typename Client<RequestType, ResponseType>::Ptr addClient(const std::string &service_name, Args &&...args)
-  requires(is_message<RequestType> || is_flatbuffer<RequestType>) && (is_message<ResponseType> || is_flatbuffer<ResponseType>)
-  {
+    requires(is_message<RequestType> || is_flatbuffer<RequestType>) && (is_message<ResponseType> || is_flatbuffer<ResponseType>) {
     using Ptr = Client<RequestType, ResponseType>::Ptr;
     return Ptr(new Client<RequestType, ResponseType>(service_name, *this, std::forward<Args>(args)...));
   }

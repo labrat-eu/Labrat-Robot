@@ -75,8 +75,7 @@ public:
      * @return Plugin::TopicInfo Information about the topic.
      */
     template <typename MessageType>
-    requires is_message<MessageType>
-    static Plugin::TopicInfo get(const std::string &topic_name) {
+    requires is_message<MessageType> static Plugin::TopicInfo get(const std::string &topic_name) {
       const Plugin::TopicInfo result = {
         .type_hash = typeid(typename MessageType::Content).hash_code(),
         .type_name = MessageType::getName(),
@@ -165,7 +164,7 @@ public:
      * @return false The callback should not be performed.
      */
     inline bool check(std::size_t topic_hash) const {
-      return (set.contains(topic_hash) ^ mode);
+      return set.contains(topic_hash) ^ mode;
     }
 
     /**

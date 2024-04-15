@@ -6,11 +6,11 @@
  *
  */
 
+#include <labrat/lbot/config.hpp>
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/message.hpp>
-#include <labrat/lbot/config.hpp>
 #include <labrat/lbot/plugins/foxglove-ws/server.hpp>
 
 #include <chrono>
@@ -97,7 +97,8 @@ public:
     handlers.unsubscribeHandler = [&](foxglove::ChannelId channel_id, websocketpp::connection_hdl) -> void {
       logger.logInfo() << "Client unsubscribed from " << channel_id;
     };
-    handlers.parameterRequestHandler = [&](const std::vector<std::string> &names, const std::optional<std::string>& command, websocketpp::connection_hdl handle) -> void {
+    handlers.parameterRequestHandler = [&](const std::vector<std::string> &names, const std::optional<std::string> &command,
+                                         websocketpp::connection_hdl handle) -> void {
       logger.logInfo() << "Parameter request received";
 
       handleParameterRequest(names, command, handle);
@@ -143,7 +144,8 @@ private:
   SchemaMap::iterator handleSchema(const std::string &type_name, std::size_t type_hash);
   ChannelIdMap::iterator handleTopic(const Plugin::TopicInfo &info);
   ChannelIdMap::iterator handleMessage(const Plugin::MessageInfo &info);
-  void handleParameterRequest(const std::vector<std::string> &names, const std::optional<std::string>& command, websocketpp::connection_hdl handle);
+  void handleParameterRequest(const std::vector<std::string> &names, const std::optional<std::string> &command,
+    websocketpp::connection_hdl handle);
 
   SchemaMap schema_map;
   ChannelIdMap channel_id_map;
@@ -231,7 +233,8 @@ FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleMessa
   return channel_id_iterator;
 }
 
-void FoxgloveServerPrivate::handleParameterRequest(const std::vector<std::string> &names, const std::optional<std::string>& command, websocketpp::connection_hdl handle) {
+void FoxgloveServerPrivate::handleParameterRequest(const std::vector<std::string> &names, const std::optional<std::string> &command,
+  websocketpp::connection_hdl handle) {
   std::vector<foxglove::Parameter> parameters;
 
   if (command == "get-all-params") {
