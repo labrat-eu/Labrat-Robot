@@ -1,7 +1,7 @@
-#include <labrat/lbot/cluster.hpp>
 #include <labrat/lbot/message.hpp>
 #include <labrat/lbot/msg/test.fb.hpp>
 #include <labrat/lbot/node.hpp>
+#include <labrat/lbot/plugin.hpp>
 
 #include <atomic>
 
@@ -100,12 +100,17 @@ public:
   Receiver<TestMessageConv>::Ptr receiver;
 };
 
-class TestCluster : public lbot::Cluster {
+class TestUniquePlugin : public lbot::UniquePlugin {
 public:
-  TestCluster(const ClusterEnvironment environment) : lbot::Cluster(environment) {
+  TestUniquePlugin(const PluginEnvironment environment) : lbot::UniquePlugin(environment) {
     addNode<TestNode>("node_a", "main", "void");
     addNode<TestNode>("node_b", "void", "main");
   }
+};
+
+class TestSharedPlugin : public lbot::SharedPlugin {
+public:
+  TestSharedPlugin(const PluginEnvironment environment) : lbot::SharedPlugin(environment) {}
 };
 
 }  // namespace lbot::test

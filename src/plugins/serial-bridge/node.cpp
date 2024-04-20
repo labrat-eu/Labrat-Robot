@@ -31,21 +31,21 @@
 inline namespace labrat {
 namespace lbot::plugins {
 
-class SerialBridgeNodePrivate {
+class SerialBridge::NodePrivate {
 public:
   struct BridgeSender {
-    std::unordered_map<std::string, Node::GenericSender<SerialBridgeNode::PayloadInfo>::Ptr> map;
-    std::unordered_map<std::size_t, Node::GenericSender<SerialBridgeNode::PayloadInfo>::Ptr &> adapter;
+    std::unordered_map<std::string, Node::GenericSender<SerialBridge::Node::PayloadInfo>::Ptr> map;
+    std::unordered_map<std::size_t, Node::GenericSender<SerialBridge::Node::PayloadInfo>::Ptr &> adapter;
   } sender;
 
   struct BridgeReceiver {
-    std::vector<Node::GenericReceiver<SerialBridgeNode::PayloadInfo>::Ptr> vector;
+    std::vector<Node::GenericReceiver<SerialBridge::Node::PayloadInfo>::Ptr> vector;
   } receiver;
 
-  SerialBridgeNodePrivate(const std::string &port, u64 baud_rate, SerialBridgeNode &node);
-  ~SerialBridgeNodePrivate();
+  NodePrivate(const std::string &port, u64 baud_rate, SerialBridge::Node &node);
+  ~NodePrivate();
 
-  void writePayloadMessage(const SerialBridgeNode::PayloadInfo &message);
+  void writePayloadMessage(const SerialBridge::Node::PayloadInfo &message);
 
 private:
   // Please do not send gigantic packets.
@@ -159,7 +159,7 @@ private:
 
   void escapeAndWriteMessage(const u8 *buffer, std::size_t size);
 
-  void readPayloadMessage(const SerialBridgeNode::PayloadInfo &message);
+  void readPayloadMessage(const SerialBridge::Node::PayloadInfo &message);
   void readTopicInfoMessage(const TopicInfo &message);
   void readTopicRequestMessage(std::size_t topic_hash);
 
@@ -169,13 +169,10 @@ private:
   std::size_t write(const u8 *buffer, std::size_t size) const;
   std::size_t read(u8 *buffer, std::size_t size) const;
 
-  SerialBridgeNode &node;
+  SerialBridge::Node &node;
 
-  utils::LoopThread read_thread;
-  utils::TimerThread heartbeat_thread;
-
-  ssize_t file_descriptor;
-  ssize_t epoll_handle;
+  std::size_t file_descriptor;
+  std::size_t epoll_handle;
 
   static constexpr i32 timeout = 1000;
   sigset_t signal_mask;
@@ -187,39 +184,45 @@ private:
 
   bool escape_flag;
 
+  utils::LoopThread read_thread;
+
   static constexpr u8 end_code = 0x57;
   static constexpr u8 esc_code = 0x59;
   static constexpr u8 esc_offset = 0x10;
 };
 
-SerialBridgeNode::SerialBridgeNode(const NodeEnvironment &environment, const std::string &port, u64 baud_rate) : Node(environment) {
-  std::allocator<SerialBridgeNodePrivate> allocator;
-  priv = allocator.allocate(1);
-
-  priv = std::construct_at(priv, port, baud_rate, *this);
+SerialBridge::SerialBridge(const PluginEnvironment &environment, const std::string &port, u64 baud_rate) : SharedPlugin(environment) {
+  node = addNode<SerialBridge::Node>(getName(), port, baud_rate);
 }
 
-SerialBridgeNode::~SerialBridgeNode() {
+SerialBridge::~SerialBridge() = default;
+
+SerialBridge::Node::Node(const NodeEnvironment &environment, const std::string &port, u64 baud_rate) : lbot::Node(environment) {
+  priv = new SerialBridge::NodePrivate(port, baud_rate, *this);
+}
+
+SerialBridge::Node::~Node() {
   delete priv;
 }
 
-void SerialBridgeNode::registerGenericSender(Node::GenericSender<SerialBridgeNode::PayloadInfo>::Ptr &&sender) {
+void SerialBridge::Node::registerGenericSender(Node::GenericSender<SerialBridge::Node::PayloadInfo>::Ptr &&sender) {
   if (!priv->sender.map
-         .try_emplace(sender->getTopicInfo().topic_name, std::forward<Node::GenericSender<SerialBridgeNode::PayloadInfo>::Ptr>(sender))
+         .try_emplace(sender->getTopicInfo().topic_name, std::forward<Node::GenericSender<SerialBridge::Node::PayloadInfo>::Ptr>(sender))
          .second) {
     throw ManagementException("A sender has already been registered for the topic name '" + sender->getTopicInfo().topic_name + "'.");
   }
 }
 
-void SerialBridgeNode::registerGenericReceiver(Node::GenericReceiver<SerialBridgeNode::PayloadInfo>::Ptr &&receiver) {
-  priv->receiver.vector.emplace_back(std::forward<Node::GenericReceiver<SerialBridgeNode::PayloadInfo>::Ptr>(receiver));
+void SerialBridge::Node::registerGenericReceiver(Node::GenericReceiver<SerialBridge::Node::PayloadInfo>::Ptr &&receiver) {
+  priv->receiver.vector.emplace_back(std::forward<Node::GenericReceiver<SerialBridge::Node::PayloadInfo>::Ptr>(receiver));
 }
 
-void SerialBridgeNode::receiverCallback(Node::GenericReceiver<SerialBridgeNode::PayloadInfo> &receiver, SerialBridgeNodePrivate *node) {
+void SerialBridge::Node::receiverCallback(Node::GenericReceiver<SerialBridge::Node::PayloadInfo> &receiver,
+  SerialBridge::NodePrivate *node) {
   node->writePayloadMessage(receiver.latest());
 }
 
-SerialBridgeNodePrivate::SerialBridgeNodePrivate(const std::string &port, u64 baud_rate, SerialBridgeNode &node) : node(node) {
+SerialBridge::NodePrivate::NodePrivate(const std::string &port, u64 baud_rate, SerialBridge::Node &node) : node(node) {
   file_descriptor = open(port.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 
   if (file_descriptor == -1) {
@@ -278,19 +281,19 @@ SerialBridgeNodePrivate::SerialBridgeNodePrivate(const std::string &port, u64 ba
   decode_index = 0;
   escape_flag = false;
 
-  read_thread = utils::LoopThread(&SerialBridgeNodePrivate::readLoop, "serial bridge", 1, this);
+  read_thread = utils::LoopThread(&SerialBridge::NodePrivate::readLoop, "serial bridge", 1, this);
 }
 
-SerialBridgeNodePrivate::~SerialBridgeNodePrivate() = default;
+SerialBridge::NodePrivate::~NodePrivate() = default;
 
-void SerialBridgeNodePrivate::readLoop() {
+void SerialBridge::NodePrivate::readLoop() {
   std::array<u8, buffer_size> buffer;
   const std::size_t size = read(buffer.data(), buffer_size);
 
   unescapeAndProcessMessage(buffer.data(), size);
 }
 
-void SerialBridgeNodePrivate::unescapeAndProcessMessage(const u8 *buffer, std::size_t size) {
+void SerialBridge::NodePrivate::unescapeAndProcessMessage(const u8 *buffer, std::size_t size) {
   for (std::size_t i = 0; i < size; ++i) {
     u8 current_byte = buffer[i];
 
@@ -315,7 +318,7 @@ void SerialBridgeNodePrivate::unescapeAndProcessMessage(const u8 *buffer, std::s
   }
 }
 
-void SerialBridgeNodePrivate::escapeAndWriteMessage(const u8 *buffer, std::size_t size) {
+void SerialBridge::NodePrivate::escapeAndWriteMessage(const u8 *buffer, std::size_t size) {
   std::array<u8, buffer_size> encode_buffer;
   std::size_t encode_index = 0;
 
@@ -340,8 +343,18 @@ void SerialBridgeNodePrivate::escapeAndWriteMessage(const u8 *buffer, std::size_
   write(encode_buffer.data(), encode_index);
 }
 
-void SerialBridgeNodePrivate::processMessage(u8 *buffer, std::size_t size) {
+void SerialBridge::NodePrivate::processMessage(u8 *buffer, std::size_t size) {
   HeaderWire *header = reinterpret_cast<HeaderWire *>(buffer);
+
+  if (size > buffer_size) {
+    node.getLogger().logWarning() << "Received message is too long.";
+    return;
+  }
+
+  if (size < sizeof(HeaderWire)) {
+    node.getLogger().logWarning() << "Received message with wrong header length.";
+    return;
+  }
 
   if (!header->check()) {
     node.getLogger().logWarning() << "Received message with wrong header checksum.";
@@ -352,19 +365,19 @@ void SerialBridgeNodePrivate::processMessage(u8 *buffer, std::size_t size) {
   header->topic_hash = be64toh(header->topic_hash);
 
   if (header->magic != HeaderWire::magic_check) {
-    node.getLogger().logCritical() << "Received message with wrong magic byte.";
+    node.getLogger().logError() << "Received message with wrong magic byte.";
     return;
   }
   if (header->version_major != HeaderWire::version_major_check) {
-    node.getLogger().logCritical() << "Received message of different major version number, discarding message.";
+    node.getLogger().logError() << "Received message of different major version number, discarding message.";
     return;
   }
   if (header->version_minor != HeaderWire::version_minor_check) {
     node.getLogger().logWarning() << "Received message of different minor version number.";
   }
   if (header->length != size - sizeof(HeaderWire)) {
-    node.getLogger().logCritical() << "Datagram and header length mismatch, discarding message. (" << header->length << "/"
-                                   << size - sizeof(HeaderWire) << ")";
+    node.getLogger().logError() << "Datagram and header length mismatch, discarding message. (" << header->length << "/"
+                                << size - sizeof(HeaderWire) << ")";
     return;
   }
 
@@ -377,7 +390,7 @@ void SerialBridgeNodePrivate::processMessage(u8 *buffer, std::size_t size) {
         return;
       }
 
-      SerialBridgeNode::PayloadInfo message;
+      SerialBridge::Node::PayloadInfo message;
 
       message.topic_hash = raw->header.topic_hash;
       message.payload = flatbuffers::span<u8>(raw->data.data(), header->length);
@@ -421,12 +434,12 @@ void SerialBridgeNodePrivate::processMessage(u8 *buffer, std::size_t size) {
     }
 
     default: {
-      node.getLogger().logCritical() << "Received unknown message type.";
+      node.getLogger().logError() << "Received unknown message type.";
     }
   }
 }
 
-void SerialBridgeNodePrivate::readPayloadMessage(const SerialBridgeNode::PayloadInfo &message) {
+void SerialBridge::NodePrivate::readPayloadMessage(const SerialBridge::Node::PayloadInfo &message) {
   auto iterator = sender.adapter.find(message.topic_hash);
 
   if (iterator == sender.adapter.end()) {
@@ -439,7 +452,7 @@ void SerialBridgeNodePrivate::readPayloadMessage(const SerialBridgeNode::Payload
   iterator->second->put(message);
 }
 
-void SerialBridgeNodePrivate::readTopicInfoMessage(const TopicInfo &message) {
+void SerialBridge::NodePrivate::readTopicInfoMessage(const TopicInfo &message) {
   auto iterator = sender.map.find(std::string(message.topic_name));
 
   if (iterator == sender.map.end()) {
@@ -456,8 +469,8 @@ void SerialBridgeNodePrivate::readTopicInfoMessage(const TopicInfo &message) {
   sender.adapter.try_emplace(message.topic_hash, iterator->second);
 }
 
-void SerialBridgeNodePrivate::readTopicRequestMessage(std::size_t topic_hash) {
-  for (const Node::GenericReceiver<SerialBridgeNode::PayloadInfo>::Ptr &receiver : receiver.vector) {
+void SerialBridge::NodePrivate::readTopicRequestMessage(std::size_t topic_hash) {
+  for (const Node::GenericReceiver<SerialBridge::Node::PayloadInfo>::Ptr &receiver : receiver.vector) {
     if (receiver->getTopicInfo().topic_hash == topic_hash) {
       TopicInfo message;
       message.topic_hash = receiver->getTopicInfo().topic_hash;
@@ -472,11 +485,11 @@ void SerialBridgeNodePrivate::readTopicRequestMessage(std::size_t topic_hash) {
   node.getLogger().logDebug() << "Requested topic hash receiver not found (topic hash: " << topic_hash << ").";
 }
 
-void SerialBridgeNodePrivate::writePayloadMessage(const SerialBridgeNode::PayloadInfo &message) {
+void SerialBridge::NodePrivate::writePayloadMessage(const SerialBridge::Node::PayloadInfo &message) {
   PayloadWire raw;
 
   if (message.payload.size() > payload_size) {
-    node.getLogger().logCritical() << "Maximum payload size exceeded.";
+    node.getLogger().logError() << "Maximum payload size exceeded.";
     return;
   }
 
@@ -497,13 +510,13 @@ void SerialBridgeNodePrivate::writePayloadMessage(const SerialBridgeNode::Payloa
   escapeAndWriteMessage(reinterpret_cast<u8 *>(&raw), length);
 }
 
-void SerialBridgeNodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
+void SerialBridge::NodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
   if (message.topic_name.empty()) {
-    node.getLogger().logCritical() << "The sent topic name must not be empty.";
+    node.getLogger().logError() << "The sent topic name must not be empty.";
     return;
   }
   if (message.type_name.empty()) {
-    node.getLogger().logCritical() << "The sent type name must not be empty.";
+    node.getLogger().logError() << "The sent type name must not be empty.";
     return;
   }
 
@@ -511,7 +524,7 @@ void SerialBridgeNodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
   const u16 length = offsetof(TopicWire, data) + message.topic_name.size() + message.type_name.size() + sizeof(u16);
 
   if (length > payload_size) {
-    node.getLogger().logCritical() << "Maximum payload size exceeded.";
+    node.getLogger().logError() << "Maximum payload size exceeded.";
     return;
   }
 
@@ -539,7 +552,7 @@ void SerialBridgeNodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
   escapeAndWriteMessage(reinterpret_cast<u8 *>(&raw), length);
 }
 
-void SerialBridgeNodePrivate::writeTopicRequestMessage(std::size_t topic_hash) {
+void SerialBridge::NodePrivate::writeTopicRequestMessage(std::size_t topic_hash) {
   HeaderWire raw;
 
   raw.init();
@@ -554,7 +567,7 @@ void SerialBridgeNodePrivate::writeTopicRequestMessage(std::size_t topic_hash) {
   escapeAndWriteMessage(reinterpret_cast<u8 *>(&raw), sizeof(HeaderWire));
 }
 
-std::size_t SerialBridgeNodePrivate::write(const u8 *buffer, std::size_t size) const {
+std::size_t SerialBridge::NodePrivate::write(const u8 *buffer, std::size_t size) const {
   const ssize_t result = ::write(file_descriptor, buffer, size);
 
   if (result < 0 && errno != EAGAIN) {
@@ -567,10 +580,10 @@ std::size_t SerialBridgeNodePrivate::write(const u8 *buffer, std::size_t size) c
   return result;
 }
 
-std::size_t SerialBridgeNodePrivate::read(u8 *buffer, std::size_t size) const {
+std::size_t SerialBridge::NodePrivate::read(u8 *buffer, std::size_t size) const {
   {
     epoll_event event;
-    const i32 result = epoll_pwait(epoll_handle, &event, 1, timeout, &signal_mask);
+    const ssize_t result = epoll_pwait(epoll_handle, &event, 1, timeout, &signal_mask);
 
     if (result <= 0) {
       if ((result == -1) && (errno != EINTR)) {
@@ -581,7 +594,7 @@ std::size_t SerialBridgeNodePrivate::read(u8 *buffer, std::size_t size) const {
     }
   }
 
-  const std::size_t result = ::read(file_descriptor, reinterpret_cast<void *>(buffer), size);
+  const ssize_t result = ::read(file_descriptor, reinterpret_cast<void *>(buffer), size);
 
   if (result < 0) {
     throw IoException("Failed to read from serial port.", errno);

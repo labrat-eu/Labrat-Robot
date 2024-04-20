@@ -20,7 +20,7 @@ TEST(mcap, recorder) {
     labrat::lbot::Config::Ptr config = labrat::lbot::Config::get();
     config->setParameter("/lbot/plugins/mcap/tracefile", "test.mcap");
 
-    plugins::McapRecorder recorder;
+    manager->addPlugin<plugins::McapRecorder>();
 
     std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "/topic_a", "/topic_b"));
     std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "/topic_b", "/topic_a"));

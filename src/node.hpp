@@ -42,7 +42,7 @@ public:
    * @brief Destroy the Node object.
    *
    */
-  ~Node() = default;
+  virtual ~Node() = default;
 
   template <typename MessageType>
   class Sender;
@@ -97,17 +97,16 @@ public:
     /**
      * @brief Get information about the relevant topic.
      *
-     * @return const Plugin::TopicInfo& Information about the topic.
+     * @return const TopicInfo& Information about the topic.
      */
-    [[nodiscard]] inline const Plugin::TopicInfo &getTopicInfo() const {
+    [[nodiscard]] inline const TopicInfo &getTopicInfo() const {
       return topic_info;
     }
 
   protected:
-    GenericSender(Plugin::TopicInfo topic_info, TopicMap::Topic &topic, Node &node) :
-      topic_info(std::move(topic_info)), topic(topic), node(node) {}
+    GenericSender(TopicInfo topic_info, TopicMap::Topic &topic, Node &node) : topic_info(std::move(topic_info)), topic(topic), node(node) {}
 
-    const Plugin::TopicInfo topic_info;
+    const TopicInfo topic_info;
     TopicMap::Topic &topic;
 
     Node &node;
@@ -144,10 +143,10 @@ public:
      */
     SenderBase(const std::string &topic_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<MessageType, Reference>
       :
-      GenericSender<Converted>(Plugin::TopicInfo::get<MessageType>(topic_name),
-        node.environment.topic_map.addSender<MessageType>(topic_name, this), node),
+      GenericSender<Converted>(TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addSender<MessageType>(topic_name, this),
+        node),
       user_ptr(user_ptr) {
-      for (Plugin &plugin : GenericSender<Converted>::node.environment.plugin_list) {
+      for (PluginRegistration &plugin : GenericSender<Converted>::node.environment.plugin_list) {
         if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
           continue;
         }
@@ -220,12 +219,13 @@ public:
       } else {
         std::size_t receive_count = GenericSender<Converted>::topic.getReceivers().size();
 
-        const Plugin::List::iterator plugin_end = GenericSender<Converted>::node.environment.plugin_list.end();
-        Plugin::List::iterator plugin_iterator = plugin_end;
+        const PluginRegistration::List::iterator plugin_end = GenericSender<Converted>::node.environment.plugin_list.end();
+        PluginRegistration::List::iterator plugin_iterator = plugin_end;
 
         std::size_t i = 0;
-        for (Plugin::List::iterator iter = GenericSender<Converted>::node.environment.plugin_list.begin(); iter != plugin_end; ++iter) {
-          Plugin &plugin = *iter;
+        for (PluginRegistration::List::iterator iter = GenericSender<Converted>::node.environment.plugin_list.begin(); iter != plugin_end;
+             ++iter) {
+          PluginRegistration &plugin = *iter;
 
           if (!plugin.delete_flag.test() && plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
             ++receive_count;
@@ -278,11 +278,11 @@ public:
           flatbuffers::FlatBufferBuilder builder;
           builder.Finish(MessageType::Content::TableType::Pack(builder, &message));
 
-          Plugin::MessageInfo message_info = {.topic_info = GenericSender<Converted>::topic_info,
+          MessageInfo message_info = {.topic_info = GenericSender<Converted>::topic_info,
             .timestamp = message.getTimestamp(),
             .serialized_message = builder.GetBufferSpan()};
 
-          Plugin &plugin = *plugin_iterator;
+          PluginRegistration &plugin = *plugin_iterator;
 
           utils::ConsumerGuard<u32> guard(plugin.use_count);
 
@@ -315,12 +315,12 @@ public:
      */
     void trace(const Converted &container) override {
       MessageType message;
-      Plugin::MessageInfo message_info = {.topic_info = GenericSender<Converted>::topic_info};
+      MessageInfo message_info = {.topic_info = GenericSender<Converted>::topic_info};
 
       flatbuffers::FlatBufferBuilder builder;
       bool init_flag = false;
 
-      for (Plugin &plugin : GenericSender<Converted>::node.environment.plugin_list) {
+      for (PluginRegistration &plugin : GenericSender<Converted>::node.environment.plugin_list) {
         utils::ConsumerGuard<u32> guard(plugin.use_count);
 
         if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
@@ -416,14 +416,14 @@ public:
     /**
      * @brief Get information about the relevant topic.
      *
-     * @return const Plugin::TopicInfo& Information about the topic.
+     * @return const TopicInfo& Information about the topic.
      */
-    [[nodiscard]] inline const Plugin::TopicInfo &getTopicInfo() const {
+    [[nodiscard]] inline const TopicInfo &getTopicInfo() const {
       return topic_info;
     }
 
   protected:
-    GenericReceiver(Plugin::TopicInfo topic_info, TopicMap::Topic &topic, Node &node, std::size_t buffer_size) :
+    GenericReceiver(TopicInfo topic_info, TopicMap::Topic &topic, Node &node, std::size_t buffer_size) :
       topic_info(std::move(topic_info)), topic(topic), node(node), index_mask(calculateBufferMask(buffer_size)), count(index_mask) {
       next_count = index_mask;
       flush_flag = true;
@@ -468,7 +468,7 @@ public:
       return calculateBufferSize(buffer_size) - 1;
     }
 
-    const Plugin::TopicInfo topic_info;
+    const TopicInfo topic_info;
     TopicMap::Topic &topic;
 
     Node &node;
@@ -509,7 +509,7 @@ public:
      */
     ReceiverBase(const std::string &topic_name, Node &node, const void *user_ptr = nullptr, std::size_t buffer_size = 4)
       requires can_convert_to<MessageType, Reference> :
-      GenericReceiver<Converted>(Plugin::TopicInfo::get<MessageType>(topic_name),
+      GenericReceiver<Converted>(TopicInfo::get<MessageType>(topic_name),
         node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node, buffer_size),
       user_ptr(user_ptr), message_buffer(GenericReceiver<Converted>::calculateBufferSize(buffer_size)) {}
 
@@ -759,17 +759,17 @@ public:
   template <typename RequestConverted, typename ResponseConverted>
   class GenericServer {
   protected:
-    explicit GenericServer(Plugin::ServiceInfo service_info) : service_info(std::move(service_info)) {}
+    explicit GenericServer(ServiceInfo service_info) : service_info(std::move(service_info)) {}
 
-    const Plugin::ServiceInfo service_info;
+    const ServiceInfo service_info;
 
   public:
     /**
      * @brief Get information about the relevant service.
      *
-     * @return const Plugin::ServiceInfo& Information about the service.
+     * @return const ServiceInfo& Information about the service.
      */
-    [[nodiscard]] inline const Plugin::ServiceInfo &getTopicInfo() const {
+    [[nodiscard]] inline const ServiceInfo &getServiceInfo() const {
       return service_info;
     }
   };
@@ -858,10 +858,10 @@ public:
      */
     ServerBase(const std::string &service_name, Node &node, HandlerFunction handler_function, const void *user_ptr = nullptr)
       requires can_convert_to<RequestType, Reference> && can_convert_from<ResponseType, Reference> :
-      GenericServer<RequestConverted, ResponseConverted>(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name,
+      GenericServer<RequestConverted, ResponseConverted>(ServiceInfo::get<RequestType, ResponseType>(service_name,
         node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this))),
       node(node), handler_function(handler_function), user_ptr(user_ptr) {
-      for (Plugin &plugin : node.environment.plugin_list) {
+      for (PluginRegistration &plugin : node.environment.plugin_list) {
         if (plugin.delete_flag.test()
           || !plugin.filter.check(GenericServer<RequestConverted, ResponseConverted>::service_info.service_hash)) {
           continue;
@@ -942,17 +942,17 @@ public:
   template <typename RequestConverted, typename ResponseConverted>
   class GenericClient {
   protected:
-    explicit GenericClient(Plugin::ServiceInfo service_info) : service_info(std::move(service_info)) {}
+    explicit GenericClient(ServiceInfo service_info) : service_info(std::move(service_info)) {}
 
-    const Plugin::ServiceInfo service_info;
+    const ServiceInfo service_info;
 
   public:
     /**
      * @brief Get information about the relevant service.
      *
-     * @return const Plugin::ServiceInfo& Information about the service.
+     * @return const ServiceInfo& Information about the service.
      */
-    [[nodiscard]] inline const Plugin::ServiceInfo &getServiceInfo() const {
+    [[nodiscard]] inline const ServiceInfo &getServiceInfo() const {
       return service_info;
     }
   };
@@ -992,7 +992,7 @@ public:
      */
     ClientBase(const std::string &service_name, Node &node, const void *user_ptr = nullptr)
       requires can_convert_from<RequestType, Reference> && can_convert_to<ResponseType, Reference> :
-      GenericClient<RequestConverted, ResponseConverted>(Plugin::ServiceInfo::get<RequestType, ResponseType>(service_name,
+      GenericClient<RequestConverted, ResponseConverted>(ServiceInfo::get<RequestType, ResponseType>(service_name,
         node.environment.service_map.getService<RequestType, ResponseType>(service_name))),
       node(node), user_ptr(user_ptr) {}
 
@@ -1159,7 +1159,7 @@ protected:
    *
    * @param environment Node environment data for the node to copy internally.
    */
-  explicit Node(const NodeEnvironment environment) : environment(std::move(environment)), logger(environment.name) {}
+  explicit Node(NodeEnvironment environment) : environment(std::move(environment)), logger(environment.name) {}
 
   /**
    * @brief Get a logger with the name of the node.

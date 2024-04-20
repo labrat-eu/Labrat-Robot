@@ -29,21 +29,21 @@
 inline namespace labrat {
 namespace lbot::plugins {
 
-class UdpBridgeNodePrivate {
+class UdpBridge::NodePrivate {
 public:
   struct BridgeSender {
-    std::unordered_map<std::string, Node::GenericSender<UdpBridgeNode::PayloadInfo>::Ptr> map;
-    std::unordered_map<std::size_t, Node::GenericSender<UdpBridgeNode::PayloadInfo>::Ptr &> adapter;
+    std::unordered_map<std::string, Node::GenericSender<UdpBridge::Node::PayloadInfo>::Ptr> map;
+    std::unordered_map<std::size_t, Node::GenericSender<UdpBridge::Node::PayloadInfo>::Ptr &> adapter;
   } sender;
 
   struct BridgeReceiver {
-    std::vector<Node::GenericReceiver<UdpBridgeNode::PayloadInfo>::Ptr> vector;
+    std::vector<Node::GenericReceiver<UdpBridge::Node::PayloadInfo>::Ptr> vector;
   } receiver;
 
-  UdpBridgeNodePrivate(const std::string &address, u16 port, u16 local_port, UdpBridgeNode &node);
-  ~UdpBridgeNodePrivate();
+  NodePrivate(const std::string &address, u16 port, u16 local_port, UdpBridge::Node &node);
+  ~NodePrivate();
 
-  void writePayloadMessage(const UdpBridgeNode::PayloadInfo &message);
+  void writePayloadMessage(const UdpBridge::Node::PayloadInfo &message);
 
 private:
   // Please do not send gigantic packets.
@@ -104,7 +104,7 @@ private:
 
   void readLoop();
 
-  void readPayloadMessage(const UdpBridgeNode::PayloadInfo &message);
+  void readPayloadMessage(const UdpBridge::Node::PayloadInfo &message);
   void readTopicInfoMessage(const TopicInfo &message);
   void readTopicRequestMessage(std::size_t topic_hash);
 
@@ -114,10 +114,7 @@ private:
   std::size_t write(const u8 *buffer, std::size_t size);
   std::size_t read(u8 *buffer, std::size_t size);
 
-  UdpBridgeNode &node;
-
-  utils::LoopThread read_thread;
-  utils::TimerThread heartbeat_thread;
+  UdpBridge::Node &node;
 
   ssize_t file_descriptor;
   ssize_t epoll_handle;
@@ -129,36 +126,42 @@ private:
   sigset_t signal_mask;
 
   std::mutex mutex;
+
+  utils::LoopThread read_thread;
 };
 
-UdpBridgeNode::UdpBridgeNode(const NodeEnvironment &environment, const std::string &address, u16 port, u16 local_port) : Node(environment) {
-  std::allocator<UdpBridgeNodePrivate> allocator;
-  priv = allocator.allocate(1);
-
-  priv = std::construct_at(priv, address, port, local_port, *this);
+UdpBridge::UdpBridge(const PluginEnvironment &environment, const std::string &address, u16 port, u16 local_port) :
+  SharedPlugin(environment) {
+  node = addNode<UdpBridge::Node>(getName(), address, port, local_port);
 }
 
-UdpBridgeNode::~UdpBridgeNode() {
+UdpBridge::~UdpBridge() = default;
+
+UdpBridge::Node::Node(const NodeEnvironment &environment, const std::string &address, u16 port, u16 local_port) : lbot::Node(environment) {
+  priv = new UdpBridge::NodePrivate(address, port, local_port, *this);
+}
+
+UdpBridge::Node::~Node() {
   delete priv;
 }
 
-void UdpBridgeNode::registerGenericSender(Node::GenericSender<UdpBridgeNode::PayloadInfo>::Ptr &&sender) {
+void UdpBridge::Node::registerGenericSender(Node::GenericSender<UdpBridge::Node::PayloadInfo>::Ptr &&sender) {
   if (!priv->sender.map
-         .try_emplace(sender->getTopicInfo().topic_name, std::forward<Node::GenericSender<UdpBridgeNode::PayloadInfo>::Ptr>(sender))
+         .try_emplace(sender->getTopicInfo().topic_name, std::forward<Node::GenericSender<UdpBridge::Node::PayloadInfo>::Ptr>(sender))
          .second) {
     throw ManagementException("A sender has already been registered for the topic name '" + sender->getTopicInfo().topic_name + "'.");
   }
 }
 
-void UdpBridgeNode::registerGenericReceiver(Node::GenericReceiver<UdpBridgeNode::PayloadInfo>::Ptr &&receiver) {
-  priv->receiver.vector.emplace_back(std::forward<Node::GenericReceiver<UdpBridgeNode::PayloadInfo>::Ptr>(receiver));
+void UdpBridge::Node::registerGenericReceiver(Node::GenericReceiver<UdpBridge::Node::PayloadInfo>::Ptr &&receiver) {
+  priv->receiver.vector.emplace_back(std::forward<Node::GenericReceiver<UdpBridge::Node::PayloadInfo>::Ptr>(receiver));
 }
 
-void UdpBridgeNode::receiverCallback(Node::GenericReceiver<UdpBridgeNode::PayloadInfo> &receiver, UdpBridgeNodePrivate *node) {
+void UdpBridge::Node::receiverCallback(Node::GenericReceiver<UdpBridge::Node::PayloadInfo> &receiver, UdpBridge::NodePrivate *node) {
   node->writePayloadMessage(receiver.latest());
 }
 
-UdpBridgeNodePrivate::UdpBridgeNodePrivate(const std::string &address, u16 port, u16 local_port, UdpBridgeNode &node) : node(node) {
+UdpBridge::NodePrivate::NodePrivate(const std::string &address, u16 port, u16 local_port, UdpBridge::Node &node) : node(node) {
   file_descriptor = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
   if (file_descriptor == -1) {
@@ -195,12 +198,12 @@ UdpBridgeNodePrivate::UdpBridgeNodePrivate(const std::string &address, u16 port,
   sigemptyset(&signal_mask);
   sigaddset(&signal_mask, SIGINT);
 
-  read_thread = utils::LoopThread(&UdpBridgeNodePrivate::readLoop, "udp bridge", 1, this);
+  read_thread = utils::LoopThread(&UdpBridge::NodePrivate::readLoop, "udp bridge", 1, this);
 }
 
-UdpBridgeNodePrivate::~UdpBridgeNodePrivate() = default;
+UdpBridge::NodePrivate::~NodePrivate() = default;
 
-void UdpBridgeNodePrivate::readLoop() {
+void UdpBridge::NodePrivate::readLoop() {
   std::array<u8, buffer_size> buffer;
   const std::size_t number_bytes = read(buffer.data(), buffer_size);
 
@@ -213,26 +216,26 @@ void UdpBridgeNodePrivate::readLoop() {
   header->topic_hash = be64toh(header->topic_hash);
 
   if (header->magic != HeaderWire::magic_check) {
-    node.getLogger().logCritical() << "Received message with wrong magic byte.";
+    node.getLogger().logError() << "Received message with wrong magic byte.";
     return;
   }
   if (header->version_major != HeaderWire::version_major_check) {
-    node.getLogger().logCritical() << "Received message of different major version number, discarding message.";
+    node.getLogger().logError() << "Received message of different major version number, discarding message.";
     return;
   }
   if (header->version_minor != HeaderWire::version_minor_check) {
     node.getLogger().logWarning() << "Received message of different minor version number.";
   }
   if (header->length != number_bytes - sizeof(HeaderWire)) {
-    node.getLogger().logCritical() << "Datagram and header length mismatch, discarding message. (" << header->length << "/"
-                                   << number_bytes - sizeof(HeaderWire) << ")";
+    node.getLogger().logError() << "Datagram and header length mismatch, discarding message. (" << header->length << "/"
+                                << number_bytes - sizeof(HeaderWire) << ")";
     return;
   }
 
   switch (header->type) {
     case (HeaderWire::Type::payload): {
       PayloadWire *raw = reinterpret_cast<PayloadWire *>(buffer.data());
-      UdpBridgeNode::PayloadInfo message;
+      UdpBridge::Node::PayloadInfo message;
 
       message.topic_hash = raw->header.topic_hash;
       message.payload = flatbuffers::span<u8>(raw->data.data(), header->length);
@@ -270,12 +273,12 @@ void UdpBridgeNodePrivate::readLoop() {
     }
 
     default: {
-      node.getLogger().logCritical() << "Received unknown message type.";
+      node.getLogger().logError() << "Received unknown message type.";
     }
   }
 }
 
-void UdpBridgeNodePrivate::readPayloadMessage(const UdpBridgeNode::PayloadInfo &message) {
+void UdpBridge::NodePrivate::readPayloadMessage(const UdpBridge::Node::PayloadInfo &message) {
   auto iterator = sender.adapter.find(message.topic_hash);
 
   if (iterator == sender.adapter.end()) {
@@ -288,7 +291,7 @@ void UdpBridgeNodePrivate::readPayloadMessage(const UdpBridgeNode::PayloadInfo &
   iterator->second->put(message);
 }
 
-void UdpBridgeNodePrivate::readTopicInfoMessage(const TopicInfo &message) {
+void UdpBridge::NodePrivate::readTopicInfoMessage(const TopicInfo &message) {
   auto iterator = sender.map.find(std::string(message.topic_name));
 
   if (iterator == sender.map.end()) {
@@ -305,8 +308,8 @@ void UdpBridgeNodePrivate::readTopicInfoMessage(const TopicInfo &message) {
   sender.adapter.try_emplace(message.topic_hash, iterator->second);
 }
 
-void UdpBridgeNodePrivate::readTopicRequestMessage(std::size_t topic_hash) {
-  for (const Node::GenericReceiver<UdpBridgeNode::PayloadInfo>::Ptr &receiver : receiver.vector) {
+void UdpBridge::NodePrivate::readTopicRequestMessage(std::size_t topic_hash) {
+  for (const Node::GenericReceiver<UdpBridge::Node::PayloadInfo>::Ptr &receiver : receiver.vector) {
     if (receiver->getTopicInfo().topic_hash == topic_hash) {
       TopicInfo message;
       message.topic_hash = receiver->getTopicInfo().topic_hash;
@@ -321,11 +324,11 @@ void UdpBridgeNodePrivate::readTopicRequestMessage(std::size_t topic_hash) {
   node.getLogger().logDebug() << "Requested topic hash receiver not found (topic hash: " << topic_hash << ").";
 }
 
-void UdpBridgeNodePrivate::writePayloadMessage(const UdpBridgeNode::PayloadInfo &message) {
+void UdpBridge::NodePrivate::writePayloadMessage(const UdpBridge::Node::PayloadInfo &message) {
   PayloadWire raw;
 
   if (message.payload.size() > payload_size) {
-    node.getLogger().logCritical() << "Maximum payload size exceeded.";
+    node.getLogger().logError() << "Maximum payload size exceeded.";
     return;
   }
 
@@ -344,13 +347,13 @@ void UdpBridgeNodePrivate::writePayloadMessage(const UdpBridgeNode::PayloadInfo 
   write(reinterpret_cast<u8 *>(&raw), length);
 }
 
-void UdpBridgeNodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
+void UdpBridge::NodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
   if (message.topic_name.empty()) {
-    node.getLogger().logCritical() << "The sent topic name must not be empty.";
+    node.getLogger().logError() << "The sent topic name must not be empty.";
     return;
   }
   if (message.type_name.empty()) {
-    node.getLogger().logCritical() << "The sent type name must not be empty.";
+    node.getLogger().logError() << "The sent type name must not be empty.";
     return;
   }
 
@@ -358,7 +361,7 @@ void UdpBridgeNodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
   const u16 length = offsetof(TopicWire, data) + message.topic_name.size() + message.type_name.size();
 
   if (length > payload_size) {
-    node.getLogger().logCritical() << "Maximum payload size exceeded.";
+    node.getLogger().logError() << "Maximum payload size exceeded.";
     return;
   }
 
@@ -383,7 +386,7 @@ void UdpBridgeNodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
   write(reinterpret_cast<u8 *>(&raw), length);
 }
 
-void UdpBridgeNodePrivate::writeTopicRequestMessage(std::size_t topic_hash) {
+void UdpBridge::NodePrivate::writeTopicRequestMessage(std::size_t topic_hash) {
   HeaderWire raw;
 
   raw.init();
@@ -397,7 +400,7 @@ void UdpBridgeNodePrivate::writeTopicRequestMessage(std::size_t topic_hash) {
   write(reinterpret_cast<u8 *>(&raw), sizeof(HeaderWire));
 }
 
-std::size_t UdpBridgeNodePrivate::write(const u8 *buffer, std::size_t size) {
+std::size_t UdpBridge::NodePrivate::write(const u8 *buffer, std::size_t size) {
   const ssize_t result = sendto(file_descriptor, buffer, size, 0, reinterpret_cast<sockaddr *>(&remote_address), sizeof(sockaddr_in));
 
   if (result < 0) {
@@ -407,10 +410,10 @@ std::size_t UdpBridgeNodePrivate::write(const u8 *buffer, std::size_t size) {
   return result;
 }
 
-std::size_t UdpBridgeNodePrivate::read(u8 *buffer, std::size_t size) {
+std::size_t UdpBridge::NodePrivate::read(u8 *buffer, std::size_t size) {
   {
     epoll_event event;
-    const i32 result = epoll_pwait(epoll_handle, &event, 1, timeout, &signal_mask);
+    const ssize_t result = epoll_pwait(epoll_handle, &event, 1, timeout, &signal_mask);
 
     if (result <= 0) {
       if ((result == -1) && (errno != EINTR)) {

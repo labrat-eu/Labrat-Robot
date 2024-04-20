@@ -8,234 +8,63 @@
 #pragma once
 
 #include <labrat/lbot/base.hpp>
-#include <labrat/lbot/message.hpp>
-#include <labrat/lbot/service.hpp>
-#include <labrat/lbot/utils/types.hpp>
+#include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/node.hpp>
 
 #include <atomic>
-#include <chrono>
-#include <list>
 #include <string>
-#include <unordered_set>
-
-#include <flatbuffers/stl_emulation.h>
+#include <vector>
 
 inline namespace labrat {
 namespace lbot {
 
-/**
- * @brief Class containing data required for registering a plugin.
- *
- */
 class Plugin {
 public:
-  using List = std::list<Plugin>;
+  virtual ~Plugin() = default;
 
+protected:
   /**
-   * @brief Default constructor to initialize the user count to zero.
+   * @brief Construct and add a node to the internal network.
    *
+   * @tparam T Type of the node to be added.
+   * @tparam Args Types of the arguments to be forwarded to the node specific constructor.
+   * @param name Name of the node.
+   * @param args Arguments to be forwarded to the node specific constructor.
+   * @return std::shared_ptr<T> Pointer to the created node.
    */
-  inline Plugin() {
-    use_count = 0;
+  template <typename T, typename... Args>
+  std::shared_ptr<T> addNode(const std::string &name, Args &&...args) requires std::is_base_of_v<Node, T> {
+    std::shared_ptr<T> result = Manager::get()->addNode<T>(name, std::forward<Args>(args)...);
+    nodes.emplace_back(result);
+
+    return result;
   }
-
-  /**
-   * @brief Copy constructor to copy the members and to initialize the user count to zero.
-   *
-   * @param rhs Object to be copied.
-   */
-  inline Plugin(const Plugin &rhs) :
-    user_ptr(rhs.user_ptr), topic_callback(rhs.topic_callback), service_callback(rhs.service_callback),
-    message_callback(rhs.message_callback), filter(rhs.filter) {
-    use_count = 0;
-  }
-
-  /**
-   * @brief User pointer to be returned on any callback performed.
-   *
-   */
-  void *user_ptr = nullptr;
-
-  /**
-   * @brief Information on a topic provided on callbacks.
-   *
-   */
-  struct TopicInfo {
-    const std::size_t type_hash;
-    const std::string type_name;
-    const std::size_t topic_hash;
-    const std::string topic_name;
-
-    /**
-     * @brief Get information about a topic by name.
-     * This will not lookup any data.
-     *
-     * @tparam MessageType Type of the message sent over the relevant topic.
-     * @param topic_name Name of the topic.
-     * @return Plugin::TopicInfo Information about the topic.
-     */
-    template <typename MessageType>
-    requires is_message<MessageType> static Plugin::TopicInfo get(const std::string &topic_name) {
-      const Plugin::TopicInfo result = {
-        .type_hash = typeid(typename MessageType::Content).hash_code(),
-        .type_name = MessageType::getName(),
-        .topic_hash = std::hash<std::string>()(topic_name),
-        .topic_name = topic_name,
-      };
-
-      return result;
-    }
-  };
-
-  /**
-   * @brief Callback function pointer for when a sender is created.
-   *
-   */
-  void (*topic_callback)(void *user_ptr, const TopicInfo &info) = nullptr;
-
-  /**
-   * @brief Information on a service provided on callbacks.
-   *
-   */
-  struct ServiceInfo {
-    const std::size_t request_type_hash;
-    const std::string request_type_name;
-    const std::size_t response_type_hash;
-    const std::string response_type_name;
-    const std::size_t service_hash;
-    const std::string service_name;
-    ServiceMap::Service &service;
-
-    /**
-     * @brief Get information about a service by name.
-     * This will not lookup any data.
-     *
-     * @tparam RequestType Type of the request message of the service.
-     * @tparam ResponseType Type of the request message of the service.
-     * @param service_name Name of the service.
-     * @return Plugin::ServiceInfo Information about the service.
-     */
-    template <typename RequestType, typename ResponseType>
-    requires is_message<RequestType> && is_message<ResponseType>
-    static Plugin::ServiceInfo get(const std::string &service_name, ServiceMap::Service &service) {
-      const Plugin::ServiceInfo result = {.request_type_hash = typeid(typename RequestType::Content).hash_code(),
-        .request_type_name = RequestType::getName(),
-        .response_type_hash = typeid(typename ResponseType::Content).hash_code(),
-        .response_type_name = ResponseType::getName(),
-        .service_hash = std::hash<std::string>()(service_name),
-        .service_name = service_name,
-        .service = service};
-
-      return result;
-    }
-  };
-
-  /**
-   * @brief Callback function pointer for when a server is created.
-   *
-   */
-  void (*service_callback)(void *user_ptr, const ServiceInfo &info) = nullptr;
-
-  /**
-   * @brief Information on a message provided on callbacks.
-   *
-   */
-  struct MessageInfo {
-    const TopicInfo &topic_info;
-    std::chrono::nanoseconds timestamp;
-    flatbuffers::span<u8> serialized_message;
-  };
-
-  /**
-   * @brief Callback function pointer for when a message is sent over a topic.
-   *
-   */
-  void (*message_callback)(void *user_ptr, const MessageInfo &info) = nullptr;
-
-  class Filter {
-  public:
-    Filter() = default;
-
-    /**
-     * @brief Check whether a callback should be performed for the topic with the supplied hash code.
-     *
-     * @param topic_hash Hash code of the topic.
-     * @return true The callback should be performed.
-     * @return false The callback should not be performed.
-     */
-    inline bool check(std::size_t topic_hash) const {
-      return set.contains(topic_hash) ^ mode;
-    }
-
-    /**
-     * @brief Check whether a callback should be performed for the topic with the supplied hash code.
-     *
-     * @param topic_name Name of the topic.
-     * @return true The callback should be performed.
-     * @return false The callback should not be performed.
-     */
-    inline bool check(const std::string &topic_name) const {
-      return check(std::hash<std::string>()(topic_name));
-    }
-
-    /**
-     * @brief Whitelist a topic.
-     * All previously blacklisted topics will be removed from the filter.
-     *
-     * @param topic_name Name of the topic.
-     */
-    inline void whitelist(const std::string &topic_name) {
-      add<false>(std::hash<std::string>()(topic_name));
-    }
-
-    /**
-     * @brief Blacklist a topic.
-     * All previously whitelisted topics will be removed from the filter.
-     *
-     * @param topic_name Name of the topic.
-     */
-    inline void blacklist(const std::string &topic_name) {
-      add<true>(std::hash<std::string>()(topic_name));
-    }
-
-  private:
-    /**
-     * @brief Add a topic to the filter.
-     * Depending on the supplied mode this will either whitelist or blacklist the relevant topic.
-     * If the mode is changed, all previously added topics will be removed from the filter.
-     *
-     * @tparam Mode New mode of the filter.
-     * @param topic_hash Hash of the topic to be added to the filter-
-     */
-    template <bool Mode>
-    void add(std::size_t topic_hash) {
-      if (mode != Mode) {
-        set.clear();
-        mode = Mode;
-      }
-
-      set.emplace(topic_hash);
-    }
-
-    std::unordered_set<std::size_t> set;
-
-    /**
-     * @brief Mode of the filter.
-     * When true specified blacklisted topics will be blocked and all other topics will pass.
-     * When false specified whitelisted topics will pass and all other topics will be blocked.
-     *
-     */
-    bool mode = true;
-  };
-
-  Filter filter;
 
 private:
-  std::atomic_flag delete_flag;
-  std::atomic<u32> use_count;
+  std::vector<std::shared_ptr<Node>> nodes;
 
   friend class Manager;
   friend class Node;
+};
+
+class UniquePlugin : public Plugin {
+protected:
+  explicit UniquePlugin(PluginEnvironment environment) : environment(std::move(environment)) {}
+
+private:
+  const PluginEnvironment environment;
+};
+
+class SharedPlugin : public Plugin {
+protected:
+  explicit SharedPlugin(PluginEnvironment environment) : environment(std::move(environment)) {}
+
+  const std::string &getName() const {
+    return environment.name;
+  }
+
+private:
+  const PluginEnvironment environment;
 };
 
 }  // namespace lbot

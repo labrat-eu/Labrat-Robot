@@ -16,7 +16,7 @@ inline namespace labrat {
 namespace lbot::test {
 
 TEST(serial_bridge, fork) {
-  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
+  lbot::Manager::Ptr manager = lbot::Manager::get();
 
   std::filesystem::remove("test0");
   std::filesystem::remove("test1");
@@ -49,8 +49,7 @@ TEST(serial_bridge, fork) {
 
   if (setup_pid == 0) {
     std::shared_ptr<TestNode> source(manager->addNode<TestNode>("source", "/network"));
-    std::shared_ptr<labrat::lbot::plugins::SerialBridgeNode> bridge(
-      manager->addNode<labrat::lbot::plugins::SerialBridgeNode>("bridge", "test0"));
+    std::shared_ptr<lbot::plugins::SerialBridge> bridge(manager->addPlugin<lbot::plugins::SerialBridge>("bridge", "test0"));
 
     bridge->registerReceiver<TestFlatbuffer>("/network");
 
@@ -64,16 +63,10 @@ TEST(serial_bridge, fork) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    source = std::shared_ptr<TestNode>();
-    manager->removeNode("source");
-    bridge = std::shared_ptr<labrat::lbot::plugins::SerialBridgeNode>();
-    manager->removeNode("bridge");
-
     exit(0);
   } else {
     std::shared_ptr<TestNode> sink(manager->addNode<TestNode>("sink", "", "/network"));
-    std::shared_ptr<labrat::lbot::plugins::SerialBridgeNode> bridge(
-      manager->addNode<labrat::lbot::plugins::SerialBridgeNode>("bridge", "test1"));
+    std::shared_ptr<lbot::plugins::SerialBridge> bridge(manager->addPlugin<lbot::plugins::SerialBridge>("bridge", "test1"));
 
     bridge->registerSender<TestFlatbuffer>("/network");
 
@@ -84,7 +77,7 @@ TEST(serial_bridge, fork) {
     for (u64 i = 0; i < 5000; ++i) {
       try {
         message = sink->receiver->latest();
-      } catch (labrat::lbot::TopicNoDataAvailableException &) {
+      } catch (lbot::TopicNoDataAvailableException &) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         continue;
       }
@@ -95,10 +88,8 @@ TEST(serial_bridge, fork) {
     ASSERT_GE(message.integral_field, 0);
     ASSERT_EQ(message.float_field, 1.0);
 
-    sink = std::shared_ptr<TestNode>();
-    ASSERT_NO_THROW(manager->removeNode("sink"));
-    bridge = std::shared_ptr<labrat::lbot::plugins::SerialBridgeNode>();
-    ASSERT_NO_THROW(manager->removeNode("bridge"));
+    bridge.reset();
+    ASSERT_NO_THROW(manager->removePlugin("bridge"));
 
     int status;
     ASSERT_GE(waitpid(setup_pid, &status, 0), 0);

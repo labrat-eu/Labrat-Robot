@@ -31,8 +31,9 @@ set(TARGET_HEADERS
   logger.hpp
   exception.hpp
   plugin.hpp
-  cluster.hpp
   config.hpp
+  info.hpp
+  filter.hpp
 )
 
 set(TARGET_HEADERS_UTILS

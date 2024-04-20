@@ -33,6 +33,10 @@ void TopicMap::forceFlush() {
 }
 
 TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic) {
+  if (topic.empty()) {
+    throw ManagementException("Topic name name must be non-empty.");
+  }
+
   const std::unordered_map<std::string, Topic>::iterator iterator = map.find(topic);
 
   if (iterator == map.end()) {
@@ -43,6 +47,10 @@ TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic) {
 }
 
 TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic, Topic::Handle handle) {
+  if (topic.empty()) {
+    throw ManagementException("Topic name name must be non-empty.");
+  }
+
   TopicMap::Topic &result =
     map.emplace(std::piecewise_construct, std::forward_as_tuple(topic), std::forward_as_tuple(handle, topic)).first->second;
 

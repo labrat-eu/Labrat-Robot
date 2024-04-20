@@ -28,7 +28,16 @@ public:
    *
    * @param ptr Shared pointer object to be moved.
    */
-  explicit FinalPtr(std::shared_ptr<T> &&ptr) noexcept : std::shared_ptr<T>(std::forward<std::shared_ptr<T> &&>(ptr)) {}
+  FinalPtr(FinalPtr<T> &&ptr) noexcept : std::shared_ptr<T>(std::forward<std::shared_ptr<T> &&>(ptr)) {
+    ptr.was_moved = true;
+  }
+
+  /**
+   * @brief Construct a new Final Ptr object.
+   *
+   * @param ptr Shared pointer object to be moved.
+   */
+  FinalPtr(std::shared_ptr<T> &&ptr) noexcept : std::shared_ptr<T>(std::forward<std::shared_ptr<T> &&>(ptr)) {}
 
   /**
    * @brief Destroy the Final Ptr object and assert whether this instance is indeed the last instance to point to the managed object.
@@ -37,8 +46,11 @@ public:
   ~FinalPtr() {
     // The use count of a final pointer shall not be greater than one upon destruction as this instance should be the last one to own the
     // managed object.
-    assert(std::shared_ptr<T>::use_count() == 1);
+    assert(std::shared_ptr<T>::use_count() == 1 || was_moved);
   }
+
+private:
+  bool was_moved = false;
 };
 
 }  // namespace utils

@@ -22,20 +22,22 @@ class McapRecorderPrivate;
  * @brief Class to register a plugin to the manager that will record messages into an MCAP file.
  *
  */
-class McapRecorder {
+class McapRecorder : public UniquePlugin {
 public:
   /**
    * @brief Construct a new Mcap Recorder object.
    *
-   * @param filter Topic filter to specifiy which topics should be handled by the plugin.
    */
-  explicit McapRecorder(const Plugin::Filter &filter = Plugin::Filter());
+  explicit McapRecorder(const PluginEnvironment &environment);
 
   /**
    * @brief Destroy the Mcap Recorder object.
    *
    */
   ~McapRecorder();
+
+  void topicCallback(const TopicInfo &info);
+  void messageCallback(const MessageInfo &info);
 
 private:
   McapRecorderPrivate *priv;

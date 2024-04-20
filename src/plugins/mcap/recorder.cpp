@@ -13,6 +13,7 @@
 #include <labrat/lbot/message.hpp>
 #include <labrat/lbot/plugins/mcap/recorder.hpp>
 
+#include <atomic>
 #include <chrono>
 #include <mutex>
 #include <queue>
@@ -28,7 +29,7 @@ namespace lbot::plugins {
 
 class McapRecorderPrivate {
 public:
-  McapRecorderPrivate(const Plugin::Filter &filter) : logger("mcap") {
+  McapRecorderPrivate() : logger("mcap") {
     Config::Ptr config = Config::get();
     const std::string filename =
       config
@@ -45,22 +46,12 @@ public:
       throw IoException("Failed to open '" + filename + "'.", logger);
     }
 
-    Plugin plugin_info;
-    plugin_info.user_ptr = reinterpret_cast<void *>(this);
-    plugin_info.topic_callback = McapRecorderPrivate::topicCallback;
-    plugin_info.message_callback = McapRecorderPrivate::messageCallback;
-    plugin_info.filter = filter;
-
-    self_reference = Manager::get()->addPlugin(plugin_info);
+    enable_callbacks.test_and_set();
   }
 
   ~McapRecorderPrivate() {
-    Manager::get()->removePlugin(self_reference);
     writer.close();
   }
-
-private:
-  using SchemaMap = std::unordered_map<std::size_t, mcap::Schema>;
 
   struct ChannelInfo {
     mcap::Channel channel;
@@ -70,45 +61,44 @@ private:
   };
 
   using ChannelMap = std::unordered_map<std::size_t, ChannelInfo>;
+  using SchemaMap = std::unordered_map<std::size_t, mcap::Schema>;
 
-  static void topicCallback(void *user_ptr, const Plugin::TopicInfo &info);
-  static void messageCallback(void *user_ptr, const Plugin::MessageInfo &info);
+  ChannelMap::iterator handleTopic(const TopicInfo &info);
+  inline ChannelMap::iterator handleMessage(const MessageInfo &info);
 
-  ChannelMap::iterator handleTopic(const Plugin::TopicInfo &info);
-  inline ChannelMap::iterator handleMessage(const Plugin::MessageInfo &info);
+  std::atomic_flag enable_callbacks;
 
+private:
   SchemaMap schema_map;
   ChannelMap channel_map;
 
   mcap::McapWriter writer;
   std::mutex mutex;
 
-  Plugin::List::iterator self_reference;
-
   Logger logger;
 };
 
-McapRecorder::McapRecorder(const Plugin::Filter &filter) {
-  priv = new McapRecorderPrivate(filter);
+McapRecorder::McapRecorder(const PluginEnvironment &environment) : UniquePlugin(environment) {
+  priv = new McapRecorderPrivate();
 }
 
 McapRecorder::~McapRecorder() {
   delete priv;
 }
 
-void McapRecorderPrivate::topicCallback(void *user_ptr, const Plugin::TopicInfo &info) {
-  McapRecorderPrivate *self = reinterpret_cast<McapRecorderPrivate *>(user_ptr);
-
-  (void)self->handleTopic(info);
+void McapRecorder::topicCallback(const TopicInfo &info) {
+  if (priv->enable_callbacks.test()) {
+    (void)priv->handleTopic(info);
+  }
 }
 
-void McapRecorderPrivate::messageCallback(void *user_ptr, const Plugin::MessageInfo &info) {
-  McapRecorderPrivate *self = reinterpret_cast<McapRecorderPrivate *>(user_ptr);
-
-  (void)self->handleMessage(info);
+void McapRecorder::messageCallback(const MessageInfo &info) {
+  if (priv->enable_callbacks.test()) {
+    (void)priv->handleMessage(info);
+  }
 }
 
-McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleTopic(const Plugin::TopicInfo &info) {
+McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleTopic(const TopicInfo &info) {
   SchemaMap::iterator schema_iterator = schema_map.find(info.type_hash);
   if (schema_iterator == schema_map.end()) {
     MessageReflection reflection(info.type_name);
@@ -135,7 +125,7 @@ McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleTopic(const
   return result.first;
 }
 
-inline McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleMessage(const Plugin::MessageInfo &info) {
+inline McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleMessage(const MessageInfo &info) {
   ChannelMap::iterator channel_iterator = channel_map.find(info.topic_info.topic_hash);
   if (channel_iterator == channel_map.end()) {
     channel_iterator = handleTopic(info.topic_info);

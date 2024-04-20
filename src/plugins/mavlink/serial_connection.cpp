@@ -98,7 +98,7 @@ std::size_t MavlinkSerialConnection::write(const u8 *buffer, std::size_t size) {
 std::size_t MavlinkSerialConnection::read(u8 *buffer, std::size_t size) {
   {
     epoll_event event;
-    const i32 result = epoll_pwait(epoll_handle, &event, 1, timeout, &signal_mask);
+    const ssize_t result = epoll_pwait(epoll_handle, &event, 1, timeout, &signal_mask);
 
     if (result <= 0) {
       if ((result == -1) && (errno != EINTR)) {
@@ -109,7 +109,7 @@ std::size_t MavlinkSerialConnection::read(u8 *buffer, std::size_t size) {
     }
   }
 
-  const std::size_t result = ::read(file_descriptor, reinterpret_cast<void *>(buffer), size);
+  const ssize_t result = ::read(file_descriptor, reinterpret_cast<void *>(buffer), size);
 
   if (result < 0) {
     throw IoException("Failed to read from serial port.", errno);

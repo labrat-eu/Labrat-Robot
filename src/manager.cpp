@@ -6,9 +6,9 @@
  *
  */
 
-#include <labrat/lbot/cluster.hpp>
 #include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/manager.hpp>
+#include <labrat/lbot/plugin.hpp>
 #include <labrat/lbot/utils/atomic.hpp>
 
 inline namespace labrat {
@@ -23,7 +23,12 @@ Manager::~Manager() {
 
   Logger::deinitialize();
 
-  cluster_map.clear();
+  for (PluginRegistration &item : plugin_list) {
+    item.delete_flag.test_and_set();
+    utils::waitUntil(item.use_count, 0U);
+  }
+
+  plugin_list.clear();
   node_map.clear();
 }
 
@@ -50,34 +55,31 @@ void Manager::removeNode(const std::string &name) {
   node_map.erase(iterator);
 }
 
-void Manager::removeCluster(const std::string &name) {
-  const std::unordered_map<std::string, utils::FinalPtr<Cluster>>::iterator iterator = cluster_map.find(name);
+void Manager::removePluginInternal(const PluginRegistration::Handle &handle) {
+  const std::list<PluginRegistration>::iterator iterator =
+    std::find_if(plugin_list.begin(), plugin_list.end(), [&handle](const PluginRegistration &plugin) {
+    return handle == plugin.handle;
+  });
 
-  if (iterator == cluster_map.end()) {
-    throw ManagementException("Cluster not found.");
+  if (iterator == plugin_list.end()) {
+    throw ManagementException("Plugin not found.");
   }
 
-  utils::FinalPtr<Cluster> &cluster = iterator->second;
-
-  while (!cluster->nodes.empty()) {
-    const std::string &name = cluster->nodes.back()->getName();
-    cluster->nodes.pop_back();
-
-    removeNode(name);
-  }
-
-  cluster_map.erase(iterator);
-}
-
-Plugin::List::iterator Manager::addPlugin(const Plugin &plugin) {
-  return plugin_list.emplace(plugin_list.begin(), plugin);
-}
-
-void Manager::removePlugin(Plugin::List::iterator iterator) {
   iterator->delete_flag.test_and_set();
   utils::waitUntil(iterator->use_count, 0U);
 
+  utils::FinalPtr<Plugin> &plugin = iterator->plugin;
+
+  std::vector<std::shared_ptr<Node>> plugin_nodes = plugin->nodes;
+
   plugin_list.erase(iterator);
+
+  while (!plugin_nodes.empty()) {
+    const std::string &name = plugin_nodes.back()->getName();
+    plugin_nodes.pop_back();
+
+    removeNode(name);
+  }
 }
 
 }  // namespace lbot

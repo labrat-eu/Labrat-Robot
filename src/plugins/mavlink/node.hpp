@@ -18,49 +18,23 @@ typedef struct __mavlink_message mavlink_message_t;
 inline namespace labrat {
 namespace lbot::plugins {
 
-class MavlinkNodePrivate;
-
 /**
- * @brief Node to connect itself to a MAVLink network.
+ * @brief Plugin to connect to a MAVLink network.
  * It will publish messages received from peer systems to specific topics.
  * It will also receive specific topics and forward their contents to its peer systems via MAVLink.
  * In addition, servers are provided to issue commands and read out parameters.
  *
  */
-class MavlinkNode final : public Node {
-public:
-  struct SystemInfo {
-    MavlinkNodePrivate *node;
-    u8 channel_id;
-    u8 system_id;
-    u8 component_id;
-  };
-
-private:
-  template <typename FlatbufferType>
-  class MavlinkMessage : public MessageBase<FlatbufferType, mavlink_message_t> {
-  public:
-    static void convertFrom(const mavlink_message_t &source, MessageBase<FlatbufferType, mavlink_message_t> &destination);
-    static void convertTo(const MessageBase<FlatbufferType, mavlink_message_t> &source, mavlink_message_t &destination,
-      const MavlinkNode::SystemInfo *info);
-  };
-
+class Mavlink final : public SharedPlugin {
 public:
   /**
-   * @brief Construct a new Mavlink Node object.
+   * @brief Construct a new Mavlink object.
    *
-   * @param environment Node environment.
+   * @param environment Plugin environment.
    * @param connection MavlinkConnection to be used by this instance.
    */
-  MavlinkNode(const NodeEnvironment &environment, MavlinkConnection::Ptr &&connection);
-  ~MavlinkNode();
-
-  /**
-   * @brief Get the MAVLink system info about the local system.
-   *
-   * @return const SystemInfo& System information.
-   */
-  [[nodiscard]] const SystemInfo &getSystemInfo() const;
+  Mavlink(const PluginEnvironment &environment, MavlinkConnection::Ptr &&connection);
+  ~Mavlink();
 
   /**
    * @brief Register a sender with the MAVLink node. Incoming MAVLink messages will be forwarded onto the sender.
@@ -71,8 +45,8 @@ public:
    * @param id Message ID of the underlying MAVLink message.
    */
   template <typename MessageType>
-  void registerSender(const std::string topic_name, u16 id) {
-    registerGenericSender(addSender<MessageType>(topic_name), id);
+  void registerSender(std::string topic_name, u16 id) {
+    node->registerSender<MessageType>(std::forward<std::string>(topic_name), id);
   }
 
   /**
@@ -83,22 +57,87 @@ public:
    * @param conversion_function Conversion function used by the receiver.
    */
   template <typename MessageType>
-  void registerReceiver(const std::string topic_name, const SystemInfo *system_info) {
-    typename Node::Receiver<MessageType>::Ptr receiver = addReceiver<MessageType>(topic_name, system_info);
-    receiver->setCallback(&MavlinkNode::receiverCallback);
-
-    registerGenericReceiver(std::move(receiver));
+  void registerReceiver(std::string topic_name) {
+    node->registerReceiver<MessageType>(std::forward<std::string>(topic_name));
   }
 
 private:
-  void registerGenericSender(Node::GenericSender<mavlink_message_t>::Ptr &&sender, u16 id);
-  void registerGenericReceiver(Node::GenericReceiver<mavlink_message_t>::Ptr &&receiver);
+  class NodePrivate;
 
-  static void receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, const SystemInfo *system_info);
+  struct SystemInfo {
+    NodePrivate *node;
+    u8 channel_id;
+    u8 system_id;
+    u8 component_id;
+  };
 
-  MavlinkNodePrivate *priv;
+  class Node final : public lbot::Node {
+  private:
+    template <typename FlatbufferType>
+    class MavlinkMessage : public MessageBase<FlatbufferType, mavlink_message_t> {
+    public:
+      static void convertFrom(const mavlink_message_t &source, MessageBase<FlatbufferType, mavlink_message_t> &destination);
+      static void convertTo(const MessageBase<FlatbufferType, mavlink_message_t> &source, mavlink_message_t &destination,
+        const Mavlink::SystemInfo *info);
+    };
 
-  friend MavlinkNodePrivate;
+  public:
+    /**
+     * @brief Construct a new Mavlink Node object.
+     *
+     * @param environment Node environment.
+     * @param connection MavlinkConnection to be used by this instance.
+     */
+    Node(const NodeEnvironment &environment, MavlinkConnection::Ptr &&connection);
+    ~Node();
+
+    /**
+     * @brief Get the MAVLink system info about the local system.
+     *
+     * @return const SystemInfo& System information.
+     */
+    [[nodiscard]] const SystemInfo &getSystemInfo() const;
+
+    /**
+     * @brief Register a sender with the MAVLink node. Incoming MAVLink messages will be forwarded onto the sender.
+     *
+     * @tparam MessageType Message type of the sender.
+     * @param topic_name Name of the topic.
+     * @param conversion_function Conversion function used by the sender.
+     * @param id Message ID of the underlying MAVLink message.
+     */
+    template <typename MessageType>
+    void registerSender(std::string &&topic_name, u16 id) {
+      registerGenericSender(addSender<MessageType>(topic_name), id);
+    }
+
+    /**
+     * @brief Register a receiver with the MAVLink node. Incoming messages will be forwarded onto the MAVLink network.
+     *
+     * @tparam MessageType Message type of the receiver.
+     * @param topic_name Name of the topic.
+     * @param conversion_function Conversion function used by the receiver.
+     */
+    template <typename MessageType>
+    void registerReceiver(std::string &&topic_name) {
+      typename Node::Receiver<MessageType>::Ptr receiver = addReceiver<MessageType>(topic_name, &getSystemInfo());
+      receiver->setCallback(&Node::receiverCallback);
+
+      registerGenericReceiver(std::move(receiver));
+    }
+
+  private:
+    void registerGenericSender(Node::GenericSender<mavlink_message_t>::Ptr &&sender, u16 id);
+    void registerGenericReceiver(Node::GenericReceiver<mavlink_message_t>::Ptr &&receiver);
+
+    static void receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, const SystemInfo *system_info);
+
+    NodePrivate *priv;
+
+    friend NodePrivate;
+  };
+
+  std::shared_ptr<Node> node;
 };
 
 }  // namespace lbot::plugins

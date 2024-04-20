@@ -21,15 +21,22 @@ class FoxgloveServerPrivate;
  * @brief Class to register a plugin to the manager that will open a websocket server in order to forward massages to Foxglove Studio.
  *
  */
-class FoxgloveServer {
+class FoxgloveServer : public UniquePlugin {
 public:
   /**
    * @brief Construct a new Foxglove Server object.
    *
-   * @param filter Topic filter to specifiy which topics should be handled by the plugin.
    */
-  explicit FoxgloveServer(const Plugin::Filter &filter = Plugin::Filter());
+  explicit FoxgloveServer(const PluginEnvironment &environment);
+
+  /**
+   * @brief Destroy the Foxglove Server object.
+   *
+   */
   ~FoxgloveServer();
+
+  void topicCallback(const TopicInfo &info);
+  void messageCallback(const MessageInfo &info);
 
 private:
   FoxgloveServerPrivate *priv;

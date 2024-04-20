@@ -19,6 +19,10 @@ ServiceMap::Service::Service(Handle handle, std::string name) : handle(handle), 
 }
 
 ServiceMap::Service &ServiceMap::getServiceInternal(const std::string &service) {
+  if (service.empty()) {
+    throw ManagementException("Service name name must be non-empty.");
+  }
+
   const std::unordered_map<std::string, Service>::iterator iterator = map.find(service);
 
   if (iterator == map.end()) {
@@ -29,6 +33,10 @@ ServiceMap::Service &ServiceMap::getServiceInternal(const std::string &service) 
 }
 
 ServiceMap::Service &ServiceMap::getServiceInternal(const std::string &service, Service::Handle handle) {
+  if (service.empty()) {
+    throw ManagementException("Service name name must be non-empty.");
+  }
+
   ServiceMap::Service &result =
     map.emplace(std::piecewise_construct, std::forward_as_tuple(service), std::forward_as_tuple(handle, service)).first->second;
 
