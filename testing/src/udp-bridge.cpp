@@ -17,7 +17,7 @@ TEST(udp_bridge, fork) {
 
   if (pid == 0) {
     // Child branch.
-    std::shared_ptr<TestNode> source(manager->addNode<TestNode>("source", "/network"));
+    std::shared_ptr<TestSharedNode> source(manager->addNode<TestSharedNode>("source", "/network"));
     std::shared_ptr<lbot::plugins::UdpBridge> bridge(manager->addPlugin<lbot::plugins::UdpBridge>("bridge", "127.0.0.1", 5001, 5002));
 
     bridge->registerReceiver<TestFlatbuffer>("/network");
@@ -35,7 +35,7 @@ TEST(udp_bridge, fork) {
     exit(0);
   } else {
     // Parent branch.
-    std::shared_ptr<TestNode> sink(manager->addNode<TestNode>("sink", "", "/network"));
+    std::shared_ptr<TestSharedNode> sink(manager->addNode<TestSharedNode>("sink", "", "/network"));
     std::shared_ptr<lbot::plugins::UdpBridge> bridge(manager->addPlugin<lbot::plugins::UdpBridge>("bridge", "127.0.0.1", 5002, 5001));
 
     bridge->registerSender<TestFlatbuffer>("/network");

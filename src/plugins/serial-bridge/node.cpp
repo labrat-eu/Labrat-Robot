@@ -197,7 +197,7 @@ SerialBridge::SerialBridge(const PluginEnvironment &environment, const std::stri
 
 SerialBridge::~SerialBridge() = default;
 
-SerialBridge::Node::Node(const NodeEnvironment &environment, const std::string &port, u64 baud_rate) : lbot::Node(environment) {
+SerialBridge::Node::Node(const NodeEnvironment &environment, const std::string &port, u64 baud_rate) : lbot::SharedNode(environment) {
   priv = new SerialBridge::NodePrivate(port, baud_rate, *this);
 }
 

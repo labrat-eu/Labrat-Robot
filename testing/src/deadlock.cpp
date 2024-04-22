@@ -14,8 +14,8 @@ namespace lbot::test {
 TEST(deadlock, next) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main", 4));
+  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
+  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main", 4));
 
   TestContainer message_a;
   message_a.integral_field = 10;

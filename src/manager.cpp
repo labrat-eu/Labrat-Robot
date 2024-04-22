@@ -46,7 +46,7 @@ Manager::Ptr Manager::get() {
 }
 
 void Manager::removeNode(const std::string &name) {
-  const std::unordered_map<std::string, utils::FinalPtr<Node>>::iterator iterator = node_map.find(name);
+  const std::unordered_map<ManagerHandle, utils::FinalPtr<Node>>::iterator iterator = node_map.find(name);
 
   if (iterator == node_map.end()) {
     throw ManagementException("Node not found.");
@@ -55,7 +55,7 @@ void Manager::removeNode(const std::string &name) {
   node_map.erase(iterator);
 }
 
-void Manager::removePluginInternal(const PluginRegistration::Handle &handle) {
+void Manager::removePluginInternal(const ManagerHandle &handle) {
   const std::list<PluginRegistration>::iterator iterator =
     std::find_if(plugin_list.begin(), plugin_list.end(), [&handle](const PluginRegistration &plugin) {
     return handle == plugin.handle;

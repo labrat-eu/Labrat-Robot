@@ -48,7 +48,7 @@ TEST(serial_bridge, fork) {
   int setup_pid = fork();
 
   if (setup_pid == 0) {
-    std::shared_ptr<TestNode> source(manager->addNode<TestNode>("source", "/network"));
+    std::shared_ptr<TestSharedNode> source(manager->addNode<TestSharedNode>("source", "/network"));
     std::shared_ptr<lbot::plugins::SerialBridge> bridge(manager->addPlugin<lbot::plugins::SerialBridge>("bridge", "test0"));
 
     bridge->registerReceiver<TestFlatbuffer>("/network");
@@ -65,7 +65,7 @@ TEST(serial_bridge, fork) {
 
     exit(0);
   } else {
-    std::shared_ptr<TestNode> sink(manager->addNode<TestNode>("sink", "", "/network"));
+    std::shared_ptr<TestSharedNode> sink(manager->addNode<TestSharedNode>("sink", "", "/network"));
     std::shared_ptr<lbot::plugins::SerialBridge> bridge(manager->addPlugin<lbot::plugins::SerialBridge>("bridge", "test1"));
 
     bridge->registerSender<TestFlatbuffer>("/network");

@@ -78,7 +78,7 @@ private:
   Logger logger;
 };
 
-McapRecorder::McapRecorder(const PluginEnvironment &environment) : UniquePlugin(environment) {
+McapRecorder::McapRecorder(const PluginEnvironment &environment) : UniquePlugin(environment, "mcap") {
   priv = new McapRecorderPrivate();
 }
 

@@ -12,8 +12,8 @@ namespace lbot::test {
 TEST(performance, put) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
+  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
+  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main"));
 
   const u64 limit = 10000000;
 
@@ -28,17 +28,17 @@ TEST(performance, put) {
 
   EXPECT_EQ(message.integral_field, limit);
 
-  node_a = std::shared_ptr<TestNode>();
+  node_a = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestNode>();
+  node_b = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(performance, latest) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
+  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
+  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main"));
 
   TestContainer message_a;
   message_a.integral_field = 42;
@@ -54,17 +54,17 @@ TEST(performance, latest) {
 
   EXPECT_EQ(message_a, message_b);
 
-  node_a = std::shared_ptr<TestNode>();
+  node_a = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestNode>();
+  node_b = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(performance, next) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
+  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
+  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main"));
 
   TestContainer message_a;
   message_a.integral_field = 42;
@@ -79,9 +79,9 @@ TEST(performance, next) {
 
   EXPECT_EQ(message_a, message_b);
 
-  node_a = std::shared_ptr<TestNode>();
+  node_a = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestNode>();
+  node_b = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 

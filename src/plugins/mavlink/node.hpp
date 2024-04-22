@@ -71,7 +71,7 @@ private:
     u8 component_id;
   };
 
-  class Node final : public lbot::Node {
+  class Node final : public lbot::SharedNode {
   private:
     template <typename FlatbufferType>
     class MavlinkMessage : public MessageBase<FlatbufferType, mavlink_message_t> {

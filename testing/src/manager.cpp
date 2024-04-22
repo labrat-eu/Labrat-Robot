@@ -12,14 +12,14 @@ namespace lbot::test {
 TEST(manager, node) {
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
-  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
+  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
+  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main"));
 
-  ASSERT_THROW(manager->addNode<TestNode>("node_a", "main", "void"), lbot::ManagementException);
+  ASSERT_THROW(manager->addNode<TestSharedNode>("node_a", "main", "void"), lbot::ManagementException);
 
-  node_a = std::shared_ptr<TestNode>();
+  node_a = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestNode>();
+  node_b = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 

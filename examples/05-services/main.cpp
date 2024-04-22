@@ -15,9 +15,9 @@
 // In this example we will construct two nodes, one to send requests and one to answer them.
 // Classes and code patterns are showcased.
 
-class ServerNode : public lbot::Node {
+class ServerNode : public lbot::UniqueNode {
 public:
-  ServerNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
+  ServerNode(const lbot::NodeEnvironment &environment) : lbot::UniqueNode(environment, "server") {
     // Register a server on the service with the name "/examples/power" and the handler ServerNode::handleRequest().
     // There can only be one server per service.
     // The type of this server must match any previously registered client on the same service.
@@ -41,9 +41,9 @@ private:
   Server<examples::msg::Request, examples::msg::Response>::Ptr server;
 };
 
-class ClientNode : public lbot::Node {
+class ClientNode : public lbot::UniqueNode {
 public:
-  ClientNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
+  ClientNode(const lbot::NodeEnvironment &environment) : lbot::UniqueNode(environment, "client") {
     // Register a client on the service with the name "/examples/power".
     // The type of this client must match any previously registered server or client on the same service.
     client = addClient<examples::msg::Request, examples::msg::Response>("/examples/power");
@@ -83,8 +83,8 @@ int main(int argc, char **argv) {
   lbot::Logger logger("main");
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
-  manager->addNode<ServerNode>("server");
-  manager->addNode<ClientNode>("client");
+  manager->addNode<ServerNode>();
+  manager->addNode<ClientNode>();
 
   logger.logInfo() << "Press CTRL+C to exit the program.";
 

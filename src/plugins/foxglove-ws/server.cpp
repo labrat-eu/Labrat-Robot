@@ -149,7 +149,7 @@ private:
   Logger logger;
 };
 
-FoxgloveServer::FoxgloveServer(const PluginEnvironment &environment) : UniquePlugin(environment) {
+FoxgloveServer::FoxgloveServer(const PluginEnvironment &environment) : UniquePlugin(environment, "foxglove-ws") {
   priv = new FoxgloveServerPrivate();
 }
 

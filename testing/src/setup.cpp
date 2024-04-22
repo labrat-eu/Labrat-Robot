@@ -12,8 +12,8 @@ namespace lbot::test {
 TEST(setup, latest) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
+  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
+  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main"));
 
   TestContainer message_a;
   message_a.integral_field = 10;
@@ -46,17 +46,17 @@ TEST(setup, latest) {
   node_a->sender->flush();
   ASSERT_THROW(node_b->receiver->latest(), labrat::lbot::TopicNoDataAvailableException);
 
-  node_a = std::shared_ptr<TestNode>();
+  node_a = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestNode>();
+  node_b = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(setup, next) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
+  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
+  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main"));
 
   TestContainer message_a;
   message_a.integral_field = 10;
@@ -115,17 +115,17 @@ TEST(setup, next) {
 
   ASSERT_NO_THROW(node_b->receiver->latest());
 
-  node_a = std::shared_ptr<TestNode>();
+  node_a = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestNode>();
+  node_b = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(setup, move) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
+  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
+  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main"));
 
   static const std::size_t size = 10000000L;
   std::vector<u8> local_buffer;
@@ -151,9 +151,9 @@ TEST(setup, move) {
   message_a.buffer = local_buffer;
   ASSERT_EQ(message_a, message_b);
 
-  node_a = std::shared_ptr<TestNode>();
+  node_a = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestNode>();
+  node_b = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
@@ -162,14 +162,14 @@ TEST(setup, callback) {
 
   TestContainer message_b;
 
-  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main", nullptr, &message_b));
+  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
+  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main", nullptr, &message_b));
 
-  auto callback = [](TestNode::GenericReceiver<TestContainer> &receiver, TestContainer *message) -> void {
+  auto callback = [](TestSharedNode::GenericReceiver<TestContainer> &receiver, TestContainer *message) -> void {
     *message = receiver.next();
   };
 
-  void (*ptr)(TestNode::GenericReceiver<TestContainer> &, TestContainer *) = callback;
+  void (*ptr)(TestSharedNode::GenericReceiver<TestContainer> &, TestContainer *) = callback;
 
   node_b->receiver->setCallback(ptr);
 
@@ -181,17 +181,17 @@ TEST(setup, callback) {
 
   ASSERT_EQ(message_a, message_b);
 
-  node_a = std::shared_ptr<TestNode>();
+  node_a = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestNode>();
+  node_b = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(setup, server) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
+  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
+  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main"));
 
   TestContainer result;
   u64 counter = 0;
@@ -220,9 +220,9 @@ TEST(setup, server) {
   server.reset(nullptr);
   ASSERT_THROW(client->callSync(request), labrat::lbot::ServiceUnavailableException);
 
-  node_a = std::shared_ptr<TestNode>();
+  node_a = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestNode>();
+  node_b = std::shared_ptr<TestSharedNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 

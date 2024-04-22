@@ -1159,7 +1159,8 @@ protected:
    *
    * @param environment Node environment data for the node to copy internally.
    */
-  explicit Node(NodeEnvironment environment) : environment(std::move(environment)), logger(environment.name) {}
+  explicit Node(const NodeEnvironment &environment) : environment(environment), logger(environment.name) {}
+  explicit Node(NodeEnvironment &&environment) : environment(std::forward<NodeEnvironment>(environment)), logger(environment.name) {}
 
   /**
    * @brief Get a logger with the name of the node.
@@ -1235,6 +1236,16 @@ protected:
 private:
   const NodeEnvironment environment;
   Logger logger;
+};
+
+class UniqueNode : public Node {
+protected:
+  explicit UniqueNode(NodeEnvironment environment, std::string name) : Node(NodeEnvironment(std::move(environment), name)) {}
+};
+
+class SharedNode : public Node {
+protected:
+  explicit SharedNode(NodeEnvironment environment) : Node(std::move(environment)) {}
 };
 
 }  // namespace lbot

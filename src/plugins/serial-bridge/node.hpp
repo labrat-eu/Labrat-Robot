@@ -59,7 +59,7 @@ private:
    * It will forward to and receive from the peer system.
    *
    */
-  class Node final : public lbot::Node {
+  class Node final : public lbot::SharedNode {
   private:
     struct PayloadInfo {
       std::size_t topic_hash;

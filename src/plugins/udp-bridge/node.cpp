@@ -137,7 +137,7 @@ UdpBridge::UdpBridge(const PluginEnvironment &environment, const std::string &ad
 
 UdpBridge::~UdpBridge() = default;
 
-UdpBridge::Node::Node(const NodeEnvironment &environment, const std::string &address, u16 port, u16 local_port) : lbot::Node(environment) {
+UdpBridge::Node::Node(const NodeEnvironment &environment, const std::string &address, u16 port, u16 local_port) : lbot::SharedNode(environment) {
   priv = new UdpBridge::NodePrivate(address, port, local_port, *this);
 }
 

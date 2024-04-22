@@ -975,7 +975,7 @@ Mavlink::Mavlink(const PluginEnvironment &environment, MavlinkConnection::Ptr &&
 
 Mavlink::~Mavlink() = default;
 
-Mavlink::Node::Node(const NodeEnvironment &environment, MavlinkConnection::Ptr &&connection) : lbot::Node(environment) {
+Mavlink::Node::Node(const NodeEnvironment &environment, MavlinkConnection::Ptr &&connection) : lbot::SharedNode(environment) {
   std::allocator<Mavlink::NodePrivate> allocator;
   priv = allocator.allocate(1);
 

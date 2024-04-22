@@ -44,9 +44,9 @@ public:
   }
 };
 
-class SenderNode : public lbot::Node {
+class SenderNode : public lbot::UniqueNode {
 public:
-  SenderNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
+  SenderNode(const lbot::NodeEnvironment &environment) : lbot::UniqueNode(environment, "sender") {
     // Register a sender with the previously defined move function.
     sender = addSender<examples::msg::Array>("/examples/vector");
 
@@ -75,9 +75,9 @@ private:
   utils::TimerThread sender_thread;
 };
 
-class ReceiverNode : public lbot::Node {
+class ReceiverNode : public lbot::UniqueNode {
 public:
-  ReceiverNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
+  ReceiverNode(const lbot::NodeEnvironment &environment) : lbot::UniqueNode(environment, "receiver") {
     // Register a receiver with the previously defined move function.
     receiver = addReceiver<ConversionMessage>("/examples/vector");
 
@@ -110,8 +110,8 @@ int main(int argc, char **argv) {
   lbot::Logger logger("main");
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
-  manager->addNode<SenderNode>("sender");
-  manager->addNode<ReceiverNode>("receiver");
+  manager->addNode<SenderNode>();
+  manager->addNode<ReceiverNode>();
 
   logger.logInfo() << "Press CTRL+C to exit the program.";
 

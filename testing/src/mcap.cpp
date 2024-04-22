@@ -22,8 +22,8 @@ TEST(mcap, recorder) {
 
     manager->addPlugin<plugins::McapRecorder>();
 
-    std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "/topic_a", "/topic_b"));
-    std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "/topic_b", "/topic_a"));
+    std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "/topic_a", "/topic_b"));
+    std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "/topic_b", "/topic_a"));
 
     for (u64 i = 0; i < 1000; ++i) {
       TestContainer message;
@@ -47,9 +47,9 @@ TEST(mcap, recorder) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    node_a = std::shared_ptr<TestNode>();
+    node_a = std::shared_ptr<TestSharedNode>();
     ASSERT_NO_THROW(manager->removeNode("node_a"));
-    node_b = std::shared_ptr<TestNode>();
+    node_b = std::shared_ptr<TestSharedNode>();
     ASSERT_NO_THROW(manager->removeNode("node_b"));
   }
 

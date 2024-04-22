@@ -16,9 +16,9 @@
 //
 // In this example we will use some existing plugins that might help you in your projects.
 
-class SenderNode : public lbot::Node {
+class SenderNode : public lbot::UniqueNode {
 public:
-  SenderNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
+  SenderNode(const lbot::NodeEnvironment &environment) : lbot::UniqueNode(environment, "sender") {
     sender = addSender<lbot::Message<examples::msg::Vector>>("/examples/number");
 
     sender_thread = utils::TimerThread(&SenderNode::senderFunction, std::chrono::milliseconds(50), "sender_thread", 1, this);
@@ -41,9 +41,9 @@ private:
   uint64_t i = 0;
 };
 
-class ServerNode : public lbot::Node {
+class ServerNode : public lbot::UniqueNode {
 public:
-  ServerNode(const lbot::NodeEnvironment &environment) : lbot::Node(environment) {
+  ServerNode(const lbot::NodeEnvironment &environment) : lbot::UniqueNode(environment, "server") {
     // Register a server on the service with the name "/examples/power" and the handler ServerNode::handleRequest().
     // There can only be one server per service.
     // The type of this server must match any previously registered client on the same service.
@@ -86,8 +86,8 @@ int main(int argc, char **argv) {
   //  2. Open a connection via Foxglove WebSocket with the URL ws://localhost:8765
   manager->addPlugin<lbot::plugins::FoxgloveServer>();
 
-  manager->addNode<SenderNode>("sender");
-  manager->addNode<ServerNode>("server");
+  manager->addNode<SenderNode>();
+  manager->addNode<ServerNode>();
 
   logger.logInfo() << "Press CTRL+C to exit the program.";
 

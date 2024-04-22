@@ -12,12 +12,12 @@
 //
 // This example showcases how to work with nodes.
 
-// Nodes must inherit from lbot::Node.
-class ExampleNode : public lbot::Node {
+// Nodes must inherit from either lbot::UniqueNode or lbot::SharedNode.
+class ExampleNode : public lbot::SharedNode {
 public:
   // The first argument (environment) must be passed onto the parent constructor.
   // Apart from that a node behaves like any other class.
-  ExampleNode(const lbot::NodeEnvironment &environment, const std::string &param) : lbot::Node(environment) {
+  ExampleNode(const lbot::NodeEnvironment &environment, const std::string &param) : lbot::SharedNode(environment) {
     // Nodes have their own logger.
     getLogger().logInfo() << "Example node has been started with the parameter " << param << ".";
   }
