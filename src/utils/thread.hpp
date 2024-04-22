@@ -16,6 +16,7 @@
 #include <chrono>
 #include <functional>
 #include <thread>
+#include <mutex>
 
 #include <sched.h>
 #include <sys/prctl.h>
@@ -103,7 +104,7 @@ public:
   TimerThread() = default;
   TimerThread(TimerThread &) = delete;
 
-  TimerThread(TimerThread &&rhs) noexcept : thread(std::move(rhs.thread)){};
+  TimerThread(TimerThread &&rhs) noexcept : mutex(std::move(rhs.mutex)), thread(std::move(rhs.thread)) {};
 
   /**
    * @brief Start the thread.
@@ -116,30 +117,39 @@ public:
    */
   template <typename Function, typename R, typename P, typename... Args>
   TimerThread(Function &&function, const std::chrono::duration<R, P> &interval, const std::string &name, i32 priority, Args &&...args) {
-    thread = std::jthread([interval, name, priority](std::stop_token token, Function &&function, Args &&...args) {
+    mutex = std::make_shared<std::timed_mutex>();
+    mutex->lock();
+
+    thread = std::jthread([interval, name, priority](std::stop_token token, std::shared_ptr<std::timed_mutex> mutex, Function &&function, Args &&...args) {
       setup(name, priority);
 
-      while (true) {
+      while (!token.stop_requested()) {
         const std::chrono::time_point<std::chrono::steady_clock> time_begin = std::chrono::steady_clock::now();
 
         [](Function function, Args... args) {
           std::invoke<Function, Args...>(std::forward<Function>(function), std::forward<Args>(args)...);
         }(function, args...);
 
-        if (token.stop_requested()) {
+        if (mutex->try_lock_until(time_begin + interval)) {
           break;
         }
-
-        std::this_thread::sleep_until(time_begin + interval);
       }
-    }, std::forward<Function>(function), std::forward<Args>(args)...);
+    }, mutex, std::forward<Function>(function), std::forward<Args>(args)...);
+  }
+
+  ~TimerThread() {
+    if (mutex) {
+      mutex->unlock();
+    }
   }
 
   void operator=(TimerThread &&rhs) noexcept {
+    mutex = std::move(rhs.mutex);
     thread = std::move(rhs.thread);
   }
 
 private:
+  std::shared_ptr<std::timed_mutex> mutex;
   std::jthread thread;
 };
 
