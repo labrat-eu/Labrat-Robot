@@ -45,8 +45,8 @@ Manager::Ptr Manager::get() {
   return result;
 }
 
-void Manager::removeNode(const std::string &name) {
-  const std::unordered_map<ManagerHandle, utils::FinalPtr<Node>>::iterator iterator = node_map.find(name);
+void Manager::removeNodeInternal(const ManagerHandle &handle) {
+  const std::unordered_map<ManagerHandle, utils::FinalPtr<Node>>::iterator iterator = node_map.find(handle);
 
   if (iterator == node_map.end()) {
     throw ManagementException("Node not found.");

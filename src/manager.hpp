@@ -276,11 +276,23 @@ public:
   }
 
   /**
+   * @brief Remove a plugin by iterator.
+   *
+   * @tparam T Type of the plugin to be removed.
+   */
+  template <typename T>
+  inline void removeNode() {
+    removeNodeInternal(typeid(T).hash_code());
+  }
+
+  /**
    * @brief Remove a node by name from the internal network.
    *
    * @param name
    */
-  void removeNode(const std::string &name);
+  void removeNode(const std::string &name) {
+    removeNodeInternal(name);
+  }
 
   /**
    * @brief Remove a plugin by iterator.
@@ -378,6 +390,7 @@ private:
     return result;
   }
 
+  void removeNodeInternal(const ManagerHandle &handle);
   void removePluginInternal(const ManagerHandle &handle);
 
   inline NodeEnvironment getNodeEnvironment(const ManagerHandle &handle) {
