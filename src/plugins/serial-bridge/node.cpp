@@ -184,7 +184,7 @@ private:
 
   bool escape_flag;
 
-  utils::LoopThread read_thread;
+  LoopThread read_thread;
 
   static constexpr u8 end_code = 0x57;
   static constexpr u8 esc_code = 0x59;
@@ -258,7 +258,7 @@ SerialBridge::NodePrivate::NodePrivate(const std::string &port, u64 baud_rate, S
   config.c_cc[VTIME] = 1;
 
   // Set baud rate.
-  const speed_t speed = utils::toSpeed(baud_rate);
+  const speed_t speed = toSpeed(baud_rate);
   cfsetispeed(&config, speed);
   cfsetospeed(&config, speed);
 
@@ -281,7 +281,7 @@ SerialBridge::NodePrivate::NodePrivate(const std::string &port, u64 baud_rate, S
   decode_index = 0;
   escape_flag = false;
 
-  read_thread = utils::LoopThread(&SerialBridge::NodePrivate::readLoop, "serial bridge", 1, this);
+  read_thread = LoopThread(&SerialBridge::NodePrivate::readLoop, "serial bridge", 1, this);
 }
 
 SerialBridge::NodePrivate::~NodePrivate() = default;

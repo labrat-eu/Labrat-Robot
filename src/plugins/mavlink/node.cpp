@@ -150,11 +150,11 @@ private:
 
   std::mutex mutex;
 
-  utils::LoopThread read_thread;
-  utils::TimerThread heartbeat_thread;
+  LoopThread read_thread;
+  TimerThread heartbeat_thread;
 
 public:
-  utils::CleanupLock lock;
+  CleanupLock lock;
 };
 
 template <>
@@ -230,7 +230,7 @@ void Mavlink::Node::MavlinkMessage<mavlink::common::ParamValue>::convertFrom(con
 
   destination.param_id.resize(17);
   mavlink_msg_param_value_get_param_id(&source, destination.param_id.data());
-  utils::shrinkString(destination.param_id);
+  shrinkString(destination.param_id);
 
   destination.param_type = static_cast<mavlink::common::ParamType>(mavlink_msg_param_value_get_param_type(&source));
 }
@@ -243,7 +243,7 @@ void Mavlink::Node::MavlinkMessage<mavlink::common::ParamSet>::convertFrom(const
 
   destination.param_id.resize(17);
   mavlink_msg_param_set_get_param_id(&source, destination.param_id.data());
-  utils::shrinkString(destination.param_id);
+  shrinkString(destination.param_id);
 
   destination.param_type = static_cast<mavlink::common::ParamType>(mavlink_msg_param_set_get_param_type(&source));
 }
@@ -1002,7 +1002,7 @@ void Mavlink::Node::registerGenericReceiver(Node::GenericReceiver<mavlink_messag
 
 void Mavlink::Node::receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, const SystemInfo *system_info) {
   Mavlink::NodePrivate *node = system_info->node;
-  utils::CleanupLock::Guard guard = node->lock.lock();
+  CleanupLock::Guard guard = node->lock.lock();
 
   if (!guard.valid()) {
     return;
@@ -1085,8 +1085,8 @@ Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::
   server.command_long = addServer<mavlink::common::CommandLong, mavlink::common::CommandAck>("/" + node.getName() + "/srv/command_long",
     "/" + node.getName() + "/out/command_long", "/" + node.getName() + "/in/command_ack");
 
-  read_thread = utils::LoopThread(&Mavlink::NodePrivate::readLoop, "mavlink read", 1, this);
-  heartbeat_thread = utils::TimerThread(&Mavlink::NodePrivate::heartbeatLoop, std::chrono::milliseconds(500), "mavlink hb", 1, this);
+  read_thread = LoopThread(&Mavlink::NodePrivate::readLoop, "mavlink read", 1, this);
+  heartbeat_thread = TimerThread(&Mavlink::NodePrivate::heartbeatLoop, std::chrono::milliseconds(500), "mavlink hb", 1, this);
 }
 
 Mavlink::NodePrivate::~NodePrivate() = default;

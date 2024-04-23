@@ -15,12 +15,15 @@
 #include <cerrno>
 #include <chrono>
 #include <functional>
-#include <thread>
+#include <memory>
 #include <mutex>
+#include <thread>
 
 #include <sched.h>
 #include <sys/prctl.h>
 
+inline namespace labrat {
+namespace lbot {
 inline namespace utils {
 
 /**
@@ -104,7 +107,7 @@ public:
   TimerThread() = default;
   TimerThread(TimerThread &) = delete;
 
-  TimerThread(TimerThread &&rhs) noexcept : mutex(std::move(rhs.mutex)), thread(std::move(rhs.thread)) {};
+  TimerThread(TimerThread &&rhs) noexcept : mutex(std::move(rhs.mutex)), thread(std::move(rhs.thread)){};
 
   /**
    * @brief Start the thread.
@@ -120,7 +123,8 @@ public:
     mutex = std::make_shared<std::timed_mutex>();
     mutex->lock();
 
-    thread = std::jthread([interval, name, priority](std::stop_token token, std::shared_ptr<std::timed_mutex> mutex, Function &&function, Args &&...args) {
+    thread = std::jthread(
+      [interval, name, priority](std::stop_token token, std::shared_ptr<std::timed_mutex> mutex, Function &&function, Args &&...args) {
       setup(name, priority);
 
       while (!token.stop_requested()) {
@@ -154,3 +158,5 @@ private:
 };
 
 }  // namespace utils
+}  // namespace lbot
+}  // namespace labrat

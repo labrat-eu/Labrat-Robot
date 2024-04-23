@@ -48,7 +48,7 @@ public:
     // The type of this client must match any previously registered server or client on the same service.
     client = addClient<examples::msg::Request, examples::msg::Response>("/examples/power");
 
-    client_thread = utils::TimerThread(&ClientNode::clientFunction, std::chrono::seconds(1), "receiver_thread", 1, this);
+    client_thread = lbot::TimerThread(&ClientNode::clientFunction, std::chrono::seconds(1), "receiver_thread", 1, this);
   }
 
 private:
@@ -74,7 +74,7 @@ private:
   }
 
   Client<examples::msg::Request, examples::msg::Response>::Ptr client;
-  utils::TimerThread client_thread;
+  lbot::TimerThread client_thread;
 
   float e = 0;
 };
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
 
   logger.logInfo() << "Press CTRL+C to exit the program.";
 
-  int signal = utils::signalWait();
+  int signal = lbot::signalWait();
   logger.logInfo() << "Caught signal (" << signal << "), shutting down.";
 
   return 0;

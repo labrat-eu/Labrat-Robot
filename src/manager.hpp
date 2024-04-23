@@ -52,7 +52,7 @@ struct PluginRegistration {
   ManagerHandle handle;
   std::atomic_flag delete_flag;
   std::atomic<u32> use_count;
-  utils::FinalPtr<Plugin> plugin;
+  FinalPtr<Plugin> plugin;
   Filter filter;
 
   void *user_ptr;
@@ -60,10 +60,10 @@ struct PluginRegistration {
   void (*service_callback)(void *plugin, const ServiceInfo &info);
   void (*message_callback)(void *plugin, const MessageInfo &info);
 
-  PluginRegistration(utils::FinalPtr<Plugin> &&plugin) : plugin(std::forward<utils::FinalPtr<Plugin>>(plugin)){};
+  PluginRegistration(FinalPtr<Plugin> &&plugin) : plugin(std::forward<FinalPtr<Plugin>>(plugin)){};
 
   PluginRegistration(PluginRegistration &&rhs) :
-    handle(rhs.handle), use_count(rhs.use_count.load()), plugin(std::forward<utils::FinalPtr<Plugin>>(rhs.plugin)), filter(rhs.filter),
+    handle(rhs.handle), use_count(rhs.use_count.load()), plugin(std::forward<FinalPtr<Plugin>>(rhs.plugin)), filter(rhs.filter),
     user_ptr(rhs.user_ptr), topic_callback(rhs.topic_callback), service_callback(rhs.service_callback),
     message_callback(rhs.message_callback) {
     if (rhs.delete_flag.test()) {
@@ -79,8 +79,10 @@ struct PluginRegistration {
  */
 class NodeEnvironment final {
 public:
-  NodeEnvironment(const NodeEnvironment &rhs) : name(rhs.name), topic_map(rhs.topic_map), service_map(rhs.service_map), plugin_list(rhs.plugin_list) {}
-  NodeEnvironment(NodeEnvironment &&rhs) : name(std::move(rhs.name)), topic_map(rhs.topic_map), service_map(rhs.service_map), plugin_list(rhs.plugin_list) {}
+  NodeEnvironment(const NodeEnvironment &rhs) :
+    name(rhs.name), topic_map(rhs.topic_map), service_map(rhs.service_map), plugin_list(rhs.plugin_list) {}
+  NodeEnvironment(NodeEnvironment &&rhs) :
+    name(std::move(rhs.name)), topic_map(rhs.topic_map), service_map(rhs.service_map), plugin_list(rhs.plugin_list) {}
 
   const std::string name;
 
@@ -89,8 +91,10 @@ public:
   PluginRegistration::List &plugin_list;
 
 private:
-  NodeEnvironment(NodeEnvironment &&rhs, std::string name) : name(std::move(name)), topic_map(rhs.topic_map), service_map(rhs.service_map), plugin_list(rhs.plugin_list) {}
-  NodeEnvironment(std::string name, TopicMap &topic_map, ServiceMap &service_map, PluginRegistration::List &plugin_list) : name(std::move(name)), topic_map(topic_map), service_map(service_map), plugin_list(plugin_list) {}
+  NodeEnvironment(NodeEnvironment &&rhs, std::string name) :
+    name(std::move(name)), topic_map(rhs.topic_map), service_map(rhs.service_map), plugin_list(rhs.plugin_list) {}
+  NodeEnvironment(std::string name, TopicMap &topic_map, ServiceMap &service_map, PluginRegistration::List &plugin_list) :
+    name(std::move(name)), topic_map(topic_map), service_map(service_map), plugin_list(plugin_list) {}
 
   friend Manager;
   friend UniqueNode;
@@ -173,7 +177,7 @@ private:
 
   static std::weak_ptr<Manager> instance;
 
-  std::unordered_map<ManagerHandle, utils::FinalPtr<Node>> node_map;
+  std::unordered_map<ManagerHandle, FinalPtr<Node>> node_map;
   PluginRegistration::List plugin_list;
   TopicMap topic_map;
   ServiceMap service_map;
@@ -330,7 +334,7 @@ private:
       }
     }
 
-    const std::pair<std::unordered_map<ManagerHandle, utils::FinalPtr<Node>>::iterator, bool> result =
+    const std::pair<std::unordered_map<ManagerHandle, FinalPtr<Node>>::iterator, bool> result =
       node_map.emplace(handle, std::make_shared<T>(std::move(environment), std::forward<Args>(args)...));
 
     if (!result.second) {
@@ -341,8 +345,7 @@ private:
   }
 
   template <typename T, typename... Args>
-  std::shared_ptr<T> addPluginInternal(ManagerHandle handle, Filter filter, Args &&...args)
-    requires std::is_base_of_v<Plugin, T> {
+  std::shared_ptr<T> addPluginInternal(ManagerHandle handle, Filter filter, Args &&...args) requires std::is_base_of_v<Plugin, T> {
     PluginEnvironment environment = getPluginEnvironment(handle);
 
     if (std::holds_alternative<std::string>(handle)) {

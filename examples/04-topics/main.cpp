@@ -22,7 +22,7 @@ public:
     // The type of this sender must match any previously registered receiver on the same topic.
     sender = addSender<lbot::Message<examples::msg::Numbers>>("/examples/numbers");
 
-    sender_thread = utils::TimerThread(&SenderNode::senderFunction, std::chrono::seconds(1), "sender_thread", 1, this);
+    sender_thread = lbot::TimerThread(&SenderNode::senderFunction, std::chrono::seconds(1), "sender_thread", 1, this);
   }
 
 private:
@@ -37,7 +37,7 @@ private:
   }
 
   Sender<lbot::Message<examples::msg::Numbers>>::Ptr sender;
-  utils::TimerThread sender_thread;
+  lbot::TimerThread sender_thread;
 
   uint64_t i = 0;
 };
@@ -49,7 +49,7 @@ public:
     // The type of this receiver must match any previously registered sender and receiver on the same topic.
     receiver = addReceiver<lbot::Message<examples::msg::Numbers>>("/examples/numbers");
 
-    receiver_thread = utils::LoopThread(&ReceiverNode::receiverFunction, "receiver_thread", 1, this);
+    receiver_thread = lbot::LoopThread(&ReceiverNode::receiverFunction, "receiver_thread", 1, this);
   }
 
 private:
@@ -70,7 +70,7 @@ private:
   }
 
   Receiver<lbot::Message<examples::msg::Numbers>>::Ptr receiver;
-  utils::LoopThread receiver_thread;
+  lbot::LoopThread receiver_thread;
 };
 
 int main(int argc, char **argv) {
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
 
   logger.logInfo() << "Press CTRL+C to exit the program.";
 
-  int signal = utils::signalWait();
+  int signal = lbot::signalWait();
   logger.logInfo() << "Caught signal (" << signal << "), shutting down.";
 
   return 0;

@@ -13,6 +13,8 @@
 #include <cassert>
 #include <memory>
 
+inline namespace labrat {
+namespace lbot {
 inline namespace utils {
 
 /**
@@ -54,3 +56,5 @@ private:
 };
 
 }  // namespace utils
+}  // namespace lbot
+}  // namespace labrat

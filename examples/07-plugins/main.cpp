@@ -21,7 +21,7 @@ public:
   SenderNode(const lbot::NodeEnvironment &environment) : lbot::UniqueNode(environment, "sender") {
     sender = addSender<lbot::Message<examples::msg::Vector>>("/examples/number");
 
-    sender_thread = utils::TimerThread(&SenderNode::senderFunction, std::chrono::milliseconds(50), "sender_thread", 1, this);
+    sender_thread = lbot::TimerThread(&SenderNode::senderFunction, std::chrono::milliseconds(50), "sender_thread", 1, this);
   }
 
 private:
@@ -36,7 +36,7 @@ private:
   }
 
   Sender<lbot::Message<examples::msg::Vector>>::Ptr sender;
-  utils::TimerThread sender_thread;
+  lbot::TimerThread sender_thread;
 
   uint64_t i = 0;
 };
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
 
   logger.logInfo() << "Press CTRL+C to exit the program.";
 
-  int signal = utils::signalWait();
+  int signal = lbot::signalWait();
   logger.logInfo() << "Caught signal (" << signal << "), shutting down.";
 
   return 0;

@@ -13,6 +13,8 @@
 #include <cstdint>
 
 // NOLINTBEGIN
+inline namespace labrat {
+namespace lbot {
 inline namespace utils {
 
 // Signed integer types.
@@ -33,4 +35,6 @@ using f64 = double;
 using f128 = long double;
 
 }  // namespace utils
+}  // namespace lbot
+}  // namespace labrat
 // NOLINTEND

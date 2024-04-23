@@ -26,9 +26,9 @@ struct convert<labrat::lbot::ConfigValue> {
         } catch (TypedBadConversion<bool> &) {
         }
         try {
-          rhs = node.as<i64>();
+          rhs = node.as<lbot::i64>();
           return true;
-        } catch (TypedBadConversion<i64> &) {
+        } catch (TypedBadConversion<lbot::i64> &) {
         }
         try {
           rhs = node.as<double>();

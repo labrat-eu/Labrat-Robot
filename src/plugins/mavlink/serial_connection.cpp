@@ -56,7 +56,7 @@ MavlinkSerialConnection::MavlinkSerialConnection(const std::string &port, u64 ba
   config.c_cc[VTIME] = 10;
 
   // Set baud rate.
-  const speed_t speed = utils::toSpeed(baud_rate);
+  const speed_t speed = lbot::toSpeed(baud_rate);
   cfsetispeed(&config, speed);
   cfsetospeed(&config, speed);
 

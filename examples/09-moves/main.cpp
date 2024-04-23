@@ -50,7 +50,7 @@ public:
     // Register a sender with the previously defined move function.
     sender = addSender<examples::msg::Array>("/examples/vector");
 
-    sender_thread = utils::TimerThread(&SenderNode::senderFunction, std::chrono::seconds(1), "sender_thread", 1, this);
+    sender_thread = lbot::TimerThread(&SenderNode::senderFunction, std::chrono::seconds(1), "sender_thread", 1, this);
   }
 
 private:
@@ -59,12 +59,12 @@ private:
     message.values.resize(10000000L);
 
     {
-      utils::TimerTrace<std::chrono::microseconds> trace("Sender::put()", getLogger());
+      lbot::TimerTrace<std::chrono::microseconds> trace("Sender::put()", getLogger());
       sender->put(message);
     }
 
     {
-      utils::TimerTrace<std::chrono::microseconds> trace("Sender::put(std::move())", getLogger());
+      lbot::TimerTrace<std::chrono::microseconds> trace("Sender::put(std::move())", getLogger());
       sender->put(std::move(message));
     }
 
@@ -72,7 +72,7 @@ private:
   }
 
   Sender<examples::msg::Array>::Ptr sender;
-  utils::TimerThread sender_thread;
+  lbot::TimerThread sender_thread;
 };
 
 class ReceiverNode : public lbot::UniqueNode {
@@ -81,7 +81,7 @@ public:
     // Register a receiver with the previously defined move function.
     receiver = addReceiver<ConversionMessage>("/examples/vector");
 
-    receiver_thread = utils::TimerThread(&ReceiverNode::receiverFunction, std::chrono::seconds(1), "receiver_thread", 1, this);
+    receiver_thread = lbot::TimerThread(&ReceiverNode::receiverFunction, std::chrono::seconds(1), "receiver_thread", 1, this);
   }
 
 private:
@@ -91,7 +91,7 @@ private:
       std::vector<float> data;
 
       {
-        utils::TimerTrace<std::chrono::microseconds> trace("Receiver::next()", getLogger());
+        lbot::TimerTrace<std::chrono::microseconds> trace("Receiver::next()", getLogger());
         data = receiver->next();
       }
 
@@ -101,7 +101,7 @@ private:
   }
 
   Receiver<ConversionMessage>::Ptr receiver;
-  utils::TimerThread receiver_thread;
+  lbot::TimerThread receiver_thread;
 };
 
 int main(int argc, char **argv) {
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
 
   logger.logInfo() << "Press CTRL+C to exit the program.";
 
-  int signal = utils::signalWait();
+  int signal = lbot::signalWait();
   logger.logInfo() << "Caught signal (" << signal << "), shutting down.";
 
   return 0;

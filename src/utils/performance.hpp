@@ -14,6 +14,8 @@
 #include <chrono>
 #include <string>
 
+inline namespace labrat {
+namespace lbot {
 inline namespace utils {
 
 class TimerTraceBase {
@@ -64,3 +66,5 @@ private:
 };
 
 }  // namespace utils
+}  // namespace lbot
+}  // namespace labrat

@@ -14,6 +14,8 @@
 
 #include <termios.h>
 
+inline namespace labrat {
+namespace lbot {
 inline namespace utils {
 
 /**
@@ -91,3 +93,5 @@ speed_t toSpeed(u64 baud_rate) {
 }
 
 }  // namespace utils
+}  // namespace lbot
+}  // namespace labrat

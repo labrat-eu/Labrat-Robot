@@ -82,15 +82,15 @@ void TopicMap::Topic::removeSender(void *old_sender) {
 }
 
 void TopicMap::Topic::addReceiver(void *new_receiver) {
-  utils::FlagGuard guard(change_flag);
-  utils::waitUntil<std::size_t>(use_count, 0);
+  FlagGuard guard(change_flag);
+  waitUntil<std::size_t>(use_count, 0);
 
   receivers.emplace_back(new_receiver);
 }
 
 void TopicMap::Topic::removeReceiver(void *old_receiver) {
-  utils::FlagGuard guard(change_flag);
-  utils::waitUntil<std::size_t>(use_count, 0);
+  FlagGuard guard(change_flag);
+  waitUntil<std::size_t>(use_count, 0);
 
   std::vector<void *>::iterator iterator = std::find(receivers.begin(), receivers.end(), old_receiver);
 

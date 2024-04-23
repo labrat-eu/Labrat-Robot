@@ -12,6 +12,8 @@
 
 #include <concepts>
 
+inline namespace labrat {
+namespace lbot {
 inline namespace utils {
 
 template <typename T, template <typename...> class Z>
@@ -24,3 +26,5 @@ template <typename T, template <typename...> class Z>
 inline constexpr bool is_specialization_of_v = is_specialization_of<T, Z>::value;
 
 }  // namespace utils
+}  // namespace lbot
+}  // namespace labrat

@@ -13,6 +13,8 @@
 
 #include <signal.h>
 
+inline namespace labrat {
+namespace lbot {
 inline namespace utils {
 
 /**
@@ -41,3 +43,5 @@ int signalWait() {
 }
 
 }  // namespace utils
+}  // namespace lbot
+}  // namespace labrat

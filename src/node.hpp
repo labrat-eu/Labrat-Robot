@@ -151,7 +151,7 @@ public:
           continue;
         }
 
-        utils::ConsumerGuard<u32> guard(plugin.use_count);
+        ConsumerGuard<u32> guard(plugin.use_count);
 
         if (plugin.topic_callback != nullptr) {
           plugin.topic_callback(plugin.user_ptr, GenericSender<Converted>::topic_info);
@@ -284,7 +284,7 @@ public:
 
           PluginRegistration &plugin = *plugin_iterator;
 
-          utils::ConsumerGuard<u32> guard(plugin.use_count);
+          ConsumerGuard<u32> guard(plugin.use_count);
 
           if (plugin.message_callback != nullptr) {
             plugin.message_callback(plugin.user_ptr, message_info);
@@ -321,7 +321,7 @@ public:
       bool init_flag = false;
 
       for (PluginRegistration &plugin : GenericSender<Converted>::node.environment.plugin_list) {
-        utils::ConsumerGuard<u32> guard(plugin.use_count);
+        ConsumerGuard<u32> guard(plugin.use_count);
 
         if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
           continue;
@@ -867,7 +867,7 @@ public:
           continue;
         }
 
-        utils::ConsumerGuard<u32> guard(plugin.use_count);
+        ConsumerGuard<u32> guard(plugin.use_count);
 
         if (plugin.service_callback != nullptr) {
           plugin.service_callback(plugin.user_ptr, GenericServer<RequestConverted, ResponseConverted>::service_info);

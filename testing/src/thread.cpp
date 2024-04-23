@@ -23,7 +23,7 @@ TEST(thread, loop) {
   std::atomic_bool exit_flag;
 
   {
-    utils::LoopThread thread(&test_func, "name", 1, std::move(vec), &loop_count, &exit_flag);
+    lbot::LoopThread thread(&test_func, "name", 1, std::move(vec), &loop_count, &exit_flag);
     exit_flag.wait(false);
   }
 }
@@ -34,7 +34,7 @@ TEST(thread, timer) {
   std::atomic_bool exit_flag;
 
   {
-    utils::TimerThread thread(&test_func, std::chrono::seconds(0), "name", 1, std::move(vec), &loop_count, &exit_flag);
+    lbot::TimerThread thread(&test_func, std::chrono::seconds(0), "name", 1, std::move(vec), &loop_count, &exit_flag);
     exit_flag.wait(false);
   }
 }

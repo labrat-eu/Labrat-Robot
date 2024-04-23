@@ -25,7 +25,7 @@ Manager::~Manager() {
 
   for (PluginRegistration &item : plugin_list) {
     item.delete_flag.test_and_set();
-    utils::waitUntil(item.use_count, 0U);
+    waitUntil(item.use_count, 0U);
   }
 
   plugin_list.clear();
@@ -46,7 +46,7 @@ Manager::Ptr Manager::get() {
 }
 
 void Manager::removeNodeInternal(const ManagerHandle &handle) {
-  const std::unordered_map<ManagerHandle, utils::FinalPtr<Node>>::iterator iterator = node_map.find(handle);
+  const std::unordered_map<ManagerHandle, FinalPtr<Node>>::iterator iterator = node_map.find(handle);
 
   if (iterator == node_map.end()) {
     throw ManagementException("Node not found.");
@@ -66,9 +66,9 @@ void Manager::removePluginInternal(const ManagerHandle &handle) {
   }
 
   iterator->delete_flag.test_and_set();
-  utils::waitUntil(iterator->use_count, 0U);
+  waitUntil(iterator->use_count, 0U);
 
-  utils::FinalPtr<Plugin> &plugin = iterator->plugin;
+  FinalPtr<Plugin> &plugin = iterator->plugin;
 
   std::vector<std::shared_ptr<Node>> plugin_nodes = plugin->nodes;
 

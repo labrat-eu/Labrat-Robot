@@ -12,6 +12,8 @@
 
 #include <string>
 
+inline namespace labrat {
+namespace lbot {
 inline namespace utils {
 
 void shrinkString(std::string &string) {
@@ -23,3 +25,5 @@ void shrinkString(std::string &string) {
 }
 
 }  // namespace utils
+}  // namespace lbot
+}  // namespace labrat

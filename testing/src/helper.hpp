@@ -85,8 +85,8 @@ public:
     }
   }
 
-  TestSharedNode(const NodeEnvironment environment, const std::string &sender_topic, const std::string &receiver_topic, const void *sender_ptr,
-    const void *receiver_ptr, int buffer_size = 10) : lbot::SharedNode(environment) {
+  TestSharedNode(const NodeEnvironment environment, const std::string &sender_topic, const std::string &receiver_topic,
+    const void *sender_ptr, const void *receiver_ptr, int buffer_size = 10) : lbot::SharedNode(environment) {
     if (!sender_topic.empty()) {
       sender = addSender<TestMessageConv>(sender_topic, sender_ptr);
     }

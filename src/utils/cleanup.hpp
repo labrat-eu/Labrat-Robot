@@ -10,6 +10,8 @@
 
 #include <atomic>
 
+inline namespace labrat {
+namespace lbot {
 inline namespace utils {
 class CleanupLock {
 public:
@@ -79,3 +81,5 @@ private:
 };
 
 }  // namespace utils
+}  // namespace lbot
+}  // namespace labrat

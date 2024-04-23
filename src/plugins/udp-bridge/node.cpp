@@ -127,7 +127,7 @@ private:
 
   std::mutex mutex;
 
-  utils::LoopThread read_thread;
+  LoopThread read_thread;
 };
 
 UdpBridge::UdpBridge(const PluginEnvironment &environment, const std::string &address, u16 port, u16 local_port) :
@@ -137,7 +137,8 @@ UdpBridge::UdpBridge(const PluginEnvironment &environment, const std::string &ad
 
 UdpBridge::~UdpBridge() = default;
 
-UdpBridge::Node::Node(const NodeEnvironment &environment, const std::string &address, u16 port, u16 local_port) : lbot::SharedNode(environment) {
+UdpBridge::Node::Node(const NodeEnvironment &environment, const std::string &address, u16 port, u16 local_port) :
+  lbot::SharedNode(environment) {
   priv = new UdpBridge::NodePrivate(address, port, local_port, *this);
 }
 
@@ -198,7 +199,7 @@ UdpBridge::NodePrivate::NodePrivate(const std::string &address, u16 port, u16 lo
   sigemptyset(&signal_mask);
   sigaddset(&signal_mask, SIGINT);
 
-  read_thread = utils::LoopThread(&UdpBridge::NodePrivate::readLoop, "udp bridge", 1, this);
+  read_thread = LoopThread(&UdpBridge::NodePrivate::readLoop, "udp bridge", 1, this);
 }
 
 UdpBridge::NodePrivate::~NodePrivate() = default;

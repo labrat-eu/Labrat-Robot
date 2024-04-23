@@ -12,6 +12,8 @@
 
 #include <atomic>
 
+inline namespace labrat {
+namespace lbot {
 inline namespace utils {
 
 /**
@@ -128,3 +130,5 @@ inline void spinUntil(std::atomic<T> &value, T required) {
 }
 
 }  // namespace utils
+}  // namespace lbot
+}  // namespace labrat

@@ -13,6 +13,8 @@
 
 #include <vector>
 
+inline namespace labrat {
+namespace lbot {
 inline namespace utils {
 
 /**
@@ -78,3 +80,5 @@ protected:
 };
 
 }  // namespace utils
+}  // namespace lbot
+}  // namespace labrat

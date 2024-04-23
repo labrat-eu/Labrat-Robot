@@ -8,8 +8,12 @@
 
 #include <labrat/lbot/utils/performance.hpp>
 
+inline namespace labrat {
+namespace lbot {
 inline namespace utils {
 
 labrat::lbot::Logger TimerTraceBase::default_logger("timer");
 
 }  // namespace utils
+}  // namespace lbot
+}  // namespace labrat
