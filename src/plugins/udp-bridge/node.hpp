@@ -18,17 +18,16 @@
 inline namespace labrat {
 namespace lbot::plugins {
 
-class UdpBridge final : public SharedPlugin {
+class UdpBridge final : public Plugin {
 public:
   /**
    * @brief Construct a new Udp Bridge object.
    *
-   * @param environment Plugin environment.
    * @param address Remote address of the socket.
    * @param port Remote port of the socket.
    * @param local_port Local port of the socket.
    */
-  UdpBridge(const PluginEnvironment &environment, const std::string &address, u16 port, u16 local_port);
+  UdpBridge(const std::string &address, u16 port, u16 local_port);
   ~UdpBridge();
 
   /**
@@ -61,7 +60,7 @@ private:
    * It will forward to and receive from the peer system.
    *
    */
-  class Node final : public lbot::SharedNode {
+  class Node final : public lbot::Node {
   public:
     struct PayloadInfo {
       std::size_t topic_hash;
@@ -91,12 +90,11 @@ private:
     /**
      * @brief Construct a new Udp Bridge Node object.
      *
-     * @param environment Node environment.
      * @param address Remote address of the socket.
      * @param port Remote port of the socket.
      * @param local_port Local port of the socket.
      */
-    Node(const NodeEnvironment &environment, const std::string &address, u16 port, u16 local_port);
+    Node(const std::string &address, u16 port, u16 local_port);
     ~Node();
 
     /**

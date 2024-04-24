@@ -25,6 +25,7 @@
 #include <string>
 #include <typeinfo>
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 
 inline namespace labrat {
@@ -34,91 +35,9 @@ class Manager;
 
 class Node;
 class UniqueNode;
-class SharedNode;
 
 class Plugin;
 class UniquePlugin;
-class SharedPlugin;
-
-using ManagerHandle = std::variant<std::size_t, std::string>;
-
-/**
- * @brief Class containing data required for registering a plugin.
- *
- */
-struct PluginRegistration {
-  using List = std::list<PluginRegistration>;
-
-  ManagerHandle handle;
-  std::atomic_flag delete_flag;
-  std::atomic<u32> use_count;
-  FinalPtr<Plugin> plugin;
-  Filter filter;
-
-  void *user_ptr;
-  void (*topic_callback)(void *plugin, const TopicInfo &info);
-  void (*service_callback)(void *plugin, const ServiceInfo &info);
-  void (*message_callback)(void *plugin, const MessageInfo &info);
-
-  PluginRegistration(FinalPtr<Plugin> &&plugin) : plugin(std::forward<FinalPtr<Plugin>>(plugin)){};
-
-  PluginRegistration(PluginRegistration &&rhs) :
-    handle(rhs.handle), use_count(rhs.use_count.load()), plugin(std::forward<FinalPtr<Plugin>>(rhs.plugin)), filter(rhs.filter),
-    user_ptr(rhs.user_ptr), topic_callback(rhs.topic_callback), service_callback(rhs.service_callback),
-    message_callback(rhs.message_callback) {
-    if (rhs.delete_flag.test()) {
-      delete_flag.test_and_set();
-    }
-  }
-};
-
-/**
- * @brief Information on the environment in which the node is created.
- * This data will be copied by a node upon construction.
- *
- */
-class NodeEnvironment final {
-public:
-  NodeEnvironment(const NodeEnvironment &rhs) :
-    name(rhs.name), topic_map(rhs.topic_map), service_map(rhs.service_map), plugin_list(rhs.plugin_list) {}
-  NodeEnvironment(NodeEnvironment &&rhs) :
-    name(std::move(rhs.name)), topic_map(rhs.topic_map), service_map(rhs.service_map), plugin_list(rhs.plugin_list) {}
-
-  const std::string name;
-
-  TopicMap &topic_map;
-  ServiceMap &service_map;
-  PluginRegistration::List &plugin_list;
-
-private:
-  NodeEnvironment(NodeEnvironment &&rhs, std::string name) :
-    name(std::move(name)), topic_map(rhs.topic_map), service_map(rhs.service_map), plugin_list(rhs.plugin_list) {}
-  NodeEnvironment(std::string name, TopicMap &topic_map, ServiceMap &service_map, PluginRegistration::List &plugin_list) :
-    name(std::move(name)), topic_map(topic_map), service_map(service_map), plugin_list(plugin_list) {}
-
-  friend Manager;
-  friend UniqueNode;
-};
-
-/**
- * @brief Information on the environment in which the plugin is created.
- * This data will be copied by a plugin upon construction.
- *
- */
-class PluginEnvironment final {
-public:
-  PluginEnvironment(const PluginEnvironment &rhs) : name(rhs.name) {}
-  PluginEnvironment(PluginEnvironment &&rhs) : name(std::move(rhs.name)) {}
-
-  const std::string name;
-
-private:
-  PluginEnvironment(PluginEnvironment &&rhs, std::string name) : name(std::move(name)) {}
-  PluginEnvironment(std::string name) : name(std::move(name)) {}
-
-  friend Manager;
-  friend UniquePlugin;
-};
 
 template <typename T>
 concept has_topic_callback = requires(T *self, const TopicInfo &info) {
@@ -145,6 +64,73 @@ concept has_message_callback = requires(T *self, const MessageInfo &info) {
  */
 class Manager {
 private:
+  /**
+   * @brief Class containing data required for registering a node.
+   *
+   */
+  struct NodeRegistration {
+    using Map = std::unordered_map<std::string, NodeRegistration>;
+
+    std::string name;
+    std::optional<std::size_t> type_hash;
+    FinalPtr<Node> node;
+
+    NodeRegistration(FinalPtr<Node> &&node) : node(std::forward<FinalPtr<Node>>(node)){}
+    NodeRegistration(NodeRegistration &&rhs) : name(std::move(rhs.name)), type_hash(rhs.type_hash), node(std::move(rhs.node)) {}
+  };
+
+  /**
+   * @brief Class containing data required for registering a plugin.
+   *
+   */
+  struct PluginRegistration {
+    using List = std::list<PluginRegistration>;
+
+    std::atomic_flag delete_flag;
+    std::atomic<u32> use_count;
+    std::string name;
+    std::optional<std::size_t> type_hash;
+    FinalPtr<Plugin> plugin;
+    Filter filter;
+
+    void *user_ptr;
+    void (*topic_callback)(void *plugin, const TopicInfo &info);
+    void (*service_callback)(void *plugin, const ServiceInfo &info);
+    void (*message_callback)(void *plugin, const MessageInfo &info);
+
+    PluginRegistration(FinalPtr<Plugin> &&plugin) : plugin(std::forward<FinalPtr<Plugin>>(plugin)){}
+    PluginRegistration(PluginRegistration &&rhs) :
+      use_count(rhs.use_count.load()), name(std::move(rhs.name)), type_hash(rhs.type_hash), plugin(std::move(rhs.plugin)), filter(rhs.filter),
+      user_ptr(rhs.user_ptr), topic_callback(rhs.topic_callback), service_callback(rhs.service_callback),
+      message_callback(rhs.message_callback) {
+      if (rhs.delete_flag.test()) {
+        delete_flag.test_and_set();
+      }
+    }
+  };
+
+  /**
+   * @brief Information on the environment in which the node is created.
+   * This data will be copied by a node upon construction.
+   *
+   */
+  struct NodeEnvironment final {
+    std::string name;
+
+    PluginRegistration::List &plugin_list;
+    TopicMap &topic_map;
+    ServiceMap &service_map;
+  };
+
+  /**
+   * @brief Information on the environment in which the plugin is created.
+   * This data will be copied by a plugin upon construction.
+   *
+   */
+  struct PluginEnvironment final {
+    std::string name;
+  };
+
   /**
    * @brief Construct a new Manager object.
    *
@@ -177,10 +163,16 @@ private:
 
   static std::weak_ptr<Manager> instance;
 
-  std::unordered_map<ManagerHandle, FinalPtr<Node>> node_map;
+  NodeRegistration::Map node_map;
+  std::unordered_set<std::size_t> node_set;
   PluginRegistration::List plugin_list;
+  std::unordered_set<std::size_t> plugin_set;
+
   TopicMap topic_map;
   ServiceMap service_map;
+
+  static thread_local std::optional<NodeEnvironment> node_environment;
+  static thread_local std::optional<PluginEnvironment> plugin_environment;
 
 public:
   using Ptr = std::shared_ptr<Manager>;
@@ -203,26 +195,45 @@ public:
    *
    * @tparam T Type of the node to be added.
    * @tparam Args Types of the arguments to be forwarded to the node specific constructor.
-   * @param args Arguments to be forwarded to the node specific constructor.
-   * @return std::shared_ptr<T> Pointer to the created node.
-   */
-  template <typename T, typename... Args>
-  std::shared_ptr<T> addNode(Args &&...args) requires std::is_base_of_v<UniqueNode, T> {
-    return addNodeInternal<T>(typeid(T).hash_code(), std::forward<Args>(args)...);
-  }
-
-  /**
-   * @brief Construct and add a node to the internal network.
-   *
-   * @tparam T Type of the node to be added.
-   * @tparam Args Types of the arguments to be forwarded to the node specific constructor.
    * @param name Name of the node.
    * @param args Arguments to be forwarded to the node specific constructor.
    * @return std::shared_ptr<T> Pointer to the created node.
    */
   template <typename T, typename... Args>
-  std::shared_ptr<T> addNode(const std::string &name, Args &&...args) requires std::is_base_of_v<SharedNode, T> {
-    return addNodeInternal<T>(name, std::forward<Args>(args)...);
+  std::shared_ptr<T> addNode(std::string name, Args &&...args) requires std::is_base_of_v<Node, T> {
+    createNodeEnvironment(name);
+
+    if (name.empty()) {
+      throw ManagementException("Node name must be non-empty.");
+    }
+
+    if constexpr (std::is_base_of_v<UniqueNode, T>) {
+      if (node_set.contains(typeid(T).hash_code())) {
+        throw ManagementException("Plugin not added due to type conflict.");
+      }
+    }
+
+    const NodeRegistration::Map::iterator iterator = node_map.find(name);
+
+    if (iterator != node_map.end()) {
+      throw ManagementException("Node not added due to name conflict.");
+    }
+
+    std::shared_ptr<T> result = std::make_shared<T>(std::forward<Args>(args)...);
+
+    NodeRegistration registration(std::dynamic_pointer_cast<Node>(result));
+    registration.name = name;
+
+    if constexpr (std::is_base_of_v<UniqueNode, T>) {
+      registration.type_hash = typeid(T).hash_code();
+      node_set.emplace(typeid(T).hash_code());
+    }
+
+    if (!node_map.emplace(name, std::move(registration)).second) {
+      throw ManagementException("Node not added.");
+    }
+
+    return std::shared_ptr<T>(result);
   }
 
   /**
@@ -234,34 +245,7 @@ public:
    * @return std::shared_ptr<T> Pointer to the created plugin.
    */
   template <typename T, typename... Args>
-  std::shared_ptr<T> addPlugin(Args &&...args) requires std::is_base_of_v<UniquePlugin, T> {
-    return addPlugin<T>(Filter(), std::forward<Args>(args)...);
-  }
-
-  /**
-   * @brief Construct and add a plugin to the internal network.
-   *
-   * @tparam T Type of the plugin to be added.
-   * @tparam Args Types of the arguments to be forwarded to the plugin specific constructor.
-   * @param filter Topic filter to be used on callbacks.
-   * @param args Arguments to be forwarded to the plugin specific constructor.
-   * @return std::shared_ptr<T> Pointer to the created plugin.
-   */
-  template <typename T, typename... Args>
-  std::shared_ptr<T> addPlugin(Filter filter, Args &&...args) requires std::is_base_of_v<UniquePlugin, T> {
-    return addPluginInternal<T>(typeid(T).hash_code(), filter, std::forward<Args>(args)...);
-  }
-
-  /**
-   * @brief Construct and add a plugin to the internal network.
-   *
-   * @tparam T Type of the plugin to be added.
-   * @tparam Args Types of the arguments to be forwarded to the plugin specific constructor.
-   * @param args Arguments to be forwarded to the plugin specific constructor.
-   * @return std::shared_ptr<T> Pointer to the created plugin.
-   */
-  template <typename T, typename... Args>
-  std::shared_ptr<T> addPlugin(std::string name, Args &&...args) requires std::is_base_of_v<SharedPlugin, T> {
+  std::shared_ptr<T> addPlugin(std::string name, Args &&...args) requires std::is_base_of_v<Plugin, T> {
     return addPlugin<T>(std::move(name), Filter(), std::forward<Args>(args)...);
   }
 
@@ -275,100 +259,39 @@ public:
    * @return std::shared_ptr<T> Pointer to the created plugin.
    */
   template <typename T, typename... Args>
-  std::shared_ptr<T> addPlugin(std::string name, Filter filter, Args &&...args) requires std::is_base_of_v<SharedPlugin, T> {
-    return addPluginInternal<T>(name, filter, std::forward<Args>(args)...);
-  }
+  std::shared_ptr<T> addPlugin(std::string name, Filter filter, Args &&...args) requires std::is_base_of_v<Plugin, T> {
+    createPluginEnvironment(name);
 
-  /**
-   * @brief Remove a plugin by iterator.
-   *
-   * @tparam T Type of the plugin to be removed.
-   */
-  template <typename T>
-  inline void removeNode() {
-    removeNodeInternal(typeid(T).hash_code());
-  }
-
-  /**
-   * @brief Remove a node by name from the internal network.
-   *
-   * @param name
-   */
-  void removeNode(const std::string &name) {
-    removeNodeInternal(name);
-  }
-
-  /**
-   * @brief Remove a plugin by iterator.
-   *
-   * @tparam T Type of the plugin to be removed.
-   */
-  template <typename T>
-  inline void removePlugin() {
-    removePluginInternal(typeid(T).hash_code());
-  }
-
-  /**
-   * @brief Remove a plugin by iterator.
-   *
-   * @param name Name of the plugin to be removed.
-   */
-  inline void removePlugin(const std::string &name) {
-    removePluginInternal(name);
-  }
-
-  /**
-   * @brief Flush all topics.
-   *
-   */
-  void flushAllTopics();
-
-private:
-  template <typename T, typename... Args>
-  std::shared_ptr<T> addNodeInternal(ManagerHandle handle, Args &&...args) {
-    NodeEnvironment environment = getNodeEnvironment(handle);
-
-    if (std::holds_alternative<std::string>(handle)) {
-      if (std::get<std::string>(handle).empty()) {
-        throw ManagementException("Node name must be non-empty.");
-      }
+    if (name.empty()) {
+      throw ManagementException("Plugin name must be non-empty.");
     }
 
-    const std::pair<std::unordered_map<ManagerHandle, FinalPtr<Node>>::iterator, bool> result =
-      node_map.emplace(handle, std::make_shared<T>(std::move(environment), std::forward<Args>(args)...));
-
-    if (!result.second) {
-      throw ManagementException("Node not added.");
-    }
-
-    return std::shared_ptr<T>(reinterpret_pointer_cast<T>(result.first->second));
-  }
-
-  template <typename T, typename... Args>
-  std::shared_ptr<T> addPluginInternal(ManagerHandle handle, Filter filter, Args &&...args) requires std::is_base_of_v<Plugin, T> {
-    PluginEnvironment environment = getPluginEnvironment(handle);
-
-    if (std::holds_alternative<std::string>(handle)) {
-      if (std::get<std::string>(handle).empty()) {
-        throw ManagementException("Plugin name must be non-empty.");
+    if constexpr (std::is_base_of_v<UniquePlugin, T>) {
+      if (plugin_set.contains(typeid(T).hash_code())) {
+        throw ManagementException("Plugin not added due to type conflict.");
       }
     }
 
     const std::list<PluginRegistration>::iterator iterator =
-      std::find_if(plugin_list.begin(), plugin_list.end(), [&handle](const PluginRegistration &plugin) {
-      return handle == plugin.handle;
+      std::find_if(plugin_list.begin(), plugin_list.end(), [&name](const PluginRegistration &plugin) {
+      return name == plugin.name;
     });
 
     if (iterator != plugin_list.end()) {
-      throw ManagementException("Plugin not added.");
+      throw ManagementException("Plugin not added due to name conflict.");
     }
 
-    std::shared_ptr<T> result = std::make_shared<T>(std::move(environment), std::forward<Args>(args)...);
+    std::shared_ptr<T> result = std::make_shared<T>(std::forward<Args>(args)...);
 
     PluginRegistration registration(std::dynamic_pointer_cast<Plugin>(result));
-    registration.handle = handle;
     registration.filter = std::move(filter);
     registration.user_ptr = result.get();
+    registration.name = name;
+
+    if constexpr (std::is_base_of_v<UniquePlugin, T>) {
+      registration.type_hash = typeid(T).hash_code();
+      plugin_set.emplace(typeid(T).hash_code());
+    }
 
     if constexpr (has_topic_callback<T>) {
       registration.topic_callback = &Manager::callPluginTopicCallback<T>;
@@ -389,28 +312,46 @@ private:
     }
 
     plugin_list.emplace_back(std::move(registration));
-
+  
     return result;
   }
 
-  void removeNodeInternal(const ManagerHandle &handle);
-  void removePluginInternal(const ManagerHandle &handle);
-
-  inline NodeEnvironment getNodeEnvironment(const ManagerHandle &handle) {
-    if (std::holds_alternative<std::string>(handle)) {
-      return NodeEnvironment(std::get<std::string>(handle), topic_map, service_map, plugin_list);
-    }
-
-    return NodeEnvironment("", topic_map, service_map, plugin_list);
+  /**
+   * @brief Remove a node by name from the internal network.
+   *
+   * @param name
+   */
+  void removeNode(const std::string &name) {
+    removeNodeInternal(name);
   }
 
-  inline PluginEnvironment getPluginEnvironment(const ManagerHandle &handle) {
-    if (std::holds_alternative<std::string>(handle)) {
-      return PluginEnvironment(std::get<std::string>(handle));
-    }
-
-    return PluginEnvironment("");
+  /**
+   * @brief Remove a plugin by iterator.
+   *
+   * @param name Name of the plugin to be removed.
+   */
+  inline void removePlugin(const std::string &name) {
+    removePluginInternal(name);
   }
+
+  /**
+   * @brief Flush all topics.
+   *
+   */
+  void flushAllTopics();
+
+private:
+  void removeNodeInternal(const std::string &handle);
+  void removePluginInternal(const std::string &handle);
+
+  void createNodeEnvironment(const std::string &name);
+  void createPluginEnvironment(const std::string &name);
+
+  NodeEnvironment getNodeEnvironment();
+  PluginEnvironment getPluginEnvironment();
+
+  friend Node;
+  friend Plugin;
 };
 
 }  // namespace lbot

@@ -130,15 +130,15 @@ private:
   LoopThread read_thread;
 };
 
-UdpBridge::UdpBridge(const PluginEnvironment &environment, const std::string &address, u16 port, u16 local_port) :
-  SharedPlugin(environment) {
+UdpBridge::UdpBridge(const std::string &address, u16 port, u16 local_port) :
+  Plugin() {
   node = addNode<UdpBridge::Node>(getName(), address, port, local_port);
 }
 
 UdpBridge::~UdpBridge() = default;
 
-UdpBridge::Node::Node(const NodeEnvironment &environment, const std::string &address, u16 port, u16 local_port) :
-  lbot::SharedNode(environment) {
+UdpBridge::Node::Node(const std::string &address, u16 port, u16 local_port) :
+  lbot::Node() {
   priv = new UdpBridge::NodePrivate(address, port, local_port, *this);
 }
 

@@ -28,7 +28,7 @@ public:
    * @brief Construct a new Mcap Recorder object.
    *
    */
-  explicit McapRecorder(const PluginEnvironment &environment);
+  explicit McapRecorder();
 
   /**
    * @brief Destroy the Mcap Recorder object.

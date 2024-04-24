@@ -11,9 +11,9 @@
 //
 // This example showcases helper classes to make working with threads easier.
 
-class PrimeNode : public lbot::UniqueNode {
+class PrimeNode : public lbot::Node {
 public:
-  PrimeNode(const lbot::NodeEnvironment &environment) : lbot::UniqueNode(environment, "primes") {
+  PrimeNode() {
     // Create two threads, one to continuously calculate prime numbers, and one to output the status every second.
 
     // The lbot::LoopThread class will create a new thread that calls the provided function continuously.
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
   lbot::Logger logger("main");
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
-  manager->addNode<PrimeNode>();
+  manager->addNode<PrimeNode>("primes");
 
   logger.logInfo() << "Press CTRL+C to exit the program.";
 

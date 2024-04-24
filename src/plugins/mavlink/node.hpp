@@ -25,7 +25,7 @@ namespace lbot::plugins {
  * In addition, servers are provided to issue commands and read out parameters.
  *
  */
-class Mavlink final : public SharedPlugin {
+class Mavlink final : public Plugin {
 public:
   /**
    * @brief Construct a new Mavlink object.
@@ -33,7 +33,7 @@ public:
    * @param environment Plugin environment.
    * @param connection MavlinkConnection to be used by this instance.
    */
-  Mavlink(const PluginEnvironment &environment, MavlinkConnection::Ptr &&connection);
+  Mavlink(MavlinkConnection::Ptr &&connection);
   ~Mavlink();
 
   /**
@@ -71,7 +71,7 @@ private:
     u8 component_id;
   };
 
-  class Node final : public lbot::SharedNode {
+  class Node final : public lbot::Node {
   private:
     template <typename FlatbufferType>
     class MavlinkMessage : public MessageBase<FlatbufferType, mavlink_message_t> {
@@ -85,10 +85,9 @@ private:
     /**
      * @brief Construct a new Mavlink Node object.
      *
-     * @param environment Node environment.
      * @param connection MavlinkConnection to be used by this instance.
      */
-    Node(const NodeEnvironment &environment, MavlinkConnection::Ptr &&connection);
+    Node(MavlinkConnection::Ptr &&connection);
     ~Node();
 
     /**

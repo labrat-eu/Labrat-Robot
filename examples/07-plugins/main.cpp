@@ -16,9 +16,9 @@
 //
 // In this example we will use some existing plugins that might help you in your projects.
 
-class SenderNode : public lbot::UniqueNode {
+class SenderNode : public lbot::Node {
 public:
-  SenderNode(const lbot::NodeEnvironment &environment) : lbot::UniqueNode(environment, "sender") {
+  SenderNode() {
     sender = addSender<lbot::Message<examples::msg::Vector>>("/examples/number");
 
     sender_thread = lbot::TimerThread(&SenderNode::senderFunction, std::chrono::milliseconds(50), "sender_thread", 1, this);
@@ -41,9 +41,9 @@ private:
   uint64_t i = 0;
 };
 
-class ServerNode : public lbot::UniqueNode {
+class ServerNode : public lbot::Node {
 public:
-  ServerNode(const lbot::NodeEnvironment &environment) : lbot::UniqueNode(environment, "server") {
+  ServerNode() {
     // Register a server on the service with the name "/examples/power" and the handler ServerNode::handleRequest().
     // There can only be one server per service.
     // The type of this server must match any previously registered client on the same service.
@@ -78,16 +78,16 @@ int main(int argc, char **argv) {
   // If you want to see what this program has been doing, you might:
   //  1. Install and open Foxglove Studio (https://foxglove.dev/)
   //  2. Open a local file with the path trace.mcap
-  manager->addPlugin<lbot::plugins::McapRecorder>();
+  manager->addPlugin<lbot::plugins::McapRecorder>("mcap");
 
   // The FoxgloveServer plugin allows you to trace messages live via Foxglove Studio.
   // If you want to see what this program is doing, you might:
   //  1. Install and open Foxglove Studio (https://foxglove.dev/)
   //  2. Open a connection via Foxglove WebSocket with the URL ws://localhost:8765
-  manager->addPlugin<lbot::plugins::FoxgloveServer>();
+  manager->addPlugin<lbot::plugins::FoxgloveServer>("foxglove-ws");
 
-  manager->addNode<SenderNode>();
-  manager->addNode<ServerNode>();
+  manager->addNode<SenderNode>("sender");
+  manager->addNode<ServerNode>("server");
 
   logger.logInfo() << "Press CTRL+C to exit the program.";
 

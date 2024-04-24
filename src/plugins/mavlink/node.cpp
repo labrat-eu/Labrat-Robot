@@ -969,13 +969,13 @@ Message<mavlink::common::CommandAck> Mavlink::NodePrivate::MavlinkServer::handle
   return result;
 }
 
-Mavlink::Mavlink(const PluginEnvironment &environment, MavlinkConnection::Ptr &&connection) : SharedPlugin(environment) {
+Mavlink::Mavlink(MavlinkConnection::Ptr &&connection) : Plugin() {
   node = addNode<Node>(getName(), std::forward<MavlinkConnection::Ptr>(connection));
 }
 
 Mavlink::~Mavlink() = default;
 
-Mavlink::Node::Node(const NodeEnvironment &environment, MavlinkConnection::Ptr &&connection) : lbot::SharedNode(environment) {
+Mavlink::Node::Node(MavlinkConnection::Ptr &&connection) {
   std::allocator<Mavlink::NodePrivate> allocator;
   priv = allocator.allocate(1);
 

@@ -14,9 +14,9 @@
 // In this example we will construct two nodes, one to send messages and one to receive them.
 // Classes and code patterns are showcased.
 
-class SenderNode : public lbot::UniqueNode {
+class SenderNode : public lbot::Node {
 public:
-  SenderNode(const lbot::NodeEnvironment &environment) : lbot::UniqueNode(environment, "sender") {
+  SenderNode() {
     // Register a sender on the topic with the name "/examples/numbers".
     // There can only be one sender per topic.
     // The type of this sender must match any previously registered receiver on the same topic.
@@ -42,9 +42,9 @@ private:
   uint64_t i = 0;
 };
 
-class ReceiverNode : public lbot::UniqueNode {
+class ReceiverNode : public lbot::Node {
 public:
-  ReceiverNode(const lbot::NodeEnvironment &environment) : lbot::UniqueNode(environment, "receiver") {
+  ReceiverNode() {
     // Register a receiver on the topic with the name "/examples/numbers".
     // The type of this receiver must match any previously registered sender and receiver on the same topic.
     receiver = addReceiver<lbot::Message<examples::msg::Numbers>>("/examples/numbers");
@@ -77,8 +77,8 @@ int main(int argc, char **argv) {
   lbot::Logger logger("main");
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
-  manager->addNode<SenderNode>();
-  manager->addNode<ReceiverNode>();
+  manager->addNode<SenderNode>("sender");
+  manager->addNode<ReceiverNode>("receiver");
 
   logger.logInfo() << "Press CTRL+C to exit the program.";
 

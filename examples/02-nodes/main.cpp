@@ -12,18 +12,29 @@
 //
 // This example showcases how to work with nodes.
 
-// Nodes must inherit from either lbot::UniqueNode or lbot::SharedNode.
-class ExampleNode : public lbot::SharedNode {
+// Nodes inherit from lbot::Node.
+class ExampleNode : public lbot::Node {
 public:
-  // The first argument (environment) must be passed onto the parent constructor.
-  // Apart from that a node behaves like any other class.
-  ExampleNode(const lbot::NodeEnvironment &environment, const std::string &param) : lbot::SharedNode(environment) {
+  // A node behaves like any other class. Its constructor can take custom arguments.
+  ExampleNode(const std::string &param) {
     // Nodes have their own logger.
     getLogger().logInfo() << "Example node has been started with the parameter " << param << ".";
   }
 
   ~ExampleNode() {
     getLogger().logInfo() << "Node is shutting down.";
+  }
+};
+
+// Nodes can also inherit from lbot::UniqueNode.
+// This ensures that this node can only be instanciated once.
+class OtherNode : public lbot::UniqueNode {
+public:
+  // Nodes can also specify their preferred name. This name must not match their actial name.
+  // But if it does not match, a warning will be printed.
+  OtherNode() : lbot::UniqueNode("") {
+    // Nodes have their own logger.
+    getLogger().logInfo() << "This node can only be instanciated once.";
   }
 };
 
@@ -43,6 +54,9 @@ int main(int argc, char **argv) {
 
   // Nodes can also be removed. However unremoved nodes will be automatically removed on shutdown.
   manager->removeNode("node_b");
+
+  // Add a unique node.
+  manager->addNode<OtherNode>("node_d");
 
   return 0;
 }

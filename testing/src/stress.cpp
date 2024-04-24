@@ -12,8 +12,8 @@ namespace lbot::test {
 TEST(stress, put_latest) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
-  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main", 4));
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main", 4));
 
   const u64 limit = 10000000;
 
@@ -45,17 +45,17 @@ TEST(stress, put_latest) {
 
   sender_thread.join();
 
-  node_a = std::shared_ptr<TestSharedNode>();
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestSharedNode>();
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(stress, put_next) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
-  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main", 4));
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main", 4));
 
   const u64 limit = 10000000;
   std::atomic_flag done;
@@ -94,17 +94,17 @@ TEST(stress, put_next) {
 
   sender_thread.join();
 
-  node_a = std::shared_ptr<TestSharedNode>();
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestSharedNode>();
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(stress, move_latest) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
-  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main", 4));
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main", 4));
 
   const u64 limit = 10000000;
 
@@ -136,17 +136,17 @@ TEST(stress, move_latest) {
 
   sender_thread.join();
 
-  node_a = std::shared_ptr<TestSharedNode>();
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestSharedNode>();
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
 TEST(stress, move_next) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestSharedNode> node_a(manager->addNode<TestSharedNode>("node_a", "main", "void"));
-  std::shared_ptr<TestSharedNode> node_b(manager->addNode<TestSharedNode>("node_b", "void", "main", 4));
+  std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main", 4));
 
   const u64 limit = 10000000;
   std::atomic_flag done;
@@ -185,9 +185,9 @@ TEST(stress, move_next) {
 
   sender_thread.join();
 
-  node_a = std::shared_ptr<TestSharedNode>();
+  node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
-  node_b = std::shared_ptr<TestSharedNode>();
+  node_b = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 

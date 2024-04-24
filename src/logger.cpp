@@ -72,7 +72,7 @@ private:
   Sender<EntryMessage>::Ptr sender;
 
 public:
-  explicit LoggerNode(NodeEnvironment environment) : UniqueNode(std::move(environment), "logger") {
+  explicit LoggerNode() : UniqueNode("logger") {
     const MessageReflection reflection = MessageReflection(EntryMessage::getName());
     if (!reflection.isValid()) {
       getLogger().logCritical()
@@ -132,7 +132,7 @@ std::shared_ptr<LoggerNode> Logger::node;
 Logger::Logger(std::string name) : name(std::move(name)) {}
 
 void Logger::initialize() {
-  node = Manager::get()->addNode<LoggerNode>();
+  node = Manager::get()->addNode<LoggerNode>("logger");
 }
 
 void Logger::deinitialize() {

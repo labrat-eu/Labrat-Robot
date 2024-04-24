@@ -17,16 +17,15 @@
 inline namespace labrat {
 namespace lbot::plugins {
 
-class SerialBridge final : public SharedPlugin {
+class SerialBridge final : public Plugin {
 public:
   /**
    * @brief Construct a new Serial Bridge object.
    *
-   * @param environment Plugin environment.
    * @param port Path to the serial port.
    * @param baud_rate Baud rate of the serial port. Only a limited number of values are permitted.
    */
-  SerialBridge(const PluginEnvironment &environment, const std::string &port = "/dev/ttyUSB0", u64 baud_rate = 921600);
+  SerialBridge(const std::string &port = "/dev/ttyUSB0", u64 baud_rate = 921600);
   ~SerialBridge();
 
   /**
@@ -59,7 +58,7 @@ private:
    * It will forward to and receive from the peer system.
    *
    */
-  class Node final : public lbot::SharedNode {
+  class Node final : public lbot::Node {
   private:
     struct PayloadInfo {
       std::size_t topic_hash;
@@ -90,11 +89,10 @@ private:
     /**
      * @brief Construct a new Serial Bridge Node object.
      *
-     * @param environment Node environment.
      * @param port Path to the serial port.
      * @param baud_rate Baud rate of the serial port. Only a limited number of values are permitted.
      */
-    explicit Node(const NodeEnvironment &environment, const std::string &port, u64 baud_rate);
+    explicit Node(const std::string &port, u64 baud_rate);
     ~Node();
 
     /**

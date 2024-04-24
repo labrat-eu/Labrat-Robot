@@ -12,7 +12,7 @@ namespace lbot::test {
 TEST(DISABLED_semantics, sender) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestSharedNode> node(manager->addNode<TestSharedNode>("node"));
+  std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
 
   Node::Sender<TestFlatbuffer>::Ptr sender_a = node->addSender<TestFlatbuffer>("topic_a");
   Node::Sender<TestMessage>::Ptr sender_b = node->addSender<TestMessage>("topic_b");
@@ -29,7 +29,7 @@ TEST(DISABLED_semantics, sender) {
 TEST(DISABLED_semantics, receiver) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestSharedNode> node(manager->addNode<TestSharedNode>("node"));
+  std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
 
   Node::Receiver<TestFlatbuffer>::Ptr receiver_a = node->addReceiver<TestFlatbuffer>("topic_a");
   Node::Receiver<TestMessage>::Ptr receiver_b = node->addReceiver<TestMessage>("topic_b");
@@ -46,7 +46,7 @@ TEST(DISABLED_semantics, receiver) {
 TEST(DISABLED_semantics, server) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
-  std::shared_ptr<TestSharedNode> node(manager->addNode<TestSharedNode>("node"));
+  std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
 
   auto handler_a = [](const TestMessage &request, u64 *user_ptr) -> TestMessage {
     return TestMessage();

@@ -27,7 +27,7 @@ public:
    * @brief Construct a new Foxglove Server object.
    *
    */
-  explicit FoxgloveServer(const PluginEnvironment &environment);
+  explicit FoxgloveServer();
 
   /**
    * @brief Destroy the Foxglove Server object.

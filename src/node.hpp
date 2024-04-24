@@ -146,7 +146,7 @@ public:
       GenericSender<Converted>(TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addSender<MessageType>(topic_name, this),
         node),
       user_ptr(user_ptr) {
-      for (PluginRegistration &plugin : GenericSender<Converted>::node.environment.plugin_list) {
+      for (Manager::PluginRegistration &plugin : node.environment.plugin_list) {
         if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
           continue;
         }
@@ -215,17 +215,17 @@ public:
      */
     void put(Converted &&container) override {
       if constexpr (!can_move_from<MessageType, Reference>) {
-        throw ConversionException("A sender put() move method was called without its move function being properly set.");
+        put(container);
       } else {
         std::size_t receive_count = GenericSender<Converted>::topic.getReceivers().size();
 
-        const PluginRegistration::List::iterator plugin_end = GenericSender<Converted>::node.environment.plugin_list.end();
-        PluginRegistration::List::iterator plugin_iterator = plugin_end;
+        const Manager::PluginRegistration::List::iterator plugin_end = GenericSender<Converted>::node.environment.plugin_list.end();
+        Manager::PluginRegistration::List::iterator plugin_iterator = plugin_end;
 
         std::size_t i = 0;
-        for (PluginRegistration::List::iterator iter = GenericSender<Converted>::node.environment.plugin_list.begin(); iter != plugin_end;
+        for (Manager::PluginRegistration::List::iterator iter = GenericSender<Converted>::node.environment.plugin_list.begin(); iter != plugin_end;
              ++iter) {
-          PluginRegistration &plugin = *iter;
+          Manager::PluginRegistration &plugin = *iter;
 
           if (!plugin.delete_flag.test() && plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
             ++receive_count;
@@ -237,9 +237,6 @@ public:
 
         if (receive_count != 1) {
           if (receive_count > 1) {
-            // If you use this function properly this branch should never get executed.
-            GenericSender<Converted>::node.getLogger().logWarning()
-              << "Sender move function is sending out to multiple receivers or plugins. This can cause performance issues.";
             put(container);
           }
 
@@ -282,7 +279,7 @@ public:
             .timestamp = message.getTimestamp(),
             .serialized_message = builder.GetBufferSpan()};
 
-          PluginRegistration &plugin = *plugin_iterator;
+          Manager::PluginRegistration &plugin = *plugin_iterator;
 
           ConsumerGuard<u32> guard(plugin.use_count);
 
@@ -320,7 +317,7 @@ public:
       flatbuffers::FlatBufferBuilder builder;
       bool init_flag = false;
 
-      for (PluginRegistration &plugin : GenericSender<Converted>::node.environment.plugin_list) {
+      for (Manager::PluginRegistration &plugin : GenericSender<Converted>::node.environment.plugin_list) {
         ConsumerGuard<u32> guard(plugin.use_count);
 
         if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
@@ -861,7 +858,7 @@ public:
       GenericServer<RequestConverted, ResponseConverted>(ServiceInfo::get<RequestType, ResponseType>(service_name,
         node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this))),
       node(node), handler_function(handler_function), user_ptr(user_ptr) {
-      for (PluginRegistration &plugin : node.environment.plugin_list) {
+      for (Manager::PluginRegistration &plugin : node.environment.plugin_list) {
         if (plugin.delete_flag.test()
           || !plugin.filter.check(GenericServer<RequestConverted, ResponseConverted>::service_info.service_hash)) {
           continue;
@@ -1157,10 +1154,19 @@ protected:
   /**
    * @brief Construct a new Node object.
    *
-   * @param environment Node environment data for the node to copy internally.
    */
-  explicit Node(const NodeEnvironment &environment) : environment(environment), logger(environment.name) {}
-  explicit Node(NodeEnvironment &&environment) : environment(std::forward<NodeEnvironment>(environment)), logger(environment.name) {}
+  explicit Node() : environment(Manager::get()->getNodeEnvironment()), logger(environment.name) {}
+
+  /**
+   * @brief Construct a new Node object.
+   *
+   * @param name Favored node name.
+   */
+  explicit Node(std::string name) : environment(Manager::get()->getNodeEnvironment()), logger(environment.name) {
+    if (environment.name != name) {
+      getLogger().logWarning() << "Node name differs from favored name '" << name << "'";
+    }
+  }
 
   /**
    * @brief Get a logger with the name of the node.
@@ -1234,18 +1240,14 @@ protected:
   friend class Manager;
 
 private:
-  const NodeEnvironment environment;
+  Manager::NodeEnvironment environment;
   Logger logger;
 };
 
 class UniqueNode : public Node {
 protected:
-  explicit UniqueNode(NodeEnvironment environment, std::string name) : Node(NodeEnvironment(std::move(environment), name)) {}
-};
-
-class SharedNode : public Node {
-protected:
-  explicit SharedNode(NodeEnvironment environment) : Node(std::move(environment)) {}
+  explicit UniqueNode() : Node() {}
+  explicit UniqueNode(std::string name) : Node(std::move(name)) {}
 };
 
 }  // namespace lbot

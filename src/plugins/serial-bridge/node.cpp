@@ -191,13 +191,13 @@ private:
   static constexpr u8 esc_offset = 0x10;
 };
 
-SerialBridge::SerialBridge(const PluginEnvironment &environment, const std::string &port, u64 baud_rate) : SharedPlugin(environment) {
+SerialBridge::SerialBridge(const std::string &port, u64 baud_rate) : Plugin() {
   node = addNode<SerialBridge::Node>(getName(), port, baud_rate);
 }
 
 SerialBridge::~SerialBridge() = default;
 
-SerialBridge::Node::Node(const NodeEnvironment &environment, const std::string &port, u64 baud_rate) : lbot::SharedNode(environment) {
+SerialBridge::Node::Node(const std::string &port, u64 baud_rate) {
   priv = new SerialBridge::NodePrivate(port, baud_rate, *this);
 }
 

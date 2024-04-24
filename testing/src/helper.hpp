@@ -70,13 +70,13 @@ static_assert(can_move_to<TestMessageConv>);
 
 class TestUniqueNode : public lbot::UniqueNode {
 public:
-  TestUniqueNode(const NodeEnvironment environment) : lbot::UniqueNode(environment, "test_node") {}
+  TestUniqueNode() : lbot::UniqueNode("test_node") {}
 };
 
-class TestSharedNode : public lbot::SharedNode {
+class TestNode : public lbot::Node {
 public:
-  TestSharedNode(const NodeEnvironment environment, const std::string &sender_topic = "", const std::string &receiver_topic = "",
-    int buffer_size = 10) : lbot::SharedNode(environment) {
+  TestNode(const std::string &sender_topic = "", const std::string &receiver_topic = "",
+    int buffer_size = 10) {
     if (!sender_topic.empty()) {
       sender = addSender<TestMessageConv>(sender_topic);
     }
@@ -85,8 +85,8 @@ public:
     }
   }
 
-  TestSharedNode(const NodeEnvironment environment, const std::string &sender_topic, const std::string &receiver_topic,
-    const void *sender_ptr, const void *receiver_ptr, int buffer_size = 10) : lbot::SharedNode(environment) {
+  TestNode(const std::string &sender_topic, const std::string &receiver_topic,
+    const void *sender_ptr, const void *receiver_ptr, int buffer_size = 10) {
     if (!sender_topic.empty()) {
       sender = addSender<TestMessageConv>(sender_topic, sender_ptr);
     }
@@ -107,15 +107,15 @@ public:
 
 class TestUniquePlugin : public lbot::UniquePlugin {
 public:
-  TestUniquePlugin(const PluginEnvironment environment) : lbot::UniquePlugin(environment, "test_plugin") {
-    addNode<TestSharedNode>("node_a", "main", "void");
-    addNode<TestSharedNode>("node_b", "void", "main");
+  TestUniquePlugin() : lbot::UniquePlugin("test_plugin") {
+    addNode<TestNode>("node_a", "main", "void");
+    addNode<TestNode>("node_b", "void", "main");
   }
 };
 
-class TestSharedPlugin : public lbot::SharedPlugin {
+class TestPlugin : public lbot::Plugin {
 public:
-  TestSharedPlugin(const PluginEnvironment environment) : lbot::SharedPlugin(environment) {}
+  TestPlugin() = default;
 };
 
 }  // namespace lbot::test
