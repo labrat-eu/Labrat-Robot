@@ -81,11 +81,15 @@ void TopicMap::Topic::removeSender(void *old_sender) {
   sender = nullptr;
 }
 
-void TopicMap::Topic::addReceiver(void *new_receiver) {
+void TopicMap::Topic::addReceiver(void *new_receiver, bool is_const) {
   FlagGuard guard(change_flag);
   waitUntil<std::size_t>(use_count, 0);
 
-  receivers.emplace_back(new_receiver);
+  if (is_const) {
+    const_receivers.emplace_back(new_receiver);
+  } else {
+    receivers.emplace_back(new_receiver);
+  }
 }
 
 void TopicMap::Topic::removeReceiver(void *old_receiver) {
@@ -93,12 +97,15 @@ void TopicMap::Topic::removeReceiver(void *old_receiver) {
   waitUntil<std::size_t>(use_count, 0);
 
   std::vector<void *>::iterator iterator = std::find(receivers.begin(), receivers.end(), old_receiver);
+  std::vector<void *>::iterator const_iterator = std::find(const_receivers.begin(), const_receivers.end(), old_receiver);
 
-  if (iterator == receivers.end()) {
+  if (iterator != receivers.end()) {
+    receivers.erase(iterator);
+  } else if (const_iterator != const_receivers.end()) {
+    const_receivers.erase(const_iterator);
+  } else {
     throw ManagementException("Receiver to be removed not found.");
   }
-
-  receivers.erase(iterator);
 }
 
 }  // namespace lbot

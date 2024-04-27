@@ -26,6 +26,7 @@ set(TARGET_TEST_SOURCES
   src/semantics.cpp
   src/config.cpp
   src/setup.cpp
+  src/multisetup.cpp
   src/manager.cpp
   src/performance.cpp
   src/stress.cpp

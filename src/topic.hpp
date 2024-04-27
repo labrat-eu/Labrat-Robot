@@ -29,6 +29,7 @@ public:
   private:
     void *sender;
     std::vector<void *> receivers;
+    std::vector<void *> const_receivers;
 
     std::atomic_flag change_flag;
     std::atomic<std::size_t> use_count;
@@ -38,6 +39,7 @@ public:
   public:
     using Handle = std::size_t;
 
+    template <bool IsConst>
     class ReceiverList {
     public:
       explicit inline ReceiverList(Topic &topic) : topic(topic) {
@@ -62,15 +64,27 @@ public:
       }
 
       [[nodiscard]] inline std::vector<void *>::iterator begin() const {
-        return topic.receivers.begin();
+        if constexpr (IsConst) {
+          return topic.const_receivers.begin();
+        } else {
+          return topic.receivers.begin();
+        }
       }
 
       [[nodiscard]] inline std::vector<void *>::iterator end() const {
-        return topic.receivers.end();
+        if constexpr (IsConst) {
+          return topic.const_receivers.end();
+        } else {
+          return topic.receivers.end();
+        }
       }
 
       [[nodiscard]] inline std::size_t size() const {
-        return topic.receivers.size();
+        if constexpr (IsConst) {
+          return topic.const_receivers.size();
+        } else {
+          return topic.receivers.size();
+        }
       }
 
     private:
@@ -83,11 +97,15 @@ public:
     void addSender(void *new_sender);
     void removeSender(void *old_sender);
 
-    [[nodiscard]] inline ReceiverList getReceivers() {
-      return ReceiverList(*this);
+    [[nodiscard]] inline ReceiverList<false> getReceivers() {
+      return ReceiverList<false>(*this);
     }
 
-    void addReceiver(void *new_receiver);
+    [[nodiscard]] inline ReceiverList<true> getConstReceivers() {
+      return ReceiverList<true>(*this);
+    }
+
+    void addReceiver(void *new_receiver, bool is_const);
     void removeReceiver(void *old_receiver);
 
     const Handle handle;
@@ -98,6 +116,7 @@ public:
   ~TopicMap() = default;
 
   template <typename T>
+  requires is_message<T>
   Topic &addSender(const std::string &topic_name, void *sender) {
     Topic &topic = getTopicInternal(topic_name, typeid(typename T::Content).hash_code());
 
@@ -115,10 +134,11 @@ public:
   }
 
   template <typename T>
+  requires is_message<T>
   Topic &addReceiver(const std::string &topic_name, void *receiver) {
     Topic &topic = getTopicInternal(topic_name, typeid(typename T::Content).hash_code());
 
-    topic.addReceiver(receiver);
+    topic.addReceiver(receiver, is_const_message<T>);
 
     return topic;
   }

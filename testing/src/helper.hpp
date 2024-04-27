@@ -13,6 +13,7 @@ namespace lbot::test {
 using TestFlatbuffer = lbot::Test;
 
 static_assert(is_flatbuffer<TestFlatbuffer>);
+static_assert(is_flatbuffer<const TestFlatbuffer>);
 
 using TestMessage = lbot::Message<TestFlatbuffer>;
 
@@ -21,6 +22,14 @@ static_assert(can_convert_from<TestMessage>);
 static_assert(can_move_from<TestMessage>);
 static_assert(can_convert_to<TestMessage>);
 static_assert(can_move_to<TestMessage>);
+
+using TestConstMessage = lbot::Message<const TestFlatbuffer>;
+
+static_assert(is_message<TestConstMessage>);
+static_assert(can_convert_from<TestConstMessage>);
+static_assert(can_move_from<TestConstMessage>);
+static_assert(can_convert_to<TestConstMessage>);
+static_assert(can_move_to<TestConstMessage>);
 
 class TestContainer {
 public:

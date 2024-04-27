@@ -179,7 +179,7 @@ private:
 };
 
 template <typename T>
-concept is_flatbuffer = std::is_base_of_v<flatbuffers::Table, T>;
+concept is_flatbuffer = std::is_base_of_v<flatbuffers::Table, std::remove_const_t<T>>;
 
 /**
  * @brief Unsafe wrapper of a flatbuf message for use within this library.
@@ -187,11 +187,11 @@ concept is_flatbuffer = std::is_base_of_v<flatbuffers::Table, T>;
  * @tparam T
  */
 template <typename FlatbufferType, typename ConvertedType>
-requires is_flatbuffer<FlatbufferType> class MessageBase : public MessageTime, public FlatbufferType::NativeTableType {
+requires is_flatbuffer<FlatbufferType> class MessageBase : public MessageTime, public std::remove_const_t<FlatbufferType>::NativeTableType {
 public:
-  using Storage = MessageBase<FlatbufferType, ConvertedType>;
+  using Storage = MessageBase<std::remove_const_t<FlatbufferType>, ConvertedType>;
   using Flatbuffer = FlatbufferType;
-  using Content = typename FlatbufferType::NativeTableType;
+  using Content = typename std::remove_const_t<FlatbufferType>::NativeTableType;
   using Converted = ConvertedType;
 
   /**
@@ -229,15 +229,18 @@ public:
 template <typename T, typename Flatbuffer = T::Flatbuffer, typename Converted = T::Converted>
 concept is_message = std::derived_from<T, MessageBase<Flatbuffer, Converted>>;
 
+template <typename T, typename Flatbuffer = T::Flatbuffer>
+concept is_const_message = is_message<T, Flatbuffer> && std::is_const_v<Flatbuffer>;
+
 /**
  * @brief Safe wrapper of a flatbuf message for use within this library.
  *
  * @tparam T
  */
 template <typename FlatbufferType>
-requires is_flatbuffer<FlatbufferType> class Message final : public MessageBase<FlatbufferType, Message<FlatbufferType>> {
+requires is_flatbuffer<FlatbufferType> class Message final : public MessageBase<FlatbufferType, Message<std::remove_const_t<FlatbufferType>>> {
 public:
-  using Super = MessageBase<FlatbufferType, Message<FlatbufferType>>;
+  using Super = MessageBase<FlatbufferType, Message<std::remove_const_t<FlatbufferType>>>;
   using Content = typename Super::Content;
 
   /**

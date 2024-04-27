@@ -178,6 +178,19 @@ public:
      * @param container Object containing the data to be sent out.
      */
     void put(const Converted &container) override {
+      if (GenericSender<Converted>::topic.getConstReceivers().size() != 0) {
+        Storage storage;
+        Convert<MessageType::convertFrom>::call(container, storage, user_ptr);
+
+        for (void *pointer : GenericSender<Converted>::topic.getConstReceivers()) {
+          Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
+
+          if (receiver->callback.valid()) {
+            receiver->callback.call(storage, receiver->user_ptr, receiver->callback_ptr);
+          }
+        }
+      }
+
       for (void *pointer : GenericSender<Converted>::topic.getReceivers()) {
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
@@ -214,7 +227,8 @@ public:
       if constexpr (!can_move_from<MessageType>) {
         put(container);
       } else {
-        std::size_t receive_count = GenericSender<Converted>::topic.getReceivers().size();
+        const std::size_t normal_receiver_count = GenericSender<Converted>::topic.getReceivers().size();
+        std::size_t receive_count = (normal_receiver_count == 0 && GenericSender<Converted>::topic.getConstReceivers().size() != 0) ? 1 : normal_receiver_count;
 
         const Manager::PluginRegistration::List::iterator plugin_end = GenericSender<Converted>::node.environment.plugin_list.end();
         Manager::PluginRegistration::List::iterator plugin_iterator = plugin_end;
@@ -241,25 +255,42 @@ public:
         }
 
         if (plugin_iterator == plugin_end) {
-          // Send to a receiver.
-          Receiver<MessageType> *receiver =
-            reinterpret_cast<Receiver<MessageType> *>(*GenericSender<Converted>::topic.getReceivers().begin());
+          Storage local_storage;
+          Storage *storage;
+          Receiver<MessageType> *receiver;
 
-          const std::size_t local_count = receiver->count.load(std::memory_order_relaxed) + 1;
-          const std::size_t index = local_count & receiver->index_mask;
+          if (normal_receiver_count != 0) {
+            // Send to a receiver.
+            receiver = reinterpret_cast<Receiver<MessageType> *>(*GenericSender<Converted>::topic.getReceivers().begin());
 
-          {
-            std::lock_guard guard(receiver->message_buffer[index].mutex);
-            Move<MessageType::moveFrom>::call(std::forward<Converted>(container), receiver->message_buffer[index].message, user_ptr);
-            receiver->message_buffer[index].update_flag = true;
-            receiver->count.store(local_count, std::memory_order_release);
+            const std::size_t local_count = receiver->count.load(std::memory_order_relaxed) + 1;
+            const std::size_t index = local_count & receiver->index_mask;
+
+            storage = &receiver->message_buffer[index].message;
+
+            {
+              std::lock_guard guard(receiver->message_buffer[index].mutex);
+              Move<MessageType::moveFrom>::call(std::forward<Converted>(container), *storage, user_ptr);
+              receiver->message_buffer[index].update_flag = true;
+              receiver->count.store(local_count, std::memory_order_release);
+            }
+
+            receiver->flush_flag = false;
+            receiver->count.notify_one();
+
+            if (receiver->callback.valid()) {
+              receiver->callback.call(*storage, receiver->user_ptr, receiver->callback_ptr);
+            }
+          } else {
+            storage = &local_storage;
           }
 
-          receiver->flush_flag = false;
-          receiver->count.notify_one();
+          for (void *pointer : GenericSender<Converted>::topic.getConstReceivers()) {
+            Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
-          if (receiver->callback.valid()) {
-            receiver->callback.call(receiver->message_buffer[index].message, receiver->user_ptr, receiver->callback_ptr);
+            if (receiver->callback.valid()) {
+              receiver->callback.call(*storage, receiver->user_ptr, receiver->callback_ptr);
+            }
           }
         } else {
           // Send to a plugin.
@@ -644,6 +675,10 @@ public:
      * @throw TopicNoDataAvailableException When the topic has no valid data available.
      */
     Converted latest() override {
+      if constexpr (is_const_message<MessageType>) {
+        throw BadUsageException("You cannot call latest() in const messages.", GenericReceiver<Converted>::node.getLogger());
+      }
+
       if (GenericReceiver<Converted>::flush_flag) {
         throw TopicNoDataAvailableException("Topic was flushed.", GenericReceiver<Converted>::node.getLogger());
       }
@@ -677,6 +712,10 @@ public:
      * @throw TopicNoDataAvailableException When the topic has no valid data available.
      */
     Converted next() override {
+      if constexpr (is_const_message<MessageType>) {
+        throw BadUsageException("You cannot call next() in const messages.", GenericReceiver<Converted>::node.getLogger());
+      }
+
       if (GenericReceiver<Converted>::flush_flag) {
         throw TopicNoDataAvailableException("Topic was flushed.", GenericReceiver<Converted>::node.getLogger());
       }
