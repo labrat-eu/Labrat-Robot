@@ -68,6 +68,45 @@ static_assert(can_move_from<TestMessageConv>);
 static_assert(can_convert_to<TestMessageConv>);
 static_assert(can_move_to<TestMessageConv>);
 
+class TestMessageConvPtr : public lbot::MessageBase<TestFlatbuffer, TestContainer> {
+public:
+  using Message = lbot::MessageBase<TestFlatbuffer, TestContainer>;
+
+  static void convertFrom(const TestContainer &source, Message &destination, bool *called) {
+    destination.integral_field = source.integral_field;
+    destination.float_field = source.float_field;
+    destination.buffer = source.buffer;
+    *called = true;
+  }
+
+  static void moveFrom(TestContainer &&source, Message &destination, bool *called) {
+    destination.integral_field = source.integral_field;
+    destination.float_field = source.float_field;
+    destination.buffer = std::forward<std::vector<u8>>(source.buffer);
+    *called = true;
+  }
+
+  static void convertTo(const Message &source, TestContainer &destination, bool *called) {
+    destination.integral_field = source.integral_field;
+    destination.float_field = source.float_field;
+    destination.buffer = source.buffer;
+    *called = true;
+  }
+
+  static void moveTo(Message &&source, TestContainer &destination, bool *called) {
+    destination.integral_field = source.integral_field;
+    destination.float_field = source.float_field;
+    destination.buffer = std::forward<std::vector<u8>>(source.buffer);
+    *called = true;
+  }
+};
+
+static_assert(is_message<TestMessageConvPtr>);
+static_assert(can_convert_from<TestMessageConvPtr>);
+static_assert(can_move_from<TestMessageConvPtr>);
+static_assert(can_convert_to<TestMessageConvPtr>);
+static_assert(can_move_to<TestMessageConvPtr>);
+
 class TestUniqueNode : public lbot::UniqueNode {
 public:
   TestUniqueNode() : lbot::UniqueNode("test_node") {}
@@ -86,12 +125,12 @@ public:
   }
 
   TestNode(const std::string &sender_topic, const std::string &receiver_topic,
-    const void *sender_ptr, const void *receiver_ptr, int buffer_size = 10) {
+    void *sender_ptr, void *receiver_ptr, int buffer_size = 10) {
     if (!sender_topic.empty()) {
-      sender = addSender<TestMessageConv>(sender_topic, sender_ptr);
+      sender_p = addSender<TestMessageConvPtr>(sender_topic, sender_ptr);
     }
     if (!receiver_topic.empty()) {
-      receiver = addReceiver<TestMessageConv>(receiver_topic, receiver_ptr, buffer_size);
+      receiver_p = addReceiver<TestMessageConvPtr>(receiver_topic, receiver_ptr, buffer_size);
     }
   }
 
@@ -103,6 +142,8 @@ public:
 
   Sender<TestMessageConv>::Ptr sender;
   Receiver<TestMessageConv>::Ptr receiver;
+  Sender<TestMessageConvPtr>::Ptr sender_p;
+  Receiver<TestMessageConvPtr>::Ptr receiver_p;
 };
 
 class TestUniquePlugin : public lbot::UniquePlugin {

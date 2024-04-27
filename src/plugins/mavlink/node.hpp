@@ -93,9 +93,9 @@ private:
     /**
      * @brief Get the MAVLink system info about the local system.
      *
-     * @return const SystemInfo& System information.
+     * @return SystemInfo& System information.
      */
-    [[nodiscard]] const SystemInfo &getSystemInfo() const;
+    [[nodiscard]] SystemInfo &getSystemInfo() const;
 
     /**
      * @brief Register a sender with the MAVLink node. Incoming MAVLink messages will be forwarded onto the sender.
@@ -119,8 +119,8 @@ private:
      */
     template <typename MessageType>
     void registerReceiver(std::string &&topic_name) {
-      typename Node::Receiver<MessageType>::Ptr receiver = addReceiver<MessageType>(topic_name, &getSystemInfo());
-      receiver->setCallback(&Node::receiverCallback);
+      typename Node::Receiver<MessageType>::Ptr receiver = addReceiver<MessageType>(topic_name);
+      receiver->setCallback(&Node::receiverCallback, &getSystemInfo());
 
       registerGenericReceiver(std::move(receiver));
     }
@@ -129,7 +129,7 @@ private:
     void registerGenericSender(Node::GenericSender<mavlink_message_t>::Ptr &&sender, u16 id);
     void registerGenericReceiver(Node::GenericReceiver<mavlink_message_t>::Ptr &&receiver);
 
-    static void receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, const SystemInfo *system_info);
+    static void receiverCallback(const mavlink_message_t &message, SystemInfo *system_info);
 
     NodePrivate *priv;
 

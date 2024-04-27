@@ -158,8 +158,8 @@ void UdpBridge::Node::registerGenericReceiver(Node::GenericReceiver<UdpBridge::N
   priv->receiver.vector.emplace_back(std::forward<Node::GenericReceiver<UdpBridge::Node::PayloadInfo>::Ptr>(receiver));
 }
 
-void UdpBridge::Node::receiverCallback(Node::GenericReceiver<UdpBridge::Node::PayloadInfo> &receiver, UdpBridge::NodePrivate *node) {
-  node->writePayloadMessage(receiver.latest());
+void UdpBridge::Node::receiverCallback(const UdpBridge::Node::PayloadInfo &message, UdpBridge::NodePrivate *node) {
+  node->writePayloadMessage(message);
 }
 
 UdpBridge::NodePrivate::NodePrivate(const std::string &address, u16 port, u16 local_port, UdpBridge::Node &node) : node(node) {

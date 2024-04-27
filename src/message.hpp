@@ -23,29 +23,12 @@
 inline namespace labrat {
 namespace lbot {
 
-template <typename Reference, auto *Function>
+template <auto *Function>
 class ConversionFunction {};
 
-template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType,
-  auto (*Function)(const OriginalType &, ConvertedType &, DataType *, const Reference &)->void>
-class ConversionFunction<Reference, Function> {
-public:
-  /**
-   * @brief Call the stored conversion function.
-   *
-   * @param source Object to be converted.
-   * @param destination Object to be converted to.
-   * @param user_ptr User pointer to access generic external data.
-   */
-  static inline void call(const OriginalType &source, ConvertedType &destination, const void *user_ptr, const Reference &reference) {
-    void *ptr = const_cast<void *>(user_ptr);
-    Function(source, destination, reinterpret_cast<DataType *>(ptr), reference);
-  }
-};
-
-template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType,
+template <typename OriginalType, typename ConvertedType, typename DataType,
   auto (*Function)(const OriginalType &, ConvertedType &, DataType *)->void>
-class ConversionFunction<Reference, Function> {
+class ConversionFunction<Function> {
 public:
   /**
    * @brief Call the stored conversion function.
@@ -54,14 +37,13 @@ public:
    * @param destination Object to be converted to.
    * @param user_ptr User pointer to access generic external data.
    */
-  static inline void call(const OriginalType &source, ConvertedType &destination, const void *user_ptr, const Reference &) {
-    void *ptr = const_cast<void *>(user_ptr);
-    Function(source, destination, reinterpret_cast<DataType *>(ptr));
+  static inline void call(const OriginalType &source, ConvertedType &destination, void *user_ptr) {
+    Function(source, destination, reinterpret_cast<DataType *>(user_ptr));
   }
 };
 
-template <typename Reference, typename OriginalType, typename ConvertedType, auto (*Function)(const OriginalType &, ConvertedType &)->void>
-class ConversionFunction<Reference, Function> {
+template <typename OriginalType, typename ConvertedType, auto (*Function)(const OriginalType &, ConvertedType &)->void>
+class ConversionFunction<Function> {
 public:
   /**
    * @brief Call the stored conversion function.
@@ -69,7 +51,7 @@ public:
    * @param source Object to be converted.
    * @param destination Object to be converted to.
    */
-  static inline void call(const OriginalType &source, ConvertedType &destination, const void *, const Reference &) {
+  static inline void call(const OriginalType &source, ConvertedType &destination, void *) {
     Function(source, destination);
   }
 };
@@ -86,14 +68,8 @@ concept can_convert_to_ptr = requires(const T::Storage &source, T::Converted &de
     T::convertTo(source, destination, nullptr)
   };
 };
-template <typename T, typename R>
-concept can_convert_to_ref = requires(const T::Storage &source, T::Converted &destination, const R &reference) {
-  {
-    T::convertTo(source, destination, nullptr, reference)
-  };
-};
 template <typename T, typename R = void>
-concept can_convert_to = can_convert_to_noptr<T> || can_convert_to_ptr<T> || can_convert_to_ref<T, R>;
+concept can_convert_to = can_convert_to_noptr<T> || can_convert_to_ptr<T>;
 
 template <typename T>
 concept can_convert_from_noptr = requires(const T::Converted &source, T::Storage &destination) {
@@ -107,38 +83,15 @@ concept can_convert_from_ptr = requires(const T::Converted &source, T::Storage &
     T::convertFrom(source, destination, nullptr)
   };
 };
-template <typename T, typename R>
-concept can_convert_from_ref = requires(const T::Converted &source, T::Storage &destination, const R &reference) {
-  {
-    T::convertFrom(source, destination, nullptr, reference)
-  };
-};
 template <typename T, typename R = void>
-concept can_convert_from = can_convert_from_noptr<T> || can_convert_from_ptr<T> || can_convert_from_ref<T, R>;
+concept can_convert_from = can_convert_from_noptr<T> || can_convert_from_ptr<T>;
 
-template <typename Reference, auto *Function>
+template <auto *Function>
 class MoveFunction {};
 
-template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType,
-  auto (*Function)(OriginalType &&, ConvertedType &, DataType *, const Reference &)->void>
-class MoveFunction<Reference, Function> {
-public:
-  /**
-   * @brief Call the stored conversion function.
-   *
-   * @param source Object to be converted.
-   * @param destination Object to be converted to.
-   * @param user_ptr User pointer to access generic external data.
-   */
-  static inline void call(OriginalType &&source, ConvertedType &destination, const void *user_ptr, const Reference &reference) {
-    void *ptr = const_cast<void *>(user_ptr);
-    Function(std::forward<OriginalType>(source), destination, reinterpret_cast<const DataType *>(ptr), reference);
-  }
-};
-
-template <typename Reference, typename OriginalType, typename ConvertedType, typename DataType,
+template <typename OriginalType, typename ConvertedType, typename DataType,
   auto (*Function)(OriginalType &&, ConvertedType &, DataType *)->void>
-class MoveFunction<Reference, Function> {
+class MoveFunction<Function> {
 public:
   /**
    * @brief Call the stored conversion function.
@@ -147,14 +100,13 @@ public:
    * @param destination Object to be converted to.
    * @param user_ptr User pointer to access generic external data.
    */
-  static inline void call(OriginalType &&source, ConvertedType &destination, const void *user_ptr, const Reference &) {
-    void *ptr = const_cast<void *>(user_ptr);
-    Function(std::forward<OriginalType>(source), destination, reinterpret_cast<const DataType *>(ptr));
+  static inline void call(OriginalType &&source, ConvertedType &destination, void *user_ptr) {
+    Function(std::forward<OriginalType>(source), destination, reinterpret_cast<DataType *>(user_ptr));
   }
 };
 
-template <typename Reference, typename OriginalType, typename ConvertedType, auto (*Function)(OriginalType &&, ConvertedType &)->void>
-class MoveFunction<Reference, Function> {
+template <typename OriginalType, typename ConvertedType, auto (*Function)(OriginalType &&, ConvertedType &)->void>
+class MoveFunction<Function> {
 public:
   /**
    * @brief Call the stored conversion function.
@@ -162,7 +114,7 @@ public:
    * @param source Object to be converted.
    * @param destination Object to be converted to.
    */
-  static inline void call(OriginalType &&source, ConvertedType &destination, const void *, const Reference &) {
+  static inline void call(OriginalType &&source, ConvertedType &destination, void *) {
     Function(std::forward<OriginalType>(source), destination);
   }
 };
@@ -179,14 +131,8 @@ concept can_move_to_ptr = requires(T::Storage &&source, T::Converted &destinatio
     T::moveTo(std::move(source), destination, nullptr)
   };
 };
-template <typename T, typename R>
-concept can_move_to_ref = requires(T::Storage &&source, T::Converted &destination, const R &reference) {
-  {
-    T::moveTo(std::move(source), destination, nullptr, reference)
-  };
-};
 template <typename T, typename R = void>
-concept can_move_to = can_move_to_noptr<T> || can_move_to_ptr<T> || can_move_to_ref<T, R>;
+concept can_move_to = can_move_to_noptr<T> || can_move_to_ptr<T>;
 
 template <typename T>
 concept can_move_from_noptr = requires(T::Converted &&source, T::Storage &destination) {
@@ -200,14 +146,8 @@ concept can_move_from_ptr = requires(T::Converted &&source, T::Storage &destinat
     T::moveFrom(std::move(source), destination, nullptr)
   };
 };
-template <typename T, typename R>
-concept can_move_from_ref = requires(T::Converted &&source, T::Storage &destination, const R &reference) {
-  {
-    T::moveFrom(std::move(source), destination, nullptr, reference)
-  };
-};
 template <typename T, typename R = void>
-concept can_move_from = can_move_from_noptr<T> || can_move_from_ptr<T> || can_move_to_ref<T, R>;
+concept can_move_from = can_move_from_noptr<T> || can_move_from_ptr<T>;
 
 /**
  * @brief Abstract time class for Message.
@@ -338,6 +278,9 @@ public:
     destination = std::move(source);
   }
 };
+
+template <typename T, typename Flatbuffer = T::Flatbuffer>
+concept is_standard_message = std::is_same_v<T, Message<Flatbuffer>>;
 
 /**
  * @brief Non-templated container to store reflection info about a Message type.

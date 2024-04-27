@@ -217,9 +217,8 @@ void SerialBridge::Node::registerGenericReceiver(Node::GenericReceiver<SerialBri
   priv->receiver.vector.emplace_back(std::forward<Node::GenericReceiver<SerialBridge::Node::PayloadInfo>::Ptr>(receiver));
 }
 
-void SerialBridge::Node::receiverCallback(Node::GenericReceiver<SerialBridge::Node::PayloadInfo> &receiver,
-  SerialBridge::NodePrivate *node) {
-  node->writePayloadMessage(receiver.latest());
+void SerialBridge::Node::receiverCallback(const SerialBridge::Node::PayloadInfo &message, SerialBridge::NodePrivate *node) {
+  node->writePayloadMessage(message);
 }
 
 SerialBridge::NodePrivate::NodePrivate(const std::string &port, u64 baud_rate, SerialBridge::Node &node) : node(node) {

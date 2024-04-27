@@ -163,15 +163,15 @@ TEST(setup, callback) {
   TestContainer message_b;
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
-  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main", nullptr, &message_b));
+  std::shared_ptr<TestNode> node_b(manager->addNode<TestNode>("node_b", "void", "main"));
 
-  auto callback = [](TestNode::GenericReceiver<TestContainer> &receiver, TestContainer *message) -> void {
-    *message = receiver.next();
+  auto callback = [](const TestContainer &receiver, TestContainer *message) -> void {
+    *message = receiver;
   };
 
-  void (*ptr)(TestNode::GenericReceiver<TestContainer> &, TestContainer *) = callback;
+  void (*ptr)(const TestContainer &, TestContainer *) = callback;
 
-  node_b->receiver->setCallback(ptr);
+  node_b->receiver->setCallback(ptr, &message_b);
 
   TestContainer message_a;
   message_a.integral_field = 10;
@@ -206,8 +206,8 @@ TEST(setup, server) {
 
   TestContainer (*ptr)(const TestContainer &, u64 *) = handler;
 
-  Node::Server<TestMessageConv, TestMessageConv>::Ptr server =
-    node_a->addServer<TestMessageConv, TestMessageConv>("test_service", ptr, &counter);
+  Node::Server<TestMessageConv, TestMessageConv>::Ptr server = node_a->addServer<TestMessageConv, TestMessageConv>("test_service");
+  server->setHandler(ptr, &counter);
   Node::Client<TestMessageConv, TestMessageConv>::Ptr client = node_b->addClient<TestMessageConv, TestMessageConv>("test_service");
 
   TestContainer request;

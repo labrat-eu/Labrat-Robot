@@ -13,6 +13,8 @@
 #include <labrat/lbot/node.hpp>
 
 #include <span>
+#include <forward_list>
+#include <memory>
 
 inline namespace labrat {
 namespace lbot::plugins {
@@ -74,9 +76,8 @@ private:
         flatbuffers::GetRoot<T>(source.payload.data())->UnPackTo(&destination);
       }
 
-      static void convertTo(const MessageBase<T, PayloadInfo> &source, PayloadInfo &destination, const void *,
-        const GenericReceiver<PayloadInfo> &receiver) {
-        destination.topic_hash = receiver.getTopicInfo().topic_hash;
+      static void convertTo(const MessageBase<T, PayloadInfo> &source, PayloadInfo &destination, const TopicInfo *topic_info) {
+        destination.topic_hash = topic_info->topic_hash;
 
         flatbuffers::FlatBufferBuilder builder;
         builder.Finish(T::Pack(builder, &source));
@@ -109,13 +110,15 @@ private:
     /**
      * @brief Register a receiver with the MAVLink node. Incoming messages will be forwarded onto the network.
      *
-     * @tparam MessageType Message type of the receiver.
+     * @tparam FlatbufferType Message type of the receiver.
      * @param topic_name Name of the topic.
      */
-    template <typename MessageType>
+    template <typename FlatbufferType>
+    requires is_flatbuffer<FlatbufferType>
     void registerReceiver(const std::string topic_name) {
-      typename Node::Receiver<PayloadMessage<MessageType>>::Ptr receiver = addReceiver<PayloadMessage<MessageType>>(topic_name, priv);
-      receiver->setCallback(&Node::receiverCallback);
+      TopicInfo *topic_info = &topic_infos.emplace_front(TopicInfo::get<PayloadMessage<FlatbufferType>>(topic_name));
+      typename Node::Receiver<PayloadMessage<FlatbufferType>>::Ptr receiver = addReceiver<PayloadMessage<FlatbufferType>>(topic_name, topic_info);
+      receiver->setCallback(&Node::receiverCallback, priv);
 
       registerGenericReceiver(std::move(receiver));
     }
@@ -124,8 +127,9 @@ private:
     void registerGenericSender(Node::GenericSender<PayloadInfo>::Ptr &&sender);
     void registerGenericReceiver(Node::GenericReceiver<PayloadInfo>::Ptr &&receiver);
 
-    static void receiverCallback(Node::GenericReceiver<PayloadInfo> &receiver, NodePrivate *node);
+    static void receiverCallback(const PayloadInfo &receiver, NodePrivate *node);
 
+    std::forward_list<TopicInfo> topic_infos;
     NodePrivate *priv;
 
     friend NodePrivate;

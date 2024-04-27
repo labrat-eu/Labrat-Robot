@@ -14,9 +14,12 @@ TEST(DISABLED_semantics, sender) {
 
   std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
 
+  bool called = false;
+
   Node::Sender<TestFlatbuffer>::Ptr sender_a = node->addSender<TestFlatbuffer>("topic_a");
   Node::Sender<TestMessage>::Ptr sender_b = node->addSender<TestMessage>("topic_b");
   Node::Sender<TestMessageConv>::Ptr sender_c = node->addSender<TestMessageConv>("topic_c");
+  Node::Sender<TestMessageConvPtr>::Ptr sender_d = node->addSender<TestMessageConvPtr>("topic_d", &called);
 
   TestMessage message_raw;
   sender_a->put(message_raw);
@@ -24,6 +27,7 @@ TEST(DISABLED_semantics, sender) {
 
   TestContainer message_container;
   sender_c->put(message_container);
+  sender_d->put(message_container);
 }
 
 TEST(DISABLED_semantics, receiver) {
@@ -31,9 +35,12 @@ TEST(DISABLED_semantics, receiver) {
 
   std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
 
+  bool called = false;
+
   Node::Receiver<TestFlatbuffer>::Ptr receiver_a = node->addReceiver<TestFlatbuffer>("topic_a");
   Node::Receiver<TestMessage>::Ptr receiver_b = node->addReceiver<TestMessage>("topic_b");
   Node::Receiver<TestMessageConv>::Ptr receiver_c = node->addReceiver<TestMessageConv>("topic_c");
+  Node::Receiver<TestMessageConvPtr>::Ptr receiver_d = node->addReceiver<TestMessageConvPtr>("topic_d", &called);
 
   TestMessage message_raw;
   message_raw = receiver_a->latest();
@@ -41,6 +48,7 @@ TEST(DISABLED_semantics, receiver) {
 
   TestContainer message_container;
   message_container = receiver_c->latest();
+  message_container = receiver_d->latest();
 }
 /*
 TEST(DISABLED_semantics, server) {

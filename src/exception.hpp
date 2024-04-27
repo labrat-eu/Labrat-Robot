@@ -164,5 +164,9 @@ class ConfigParseException : public Exception {
   using Exception::Exception;
 };
 
+class BadUsageException : public Exception {
+  using Exception::Exception;
+};
+
 }  // namespace lbot
 }  // namespace labrat

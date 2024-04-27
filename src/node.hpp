@@ -123,12 +123,10 @@ public:
     using Storage = typename MessageType::Storage;
     using Converted = typename MessageType::Converted;
 
-    using Reference = GenericSender<Converted>;
-
     template <auto *Function>
-    using Convert = ConversionFunction<Reference, Function>;
+    using Convert = ConversionFunction<Function>;
     template <auto *Function>
-    using Move = MoveFunction<Reference, Function>;
+    using Move = MoveFunction<Function>;
 
     SenderBase(SenderBase &) = delete;
     SenderBase(SenderBase &&) = delete;
@@ -141,7 +139,7 @@ public:
      * @param node Reference to the parent node.
      * @param user_ptr User pointer to be used by the conversion function.
      */
-    SenderBase(const std::string &topic_name, Node &node, const void *user_ptr = nullptr) requires can_convert_from<MessageType, Reference>
+    SenderBase(const std::string &topic_name, Node &node, void *user_ptr = nullptr) requires can_convert_from<MessageType>
       :
       GenericSender<Converted>(TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addSender<MessageType>(topic_name, this),
         node),
@@ -161,7 +159,7 @@ public:
 
     friend class Node;
 
-    const void *const user_ptr;
+    void *const user_ptr;
 
   public:
     /**
@@ -188,8 +186,7 @@ public:
 
         {
           std::lock_guard guard(receiver->message_buffer[index].mutex);
-          Convert<MessageType::convertFrom>::call(container, receiver->message_buffer[index].message, user_ptr,
-            *dynamic_cast<GenericSender<Converted> *>(this));
+          Convert<MessageType::convertFrom>::call(container, receiver->message_buffer[index].message, user_ptr);
           receiver->message_buffer[index].update_flag = true;
           receiver->count.store(local_count, std::memory_order_release);
         }
@@ -198,7 +195,7 @@ public:
         receiver->count.notify_one();
 
         if (receiver->callback.valid()) {
-          receiver->callback(*receiver, receiver->user_ptr);
+          receiver->callback.call(receiver->message_buffer[index].message, receiver->user_ptr, receiver->callback_ptr);
         }
       }
 
@@ -214,7 +211,7 @@ public:
      * @param container Object containing the data to be sent out.
      */
     void put(Converted &&container) override {
-      if constexpr (!can_move_from<MessageType, Reference>) {
+      if constexpr (!can_move_from<MessageType>) {
         put(container);
       } else {
         std::size_t receive_count = GenericSender<Converted>::topic.getReceivers().size();
@@ -253,8 +250,7 @@ public:
 
           {
             std::lock_guard guard(receiver->message_buffer[index].mutex);
-            Move<MessageType::moveFrom>::call(std::forward<Converted>(container), receiver->message_buffer[index].message, user_ptr,
-              *dynamic_cast<GenericSender<Converted> *>(this));
+            Move<MessageType::moveFrom>::call(std::forward<Converted>(container), receiver->message_buffer[index].message, user_ptr);
             receiver->message_buffer[index].update_flag = true;
             receiver->count.store(local_count, std::memory_order_release);
           }
@@ -263,14 +259,13 @@ public:
           receiver->count.notify_one();
 
           if (receiver->callback.valid()) {
-            receiver->callback(*receiver, receiver->user_ptr);
+            receiver->callback.call(receiver->message_buffer[index].message, receiver->user_ptr, receiver->callback_ptr);
           }
         } else {
           // Send to a plugin.
           MessageType message;
 
-          Move<MessageType::moveFrom>::call(std::forward<Converted>(container), message, user_ptr,
-            *dynamic_cast<GenericSender<Converted> *>(this));
+          Move<MessageType::moveFrom>::call(std::forward<Converted>(container), message, user_ptr);
 
           flatbuffers::FlatBufferBuilder builder;
           builder.Finish(MessageType::Content::TableType::Pack(builder, &message));
@@ -325,7 +320,7 @@ public:
         }
 
         if (!init_flag) {
-          Convert<MessageType::convertFrom>::call(container, message, user_ptr, *dynamic_cast<GenericSender<Converted> *>(this));
+          Convert<MessageType::convertFrom>::call(container, message, user_ptr);
 
           builder.Finish(MessageType::Content::TableType::Pack(builder, &message));
 
@@ -488,12 +483,10 @@ public:
     using Storage = typename MessageType::Storage;
     using Converted = typename MessageType::Converted;
 
-    using Reference = GenericReceiver<Converted>;
-
     template <auto *Function>
-    using Convert = ConversionFunction<Reference, Function>;
+    using Convert = ConversionFunction<Function>;
     template <auto *Function>
-    using Move = MoveFunction<Reference, Function>;
+    using Move = MoveFunction<Function>;
 
   private:
     /**
@@ -504,8 +497,8 @@ public:
      * @param user_ptr User pointer to be used by the conversion function.
      * @param buffer_size Size of the internal receiver buffer. It must be at least 4 and should ideally be a power of 2.
      */
-    ReceiverBase(const std::string &topic_name, Node &node, const void *user_ptr = nullptr, std::size_t buffer_size = 4)
-      requires can_convert_to<MessageType, Reference> :
+    ReceiverBase(const std::string &topic_name, Node &node, void *user_ptr = nullptr, std::size_t buffer_size = 4)
+      requires can_convert_to<MessageType> :
       GenericReceiver<Converted>(TopicInfo::get<MessageType>(topic_name),
         node.environment.topic_map.addReceiver<MessageType>(topic_name, this), node, buffer_size),
       user_ptr(user_ptr), message_buffer(GenericReceiver<Converted>::calculateBufferSize(buffer_size)) {}
@@ -513,7 +506,7 @@ public:
     friend class Node;
     friend class Sender<MessageType>;
 
-    const void *const user_ptr;
+    void *const user_ptr;
 
     /**
      * @brief Internal message buffer.
@@ -580,10 +573,13 @@ public:
      *
      */
     class CallbackFunction {
+    private:
+      using Wrapper = void (CallbackFunction::*)(const Storage &, void *, void *) const;
+
     public:
       template <typename DataType>
-      using Function = void (*)(GenericReceiver<Converted> &, DataType *);
-
+      using Function = void (*)(const Converted &, DataType *);
+      
       /**
        * @brief Default constructor invalidating the object.
        *
@@ -591,34 +587,44 @@ public:
       CallbackFunction() : function(nullptr) {}
 
       /**
-       * @brief Construct a new Callback Function object by providing a function and user pointer.
+       * @brief Construct a new callback function.
        *
        * @param function Function to be used as a callback function.
        */
       template <typename DataType>
-      CallbackFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
+      CallbackFunction(Function<DataType> function) : wrapper(&CallbackFunction::callInternal<MessageType>), function(reinterpret_cast<Function<void>>(function)) {}
 
-      /**
-       * @brief Call the stored callback function.
-       *
-       * @param receiver Reference to the relevant generic receiver instance.
-       * @param user_ptr User pointer to access generic external data.
-       */
-      inline void operator()(GenericReceiver<Converted> &receiver, const void *user_ptr) const {
-        function(receiver, const_cast<void *>(user_ptr));
+      inline void call(const Storage &message, void *user_ptr, void *callback_ptr) const {
+        (*this.*wrapper)(message, user_ptr, callback_ptr);
       }
 
-      /**
-       * @brief Validate that a function is stored in this instance.
-       *
-       * @return true A function is stored.
-       * @return false A function is not stored.
-       */
-      inline bool valid() {
+      [[nodiscard]] bool valid() const {
         return function != nullptr;
       }
 
     private:
+      /**
+       * @brief Call the stored conversion function.
+       *
+       * @param message Message to compute.
+       * @param user_ptr User pointer to access generic external data.
+       */
+      template <typename ReceiverMessageType>
+      void callInternal(const typename ReceiverMessageType::Storage &message, void *user_ptr, void *callback_ptr) const {
+        if (function == nullptr) {
+          return;
+        }
+
+        if constexpr (is_standard_message<ReceiverMessageType>) {
+          function(message, callback_ptr);
+        } else {
+          typename ReceiverMessageType::Converted converted;
+          Convert<ReceiverMessageType::convertTo>::call(message, converted, user_ptr);
+          function(converted, callback_ptr);
+        }
+      }
+
+      Wrapper wrapper;
       Function<void> function;
     };
 
@@ -653,8 +659,7 @@ public:
 
       {
         std::lock_guard guard(message_buffer[index].mutex);
-        Convert<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr,
-          *dynamic_cast<GenericReceiver<Converted> *>(this));
+        Convert<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr);
         message_buffer[index].update_flag = false;
       }
 
@@ -695,12 +700,10 @@ public:
       {
         std::lock_guard guard(message_buffer[index].mutex);
 
-        if constexpr (can_move_from<MessageType, Reference>) {
-          Move<MessageType::moveTo>::call(std::move(message_buffer[index].message), result, user_ptr,
-            *dynamic_cast<GenericReceiver<Converted> *>(this));
+        if constexpr (can_move_from<MessageType>) {
+          Move<MessageType::moveTo>::call(std::move(message_buffer[index].message), result, user_ptr);
         } else {
-          Convert<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr,
-            *dynamic_cast<GenericReceiver<Converted> *>(this));
+          Convert<MessageType::convertTo>::call(message_buffer[index].message, result, user_ptr);
         }
         message_buffer[index].update_flag = false;
       }
@@ -716,12 +719,34 @@ public:
      *
      * @param function Callback function to be registered.
      */
-    void setCallback(CallbackFunction function) {
+    void setCallback(CallbackFunction::template Function<void> function) {
+      if (callback.valid()) {
+        throw BadUsageException("A callback has already been registered.");
+      }
+
       callback = function;
+      callback_ptr = nullptr;
+    }
+
+    /**
+     * @brief Register a callback function.
+     *
+     * @param function Callback function to be registered.
+     * @param user_ptr User pointer to be supplied on callbacks.
+     */
+    template <typename DataType>
+    void setCallback(CallbackFunction::template Function<DataType> function, DataType *user_ptr) {
+      if (callback.valid()) {
+        throw BadUsageException("A callback has already been registered.");
+      }
+
+      callback = function;
+      callback_ptr = reinterpret_cast<void *>(user_ptr);
     }
 
   private:
     CallbackFunction callback;
+    void *callback_ptr;
 
     enum class Mode : u8 {
       latest,
@@ -786,21 +811,24 @@ public:
     using RequestConverted = typename RequestType::Converted;
     using ResponseConverted = typename ResponseType::Converted;
 
-    using Reference = GenericServer<RequestConverted, ResponseConverted>;
-
     template <auto *Function>
-    using Convert = ConversionFunction<Reference, Function>;
+    using Convert = ConversionFunction<Function>;
     template <auto *Function>
-    using Move = MoveFunction<Reference, Function>;
+    using Move = MoveFunction<Function>;
 
     /**
      * @brief Handler function to handle requests made to a service.
      *
      */
     class HandlerFunction {
+    private:
+      using Wrapper = ResponseStorage (HandlerFunction::*)(const RequestStorage &, void *, void *) const;
+
     public:
       template <typename DataType>
       using Function = ResponseConverted (*)(const RequestConverted &, DataType *);
+
+      HandlerFunction() : function(nullptr) {}
 
       /**
        * @brief Construct a new handler function.
@@ -808,8 +836,17 @@ public:
        * @param function Function to be used as a handler function.
        */
       template <typename DataType>
-      HandlerFunction(Function<DataType> function) : function(reinterpret_cast<Function<void>>(function)) {}
+      HandlerFunction(Function<DataType> function) : wrapper(&HandlerFunction::callInternal<RequestType, ResponseType>), function(reinterpret_cast<Function<void>>(function)) {}
 
+      inline ResponseStorage call(const RequestStorage &request, void *user_ptr, void *handler_ptr) const {
+        return (*this.*wrapper)(request, user_ptr, handler_ptr);
+      }
+
+      [[nodiscard]] bool valid() const {
+        return function != nullptr;
+      }
+
+    private:
       /**
        * @brief Call the stored conversion function.
        *
@@ -817,27 +854,35 @@ public:
        * @param user_ptr User pointer to access generic external data.
        * @return ResponseType Response to be sent to the client.
        */
-      inline ResponseStorage call(const RequestStorage &request, const void *user_ptr,
-        ServerBase<RequestType, ResponseType> *reference) const {
-        RequestConverted request_converted;
-        Convert<RequestType::convertTo>::call(request, request_converted, user_ptr,
-          *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
-
-        ResponseConverted response_converted = function(request_converted, const_cast<void *>(user_ptr));
-        ResponseStorage response;
-
-        if constexpr (can_move_from<ResponseType, Reference>) {
-          Move<ResponseType::moveFrom>::call(std::move(response_converted), response, user_ptr,
-            *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
+      template <typename ServerRequestType, typename ServerResponseType>
+      typename ServerResponseType::Storage callInternal(const typename ServerRequestType::Storage &request, void *user_ptr, void *handler_ptr) const {
+        typename ServerResponseType::Converted response_converted;
+        
+        if constexpr (is_standard_message<ServerRequestType>) {
+          response_converted = function(request, handler_ptr);
         } else {
-          Convert<ResponseType::convertFrom>::call(response_converted, response, user_ptr,
-            *dynamic_cast<GenericServer<RequestConverted, ResponseConverted> *>(reference));
+          typename ServerRequestType::Converted request_converted;
+          Convert<ServerRequestType::convertTo>::call(request, request_converted, user_ptr);
+
+          response_converted = function(request_converted, handler_ptr);
         }
 
-        return response;
+        if constexpr (is_standard_message<ServerResponseType>) {
+          return response_converted;
+        } else {
+          typename ServerResponseType::Storage response;
+
+          if constexpr (can_move_from<ServerResponseType>) {
+            Move<ServerResponseType::moveFrom>::call(std::move(response_converted), response, user_ptr);
+          } else {
+            Convert<ServerResponseType::convertFrom>::call(response_converted, response, user_ptr);
+          }
+
+          return response;
+        }
       }
 
-    private:
+      Wrapper wrapper;
       Function<void> function;
     };
 
@@ -850,14 +895,13 @@ public:
      *
      * @param service_name Name of the service.
      * @param node Reference to the parent node.
-     * @param handler_function Handler function to handle requests made to a service.
-     * @param user_ptr User pointer to be used by the handler function.
+     * @param user_ptr User pointer to be used by conversion functions and the handler function.
      */
-    ServerBase(const std::string &service_name, Node &node, HandlerFunction handler_function, const void *user_ptr = nullptr)
-      requires can_convert_to<RequestType, Reference> && can_convert_from<ResponseType, Reference> :
+    ServerBase(const std::string &service_name, Node &node, void *user_ptr = nullptr)
+      requires can_convert_to<RequestType> && can_convert_from<ResponseType> :
       GenericServer<RequestConverted, ResponseConverted>(ServiceInfo::get<RequestType, ResponseType>(service_name,
         node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this))),
-      node(node), handler_function(handler_function), user_ptr(user_ptr) {
+      node(node), user_ptr(user_ptr) {
       for (Manager::PluginRegistration &plugin : node.environment.plugin_list) {
         if (plugin.delete_flag.test()
           || !plugin.filter.check(GenericServer<RequestConverted, ResponseConverted>::service_info.service_hash)) {
@@ -876,8 +920,10 @@ public:
     friend class Client;
 
     Node &node;
-    const HandlerFunction handler_function;
-    const void *const user_ptr;
+    void *const user_ptr;
+
+    HandlerFunction handler;
+    void *handler_ptr;
 
   public:
     /**
@@ -886,6 +932,36 @@ public:
      */
     ~ServerBase() {
       GenericServer<RequestConverted, ResponseConverted>::service_info.service.removeServer(this);
+    }
+
+    /**
+     * @brief Register a handler function.
+     *
+     * @param function Handler function to handle requests made to a service.
+     */
+    void setHandler(HandlerFunction::template Function<void> function) {
+      if (handler.valid()) {
+        throw BadUsageException("A handler has already been registered.");
+      }
+
+      handler = function;
+      handler_ptr = nullptr;
+    }
+
+    /**
+     * @brief Register a handler function.
+     *
+     * @param function Handler function to handle requests made to a service.
+     * @param user_ptr User pointer to be supplied on handler callbacks.
+     */
+    template <typename DataType>
+    void setHandler(HandlerFunction::template Function<DataType> function, DataType *user_ptr) {
+      if (handler.valid()) {
+        throw BadUsageException("A handler has already been registered.");
+      }
+
+      handler = function;
+      handler_ptr = reinterpret_cast<void *>(user_ptr);
     }
   };
 
@@ -969,12 +1045,10 @@ public:
     using RequestConverted = typename RequestType::Converted;
     using ResponseConverted = typename ResponseType::Converted;
 
-    using Reference = GenericClient<RequestConverted, ResponseConverted>;
-
     template <auto *Function>
-    using Convert = ConversionFunction<Reference, Function>;
+    using Convert = ConversionFunction<Function>;
     template <auto *Function>
-    using Move = MoveFunction<Reference, Function>;
+    using Move = MoveFunction<Function>;
 
     ClientBase(ClientBase &) = delete;
     ClientBase(ClientBase &&) = delete;
@@ -987,8 +1061,8 @@ public:
      * @param node Reference to the parent node.
      * @param user_ptr User pointer to be forwarded to conversion and move functions.
      */
-    ClientBase(const std::string &service_name, Node &node, const void *user_ptr = nullptr)
-      requires can_convert_from<RequestType, Reference> && can_convert_to<ResponseType, Reference> :
+    ClientBase(const std::string &service_name, Node &node, void *user_ptr = nullptr)
+      requires can_convert_from<RequestType> && can_convert_to<ResponseType> :
       GenericClient<RequestConverted, ResponseConverted>(ServiceInfo::get<RequestType, ResponseType>(service_name,
         node.environment.service_map.getService<RequestType, ResponseType>(service_name))),
       node(node), user_ptr(user_ptr) {}
@@ -996,7 +1070,7 @@ public:
     friend class Node;
 
     Node &node;
-    const void *const user_ptr;
+    void *const user_ptr;
 
   public:
     using Future = std::shared_future<ResponseConverted>;
@@ -1029,26 +1103,25 @@ public:
           if (server == nullptr) {
             throw ServiceUnavailableException("Service is not available.", node.getLogger());
           }
+          if (!server->handler.valid()) {
+            throw ServiceUnavailableException("Service has no registered handler.", node.getLogger());
+          }
 
           RequestStorage request_storage;
 
-          if constexpr (can_move_from<RequestType, Reference>) {
-            Move<RequestType::moveFrom>::call(std::move(request), request_storage, user_ptr,
-              *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
+          if constexpr (can_move_from<RequestType>) {
+            Move<RequestType::moveFrom>::call(std::move(request), request_storage, user_ptr);
           } else {
-            Convert<RequestType::convertFrom>::call(request, request_storage, user_ptr,
-              *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
+            Convert<RequestType::convertFrom>::call(request, request_storage, user_ptr);
           }
 
-          ResponseStorage response_storage = server->handler_function.call(request_storage, server->user_ptr, server);
+          ResponseStorage response_storage = server->handler.call(request_storage, server->user_ptr, server->handler_ptr);
           ResponseConverted response;
 
-          if constexpr (can_move_to<ResponseType, Reference>) {
-            Move<ResponseType::moveTo>::call(std::move(response_storage), response, user_ptr,
-              *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
+          if constexpr (can_move_to<ResponseType>) {
+            Move<ResponseType::moveTo>::call(std::move(response_storage), response, user_ptr);
           } else {
-            Convert<ResponseType::convertTo>::call(response_storage, response, user_ptr,
-              *dynamic_cast<GenericClient<RequestConverted, ResponseConverted> *>(this));
+            Convert<ResponseType::convertTo>::call(response_storage, response, user_ptr);
           }
 
           promise.set_value(std::move(response));

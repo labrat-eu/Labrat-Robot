@@ -21,7 +21,8 @@ public:
     // Register a server on the service with the name "/examples/power" and the handler ServerNode::handleRequest().
     // There can only be one server per service.
     // The type of this server must match any previously registered client on the same service.
-    server = addServer<examples::msg::Request, examples::msg::Response>("/examples/power", &ServerNode::handleRequest);
+    server = addServer<examples::msg::Request, examples::msg::Response>("/examples/power");
+    server->setHandler(&ServerNode::handleRequest);
   }
 
 private:

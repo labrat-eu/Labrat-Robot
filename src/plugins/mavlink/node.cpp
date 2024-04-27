@@ -102,7 +102,8 @@ public:
         receiver = node->addReceiver<U>(receiver_topic);
 
         Message<U> (*ptr)(const Message<T> &, ServerInfo<T, U> *) = handle<T, U>;
-        server = node->addServer<T, U>(service, ptr, this);
+        server = node->addServer<T, U>(service);
+        server->setHandler(ptr, this);
       }
     };
 
@@ -986,7 +987,7 @@ Mavlink::Node::~Node() {
   delete priv;
 }
 
-const Mavlink::SystemInfo &Mavlink::Node::getSystemInfo() const {
+Mavlink::SystemInfo &Mavlink::Node::getSystemInfo() const {
   return priv->system_info;
 }
 
@@ -1000,7 +1001,7 @@ void Mavlink::Node::registerGenericReceiver(Node::GenericReceiver<mavlink_messag
   priv->receiver_vector.emplace_back(std::forward<Node::GenericReceiver<mavlink_message_t>::Ptr>(receiver));
 }
 
-void Mavlink::Node::receiverCallback(Node::GenericReceiver<mavlink_message_t> &receiver, const SystemInfo *system_info) {
+void Mavlink::Node::receiverCallback(const mavlink_message_t &message, SystemInfo *system_info) {
   Mavlink::NodePrivate *node = system_info->node;
   CleanupLock::Guard guard = node->lock.lock();
 
@@ -1008,7 +1009,7 @@ void Mavlink::Node::receiverCallback(Node::GenericReceiver<mavlink_message_t> &r
     return;
   }
 
-  node->writeMessage(receiver.latest());
+  node->writeMessage(message);
 }
 
 Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::Node &node) :
