@@ -178,15 +178,17 @@ public:
      * @param container Object containing the data to be sent out.
      */
     void put(const Converted &container) override {
-      if (GenericSender<Converted>::topic.getConstReceivers().size() != 0) {
+      if (GenericSender<Converted>::topic.getReceivers().size() + GenericSender<Converted>::topic.getConstReceivers().size() != 0) {
         Storage storage;
         Convert<MessageType::convertFrom>::call(container, storage, user_ptr);
 
-        for (void *pointer : GenericSender<Converted>::topic.getConstReceivers()) {
-          Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
+        for (auto &range : {GenericSender<Converted>::topic.getReceivers(), GenericSender<Converted>::topic.getConstReceivers()}) {
+          for (void *pointer : range) {
+            Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
-          if (receiver->callback.valid()) {
-            receiver->callback.call(storage, receiver->user_ptr, receiver->callback_ptr);
+            if (receiver->callback.valid()) {
+              receiver->callback.call(storage, receiver->user_ptr, receiver->callback_ptr);
+            }
           }
         }
       }
@@ -206,10 +208,6 @@ public:
 
         receiver->flush_flag = false;
         receiver->count.notify_one();
-
-        if (receiver->callback.valid()) {
-          receiver->callback.call(receiver->message_buffer[index].message, receiver->user_ptr, receiver->callback_ptr);
-        }
       }
 
       trace(container);
@@ -218,8 +216,8 @@ public:
     /**
      * @brief Send out a message onto the topic by moving its contents onto the topic.
      * @details This operation is efficient when sending out large buffers as it avoids copying tht data.
-     * However, this comes at the cost of a constant overhead as this operation is only possible when only one receiver or plugin
-     * depends on the relevant topic.
+     * However, this comes at the cost of a constant overhead as this operation is only possible when only const
+     * receivers or one receiver or one plugin depend on the relevant topic.
      *
      * @param container Object containing the data to be sent out.
      */
@@ -227,8 +225,12 @@ public:
       if constexpr (!can_move_from<MessageType>) {
         put(container);
       } else {
-        const std::size_t normal_receiver_count = GenericSender<Converted>::topic.getReceivers().size();
-        std::size_t receive_count = (normal_receiver_count == 0 && GenericSender<Converted>::topic.getConstReceivers().size() != 0) ? 1 : normal_receiver_count;
+        const std::size_t normal_receive_count = GenericSender<Converted>::topic.getReceivers().size();
+        std::size_t receive_count = normal_receive_count;
+
+        if (GenericSender<Converted>::topic.getConstReceivers().size() != 0) {
+          receive_count += 1;
+        }
 
         const Manager::PluginRegistration::List::iterator plugin_end = GenericSender<Converted>::node.environment.plugin_list.end();
         Manager::PluginRegistration::List::iterator plugin_iterator = plugin_end;
@@ -255,22 +257,16 @@ public:
         }
 
         if (plugin_iterator == plugin_end) {
-          Storage local_storage;
-          Storage *storage;
-          Receiver<MessageType> *receiver;
-
-          if (normal_receiver_count != 0) {
+          if (normal_receive_count != 0) {
             // Send to a receiver.
-            receiver = reinterpret_cast<Receiver<MessageType> *>(*GenericSender<Converted>::topic.getReceivers().begin());
+            Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(*GenericSender<Converted>::topic.getReceivers().begin());
 
             const std::size_t local_count = receiver->count.load(std::memory_order_relaxed) + 1;
             const std::size_t index = local_count & receiver->index_mask;
 
-            storage = &receiver->message_buffer[index].message;
-
             {
               std::lock_guard guard(receiver->message_buffer[index].mutex);
-              Move<MessageType::moveFrom>::call(std::forward<Converted>(container), *storage, user_ptr);
+              Move<MessageType::moveFrom>::call(std::forward<Converted>(container), receiver->message_buffer[index].message, user_ptr);
               receiver->message_buffer[index].update_flag = true;
               receiver->count.store(local_count, std::memory_order_release);
             }
@@ -279,17 +275,18 @@ public:
             receiver->count.notify_one();
 
             if (receiver->callback.valid()) {
-              receiver->callback.call(*storage, receiver->user_ptr, receiver->callback_ptr);
+              receiver->callback.call(receiver->message_buffer[index].message, receiver->user_ptr, receiver->callback_ptr);
             }
           } else {
-            storage = &local_storage;
-          }
+            Storage storage;
+            Move<MessageType::moveFrom>::call(std::forward<Converted>(container), storage, user_ptr);
 
-          for (void *pointer : GenericSender<Converted>::topic.getConstReceivers()) {
-            Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
+            for (void *pointer : GenericSender<Converted>::topic.getConstReceivers()) {
+              Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
-            if (receiver->callback.valid()) {
-              receiver->callback.call(*storage, receiver->user_ptr, receiver->callback_ptr);
+              if (receiver->callback.valid()) {
+                receiver->callback.call(storage, receiver->user_ptr, receiver->callback_ptr);
+              }
             }
           }
         } else {

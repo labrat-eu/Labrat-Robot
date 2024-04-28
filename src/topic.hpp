@@ -39,10 +39,9 @@ public:
   public:
     using Handle = std::size_t;
 
-    template <bool IsConst>
     class ReceiverList {
     public:
-      explicit inline ReceiverList(Topic &topic) : topic(topic) {
+      explicit inline ReceiverList(Topic &topic, bool is_const) : topic(topic), receivers(is_const ? topic.const_receivers : topic.receivers) {
         while (true) {
           topic.use_count.fetch_add(1);
 
@@ -54,7 +53,7 @@ public:
         }
       }
 
-      inline ReceiverList(ReceiverList &&rhs) noexcept : topic(rhs.topic) {
+      inline ReceiverList(ReceiverList &&rhs) noexcept : topic(rhs.topic), receivers(rhs.receivers) {
         topic.use_count.fetch_add(1);
       }
 
@@ -64,31 +63,20 @@ public:
       }
 
       [[nodiscard]] inline std::vector<void *>::iterator begin() const {
-        if constexpr (IsConst) {
-          return topic.const_receivers.begin();
-        } else {
-          return topic.receivers.begin();
-        }
+        return receivers.begin();
       }
 
       [[nodiscard]] inline std::vector<void *>::iterator end() const {
-        if constexpr (IsConst) {
-          return topic.const_receivers.end();
-        } else {
-          return topic.receivers.end();
-        }
+        return receivers.end();
       }
 
       [[nodiscard]] inline std::size_t size() const {
-        if constexpr (IsConst) {
-          return topic.const_receivers.size();
-        } else {
-          return topic.receivers.size();
-        }
+        return receivers.size();
       }
 
     private:
       Topic &topic;
+      std::vector<void *> &receivers;
     };
 
     Topic(Handle handle, std::string name);
@@ -97,12 +85,12 @@ public:
     void addSender(void *new_sender);
     void removeSender(void *old_sender);
 
-    [[nodiscard]] inline ReceiverList<false> getReceivers() {
-      return ReceiverList<false>(*this);
+    [[nodiscard]] inline ReceiverList getReceivers() {
+      return ReceiverList(*this, false);
     }
 
-    [[nodiscard]] inline ReceiverList<true> getConstReceivers() {
-      return ReceiverList<true>(*this);
+    [[nodiscard]] inline ReceiverList getConstReceivers() {
+      return ReceiverList(*this, true);
     }
 
     void addReceiver(void *new_receiver, bool is_const);
