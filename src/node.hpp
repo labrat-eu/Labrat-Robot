@@ -16,6 +16,7 @@
 #include <labrat/lbot/plugin.hpp>
 #include <labrat/lbot/service.hpp>
 #include <labrat/lbot/topic.hpp>
+#include <labrat/lbot/utils/async.hpp>
 #include <labrat/lbot/utils/fifo.hpp>
 #include <labrat/lbot/utils/types.hpp>
 
@@ -178,36 +179,51 @@ public:
      * @param container Object containing the data to be sent out.
      */
     void put(const Converted &container) override {
-      if (GenericSender<Converted>::topic.getReceivers().size() + GenericSender<Converted>::topic.getConstReceivers().size() != 0) {
+      const std::size_t receiver_count = GenericSender<Converted>::topic.getReceivers().size() + GenericSender<Converted>::topic.getConstReceivers().size();
+      if (receiver_count != 0) {
         Storage storage;
-        Convert<MessageType::convertFrom>::call(container, storage, user_ptr);
+        bool storage_initialized = false;
+
+        std::vector<std::future<void>> futures;
+        futures.reserve(receiver_count);
 
         for (auto &range : {GenericSender<Converted>::topic.getReceivers(), GenericSender<Converted>::topic.getConstReceivers()}) {
           for (void *pointer : range) {
             Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
             if (receiver->callback.valid()) {
-              receiver->callback.call(storage, receiver->user_ptr, receiver->callback_ptr);
+              if (!storage_initialized) {
+                Convert<MessageType::convertFrom>::call(container, storage, user_ptr);
+                storage_initialized = true;
+              }
+
+              futures.emplace_back(std::async(receiver->callback_policy, [receiver, &storage]() -> void {
+                receiver->callback.call(storage, receiver->user_ptr, receiver->callback_ptr);
+              }));
             }
           }
         }
-      }
 
-      for (void *pointer : GenericSender<Converted>::topic.getReceivers()) {
-        Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
+        for (void *pointer : GenericSender<Converted>::topic.getReceivers()) {
+          Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
-        const std::size_t local_count = receiver->count.load(std::memory_order_relaxed) + 1;
-        const std::size_t index = local_count & receiver->index_mask;
+          const std::size_t local_count = receiver->count.load(std::memory_order_relaxed) + 1;
+          const std::size_t index = local_count & receiver->index_mask;
 
-        {
-          std::lock_guard guard(receiver->message_buffer[index].mutex);
-          Convert<MessageType::convertFrom>::call(container, receiver->message_buffer[index].message, user_ptr);
-          receiver->message_buffer[index].update_flag = true;
-          receiver->count.store(local_count, std::memory_order_release);
+          {
+            std::lock_guard guard(receiver->message_buffer[index].mutex);
+            Convert<MessageType::convertFrom>::call(container, receiver->message_buffer[index].message, user_ptr);
+            receiver->message_buffer[index].update_flag = true;
+            receiver->count.store(local_count, std::memory_order_release);
+          }
+
+          receiver->flush_flag = false;
+          receiver->count.notify_one();
         }
 
-        receiver->flush_flag = false;
-        receiver->count.notify_one();
+        for (std::future<void> &future : futures) {
+          future.get();
+        }
       }
 
       trace(container);
@@ -226,9 +242,10 @@ public:
         put(container);
       } else {
         const std::size_t normal_receive_count = GenericSender<Converted>::topic.getReceivers().size();
+        const std::size_t const_receive_count = GenericSender<Converted>::topic.getConstReceivers().size();
         std::size_t receive_count = normal_receive_count;
 
-        if (GenericSender<Converted>::topic.getConstReceivers().size() != 0) {
+        if (const_receive_count != 0) {
           receive_count += 1;
         }
 
@@ -267,26 +284,36 @@ public:
             {
               std::lock_guard guard(receiver->message_buffer[index].mutex);
               Move<MessageType::moveFrom>::call(std::forward<Converted>(container), receiver->message_buffer[index].message, user_ptr);
+
+              if (receiver->callback.valid()) {
+                receiver->callback.call(receiver->message_buffer[index].message, receiver->user_ptr, receiver->callback_ptr);
+              }
+
               receiver->message_buffer[index].update_flag = true;
               receiver->count.store(local_count, std::memory_order_release);
             }
 
             receiver->flush_flag = false;
             receiver->count.notify_one();
-
-            if (receiver->callback.valid()) {
-              receiver->callback.call(receiver->message_buffer[index].message, receiver->user_ptr, receiver->callback_ptr);
-            }
           } else {
             Storage storage;
             Move<MessageType::moveFrom>::call(std::forward<Converted>(container), storage, user_ptr);
+
+            std::vector<std::future<void>> futures;
+            futures.reserve(const_receive_count);
 
             for (void *pointer : GenericSender<Converted>::topic.getConstReceivers()) {
               Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
               if (receiver->callback.valid()) {
-                receiver->callback.call(storage, receiver->user_ptr, receiver->callback_ptr);
+                futures.emplace_back(std::async(receiver->callback_policy, [receiver, &storage]() -> void {
+                  receiver->callback.call(storage, receiver->user_ptr, receiver->callback_ptr);
+                }));
               }
+            }
+
+            for (std::future<void> &future : futures) {
+              future.get();
             }
           }
         } else {
@@ -754,14 +781,16 @@ public:
      * @brief Register a callback function.
      *
      * @param function Callback function to be registered.
+     * @param policy Launch policy to control whether the callback will be launched in a new thread. If your callback is expected to only take up a short amount of time, change this to lbot::ExecutionPolicy::serial.
      */
-    void setCallback(CallbackFunction::template Function<void> function) {
+    void setCallback(CallbackFunction::template Function<void> function, ExecutionPolicy policy = ExecutionPolicy::parallel) {
       if (callback.valid()) {
         throw BadUsageException("A callback has already been registered.");
       }
 
       callback = function;
       callback_ptr = nullptr;
+      callback_policy = (policy == ExecutionPolicy::parallel) ? std::launch::async : std::launch::deferred;
     }
 
     /**
@@ -769,20 +798,23 @@ public:
      *
      * @param function Callback function to be registered.
      * @param user_ptr User pointer to be supplied on callbacks.
+     * @param policy Launch policy to control whether the callback will be launched in a new thread. If your callback is expected take up considerable resources, change this to lbot::ExecutionPolicy::parallel.
      */
     template <typename DataType>
-    void setCallback(CallbackFunction::template Function<DataType> function, DataType *user_ptr) {
+    void setCallback(CallbackFunction::template Function<DataType> function, DataType *user_ptr, ExecutionPolicy policy = ExecutionPolicy::serial) {
       if (callback.valid()) {
         throw BadUsageException("A callback has already been registered.");
       }
 
       callback = function;
       callback_ptr = reinterpret_cast<void *>(user_ptr);
+      callback_policy = (policy == ExecutionPolicy::parallel) ? std::launch::async : std::launch::deferred;
     }
 
   private:
     CallbackFunction callback;
     void *callback_ptr;
+    std::launch callback_policy;
 
     enum class Mode : u8 {
       latest,
@@ -1122,52 +1154,44 @@ public:
      * A call to this function will not block.
      *
      * @param request Object containing the data to be processed by the corresponding server.
+     * @param policy Launch policy to specify whether to launch a new thread.
      * @return Future Future to be completed by the server.
      * @throw ServiceUnavailableException When no server is handling requests to the relevant service.
      */
-    Future callAsync(const RequestConverted &request) {
-      std::promise<ResponseConverted> promise;
-      Future future = promise.get_future();
+    Future callAsync(const RequestConverted &request, ExecutionPolicy policy = ExecutionPolicy::parallel) {
+      const std::launch launch_policy = (policy == ExecutionPolicy::parallel) ? std::launch::async : std::launch::deferred;
 
-      std::thread(
-        [this](std::promise<ResponseConverted> promise, RequestConverted request) {
-        try {
-          ServiceMap::Service::ServerReference reference =
-            GenericClient<RequestConverted, ResponseConverted>::service_info.service.getServer();
-          Server<RequestType, ResponseType> *server = reference;
+      return std::async(launch_policy, [this](RequestConverted request) -> ResponseConverted {
+        ServiceMap::Service::ServerReference reference =
+          GenericClient<RequestConverted, ResponseConverted>::service_info.service.getServer();
+        Server<RequestType, ResponseType> *server = reference;
 
-          if (server == nullptr) {
-            throw ServiceUnavailableException("Service is not available.", node.getLogger());
-          }
-          if (!server->handler.valid()) {
-            throw ServiceUnavailableException("Service has no registered handler.", node.getLogger());
-          }
-
-          RequestStorage request_storage;
-
-          if constexpr (can_move_from<RequestType>) {
-            Move<RequestType::moveFrom>::call(std::move(request), request_storage, user_ptr);
-          } else {
-            Convert<RequestType::convertFrom>::call(request, request_storage, user_ptr);
-          }
-
-          ResponseStorage response_storage = server->handler.call(request_storage, server->user_ptr, server->handler_ptr);
-          ResponseConverted response;
-
-          if constexpr (can_move_to<ResponseType>) {
-            Move<ResponseType::moveTo>::call(std::move(response_storage), response, user_ptr);
-          } else {
-            Convert<ResponseType::convertTo>::call(response_storage, response, user_ptr);
-          }
-
-          promise.set_value(std::move(response));
-        } catch (...) {
-          promise.set_exception(std::current_exception());
+        if (server == nullptr) {
+          throw ServiceUnavailableException("Service is not available.", node.getLogger());
         }
-      }, std::move(promise), request)
-        .detach();
+        if (!server->handler.valid()) {
+          throw ServiceUnavailableException("Service has no registered handler.", node.getLogger());
+        }
 
-      return future;
+        RequestStorage request_storage;
+
+        if constexpr (can_move_from<RequestType>) {
+          Move<RequestType::moveFrom>::call(std::move(request), request_storage, user_ptr);
+        } else {
+          Convert<RequestType::convertFrom>::call(request, request_storage, user_ptr);
+        }
+
+        ResponseStorage response_storage = server->handler.call(request_storage, server->user_ptr, server->handler_ptr);
+        ResponseConverted response;
+
+        if constexpr (can_move_to<ResponseType>) {
+          Move<ResponseType::moveTo>::call(std::move(response_storage), response, user_ptr);
+        } else {
+          Convert<ResponseType::convertTo>::call(response_storage, response, user_ptr);
+        }
+
+        return response;
+      }, request);
     }
 
     /**
@@ -1179,7 +1203,7 @@ public:
      * @throw ServiceUnavailableException When no server is handling requests to the relevant service.
      */
     ResponseConverted callSync(const RequestConverted &request) {
-      Future future = callAsync(request);
+      Future future = callAsync(request, ExecutionPolicy::serial);
 
       return future.get();
     }

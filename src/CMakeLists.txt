@@ -38,6 +38,7 @@ set(TARGET_HEADERS
 
 set(TARGET_HEADERS_UTILS
   utils/atomic.hpp
+  utils/async.hpp
   utils/cleanup.hpp
   utils/types.hpp
   utils/fifo.hpp
