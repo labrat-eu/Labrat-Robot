@@ -55,6 +55,10 @@ Calls to [Receiver::next()](@ref labrat::lbot::Node::Receiver::next()) and [Rece
 ```cpp
 float value = receiver->latest();
 ```
+The signature of a callback function must now accept a `float` as the message argument.
+```cpp
+static void callback(const float &message, void *);
+```
 
 ## Server
 First you need to declare and construct your server with the conversion classes as the template parameters. You can specify a conversion class for only the request or response type or both.

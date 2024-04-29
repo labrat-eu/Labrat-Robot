@@ -26,7 +26,7 @@ static void moveFrom(std::vector<float> &&source, Storage &destination) {
 ```
 Note that you need to use the `std::forward()` function to make move operations work efficiently.
 ## Methods
-The [Sender::put()](@ref labrat::lbot::Node::Sender::put()) method will use move operations when called with an rvalue reference as the argument. [Receiver::latest()](@ref labrat::lbot::Node::Receiver::latest()) will never make use of move operations while [Receiver::next()](@ref labrat::lbot::Node::Receiver::next()) will always use them if they are available. When calling up a service, move operations can be used to improve performance. However, some copy operations cannot be avoided.
+The [Sender::put()](@ref labrat::lbot::Node::Sender::put()) method will use move operations when called with an rvalue reference as the argument. [Receiver::latest()](@ref labrat::lbot::Node::Receiver::latest()) will never make use of move operations while [Receiver::next()](@ref labrat::lbot::Node::Receiver::next()) will always use them if they are available. Callback functions are unaffected my move operations. When calling up a service, move operations can be used to improve performance. However, some copy operations cannot be avoided.
 
 # Usage
 When moving messages onto a sender, you need to call [Sender::put()](@ref labrat::lbot::Node::Sender::put()) with an rvalue reference as the argument. This can be achieved by using the `std::move()` function.

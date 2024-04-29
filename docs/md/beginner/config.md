@@ -14,7 +14,7 @@ lbot::Config::Ptr config = lbot::Config::get();
 This class stores configuration parameters. A parameter is a named object that contains one of the following data types:
 - nothing
 - `bool`
-- `i64`
+- `lbot::i64`
 - `double`
 - `std::string`
 - a sequence of parameters
@@ -25,8 +25,8 @@ config->setParameter("/path/to/parameter", 42L);
 ```
 To access a stored parameter you need to then call the [Config::getParameter()](@ref labrat::lbot::Config::getParameter()) method. The first argument is the name of the requested parameter. If the requested parameter does not exist, this function will throw an instance of [lbot::ConfigAccessException](@ref labrat::lbot::ConfigAccessException). If you instead just want to use another value, you can use the [Config::getParameterFallback()](@ref labrat::lbot::Config::getParameterFallback()) method. It allows you to specify a fallback value in case of an unset parameter. In order to access the stored value you also need to call the [ConfigValue::get()](@ref labrat::lbot::ConfigValue::get()) method with the correct data type as a template argument. If there is a type mismatch between the requested and stored types a [lbot::ConfigAccessException](@ref labrat::lbot::ConfigAccessException) will be raised.
 ```cpp
-val = config->getParameter("/path/to/parameter").get<i64>(); // might throw
-val = config->getParameterFallback("/path/to/parameter", 42L).get<i64>(); // doesn't throw
+val = config->getParameter("/path/to/parameter").get<lbot::i64>(); // might throw
+val = config->getParameterFallback("/path/to/parameter", 42L).get<lbot::i64>(); // doesn't throw
 ```
 
 # Loading a configuration from a file

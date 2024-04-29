@@ -1220,7 +1220,7 @@ public:
      */
     template <typename R, typename P>
     ResponseConverted callSync(const RequestConverted &request, const std::chrono::duration<R, P> &timeout_duration) {
-      Future future = callAsync(request);
+      Future future = callAsync(request, ExecutionPolicy::parallel);
 
       if (future.wait_for(timeout_duration) != std::future_status::ready) {
         throw ServiceTimeoutException("Service took too long to respond.", node.getLogger());

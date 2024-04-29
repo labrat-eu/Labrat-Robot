@@ -108,3 +108,11 @@ try {
   message = receiver->next();
 } catch (lbot::TopicNoDataAvailableException &) {}
 ```
+
+## Callbacks
+Alternatively, you can also register a callback function that will be called every time a sender puts a message onto the relevant topic. This is the only method that ensures that no message will be missed. It comes, however, with a significant performance penalty compared to calls to [latest()](@ref labrat::lbot::Node::Receiver::latest()) or [next()](@ref labrat::lbot::Node::Receiver::next()). In order to register a callback you need to specify it using the [setCallback()](@ref labrat::lbot::Node::Receiver::setCallback()) method. The first argument is a function pointer of the signature `void (const MessageType &message, DataType *user_ptr)` where `message` holds a const reference to the relevant message and `user_ptr` is a configurable pointer to any data type. The value of `user_ptr` can be specified in the second argument of [setCallback()](@ref labrat::lbot::Node::Receiver::setCallback()). If omitted an invalid pointer will be forwarded to the callback function.
+```
+void callback(const lbot::Message<examples::msg::ExampleMessage> &message, void *) {...};
+...
+receiver->setCallback(&callback, ...);
+```

@@ -14,17 +14,13 @@ In order to create a node, you have to define a class that is derived from [lbot
 ```cpp
 class ExampleNode : public lbot::Node { ... }
 ```
-You need to define at least one constructor for your node. The first argument of the constructor must be of the type [const lbot::NodeEnvironment](@ref labrat::lbot::NodeEnvironment) and it must be forwarded to the parent constructor.
-```cpp
-ExampleNode(const lbot::NodeEnvironment environment, ...) : lbot::Node(environment) {}
-```
 
 # Manager
-Nodes should never be created by directly calling their constructor. Instead you should use the [central node manager](@ref labrat::lbot::Manager). You can access it by calling the following function.
+Nodes should never be created by directly calling their constructor. Instead you should use the [central manager](@ref labrat::lbot::Manager). You can access it by calling the following function.
 ```cpp
 lbot::Manager::Ptr manager = lbot::Manager::get();
 ```
-Now you can add nodes to the manager. A call to [addNode()](@ref labrat::lbot::Manager::addNode()) will construct the node and will take of any cleanup after your program has finished. The first argument of the [addNode()](@ref labrat::lbot::Manager::addNode()) function is the name of the node. Afterwards custom arguments can be provided. You can add multiple nodes of the same type, but you cannot add multiple nodes with the same name.
+Now you can add nodes to the manager. A call to [addNode()](@ref labrat::lbot::Manager::addNode()) will construct the node and will take care of any cleanup after your program has finished. The first argument of the [addNode()](@ref labrat::lbot::Manager::addNode()) function is the name of the node. Afterwards custom arguments can be provided that are forwarded to the nodes constructor. Generally, you can add multiple nodes of the same type, but you cannot add multiple nodes with the same name.
 ```cpp
 manager->addNode<ExampleNode>("node_a", ...);
 ```
@@ -33,8 +29,19 @@ You can remove nodes from the manager explicitly via the [removeNode()](@ref lab
 manager->removeNode("node_a");
 ```
 
-# Inside the node
+# Inside the Node
 Inside of the node you have access to a variety of functions. Many are related to topics and services. But they also include `getLogger()`, a convenience function to access the node specific logger and `getName()` to access the node's name.
 ```cpp
 getLogger().logInfo() << "This node is called " << getName() << ".";
+```
+
+# Unique Nodes
+Nodes can also inherit from [lbot::UniqueNode](@ref labrat::lbot::UniqueNode). This ensures that only one instance of the node can be added to the central manager. Writing a unique node might therefore be easier, as you do not have to worry about duplicate topic/service names or shared access to hardware resources.
+```cpp
+class ExampleNode : public lbot::UniqueNode { ... }
+```
+
+You may also specify a preferred name of the node in the constructor of a node. Name violations will then result in a warning to the user.
+```cpp
+ExampleNode(...) : lbot::UniqueNode("example_node") {}
 ```

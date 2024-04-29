@@ -17,9 +17,10 @@ In order to handle incoming requests you need to create a [Node::Server](@ref la
 ```cpp
 Server<examples::msg::Request, examples::msg::Response>::Ptr server;
 ```
-This pointer should then be initialized in the constructor of the node via the [addServer()](@ref labrat::lbot::Node::addServer()) function. The template arguments of the [addServer()](@ref labrat::lbot::Node::addServer()) function must match the [Node::Server::Ptr](@ref labrat::lbot::Node::Server::Ptr) object you declared earlier. The first argument of the function itself specifies the name of the service. With the second argument you specify a callback function that will be called to handle any incoming requests. Afterwards you may pass a user pointer of the type `void *` to access any non-static data inside of the handler function. You don't need to declare the service anywhere explicitly.
+This pointer should then be initialized in the constructor of the node via the [addServer()](@ref labrat::lbot::Node::addServer()) function. The template arguments of the [addServer()](@ref labrat::lbot::Node::addServer()) function must match the [Node::Server::Ptr](@ref labrat::lbot::Node::Server::Ptr) object you declared earlier. The first argument of the function itself specifies the name of the service. After the creation of the server you need to specify a handler function that will be called to handle any incoming requests via the [Server::setHandler()](@ref labrat::lbot::Node::Server::setHandler()) method. You may also pass a user pointer of the type `void *` to access any non-static data inside of the handler function. You don't need to declare the service anywhere explicitly.
 ```cpp
-server = addServer<examples::msg::Request, examples::msg::Response>("/examples/test_service", &ServerNode::handleRequest, ...);
+server = addServer<examples::msg::Request, examples::msg::Response>("/examples/test_service", ...);
+server->setHandler(&ServerNode::handleRequest, ...);
 ```
 The handler function must be static and have the following signature:
 ```cpp
