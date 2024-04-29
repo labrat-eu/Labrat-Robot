@@ -3,6 +3,12 @@
 
 #include <cstdint>
 
+// Configuration
+//
+// The central configuration enables simple reconfiguration of a project without having to recompile the code.
+//
+// In this example the central configuration class is showcased.
+
 int main(int argc, char **argv) {
   lbot::Logger logger("main");
 

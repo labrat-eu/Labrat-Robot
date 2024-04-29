@@ -96,7 +96,7 @@ class LbotConan(ConanFile):
         except errors.ConanException:
             return
 
-        git.run("submodule update --init")
+        git.run("submodule update --init submodules")
 
     def generate(self):
         deps = CMakeDeps(self)

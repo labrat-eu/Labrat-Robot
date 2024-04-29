@@ -4,4 +4,6 @@
 [submodule "submodules/schemas"]
 	path = submodules/schemas
 	url = https://github.com/foxglove/schemas.git
-	
+[submodule "docs/css"]
+	path = docs/css
+	url = https://github.com/jothepro/doxygen-awesome-css

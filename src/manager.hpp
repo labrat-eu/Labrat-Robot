@@ -319,14 +319,14 @@ public:
   /**
    * @brief Remove a node by name from the internal network.
    *
-   * @param name
+   * @param name Name of the node to be removed.
    */
-  void removeNode(const std::string &name) {
+  inline void removeNode(const std::string &name) {
     removeNodeInternal(name);
   }
 
   /**
-   * @brief Remove a plugin by iterator.
+   * @brief Remove a plugin  by name from the internal network.
    *
    * @param name Name of the plugin to be removed.
    */

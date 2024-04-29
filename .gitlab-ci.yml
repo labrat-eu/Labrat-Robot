@@ -201,7 +201,7 @@ pages:
     - cmake . -DLBOT_ENABLE_DOCS=ON
     - make generate-docs
     - cd ../../
-    - cp -r docs/html public
+    - cp -r build/Release/docs/html public
   artifacts:
     paths:
       - public
