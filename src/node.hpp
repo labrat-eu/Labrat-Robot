@@ -783,7 +783,7 @@ public:
      * @param function Callback function to be registered.
      * @param policy Launch policy to control whether the callback will be launched in a new thread. If your callback is expected to only take up a short amount of time, change this to lbot::ExecutionPolicy::serial.
      */
-    void setCallback(CallbackFunction::template Function<void> function, ExecutionPolicy policy = ExecutionPolicy::parallel) {
+    void setCallback(CallbackFunction::template Function<void> function, ExecutionPolicy policy = ExecutionPolicy::serial) {
       if (callback.valid()) {
         throw BadUsageException("A callback has already been registered.");
       }
