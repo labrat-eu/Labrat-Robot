@@ -7,5 +7,5 @@ The advanced tutorial gives you insights on more niche features of lbot. You pro
 The tutorial consists of the following chapters:
 - @subpage conversions
 - @subpage moves
-- @subpage cluster
 - @subpage filter
+- @subpage custom_plugins
