@@ -8,7 +8,7 @@ So far we have covered topics as a means of communication between nodes. Topics 
 
 For each service you will need exactly one server that answers any incoming requests on the service. You can create many clients that all call up the same service.
 
-![services.drawio.svg](uploads/2be30b2669b4e02582e5dd6fdaaeeb07/services.drawio.svg)
+@image html services.svg
 
 Services are distinguished by their name and message types. The convention is to name services like a file path (e. g. `/path/to/topic`). This helps to order your services. Even though you could give a topic and a service the same name, you are discouraged from doing so. While topics only have one message type, services require two. One is the request message sent from the client to the server, the other is the response message sent the other way around. The message types of a service have to be known by every client and server at compile time. Once again, if there is a type mismatch, a [lbot::ManagementException](@ref labrat::lbot::ManagementException) exception will be raised.
 

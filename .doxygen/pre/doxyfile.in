@@ -22,8 +22,9 @@ RECURSIVE = YES
 CASE_SENSE_NAMES = YES
 SOURCE_BROWSER = NO
 
-# Examples.
+# Examples and images.
 EXAMPLE_PATH = @PROJECT_SOURCE_DIR@/examples
+IMAGE_PATH = @PROJECT_SOURCE_DIR@/docs/img
 
 ## Generator options.
 BRIEF_MEMBER_DESC = YES

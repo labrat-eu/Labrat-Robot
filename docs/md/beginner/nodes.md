@@ -6,7 +6,7 @@ You may also want to take a look at the [code example](@ref example_nodes).
 # Basics
 Any robotics project can be understood to be the sum of many components. A component might be a sensor or an actuator. There exist also more complex logical components such as motion planning controllers etc. Nodes encapsulate the logic of such components. In general, you should create a node for each external input your system might receive (sensors, external messages, etc.) and output you might generate (actuators, external messages, etc.). In addition you should also create nodes to model the data flow of your internal logic.
 
-![nodes.drawio.svg](uploads/6a27157c539af2d64c5087811fcc50b9/nodes.drawio.svg)
+@image html nodes.svg
 
 Nodes can communicate with each other via topics and services. This is the only interface they should expose to each other. This ensures that all transactions between nodes can be traced.
 

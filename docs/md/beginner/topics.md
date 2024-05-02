@@ -8,7 +8,7 @@ Topics provide a way of exchanging data between nodes. You can think of a topic 
 
 For each topic you will need exactly one sender that writes data onto the topic. You can create many receivers that all read from the same topic. You are not required to create any receivers at all. This is useful, if you only want to trace information but do not wish to process it further.
 
-![topics.drawio.svg](uploads/509cd16c0960ae26c0b2031c1b13114a/topics.drawio.svg)
+@image html topics.svg
 
 Topics are distinguished by their name and message type. The convention is to name topics like a file path (e. g. `/path/to/topic`). This helps to order your topics. The message type of a topic has to be known by every sender and receiver at compile time. If there is a type mismatch, a [lbot::ManagementException](@ref labrat::lbot::ManagementException) exception will be raised.
 
