@@ -19,7 +19,7 @@ getLogger().logInfo() << "This plugin is called " << getName() << ".";
 ## Node creation
 You can also create the nodes contained by the plugin. This can be done through the [addNode()](@ref labrat::lbot::Plugin::addNode()) method. This function behaves similarly to the [Manager::addNode()](@ref labrat::lbot::Manager::addNode()) method. Typically the child nodes are created within the constructor of the plugin. Contained nodes are automatically deleted upon destruction of the plugin.
 ```cpp
-ExamplePlugin() : lbot::Plugin("test_plugin") {
+ExamplePlugin() {
   addNode<ExampleNode>("node_a", ...);
 }
 ```
