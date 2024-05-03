@@ -30,6 +30,11 @@ TEST(DISABLED_semantics, sender) {
   sender_d->put(message_container);
 }
 
+static void callbackFunc(const TestMessage &, int *) {}
+static void callbackFuncNoPtr(const TestMessage &) {}
+static void callbackFuncConv(const TestContainer &, int *) {}
+static void callbackFuncConvNoPtr(const TestContainer &) {}
+
 TEST(DISABLED_semantics, receiver) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
@@ -49,27 +54,84 @@ TEST(DISABLED_semantics, receiver) {
   TestContainer message_container;
   message_container = receiver_c->latest();
   message_container = receiver_d->latest();
+
+  int test;
+  receiver_a->setCallback(&callbackFunc, &test);
+  receiver_b->setCallback(&callbackFuncNoPtr);
+  receiver_c->setCallback(&callbackFuncConv, &test);
+  receiver_d->setCallback(&callbackFuncConvNoPtr);
 }
-/*
+
+static TestMessage handlerFunc(const TestMessage &, int *) {return{};}
+static TestMessage handlerFuncNoPtr(const TestMessage &) {return{};}
+static TestContainer handlerFuncConv(const TestContainer &, int *) {return{};}
+static TestContainer handlerFuncConvNoPtr(const TestContainer &) {return{};}
+
 TEST(DISABLED_semantics, server) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
 
-  auto handler_a = [](const TestMessage &request, u64 *user_ptr) -> TestMessage {
-    return TestMessage();
-  };
+  Node::Server<TestFlatbuffer, TestFlatbuffer>::Ptr server_a = node->addServer<TestFlatbuffer, TestFlatbuffer>("service_a");
+  Node::Server<TestFlatbuffer, TestMessage>::Ptr server_b = node->addServer<TestFlatbuffer, TestMessage>("service_b");
+  Node::Server<TestMessage, TestMessage>::Ptr server_c = node->addServer<TestMessage, TestMessage>("service_c");
+  Node::Server<TestMessageConv, TestMessageConv>::Ptr server_d = node->addServer<TestMessageConv, TestMessageConv>("service_d");
+  Node::Server<TestMessageConvPtr, TestMessageConv>::Ptr server_e = node->addServer<TestMessageConvPtr, TestMessageConv>("service_e");
+  Node::Server<TestMessageConvPtr, TestMessageConvPtr>::Ptr server_f = node->addServer<TestMessageConvPtr, TestMessageConvPtr>("service_f");
 
-  Node::Server<TestFlatbuffer, TestFlatbuffer>::Ptr server_a = node->addServer<TestFlatbuffer, TestFlatbuffer>("service_a", handler_a);
-  //Node::Server<TestMessage>::Ptr server_b = node->addServer<TestMessage, TestFlatbuffer>, ("service_b");
-  //Node::Server<TestMessageConv>::Ptr server_c = node->addReceiver<TestMessageConv, TestFlatbuffer>("service_c");
-
-  auto handler_d = [](const TestContainer &request, u64 *user_ptr) -> TestContainer {
-    return TestContainer();
-  };
-
-  Node::Server<TestMessageConv, TestMessageConv>::Ptr server_d = node->addServer<TestMessageConv, TestMessageConv>("service_d", handler_d);
+  int test;
+  server_a->setHandler(handlerFunc, &test);
+  server_b->setHandler(handlerFunc, &test);
+  server_c->setHandler(handlerFuncNoPtr);
+  server_d->setHandler(handlerFuncConv, &test);
+  server_e->setHandler(handlerFuncConv, &test);
+  server_f->setHandler(handlerFuncConvNoPtr);
 }
-*/
+
+TEST(DISABLED_semantics, client) {
+  labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
+
+  std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
+
+  Node::Client<TestFlatbuffer, TestFlatbuffer>::Ptr client_a = node->addClient<TestFlatbuffer, TestFlatbuffer>("service_a");
+  Node::Client<TestFlatbuffer, TestMessage>::Ptr client_b = node->addClient<TestFlatbuffer, TestMessage>("service_b");
+  Node::Client<TestMessage, TestMessage>::Ptr client_c = node->addClient<TestMessage, TestMessage>("service_c");
+  Node::Client<TestMessageConv, TestMessageConv>::Ptr client_d = node->addClient<TestMessageConv, TestMessageConv>("service_d");
+  Node::Client<TestMessageConvPtr, TestMessageConv>::Ptr client_e = node->addClient<TestMessageConvPtr, TestMessageConv>("service_e");
+  Node::Client<TestMessageConvPtr, TestMessageConvPtr>::Ptr client_f = node->addClient<TestMessageConvPtr, TestMessageConvPtr>("service_f");
+
+  {
+    TestMessage request;
+    TestMessage response;
+    response = client_a->callSync(request);
+    response = client_b->callSync(request);
+    response = client_c->callSync(request);
+  }
+
+  {
+    TestContainer request;
+    TestContainer response;
+    response = client_d->callSync(request);
+    response = client_e->callSync(request);
+    response = client_f->callSync(request);
+  }
+
+  {
+    TestMessage request;
+    std::shared_future<TestMessage> response;
+    response = client_a->callAsync(request);
+    response = client_b->callAsync(request);
+    response = client_c->callAsync(request);
+  }
+
+  {
+    TestContainer request;
+    std::shared_future<TestContainer> response;
+    response = client_d->callAsync(request);
+    response = client_e->callAsync(request);
+    response = client_f->callAsync(request);
+  }
+}
+
 }  // namespace lbot::test
 }  // namespace labrat

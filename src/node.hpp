@@ -634,12 +634,13 @@ public:
     public:
       template <typename DataType>
       using Function = void (*)(const Converted &, DataType *);
+      using FunctionNoPtr = void (*)(const Converted &);
       
       /**
        * @brief Default constructor invalidating the object.
        *
        */
-      CallbackFunction() : function(nullptr) {}
+      CallbackFunction() : wrapper(&CallbackFunction::callInternal<MessageType>), function(nullptr) {}
 
       /**
        * @brief Construct a new callback function.
@@ -648,6 +649,14 @@ public:
        */
       template <typename DataType>
       CallbackFunction(Function<DataType> function) : wrapper(&CallbackFunction::callInternal<MessageType>), function(reinterpret_cast<Function<void>>(function)) {}
+
+      /**
+       * @brief Construct a new callback function.
+       *
+       * @param function Function to be used as a callback function.
+       */
+      CallbackFunction(FunctionNoPtr function) : wrapper(&CallbackFunction::callInternal<MessageType>), function(reinterpret_cast<Function<void>>(function)) {}
+
 
       inline void call(const Storage &message, void *user_ptr, void *callback_ptr) const {
         (*this.*wrapper)(message, user_ptr, callback_ptr);
@@ -783,7 +792,7 @@ public:
      * @param function Callback function to be registered.
      * @param policy Launch policy to control whether the callback will be launched in a new thread. If your callback is expected to only take up a short amount of time, change this to lbot::ExecutionPolicy::serial.
      */
-    void setCallback(CallbackFunction::template Function<void> function, ExecutionPolicy policy = ExecutionPolicy::serial) {
+    void setCallback(CallbackFunction::FunctionNoPtr function, ExecutionPolicy policy = ExecutionPolicy::serial) {
       if (callback.valid()) {
         throw BadUsageException("A callback has already been registered.");
       }
@@ -895,8 +904,13 @@ public:
     public:
       template <typename DataType>
       using Function = ResponseConverted (*)(const RequestConverted &, DataType *);
+      using FunctionNoPtr = ResponseConverted (*)(const RequestConverted &);
 
-      HandlerFunction() : function(nullptr) {}
+      /**
+       * @brief Default constructor invalidtaing the object.
+       * 
+       */
+      HandlerFunction() : wrapper(&HandlerFunction::callInternal<RequestType, ResponseType>), function(nullptr) {}
 
       /**
        * @brief Construct a new handler function.
@@ -905,6 +919,13 @@ public:
        */
       template <typename DataType>
       HandlerFunction(Function<DataType> function) : wrapper(&HandlerFunction::callInternal<RequestType, ResponseType>), function(reinterpret_cast<Function<void>>(function)) {}
+
+      /**
+       * @brief Construct a new handler function.
+       *
+       * @param function Function to be used as a handler function.
+       */
+      HandlerFunction(FunctionNoPtr function) : wrapper(&HandlerFunction::callInternal<RequestType, ResponseType>), function(reinterpret_cast<Function<void>>(function)) {}
 
       inline ResponseStorage call(const RequestStorage &request, void *user_ptr, void *handler_ptr) const {
         return (*this.*wrapper)(request, user_ptr, handler_ptr);
@@ -1007,7 +1028,7 @@ public:
      *
      * @param function Handler function to handle requests made to a service.
      */
-    void setHandler(HandlerFunction::template Function<void> function) {
+    void setHandler(HandlerFunction::FunctionNoPtr function) {
       if (handler.valid()) {
         throw BadUsageException("A handler has already been registered.");
       }
