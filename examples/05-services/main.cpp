@@ -28,7 +28,7 @@ public:
 private:
   // When a request has been made, this function will be called to respond.
   // Handler functions must be static.
-  static lbot::Message<examples::msg::Response> handleRequest(const lbot::Message<examples::msg::Request> &request, void *) {
+  static lbot::Message<examples::msg::Response> handleRequest(const lbot::Message<examples::msg::Request> &request) {
     // Construct a response message.
     lbot::Message<examples::msg::Response> response;
     response.result = std::pow(request.base, request.exponent);

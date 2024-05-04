@@ -54,7 +54,7 @@ public:
 private:
   // When a request has been made, this function will be called to respond.
   // Handler functions must be static.
-  static lbot::Message<examples::msg::Vector> handleRequest(const lbot::Message<examples::msg::Vector> &request, void *) {
+  static lbot::Message<examples::msg::Vector> handleRequest(const lbot::Message<examples::msg::Vector> &request) {
     // Construct a response message.
     lbot::Message<examples::msg::Vector> response;
     response.x = request.y;
