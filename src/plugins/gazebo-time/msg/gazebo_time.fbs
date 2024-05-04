@@ -1,0 +1,15 @@
+namespace labrat.lbot.plugins;
+
+table Time {
+  seconds:long;
+  nanoseconds:ulong;
+}
+
+table GazeboTime {
+  real_time:Time;
+  simulation_time:Time;
+  iterations:long;
+  paused:bool;
+}
+
+root_type GazeboTime;

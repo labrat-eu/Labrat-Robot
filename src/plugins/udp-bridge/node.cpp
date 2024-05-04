@@ -174,7 +174,7 @@ UdpBridge::NodePrivate::NodePrivate(const std::string &address, u16 port, u16 lo
   local_address.sin_addr.s_addr = INADDR_ANY;
   local_address.sin_port = htobe16(local_port);
 
-  if (bind(file_descriptor, (struct sockaddr *)&local_address, sizeof(struct sockaddr)) == -1) {
+  if (bind(file_descriptor, (struct sockaddr *)&local_address, sizeof(local_address)) == -1) {
     throw IoException("Failed to bind to address.", errno);
   }
 

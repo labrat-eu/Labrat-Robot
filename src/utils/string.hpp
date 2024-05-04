@@ -16,13 +16,7 @@ inline namespace labrat {
 namespace lbot {
 inline namespace utils {
 
-void shrinkString(std::string &string) {
-  const std::size_t size = string.find_first_of('\0');
-
-  if (size != std::string::npos) {
-    string.resize(size);
-  }
-}
+void shrinkString(std::string &string);
 
 }  // namespace utils
 }  // namespace lbot

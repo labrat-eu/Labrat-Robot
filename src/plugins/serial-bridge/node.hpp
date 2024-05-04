@@ -97,7 +97,7 @@ private:
     ~Node();
 
     /**
-     * @brief Register a sender with the MAVLink node. Incoming messages will be forwarded onto the sender.
+     * @brief Register a sender with the bridge. Incoming messages will be forwarded onto the sender.
      *
      * @tparam MessageType Message type of the sender.
      * @param topic_name Name of the topic.
@@ -108,7 +108,7 @@ private:
     }
 
     /**
-     * @brief Register a receiver with the MAVLink node. Incoming messages will be forwarded onto the network.
+     * @brief Register a receiver with the bridge. Incoming messages will be forwarded onto the network.
      *
      * @tparam FlatbufferType Message type of the receiver.
      * @param topic_name Name of the topic.

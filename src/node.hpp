@@ -145,12 +145,12 @@ public:
       GenericSender<Converted>(TopicInfo::get<MessageType>(topic_name), node.environment.topic_map.addSender<MessageType>(topic_name, this),
         node),
       user_ptr(user_ptr) {
+      ConsumerGuard<u32> guard(GenericSender<Converted>::node.environment.plugin_use_count, GenericSender<Converted>::node.environment.plugin_update_flag);
+
       for (Manager::PluginRegistration &plugin : node.environment.plugin_list) {
-        if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
+        if (!plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
           continue;
         }
-
-        ConsumerGuard<u32> guard(plugin.use_count);
 
         if (plugin.topic_callback != nullptr) {
           plugin.topic_callback(plugin.user_ptr, GenericSender<Converted>::topic_info);
@@ -249,6 +249,8 @@ public:
           receive_count += 1;
         }
 
+        ConsumerGuard<u32> guard(GenericSender<Converted>::node.environment.plugin_use_count, GenericSender<Converted>::node.environment.plugin_update_flag);
+
         const Manager::PluginRegistration::List::iterator plugin_end = GenericSender<Converted>::node.environment.plugin_list.end();
         Manager::PluginRegistration::List::iterator plugin_iterator = plugin_end;
 
@@ -257,7 +259,7 @@ public:
              ++iter) {
           Manager::PluginRegistration &plugin = *iter;
 
-          if (!plugin.delete_flag.test() && plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
+          if (plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
             ++receive_count;
             plugin_iterator = iter;
           }
@@ -331,8 +333,6 @@ public:
 
           Manager::PluginRegistration &plugin = *plugin_iterator;
 
-          ConsumerGuard<u32> guard(plugin.use_count);
-
           if (plugin.message_callback != nullptr) {
             plugin.message_callback(plugin.user_ptr, message_info);
           }
@@ -367,10 +367,10 @@ public:
       flatbuffers::FlatBufferBuilder builder;
       bool init_flag = false;
 
-      for (Manager::PluginRegistration &plugin : GenericSender<Converted>::node.environment.plugin_list) {
-        ConsumerGuard<u32> guard(plugin.use_count);
+      ConsumerGuard<u32> guard(GenericSender<Converted>::node.environment.plugin_use_count, GenericSender<Converted>::node.environment.plugin_update_flag);
 
-        if (plugin.delete_flag.test() || !plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
+      for (Manager::PluginRegistration &plugin : GenericSender<Converted>::node.environment.plugin_list) {
+        if (!plugin.filter.check(GenericSender<Converted>::topic_info.topic_hash)) {
           continue;
         }
 
@@ -991,13 +991,12 @@ public:
       GenericServer<RequestConverted, ResponseConverted>(ServiceInfo::get<RequestType, ResponseType>(service_name,
         node.environment.service_map.addServer<RequestType, ResponseType>(service_name, this))),
       node(node), user_ptr(user_ptr) {
+      ConsumerGuard<u32> guard(node.environment.plugin_use_count, node.environment.plugin_update_flag);
+
       for (Manager::PluginRegistration &plugin : node.environment.plugin_list) {
-        if (plugin.delete_flag.test()
-          || !plugin.filter.check(GenericServer<RequestConverted, ResponseConverted>::service_info.service_hash)) {
+        if (!plugin.filter.check(GenericServer<RequestConverted, ResponseConverted>::service_info.service_hash)) {
           continue;
         }
-
-        ConsumerGuard<u32> guard(plugin.use_count);
 
         if (plugin.service_callback != nullptr) {
           plugin.service_callback(plugin.user_ptr, GenericServer<RequestConverted, ResponseConverted>::service_info);

@@ -86,8 +86,6 @@ private:
   struct PluginRegistration {
     using List = std::list<PluginRegistration>;
 
-    std::atomic_flag delete_flag;
-    std::atomic<u32> use_count;
     std::string name;
     std::optional<std::size_t> type_hash;
     FinalPtr<Plugin> plugin;
@@ -99,14 +97,6 @@ private:
     void (*message_callback)(void *plugin, const MessageInfo &info);
 
     PluginRegistration(FinalPtr<Plugin> &&plugin) : plugin(std::forward<FinalPtr<Plugin>>(plugin)){}
-    PluginRegistration(PluginRegistration &&rhs) :
-      use_count(rhs.use_count.load()), name(std::move(rhs.name)), type_hash(rhs.type_hash), plugin(std::move(rhs.plugin)), filter(rhs.filter),
-      user_ptr(rhs.user_ptr), topic_callback(rhs.topic_callback), service_callback(rhs.service_callback),
-      message_callback(rhs.message_callback) {
-      if (rhs.delete_flag.test()) {
-        delete_flag.test_and_set();
-      }
-    }
   };
 
   /**
@@ -120,6 +110,9 @@ private:
     PluginRegistration::List &plugin_list;
     TopicMap &topic_map;
     ServiceMap &service_map;
+
+    std::atomic_flag &plugin_update_flag;
+    std::atomic<u32> &plugin_use_count;
   };
 
   /**
@@ -170,6 +163,9 @@ private:
 
   TopicMap topic_map;
   ServiceMap service_map;
+
+  std::atomic_flag plugin_update_flag;
+  std::atomic<u32> plugin_use_count;
 
   static thread_local std::optional<NodeEnvironment> node_environment;
   static thread_local std::optional<PluginEnvironment> plugin_environment;

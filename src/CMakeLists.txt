@@ -5,7 +5,7 @@ find_package(flatbuffers MODULE REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 # Set the target name from the project name.
-set(TARGET_NAME ${LOCAL_PROJECT_NAME})
+set(TARGET_NAME ${LOCAL_PROJECT_NAME}_core)
 
 # Get the install path.
 file(RELATIVE_PATH TARGET_RELATIVE_PATH ${PROJECT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR})
@@ -18,7 +18,6 @@ set(TARGET_SOURCES
   logger.cpp
   exception.cpp
   config.cpp
-  utils/performance.cpp
 )
 
 set(TARGET_HEADERS
@@ -34,21 +33,6 @@ set(TARGET_HEADERS
   config.hpp
   info.hpp
   filter.hpp
-)
-
-set(TARGET_HEADERS_UTILS
-  utils/atomic.hpp
-  utils/async.hpp
-  utils/cleanup.hpp
-  utils/types.hpp
-  utils/fifo.hpp
-  utils/final_ptr.hpp
-  utils/thread.hpp
-  utils/concepts.hpp
-  utils/string.hpp
-  utils/serial.hpp
-  utils/signal.hpp
-  utils/performance.hpp
 )
 
 set(TARGET_MESSAGES
@@ -100,7 +84,7 @@ set(TARGET_MESSAGES_EXTERNAL
 )
 
 # Create library target for the project.
-add_library(${TARGET_NAME} SHARED ${TARGET_HEADERS} ${TARGET_HEADERS_UTILS} ${TARGET_SOURCES})
+add_library(${TARGET_NAME} SHARED ${TARGET_HEADERS} ${TARGET_SOURCES})
 
 # Set shared object properties.
 set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${GIT_VERSION})
@@ -108,6 +92,7 @@ set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
 
 
 # Add subtarget source directory.
+add_subdirectory(utils)
 add_subdirectory(plugins)
 
 

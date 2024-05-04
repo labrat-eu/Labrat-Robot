@@ -248,12 +248,11 @@ set(TARGET_MESSAGES
   msg/wind_cov.fbs
 )
 
-add_library(${TARGET_NAME} SHARED ${TARGET_HEADERS} ${TARGET_SOURCES})
-add_dependencies(lbot_plugins ${TARGET_NAME})
+add_library(${TARGET_NAME} OBJECT ${TARGET_HEADERS} ${TARGET_SOURCES})
+target_sources(lbot_plugins PRIVATE $<TARGET_OBJECTS:${TARGET_NAME}>)
 
-# Set shared object properties.
-set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${GIT_VERSION})
-set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
+# Set library properties.
+set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 set(TARGET_NAME_MESSAGE ${TARGET_NAME}_msg)
 lbot_generate_flatbuffer(TARGET ${TARGET_NAME_MESSAGE} SCHEMAS ${TARGET_MESSAGES} TARGET_PATH ${LOCAL_PROJECT_PATH_FULL}/${TARGET_RELATIVE_PATH}/msg)
@@ -261,10 +260,9 @@ lbot_generate_flatbuffer(TARGET ${TARGET_NAME_MESSAGE} SCHEMAS ${TARGET_MESSAGES
 # Link external libraries to the library target.
 target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_msg)
 # Link internal libraries to the library target.
-target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME})
+target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME}_core)
 
 target_compile_options(${TARGET_NAME} PRIVATE "-Wno-address-of-packed-member")
 
 # Add a install targets.
-install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES ${TARGET_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LOCAL_PROJECT_PATH_FULL}/${TARGET_RELATIVE_PATH})

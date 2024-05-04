@@ -26,12 +26,12 @@ Manager::~Manager() {
 
   Logger::deinitialize();
 
-  for (PluginRegistration &item : plugin_list) {
-    item.delete_flag.test_and_set();
-    waitUntil(item.use_count, 0U);
+  {
+    FlagGuard guard(plugin_update_flag);
+    waitUntil(plugin_use_count, 0U);
+    plugin_list.clear();
   }
 
-  plugin_list.clear();
   node_map.clear();
 }
 
@@ -72,18 +72,22 @@ void Manager::removePluginInternal(const std::string &name) {
     throw ManagementException("Plugin not found.");
   }
 
-  iterator->delete_flag.test_and_set();
-  waitUntil(iterator->use_count, 0U);
+  std::vector<std::shared_ptr<Node>> plugin_nodes;
 
-  FinalPtr<Plugin> &plugin = iterator->plugin;
+  {
+    FlagGuard guard(plugin_update_flag);
+    waitUntil(plugin_use_count, 0U);
 
-  std::vector<std::shared_ptr<Node>> plugin_nodes = plugin->nodes;
+    FinalPtr<Plugin> &plugin = iterator->plugin;
 
-  if (iterator->type_hash.has_value()) {
-    plugin_set.erase(iterator->type_hash.value());
+    plugin_nodes = plugin->nodes;
+
+    if (iterator->type_hash.has_value()) {
+      plugin_set.erase(iterator->type_hash.value());
+    }
+
+    plugin_list.erase(iterator);
   }
-
-  plugin_list.erase(iterator);
 
   while (!plugin_nodes.empty()) {
     const std::string &name = plugin_nodes.back()->getName();
@@ -94,7 +98,7 @@ void Manager::removePluginInternal(const std::string &name) {
 }
 
 void Manager::createNodeEnvironment(const std::string &name) {
-  node_environment.emplace(NodeEnvironment{.name = name, .plugin_list = plugin_list, .topic_map = topic_map, .service_map = service_map});
+  node_environment.emplace(NodeEnvironment{.name = name, .plugin_list = plugin_list, .topic_map = topic_map, .service_map = service_map, .plugin_update_flag = plugin_update_flag, .plugin_use_count = plugin_use_count});
 }
 
 void Manager::createPluginEnvironment(const std::string &name) {

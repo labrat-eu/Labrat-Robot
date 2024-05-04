@@ -144,12 +144,12 @@ class LbotConan(ConanFile):
 
         self.cpp_info.components["core"].set_property("cmake_target_name", f"{self.name}::core")
         self.cpp_info.components["core"].set_property("cmake_module_target_name", f"{self.name}::core")
-        self.cpp_info.components["core"].libs = ["lbot"]
+        self.cpp_info.components["core"].libs = ["lbot_core"]
         self.cpp_info.components["core"].requires = ["flatbuffers::flatbuffers", "yaml-cpp::yaml-cpp"]
 
         self.cpp_info.components["plugins"].set_property("cmake_target_name", f"{self.name}::plugins")
         self.cpp_info.components["plugins"].set_property("cmake_module_target_name", f"{self.name}::plugins")
-        self.cpp_info.components["plugins"].libs = ["plugins_mcap", "plugins_foxglove-ws", "plugins_mavlink", "plugins_udp-bridge", "plugins_serial-bridge"]
+        self.cpp_info.components["plugins"].libs = ["lbot_plugins"]
         self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "foxglove-websocket::foxglove-websocket", "crc_cpp::crc_cpp"]
 
         self.runenv_info.append_path("LBOT_REFLECTION_PATH", os.path.join(self.package_folder, "var", "run", "lbot", "schema"))

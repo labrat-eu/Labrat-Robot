@@ -35,6 +35,27 @@ public:
   }
 
   /**
+   * @brief Increment the atomic object.
+   *
+   * @param object The atomic object to be guarded.
+   * @param pred Predicate guarateed to be false on return.
+   */
+  explicit inline ConsumerGuard(std::atomic<T> &object, std::atomic_flag &pred) : object(object) {
+    while (true) {
+      ++object;
+
+      if (!pred.test()) {
+        break;
+      }
+
+      --object;
+      object.notify_all();
+
+      pred.wait(true);
+    }
+  }
+
+  /**
    * @brief Decrement the atomic object and notify all threads waiting on it.
    *
    */

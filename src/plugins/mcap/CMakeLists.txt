@@ -20,19 +20,14 @@ set(TARGET_SOURCES
   recorder.cpp
 )
 
-add_library(${TARGET_NAME} SHARED ${TARGET_HEADERS} ${TARGET_SOURCES})
-add_dependencies(lbot_plugins ${TARGET_NAME})
-
-# Set shared object properties.
-set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${GIT_VERSION})
-set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
+add_library(${TARGET_NAME} OBJECT ${TARGET_HEADERS} ${TARGET_SOURCES})
+target_sources(lbot_plugins PRIVATE $<TARGET_OBJECTS:${TARGET_NAME}>)
 
 # Set library properties.
-set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_link_libraries(${TARGET_NAME} PRIVATE mcap::mcap)
-target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME})
+target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME}_core)
 
 # Add a install targets.
-install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(FILES ${TARGET_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LOCAL_PROJECT_PATH_FULL}/${TARGET_RELATIVE_PATH})
