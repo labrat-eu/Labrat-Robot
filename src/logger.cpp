@@ -7,6 +7,7 @@
  */
 
 #include <labrat/lbot/logger.hpp>
+#include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/message.hpp>
 #include <labrat/lbot/msg/foxglove/Log.fb.hpp>
@@ -58,8 +59,9 @@ public:
       }
     }
 
-    destination.timestamp = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(source.timestamp).count(),
-      (source.timestamp % std::chrono::seconds(1)).count());
+    const Clock::duration duration = source.timestamp.time_since_epoch();
+    destination.timestamp = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(duration).count(),
+      (duration % std::chrono::seconds(1)).count());
     destination.name = source.logger_name;
     destination.message = source.message;
     destination.file = source.file;
@@ -159,8 +161,11 @@ Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity, LoggerLo
   logger(logger), verbosity(verbosity), location(location) {}
 
 Logger::LogStream::~LogStream() {
+  const Clock::time_point now = Clock::initialized() ? Clock::now() : Clock::time_point();
+
   if (verbosity <= Logger::log_level) {
-    const std::time_t current_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    const std::chrono::system_clock::time_point now_local = std::chrono::time_point<std::chrono::system_clock>(now.time_since_epoch());
+    const std::time_t current_time = std::chrono::system_clock::to_time_t(now_local);
 
     std::lock_guard guard(io_mutex);
 
@@ -185,7 +190,7 @@ Logger::LogStream::~LogStream() {
 
   Entry entry;
   entry.verbosity = verbosity;
-  entry.timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
+  entry.timestamp = now;
   entry.logger_name = logger.name;
   entry.message = line.str();
   entry.file = location.file;

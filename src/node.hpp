@@ -1233,7 +1233,7 @@ public:
      * A call to this function will block but is guaranteed to not exceed the specified timeout.
      *
      * @param request Object containing the data to be processed by the corresponding server.
-     * @param timeout_duration Duration of the timeout after which an exception will be thrown.RequestType
+     * @param timeout_duration Duration of the timeout after which an exception will be thrown.
      * @return ResponseType Response from the server.
      * @throw ServiceUnavailableException When no server is handling requests to the relevant service.
      * @throw ServiceTimeoutException When the timeout is exceeded.

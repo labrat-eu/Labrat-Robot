@@ -132,6 +132,10 @@ class ManagementException : public Exception {
   using Exception::Exception;
 };
 
+class ClockException : public Exception {
+  using Exception::Exception;
+};
+
 class TopicNoDataAvailableException : public Exception {
   using Exception::Exception;
 };

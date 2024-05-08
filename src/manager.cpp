@@ -7,6 +7,7 @@
  */
 
 #include <labrat/lbot/logger.hpp>
+#include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/plugin.hpp>
 #include <labrat/lbot/utils/atomic.hpp>
@@ -15,6 +16,7 @@ inline namespace labrat {
 namespace lbot {
 
 std::weak_ptr<Manager> Manager::instance;
+bool Manager::instance_flag = true;
 
 thread_local std::optional<Manager::NodeEnvironment> Manager::node_environment;
 thread_local std::optional<Manager::PluginEnvironment> Manager::plugin_environment;
@@ -32,11 +34,15 @@ Manager::~Manager() {
     plugin_list.clear();
   }
 
+  Clock::cleanup();
   node_map.clear();
+  Clock::deinitialize();
+
+  instance_flag = false;
 }
 
 Manager::Ptr Manager::get() {
-  if (instance.use_count()) {
+  if (!instance.expired()) {
     return instance.lock();
   }
 
@@ -44,6 +50,12 @@ Manager::Ptr Manager::get() {
   instance = result;
 
   Logger::initialize();
+
+  if (!instance_flag) {
+    throw ManagementException("Manager should not be created twice."); 
+  }
+
+  Clock::initialize();
 
   return result;
 }

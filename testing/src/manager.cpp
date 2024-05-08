@@ -9,7 +9,18 @@
 inline namespace labrat {
 namespace lbot::test {
 
-TEST(manager, unique_node) {
+class ManagerTest : public LbotTest {};
+
+TEST_F(ManagerTest, get) {
+  {
+    lbot::Manager::Ptr manager = lbot::Manager::get();
+    ASSERT_NO_THROW(lbot::Manager::get());
+  }
+
+  ASSERT_THROW(lbot::Manager::get(), lbot::ManagementException);
+}
+
+TEST_F(ManagerTest, unique_node) {
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
   std::shared_ptr<TestUniqueNode> node_a(manager->addNode<TestUniqueNode>("test_node"));
@@ -21,7 +32,7 @@ TEST(manager, unique_node) {
   ASSERT_NO_THROW(manager->removeNode("test_node"));
 }
 
-TEST(manager, shared_node) {
+TEST_F(ManagerTest, shared_node) {
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -35,7 +46,7 @@ TEST(manager, shared_node) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST(manager, unique_plugin) {
+TEST_F(ManagerTest, unique_plugin) {
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
   std::shared_ptr<TestUniquePlugin> test_plugin(manager->addPlugin<TestUniquePlugin>("test_plugin"));
@@ -47,7 +58,7 @@ TEST(manager, unique_plugin) {
   ASSERT_NO_THROW(manager->removePlugin("test_plugin"));
 }
 
-TEST(manager, shared_plugin) {
+TEST_F(ManagerTest, shared_plugin) {
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
   std::shared_ptr<TestPlugin> plugin_a(manager->addPlugin<TestPlugin>("plugin_a"));

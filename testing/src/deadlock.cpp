@@ -11,7 +11,9 @@
 inline namespace labrat {
 namespace lbot::test {
 
-TEST(deadlock, next) {
+class DeadlockTest : public LbotTest {};
+
+TEST_F(DeadlockTest, next) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));

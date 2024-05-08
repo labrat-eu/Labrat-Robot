@@ -1,0 +1,9 @@
+include "foxglove/Time.fbs";
+
+namespace labrat.lbot;
+
+table Timestamp {
+  value:foxglove.Time;
+}
+
+root_type Timestamp;

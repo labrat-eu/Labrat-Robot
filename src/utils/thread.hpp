@@ -9,6 +9,7 @@
 #pragma once
 
 #include <labrat/lbot/base.hpp>
+#include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/utils/types.hpp>
 
@@ -33,6 +34,36 @@ inline namespace utils {
 class Thread {
 public:
   ~Thread() = default;
+
+  template<class Rep, class Period>
+  static void sleepFor(const std::chrono::duration<Rep, Period> &duration) {
+    const Clock::time_point time_begin = Clock::now();
+    sleepUntil(time_begin + std::chrono::duration_cast<Clock::duration>(duration));
+  }
+
+  static void sleepUntil(const Clock::time_point &time) {
+    switch (Clock::mode) {
+      case (Clock::Mode::system): {
+        std::this_thread::sleep_until(std::chrono::system_clock::time_point(std::chrono::duration_cast<std::chrono::system_clock::duration>(time.time_since_epoch())));
+        break;
+      }
+      
+      case (Clock::Mode::steady): {
+        std::this_thread::sleep_until(std::chrono::steady_clock::time_point(std::chrono::duration_cast<std::chrono::steady_clock::duration>(time.time_since_epoch())));
+        break;
+      }
+
+      case (Clock::Mode::custom): {
+        std::shared_ptr<Clock::WaiterRegistration> registration = Clock::registerWaiter(time);
+
+        while (!registration->wakeup_flag.test()) {
+          registration->wakeup_flag.wait(false, std::memory_order_acquire);
+        }
+
+        break;
+      }
+    }
+  }
 
 protected:
   Thread() = default;
@@ -128,7 +159,7 @@ public:
       setup(name, priority);
 
       while (!token.stop_requested()) {
-        const std::chrono::time_point<std::chrono::steady_clock> time_begin = std::chrono::steady_clock::now();
+        const Clock::time_point time_begin = Clock::now();
 
         [](Function function, Args... args) {
           std::invoke<Function, Args...>(std::forward<Function>(function), std::forward<Args>(args)...);

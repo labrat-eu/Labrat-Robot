@@ -9,6 +9,7 @@
 #pragma once
 
 #include <labrat/lbot/base.hpp>
+#include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/utils/concepts.hpp>
 #include <labrat/lbot/utils/types.hpp>
 
@@ -158,9 +159,9 @@ public:
   /**
    * @brief Get the timestamp of the object.
    *
-   * @return std::chrono::nanoseconds
+   * @return Clock::time_point
    */
-  [[nodiscard]] inline std::chrono::nanoseconds getTimestamp() const {
+  [[nodiscard]] inline Clock::time_point getTimestamp() const {
     return lbot_message_base_timestamp;
   }
 
@@ -170,12 +171,14 @@ protected:
    *
    */
   MessageTime() {
-    lbot_message_base_timestamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
+    if (Clock::initialized()) {
+      lbot_message_base_timestamp = Clock::now();
+    }
   }
 
 private:
   // Long name to make ambiguity less likely.
-  std::chrono::nanoseconds lbot_message_base_timestamp;
+  Clock::time_point lbot_message_base_timestamp;
 };
 
 template <typename T>

@@ -11,6 +11,7 @@ set(TARGET_NAME ${LOCAL_PROJECT_NAME}_core)
 file(RELATIVE_PATH TARGET_RELATIVE_PATH ${PROJECT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(TARGET_SOURCES
+  clock.cpp
   manager.cpp
   message.cpp
   topic.cpp
@@ -22,6 +23,7 @@ set(TARGET_SOURCES
 
 set(TARGET_HEADERS
   base.hpp
+  clock.hpp
   manager.hpp
   message.hpp
   node.hpp
@@ -36,6 +38,7 @@ set(TARGET_HEADERS
 )
 
 set(TARGET_MESSAGES
+  msg/timestamp.fbs
   msg/test.fbs
 )
 

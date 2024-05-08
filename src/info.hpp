@@ -9,6 +9,7 @@
 #pragma once
 
 #include <labrat/lbot/base.hpp>
+#include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/message.hpp>
 #include <labrat/lbot/service.hpp>
 #include <labrat/lbot/utils/types.hpp>
@@ -94,7 +95,7 @@ struct ServiceInfo {
  */
 struct MessageInfo {
   const TopicInfo &topic_info;
-  std::chrono::nanoseconds timestamp;
+  Clock::time_point timestamp;
   flatbuffers::span<u8> serialized_message;
 };
 

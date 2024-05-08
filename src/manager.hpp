@@ -155,6 +155,7 @@ private:
   }
 
   static std::weak_ptr<Manager> instance;
+  static bool instance_flag;
 
   NodeRegistration::Map node_map;
   std::unordered_set<std::size_t> node_set;
@@ -348,6 +349,8 @@ private:
 
   friend Node;
   friend Plugin;
+
+  friend void labrat::lbot::test::lbotReset();
 };
 
 }  // namespace lbot

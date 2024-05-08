@@ -10,7 +10,9 @@
 inline namespace labrat {
 namespace lbot::test {
 
-TEST(udp_bridge, fork) {
+class UdpBridgeTest : public LbotTest {};
+
+TEST_F(UdpBridgeTest, fork) {
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
   int pid = fork();

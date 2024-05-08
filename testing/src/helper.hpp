@@ -10,6 +10,21 @@
 inline namespace labrat {
 namespace lbot::test {
 
+class LbotTest : public ::testing::Test {
+protected:
+  virtual void SetUp() {
+    lbotReset();
+  }
+};
+
+template <typename... Args>
+class LbotTestWithParam : public ::testing::TestWithParam<Args ...> {
+protected:
+  virtual void SetUp() {
+    lbotReset();
+  }
+};
+
 using TestFlatbuffer = lbot::Test;
 
 static_assert(is_flatbuffer<TestFlatbuffer>);

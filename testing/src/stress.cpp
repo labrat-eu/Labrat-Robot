@@ -9,7 +9,9 @@
 inline namespace labrat {
 namespace lbot::test {
 
-TEST(stress, put_latest) {
+class StressTest : public LbotTest {};
+
+TEST_F(StressTest, put_latest) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -51,7 +53,7 @@ TEST(stress, put_latest) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST(stress, put_next) {
+TEST_F(StressTest, put_next) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -100,7 +102,7 @@ TEST(stress, put_next) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST(stress, move_latest) {
+TEST_F(StressTest, move_latest) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -142,7 +144,7 @@ TEST(stress, move_latest) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST(stress, move_next) {
+TEST_F(StressTest, move_next) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));

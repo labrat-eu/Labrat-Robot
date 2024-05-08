@@ -218,7 +218,7 @@ FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleMessa
   }
 
   std::lock_guard guard(mutex);
-  server->broadcastMessage(channel_id_iterator->second, info.timestamp.count(), info.serialized_message.data(),
+  server->broadcastMessage(channel_id_iterator->second, std::chrono::duration_cast<std::chrono::nanoseconds>(info.timestamp.time_since_epoch()).count(), info.serialized_message.data(),
     info.serialized_message.size());
 
   return channel_id_iterator;

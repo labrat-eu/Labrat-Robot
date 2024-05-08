@@ -2,10 +2,14 @@
 
 #include <gtest/gtest.h>
 
+#include <helper.hpp>
+
 inline namespace labrat {
 namespace lbot::test {
 
-TEST(config, parse) {
+class ConfigTest : public LbotTest {};
+
+TEST_F(ConfigTest, parse) {
   lbot::Config::Ptr config = lbot::Config::get();
 
   ASSERT_NO_THROW(config->load("../../data/test_config.yaml"));

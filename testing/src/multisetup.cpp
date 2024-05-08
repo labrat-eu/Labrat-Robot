@@ -13,7 +13,9 @@ static void testCallback(const Message<TestFlatbuffer> &message, int *num) {
   ++(*num);
 }
 
-TEST(multisetup, const_move) {
+class MultisetupTest : public LbotTest {};
+
+TEST_F(MultisetupTest, const_move) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_sender(manager->addNode<TestNode>("node_sender"));

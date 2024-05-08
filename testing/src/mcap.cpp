@@ -13,7 +13,9 @@
 inline namespace labrat {
 namespace lbot::test {
 
-TEST(mcap, recorder) {
+class McapTest : public LbotTest {};
+
+TEST_F(McapTest, recorder) {
   {
     labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 

@@ -10,3 +10,11 @@
 
 #define FLATBUFFERS_USE_STD_OPTIONAL 1
 #define FLATBUFFERS_USE_STD_SPAN 1
+
+inline namespace labrat {
+namespace lbot::test {
+
+void lbotReset();
+
+}
+}

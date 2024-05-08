@@ -15,7 +15,9 @@
 inline namespace labrat {
 namespace lbot::test {
 
-TEST(serial_bridge, fork) {
+class SerialBridgeTest : public LbotTest {};
+
+TEST_F(SerialBridgeTest, fork) {
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
   std::filesystem::remove("test0");

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <labrat/lbot/base.hpp>
+#include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/utils/types.hpp>
 
 #include <chrono>
@@ -117,7 +118,7 @@ public:
   class Entry {
   public:
     Verbosity verbosity;
-    std::chrono::nanoseconds timestamp;
+    Clock::time_point timestamp;
     std::string logger_name;
     std::string message;
     std::string file;

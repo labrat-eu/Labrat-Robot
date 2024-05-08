@@ -14,7 +14,7 @@ struct MessageSize {
   const u64 size;
 };
 
-class PerformanceTest : public testing::TestWithParam<MessageSize> {};
+class PerformanceTest : public LbotTestWithParam<MessageSize> {};
 
 TEST_P(PerformanceTest, put) {
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
