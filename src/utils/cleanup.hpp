@@ -18,9 +18,8 @@ public:
   class Guard {
   public:
     explicit Guard(CleanupLock &lock) : lock(lock) {
-      if (lock.state.load() == State::unlocked) {
-        lock.state.store(State::locked);
-      }
+      State expected_state = State::unlocked;
+      lock.state.compare_exchange_strong(expected_state, State::locked);
     }
 
     Guard(Guard &&rhs) noexcept : lock(rhs.lock) {

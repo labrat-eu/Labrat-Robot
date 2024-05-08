@@ -14,6 +14,7 @@
 #include <memory>
 #include <chrono>
 #include <atomic>
+#include <condition_variable>
 #include <mutex>
 #include <queue>
 
@@ -53,7 +54,8 @@ private:
 
   struct WaiterRegistration {
     const time_point wakeup_time;
-    std::atomic_flag wakeup_flag;
+    std::condition_variable condition;
+    bool waitable = true;
   };
 
   static void initialize();

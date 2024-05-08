@@ -89,6 +89,7 @@ void Clock::initialize() {
     throw InvalidArgumentException("Invalid clock mode"); 
   }
 
+  exit_flag.clear();
   is_initialized = true;
 
   if (mode == Mode::custom) {
@@ -136,9 +137,10 @@ void Clock::setTime(time_point time) {
     throw ClockException("Updated time is in the past");
   }
 
+  current_time.store(time, std::memory_order_seq_cst);
+
   {
     std::lock_guard guard(mutex);
-    current_time.store(time, std::memory_order_release);
 
     while (!waiter_queue.empty()) {
       std::shared_ptr<WaiterRegistration> top = waiter_queue.top();
@@ -147,8 +149,7 @@ void Clock::setTime(time_point time) {
         break;
       }
 
-      top->wakeup_flag.test_and_set();
-      top->wakeup_flag.notify_all();
+      top->condition.notify_all();
 
       waiter_queue.pop();
     }
@@ -161,13 +162,13 @@ std::shared_ptr<Clock::WaiterRegistration> Clock::registerWaiter(const time_poin
   {
     std::lock_guard guard(mutex);
 
-    if (wakeup_time > current_time.load(std::memory_order_acquire)) {
+    if (wakeup_time > current_time.load(std::memory_order_acquire) && !exit_flag.test(std::memory_order_acquire)) {
       waiter_queue.emplace(result);
       return result;
     }
   }
 
-  result->wakeup_flag.test_and_set();
+  result->waitable = false;
 
   return result;
 }
@@ -177,7 +178,18 @@ void Clock::cleanup() {
     node.reset();
   }
 
-  exit_flag.test_and_set();
+  exit_flag.test_and_set(std::memory_order_seq_cst);
+
+  if (mode == Mode::custom) {
+    std::lock_guard guard(mutex);
+
+    while (!waiter_queue.empty()) {
+      std::shared_ptr<WaiterRegistration> top = waiter_queue.top();
+      top->condition.notify_all();
+
+      waiter_queue.pop();
+    }
+  }
 }
 
 

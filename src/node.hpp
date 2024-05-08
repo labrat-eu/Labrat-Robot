@@ -25,6 +25,7 @@
 #include <future>
 #include <memory>
 #include <mutex>
+#include <condition_variable>
 #include <string>
 #include <vector>
 
@@ -218,7 +219,7 @@ public:
           }
 
           receiver->flush_flag = false;
-          receiver->count.notify_one();
+          receiver->condition.notify_one();
         }
 
         for (std::future<void> &future : futures) {
@@ -296,7 +297,7 @@ public:
             }
 
             receiver->flush_flag = false;
-            receiver->count.notify_one();
+            receiver->condition.notify_one();
           } else {
             Storage storage;
             Move<MessageType::moveFrom>::call(std::forward<Converted>(container), storage, user_ptr);
@@ -350,8 +351,7 @@ public:
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
         receiver->flush_flag = true;
-        receiver->count.fetch_add(1, std::memory_order_release);
-        receiver->count.notify_one();
+        receiver->condition.notify_one();
       }
     }
 
@@ -523,6 +523,8 @@ public:
     const std::size_t index_mask;
 
     std::atomic<std::size_t> count;
+    std::mutex mutex;
+    std::condition_variable condition;
     std::size_t next_count;
     bool flush_flag;
   };
@@ -758,16 +760,21 @@ public:
       std::size_t local_count = GenericReceiver<Converted>::next_count;
       std::size_t index;
 
-      do {
-        GenericReceiver<Converted>::count.wait(local_count, std::memory_order_acquire);
-
+      while (true) {
         if (GenericReceiver<Converted>::flush_flag) {
           throw TopicNoDataAvailableException("Topic was flushed during wait operation.", GenericReceiver<Converted>::node.getLogger());
         }
 
         local_count = GenericReceiver<Converted>::count.load(std::memory_order_acquire);
         index = local_count & GenericReceiver<Converted>::index_mask;
-      } while (!message_buffer[index].update_flag);
+
+        if (message_buffer[index].update_flag) {
+          break;
+        }
+
+        std::unique_lock lock(GenericReceiver<Converted>::mutex);
+        GenericReceiver<Converted>::condition.wait(lock);
+      }
 
       {
         std::lock_guard guard(message_buffer[index].mutex);

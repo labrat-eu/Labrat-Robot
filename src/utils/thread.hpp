@@ -41,7 +41,8 @@ public:
     sleepUntil(time_begin + std::chrono::duration_cast<Clock::duration>(duration));
   }
 
-  static void sleepUntil(const Clock::time_point &time) {
+  template<class Duration>
+  static void sleepUntil(const std::chrono::time_point<Clock, Duration> &time) {
     switch (Clock::mode) {
       case (Clock::Mode::system): {
         std::this_thread::sleep_until(std::chrono::system_clock::time_point(std::chrono::duration_cast<std::chrono::system_clock::duration>(time.time_since_epoch())));
@@ -54,10 +55,12 @@ public:
       }
 
       case (Clock::Mode::custom): {
-        std::shared_ptr<Clock::WaiterRegistration> registration = Clock::registerWaiter(time);
+        std::shared_ptr<Clock::WaiterRegistration> registration = Clock::registerWaiter(std::chrono::time_point_cast<Clock::duration>(time));
 
-        while (!registration->wakeup_flag.test()) {
-          registration->wakeup_flag.wait(false, std::memory_order_acquire);
+        if (registration->waitable) {
+          std::mutex mutex;
+          std::unique_lock<std::mutex> lock(mutex);
+          registration->condition.wait(lock);
         }
 
         break;
