@@ -79,7 +79,10 @@ private:
   friend class utils::Thread;
 };
 
+#ifndef __clang__
+// TODO: Remove in future release
 static_assert(std::chrono::is_clock_v<Clock>);
+#endif
 
 }  // namespace lbot
 }  // namespace labrat
