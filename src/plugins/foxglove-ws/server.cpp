@@ -11,6 +11,7 @@
 #include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/message.hpp>
+#include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/plugins/foxglove-ws/server.hpp>
 
 #include <atomic>
@@ -86,7 +87,7 @@ public:
     };
 
     const foxglove::ServerOptions options = {
-      .capabilities = {foxglove::CAPABILITY_PARAMETERS},
+      .capabilities = {foxglove::CAPABILITY_PARAMETERS, foxglove::CAPABILITY_TIME},
     };
 
     server = foxglove::ServerFactory::createServer<websocketpp::connection_hdl>(name, log_handler, options);
@@ -110,12 +111,32 @@ public:
     enable_callbacks.test_and_set();
 
     server->start("0.0.0.0", port);
+
+    exit_mutex.lock();
+
+    time_thread = std::jthread([this](std::stop_token token) {
+      while (!token.stop_requested()) {
+        const std::chrono::steady_clock::time_point time = std::chrono::steady_clock::now();
+
+        {
+          std::lock_guard guard(mutex);
+          server->broadcastTime(std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now().time_since_epoch()).count());
+        }
+
+        exit_mutex.try_lock_until(time + std::chrono::milliseconds(10));
+      }
+    });
   }
 
   ~FoxgloveServerPrivate() {
+    time_thread.request_stop();
+    exit_mutex.unlock();
+
     for (const std::pair<std::size_t, foxglove::ChannelId> channel : channel_id_map) {
       server->removeChannels({channel.second});
     }
+
+    time_thread.join();
 
     server->stop();
   }
@@ -134,6 +155,7 @@ public:
   ChannelIdMap::iterator handleMessage(const MessageInfo &info);
 
   std::atomic_flag enable_callbacks;
+  std::jthread time_thread;
 
 private:
   SchemaMap::iterator handleSchema(const std::string &type_name, std::size_t type_hash);
@@ -145,6 +167,7 @@ private:
 
   std::unique_ptr<foxglove::ServerInterface<websocketpp::connection_hdl>> server;
   std::mutex mutex;
+  std::timed_mutex exit_mutex;
 
   Logger logger;
 };
