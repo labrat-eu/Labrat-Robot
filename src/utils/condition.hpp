@@ -34,20 +34,20 @@ public:
   ~ConditionVariable() = default;
 
   void notifyOne() noexcept {
-    condition.load()->notify_one();
+    condition->notify_one();
   }
 
   void notifyAll() noexcept {
-    condition.load()->notify_all();
+    condition->notify_all();
   }
 
   void wait(std::unique_lock<std::mutex> &lock) {
-    condition.load()->wait(lock);
+    condition->wait(lock);
   }
 
   template<class Predicate>
   void wait(std::unique_lock<std::mutex> &lock, Predicate pred) {
-    condition.load()->wait(lock, pred);
+    condition->wait(lock, pred);
   }
 
   template<class Rep, class Period>
@@ -66,18 +66,18 @@ public:
   std::cv_status waitUntil(std::unique_lock<std::mutex> &lock, const std::chrono::time_point<Clock, Duration> &time) {
     switch (Clock::mode) {
       case (Clock::Mode::system): {
-        return condition.load()->wait_until(lock, std::chrono::system_clock::time_point(std::chrono::duration_cast<std::chrono::system_clock::duration>(time.time_since_epoch())));
+        return condition->wait_until(lock, std::chrono::system_clock::time_point(std::chrono::duration_cast<std::chrono::system_clock::duration>(time.time_since_epoch())));
       }
       
       case (Clock::Mode::steady): {
-        return condition.load()->wait_until(lock, std::chrono::steady_clock::time_point(std::chrono::duration_cast<std::chrono::steady_clock::duration>(time.time_since_epoch())));
+        return condition->wait_until(lock, std::chrono::steady_clock::time_point(std::chrono::duration_cast<std::chrono::steady_clock::duration>(time.time_since_epoch())));
       }
 
       case (Clock::Mode::custom): {
         Clock::WaiterRegistration registration = Clock::registerWaiter(std::chrono::time_point_cast<Clock::duration>(time), condition);
 
         if (registration.waitable) {
-          condition.load()->wait(lock);
+          condition->wait(lock);
           return *registration.status;
         }
 
@@ -102,7 +102,7 @@ public:
   }
 
 private:
-  std::atomic<std::shared_ptr<std::condition_variable>> condition;
+  std::shared_ptr<std::condition_variable> condition;
 };
 
 }  // namespace utils
