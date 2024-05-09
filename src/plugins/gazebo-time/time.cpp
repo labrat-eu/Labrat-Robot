@@ -8,6 +8,7 @@
 
 #include <labrat/lbot/message.hpp>
 #include <labrat/lbot/node.hpp>
+#include <labrat/lbot/msg/timestamp.fb.hpp>
 #include <labrat/lbot/plugins/gazebo-time/msg/gazebo_time.fb.hpp>
 #include <labrat/lbot/plugins/gazebo-time/time.hpp>
 #include <labrat/lbot/plugins/gazebo-time/protocol.hpp>
@@ -43,6 +44,13 @@ public:
   }
 };
 
+class TimestampConv : public MessageBase<Timestamp, GzLbotBrideProtocolMessage> {
+public:
+  static void convertFrom(const GzLbotBrideProtocolMessage &source, Storage &destination) {
+    destination.value = std::make_unique<foxglove::Time>(source.simulation_time.seconds, source.simulation_time.nanoseconds);
+  }
+};
+
 class GazeboTimeSourceNode : public UniqueNode {
 public:
   GazeboTimeSourceNode();
@@ -51,7 +59,8 @@ public:
 private:
   static constexpr ssize_t timeout = 1000;
 
-  Sender<GazeboTimeConv>::Ptr sender;
+  Sender<TimestampConv>::Ptr sender_time;
+  Sender<GazeboTimeConv>::Ptr sender_debug;
 
   ssize_t file_descriptor;
   ssize_t epoll_handle;
@@ -72,7 +81,8 @@ GazeboTimeSource::GazeboTimeSource() {
 GazeboTimeSource::~GazeboTimeSource() = default;
 
 GazeboTimeSourceNode::GazeboTimeSourceNode() {
-  sender = addSender<GazeboTimeConv>("/gazebo/time");
+  sender_time = addSender<TimestampConv>("/time");
+  sender_debug = addSender<GazeboTimeConv>("/gazebo/time");
 
   mutex = std::make_shared<std::timed_mutex>();
   mutex->lock();
@@ -136,7 +146,8 @@ GazeboTimeSourceNode::GazeboTimeSourceNode() {
         throw IoException("Failed to read from socket", errno);
       }
 
-      sender->put(buffer);
+      sender_time->put(buffer);
+      sender_debug->put(buffer);
     }
   });
 

@@ -3,6 +3,7 @@
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/node.hpp>
 #include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/utils/condition.hpp>
 #include <labrat/lbot/utils/thread.hpp>
 #include <labrat/lbot/msg/timestamp.fb.hpp>
 
@@ -146,6 +147,98 @@ TEST_F(ClockTest, sleep) {
   lbot::Clock::time_point t5 = lbot::Clock::now();
 
   EXPECT_GE(t5, t3 + std::chrono::seconds(2));
+
+  bool check_a = false;
+  std::jthread thread_a([&check_a]() {
+    lbot::Thread::sleepFor(std::chrono::seconds(1));
+    check_a = true;
+  });
+
+  node->updateTimeAsync(t5 + std::chrono::seconds(1), std::chrono::milliseconds(100));
+  node->updateTimeAsync(t5 + std::chrono::seconds(2), std::chrono::milliseconds(200));
+  lbot::Thread::sleepUntil(t5 + std::chrono::seconds(2));
+
+  EXPECT_TRUE(check_a);
+  thread_a.join();
+
+  lbot::Clock::time_point t6 = lbot::Clock::now();
+
+  bool check_b = false;
+  std::jthread thread_b([&check_b]() {
+    lbot::Thread::sleepFor(std::chrono::seconds(2));
+    check_b = true;
+  });
+
+  node->updateTimeAsync(t6 + std::chrono::seconds(1), std::chrono::milliseconds(100));
+  node->updateTimeAsync(t6 + std::chrono::seconds(2), std::chrono::milliseconds(200));
+  lbot::Thread::sleepUntil(t6 + std::chrono::seconds(1));
+
+  EXPECT_FALSE(check_b);
+  thread_b.join();
+}
+
+TEST_F(ClockTest, condition) {
+  lbot::Config::Ptr config = lbot::Config::get();
+  config->setParameter("/lbot/clock_mode", "custom");
+  lbot::Manager::Ptr manager = lbot::Manager::get();
+
+  std::mutex mutex;
+  std::unique_lock lock(mutex);
+  lbot::ConditionVariable condition;
+
+  std::shared_ptr<TimeNode> node = manager->addNode<TimeNode>("test");
+  lbot::Clock::time_point t1 = lbot::Clock::now();
+
+  node->updateTimeAsync(t1 + std::chrono::seconds(1), std::chrono::milliseconds(100));
+  condition.waitFor(lock, std::chrono::seconds(1));
+  lbot::Clock::time_point t2 = lbot::Clock::now();
+
+  EXPECT_GE(t2, t1 + std::chrono::seconds(1));
+
+  node->updateTimeAsync(t1 + std::chrono::seconds(2), std::chrono::milliseconds(100));
+  condition.waitUntil(lock, t1 + std::chrono::seconds(2));
+  lbot::Clock::time_point t3 = lbot::Clock::now();
+
+  EXPECT_GE(t3, t1 + std::chrono::seconds(2));
+
+  condition.waitFor(lock, std::chrono::seconds(0));
+  lbot::Clock::time_point t4 = lbot::Clock::now();
+
+  EXPECT_GE(t4, t3);
+
+  node->updateTimeAsync(t3 + std::chrono::seconds(2), std::chrono::milliseconds(100));
+  condition.waitUntil(lock, t3 + std::chrono::seconds(1));
+  lbot::Clock::time_point t5 = lbot::Clock::now();
+
+  EXPECT_GE(t5, t3 + std::chrono::seconds(2));
+
+  bool check_a = false;
+  std::jthread thread_a([&check_a]() {
+    lbot::Thread::sleepFor(std::chrono::seconds(1));
+    check_a = true;
+  });
+
+  node->updateTimeAsync(t5 + std::chrono::seconds(1), std::chrono::milliseconds(100));
+  node->updateTimeAsync(t5 + std::chrono::seconds(2), std::chrono::milliseconds(200));
+  condition.waitUntil(lock, t5 + std::chrono::seconds(2));
+
+  EXPECT_TRUE(check_a);
+  thread_a.join();
+
+  lbot::Clock::time_point t6 = lbot::Clock::now();
+
+  bool check_b = false;
+  std::jthread thread_b([&check_b]() {
+    lbot::Thread::sleepFor(std::chrono::seconds(2));
+    check_b = true;
+  });
+
+  node->updateTimeAsync(t6 + std::chrono::seconds(1), std::chrono::milliseconds(100));
+  node->updateTimeAsync(t6 + std::chrono::seconds(2), std::chrono::milliseconds(200));
+  condition.waitUntil(lock, t6 + std::chrono::seconds(1));
+
+  EXPECT_FALSE(check_b);
+  thread_b.join();
 }
 
 }  // namespace lbot::test

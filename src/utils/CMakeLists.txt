@@ -14,6 +14,7 @@ set(TARGET_HEADERS
   atomic.hpp
   async.hpp
   cleanup.hpp
+  condition.hpp
   types.hpp
   fifo.hpp
   final_ptr.hpp

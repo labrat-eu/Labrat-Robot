@@ -11,6 +11,7 @@
 #include <labrat/lbot/base.hpp>
 #include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/utils/condition.hpp>
 #include <labrat/lbot/utils/types.hpp>
 
 #include <cerrno>
@@ -43,29 +44,10 @@ public:
 
   template<class Duration>
   static void sleepUntil(const std::chrono::time_point<Clock, Duration> &time) {
-    switch (Clock::mode) {
-      case (Clock::Mode::system): {
-        std::this_thread::sleep_until(std::chrono::system_clock::time_point(std::chrono::duration_cast<std::chrono::system_clock::duration>(time.time_since_epoch())));
-        break;
-      }
-      
-      case (Clock::Mode::steady): {
-        std::this_thread::sleep_until(std::chrono::steady_clock::time_point(std::chrono::duration_cast<std::chrono::steady_clock::duration>(time.time_since_epoch())));
-        break;
-      }
-
-      case (Clock::Mode::custom): {
-        std::shared_ptr<Clock::WaiterRegistration> registration = Clock::registerWaiter(std::chrono::time_point_cast<Clock::duration>(time));
-
-        if (registration->waitable) {
-          std::mutex mutex;
-          std::unique_lock<std::mutex> lock(mutex);
-          registration->condition.wait(lock);
-        }
-
-        break;
-      }
-    }
+    std::mutex mutex;
+    std::unique_lock<std::mutex> lock(mutex);
+    ConditionVariable condition;
+    condition.waitUntil(lock, time);
   }
 
 protected:
@@ -141,7 +123,7 @@ public:
   TimerThread() = default;
   TimerThread(TimerThread &) = delete;
 
-  TimerThread(TimerThread &&rhs) noexcept : mutex(std::move(rhs.mutex)), thread(std::move(rhs.thread)){};
+  TimerThread(TimerThread &&rhs) noexcept : condition(std::move(rhs.condition)), exit_flag(std::move(rhs.exit_flag)), thread(std::move(rhs.thread)) {};
 
   /**
    * @brief Start the thread.
@@ -154,12 +136,15 @@ public:
    */
   template <typename Function, typename R, typename P, typename... Args>
   TimerThread(Function &&function, const std::chrono::duration<R, P> &interval, const std::string &name, i32 priority, Args &&...args) {
-    mutex = std::make_shared<std::timed_mutex>();
-    mutex->lock();
+    condition = std::make_shared<ConditionVariable>();
+    exit_flag = std::make_shared<bool>(false);
 
     thread = std::jthread(
-      [interval, name, priority](std::stop_token token, std::shared_ptr<std::timed_mutex> mutex, Function &&function, Args &&...args) {
+      [interval, name, priority](std::stop_token token, std::shared_ptr<ConditionVariable> condition, std::shared_ptr<bool> exit_flag, Function &&function, Args &&...args) {
       setup(name, priority);
+
+      std::mutex mutex;
+      std::unique_lock lock(mutex);
 
       while (!token.stop_requested()) {
         const Clock::time_point time_begin = Clock::now();
@@ -168,26 +153,34 @@ public:
           std::invoke<Function, Args...>(std::forward<Function>(function), std::forward<Args>(args)...);
         }(function, args...);
 
-        if (mutex->try_lock_until(time_begin + interval)) {
+        if (*exit_flag) {
           break;
         }
+
+        condition->waitUntil(lock, time_begin + interval);
       }
-    }, mutex, std::forward<Function>(function), std::forward<Args>(args)...);
+    }, condition, exit_flag, std::forward<Function>(function), std::forward<Args>(args)...);
   }
 
   ~TimerThread() {
-    if (mutex) {
-      mutex->unlock();
+    if (exit_flag) {
+      *exit_flag = true;
+    }
+
+    if (condition) {
+      condition->notifyOne();
     }
   }
 
   void operator=(TimerThread &&rhs) noexcept {
-    mutex = std::move(rhs.mutex);
+    condition = std::move(rhs.condition);
+    exit_flag = std::move(rhs.exit_flag);
     thread = std::move(rhs.thread);
   }
 
 private:
-  std::shared_ptr<std::timed_mutex> mutex;
+  std::shared_ptr<ConditionVariable> condition;
+  std::shared_ptr<bool> exit_flag;
   std::jthread thread;
 };
 

@@ -69,7 +69,7 @@ std::atomic_flag Clock::exit_flag;
 
 std::shared_ptr<Clock::Node> Clock::node;
 
-std::priority_queue<std::shared_ptr<Clock::WaiterRegistration>> Clock::waiter_queue;
+std::priority_queue<Clock::WaiterRegistration> Clock::waiter_queue;
 std::mutex Clock::mutex;
 
 void Clock::initialize() {
@@ -143,21 +143,27 @@ void Clock::setTime(time_point time) {
     std::lock_guard guard(mutex);
 
     while (!waiter_queue.empty()) {
-      std::shared_ptr<WaiterRegistration> top = waiter_queue.top();
+      WaiterRegistration top = waiter_queue.top();
 
-      if (top->wakeup_time > time) {
+      if (top.wakeup_time > time) {
         break;
       }
 
-      top->condition.notify_all();
+      *top.status = std::cv_status::timeout;
+      top.condition->notify_all();
 
       waiter_queue.pop();
     }
   }
 }
 
-std::shared_ptr<Clock::WaiterRegistration> Clock::registerWaiter(const time_point wakeup_time) {
-  std::shared_ptr<WaiterRegistration> result(new WaiterRegistration{.wakeup_time = wakeup_time});
+Clock::WaiterRegistration Clock::registerWaiter(const time_point wakeup_time, std::shared_ptr<std::condition_variable> condition) {
+  WaiterRegistration result = {
+    .wakeup_time = wakeup_time,
+    .condition = condition,
+    .status = std::make_shared<std::cv_status>(std::cv_status::no_timeout),
+    .waitable = true
+  };
 
   {
     std::lock_guard guard(mutex);
@@ -168,7 +174,7 @@ std::shared_ptr<Clock::WaiterRegistration> Clock::registerWaiter(const time_poin
     }
   }
 
-  result->waitable = false;
+  result.waitable = false;
 
   return result;
 }
@@ -184,12 +190,17 @@ void Clock::cleanup() {
     std::lock_guard guard(mutex);
 
     while (!waiter_queue.empty()) {
-      std::shared_ptr<WaiterRegistration> top = waiter_queue.top();
-      top->condition.notify_all();
+      WaiterRegistration top = waiter_queue.top();
+      top.condition->notify_all();
 
       waiter_queue.pop();
     }
   }
+}
+
+inline constexpr std::strong_ordering operator<=>(const Clock::WaiterRegistration& lhs, const Clock::WaiterRegistration& rhs) {
+  // Reversed so that earlier times show up at the top of the priority queue.
+  return rhs.wakeup_time <=> lhs.wakeup_time;
 }
 
 

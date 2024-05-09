@@ -17,6 +17,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <queue>
+#include <compare>
 
 inline namespace labrat {
 namespace lbot {
@@ -25,6 +26,7 @@ class Manager;
 
 inline namespace utils {
 class Thread;
+class ConditionVariable;
 }
 
 class Clock {
@@ -53,9 +55,10 @@ private:
   };
 
   struct WaiterRegistration {
-    const time_point wakeup_time;
-    std::condition_variable condition;
-    bool waitable = true;
+    time_point wakeup_time;
+    std::shared_ptr<std::condition_variable> condition;
+    std::shared_ptr<std::cv_status> status;
+    bool waitable;
   };
 
   static void initialize();
@@ -63,7 +66,7 @@ private:
   static void cleanup();
 
   static void setTime(time_point time);
-  static std::shared_ptr<WaiterRegistration> registerWaiter(time_point wakeup_time);
+  static WaiterRegistration registerWaiter(time_point wakeup_time, std::shared_ptr<std::condition_variable> condition = std::make_shared<std::condition_variable>());
 
   static bool is_initialized;
   static Mode mode;
@@ -72,13 +75,16 @@ private:
   
   static std::shared_ptr<Node> node;
 
-  static std::priority_queue<std::shared_ptr<WaiterRegistration>> waiter_queue;
+  static std::priority_queue<WaiterRegistration> waiter_queue;
   static std::mutex mutex;
 
   friend class ReceiverNode;
 
   friend class Manager;
   friend class utils::Thread;
+  friend class utils::ConditionVariable;
+
+  friend constexpr std::strong_ordering operator<=>(const WaiterRegistration& lhs, const WaiterRegistration& rhs);
 };
 
 #ifndef __clang__
