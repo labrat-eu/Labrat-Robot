@@ -31,7 +31,9 @@ public:
   ConfigValue(i64 value);
   ConfigValue(double value);
   ConfigValue(const char *value);
+  ConfigValue(const std::string &value);
   ConfigValue(std::string &&value);
+  ConfigValue(const Sequence &value);
   ConfigValue(Sequence &&value);
 
   constexpr ConfigValue &operator=(const ConfigValue &rhs);
