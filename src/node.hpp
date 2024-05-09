@@ -523,7 +523,6 @@ public:
     const std::size_t index_mask;
 
     std::atomic<std::size_t> count;
-    std::mutex mutex;
     std::condition_variable condition;
     std::size_t next_count;
     bool flush_flag;
@@ -760,24 +759,27 @@ public:
       std::size_t local_count = GenericReceiver<Converted>::next_count;
       std::size_t index;
 
-      while (true) {
-        if (GenericReceiver<Converted>::flush_flag) {
-          throw TopicNoDataAvailableException("Topic was flushed during wait operation.", GenericReceiver<Converted>::node.getLogger());
-        }
-
-        local_count = GenericReceiver<Converted>::count.load(std::memory_order_acquire);
-        index = local_count & GenericReceiver<Converted>::index_mask;
-
-        if (message_buffer[index].update_flag) {
-          break;
-        }
-
-        std::unique_lock lock(GenericReceiver<Converted>::mutex);
-        GenericReceiver<Converted>::condition.wait(lock);
-      }
-
       {
-        std::lock_guard guard(message_buffer[index].mutex);
+        std::unique_lock<std::mutex> lock;
+
+        while (true) {
+          if (GenericReceiver<Converted>::flush_flag) {
+            throw TopicNoDataAvailableException("Topic was flushed during wait operation.", GenericReceiver<Converted>::node.getLogger());
+          }
+
+          local_count = GenericReceiver<Converted>::count.load(std::memory_order_acquire);
+          index = local_count & GenericReceiver<Converted>::index_mask;
+
+          if (lock.mutex() != &message_buffer[index].mutex) {
+            lock = std::unique_lock(message_buffer[index].mutex);
+          }
+
+          if (message_buffer[index].update_flag) {
+            break;
+          }
+
+          GenericReceiver<Converted>::condition.wait(lock);
+        }
 
         if constexpr (can_move_from<MessageType>) {
           Move<MessageType::moveTo>::call(std::move(message_buffer[index].message), result, user_ptr);
