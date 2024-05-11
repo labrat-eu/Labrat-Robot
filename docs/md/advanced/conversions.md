@@ -7,13 +7,13 @@ You may also want to take a look at the [code example](@ref example_conversions)
 Usually, the types used to pass messages (flatbuffers) are not used internally by a program to perform computations. For instance, you might use a separate linear-algebra library to work compute vector operations. Such libraries normally come with their own data types. You might find yourself manually converting between flatbuffer messages and other types all over your code. To make this easier, you can register custom conversion functions with your senders, receivers, servers and clients. Calls to access functions like `put()`, `latest()` or `next()` will then expect/return the type you've specified in the conversion function. This leads to an overall cleaner code style, as the focus in now on the actual computations you perform instead of the type conversions.
 
 # Conversion Types
-In order to define a conversion function you need to declare an encapsulating message type. This type must inherit from [lbot::MessageBase<FlatbufferType, ConvertedType>](@ref labrat::lbot::MessageBase) with `FlatbufferType` being the flatbuffer type used internally and `ConvertedType` being the type you actually want to access. So if you want to use a flatbuffer schema called `examples::msg::Number` but want to convert it from/to a `float` you need to define a conversion class in the following way.
+In order to define a conversion function you need to declare an encapsulating message type. This type must inherit from [lbot::MessageBase<FlatbufferType, ConvertedType>](@ref lbot::MessageBase) with `FlatbufferType` being the flatbuffer type used internally and `ConvertedType` being the type you actually want to access. So if you want to use a flatbuffer schema called `examples::msg::Number` but want to convert it from/to a `float` you need to define a conversion class in the following way.
 ```cpp
 class ConversionMessage : public lbot::MessageBase<examples::msg::Number, float> {
 ...
 };
 ```
-Inside your conversion class you then need to specify your actual coversion functions. There are two types of conversion function. One is the `convertTo()` function which takes a constant reference to the relevant flatbuffer message and converts it to a `ConvertedType` instance. Note that you can make use of the type `Storage` for references to the flatbuffer message type. It is defined in [lbot::MessageBase](@ref labrat::lbot::MessageBase).
+Inside your conversion class you then need to specify your actual coversion functions. There are two types of conversion function. One is the `convertTo()` function which takes a constant reference to the relevant flatbuffer message and converts it to a `ConvertedType` instance. Note that you can make use of the type `Storage` for references to the flatbuffer message type. It is defined in [lbot::MessageBase](@ref lbot::MessageBase).
 ```cpp
 // Convert a number message to a float.
 static void convertTo(const Storage &source, float &destination) {
@@ -39,7 +39,7 @@ Sender<ConversionMessage>::Ptr sender;
 ...
 sender = addSender<ConversionMessage>(...);
 ```
-Calls to [Sender::put()](@ref labrat::lbot::Node::Sender::put()) will now expect a `float` as an argument.
+Calls to [Sender::put()](@ref lbot::Node::Sender::put()) will now expect a `float` as an argument.
 ```cpp
 sender->put(1.0f);
 ```
@@ -51,7 +51,7 @@ Receiver<ConversionMessage>::Ptr receiver;
 ...
 receiver = addReceiver<ConversionMessage>(...);
 ```
-Calls to [Receiver::next()](@ref labrat::lbot::Node::Receiver::next()) and [Receiver::latest()](@ref labrat::lbot::Node::Receiver::latest()) will now return a `float`.
+Calls to [Receiver::next()](@ref lbot::Node::Receiver::next()) and [Receiver::latest()](@ref lbot::Node::Receiver::latest()) will now return a `float`.
 ```cpp
 float value = receiver->latest();
 ```
@@ -79,7 +79,7 @@ Client<ConversionMessage, ConversionMessage>::Ptr client;
 ...
 client = addClient<ConversionMessage, ConversionMessage>(...);
 ```
-Calls to [Client::callSync()](@ref labrat::lbot::Node::Client::callSync()) and [Client::callAsync()](@ref labrat::lbot::Node::Client::callAsync()) will now expect a `float` as an argument. [Client::callSync()](@ref labrat::lbot::Node::Client::callSync()) will now return a `float`. The future returned by [Client::callAsync()](@ref labrat::lbot::Node::Client::callAsync()) will now also contain a `float`.
+Calls to [Client::callSync()](@ref lbot::Node::Client::callSync()) and [Client::callAsync()](@ref lbot::Node::Client::callAsync()) will now expect a `float` as an argument. [Client::callSync()](@ref lbot::Node::Client::callSync()) will now return a `float`. The future returned by [Client::callAsync()](@ref lbot::Node::Client::callAsync()) will now also contain a `float`.
 ```cpp
 float response = client->callSync(1.0f, std::chrono::seconds(1));
 ```

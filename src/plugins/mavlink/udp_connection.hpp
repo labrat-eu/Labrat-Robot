@@ -17,7 +17,9 @@
 #include <netinet/in.h>
 #include <signal.h>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot::plugins {
 
 /**
@@ -71,4 +73,6 @@ private:
 };
 
 }  // namespace lbot::plugins
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

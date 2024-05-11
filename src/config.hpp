@@ -17,7 +17,9 @@
 #include <variant>
 #include <vector>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
 
 class ConfigValue {
@@ -166,4 +168,6 @@ public:
 };
 
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

@@ -12,10 +12,15 @@
 
 #include <concepts>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
+/** @cond INTERNAL */
 inline namespace utils {
+/** @endcond */
 
+/** @cond INTERNAL */
 template <typename T, template <typename...> class Z>
 struct is_specialization_of : std::false_type {};
 
@@ -24,7 +29,12 @@ struct is_specialization_of<Z<Args...>, Z> : std::true_type {};
 
 template <typename T, template <typename...> class Z>
 inline constexpr bool is_specialization_of_v = is_specialization_of<T, Z>::value;
+/** @endcond  */
 
+/** @cond INTERNAL */
 }  // namespace utils
+/** @endcond */
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

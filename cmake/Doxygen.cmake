@@ -7,6 +7,11 @@ function(prj_add_doxygen_targets)
   # Configure doxyfile.
   configure_file(${DOXYFILE_IN} ${DOXYFILE} @ONLY)
 
+  # Copy headers.
+  file(COPY ${PROJECT_SOURCE_DIR}/src DESTINATION ${CMAKE_BINARY_DIR}/include/${LOCAL_PROJECT_NAMESPACE} FILES_MATCHING PATTERN *.hpp)
+  file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/include/${LOCAL_PROJECT_PATH_FULL})
+  file(RENAME ${CMAKE_BINARY_DIR}/include/${LOCAL_PROJECT_NAMESPACE}/src ${CMAKE_BINARY_DIR}/include/${LOCAL_PROJECT_PATH_FULL})
+
   # Add doc generation target.
   if(${PRJ_OPT_INSTALL_DOCS})
     # Install man pages.

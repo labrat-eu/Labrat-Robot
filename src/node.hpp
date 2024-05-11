@@ -29,7 +29,9 @@
 #include <string>
 #include <vector>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
 
 class Manager;
@@ -1413,4 +1415,6 @@ protected:
 };
 
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

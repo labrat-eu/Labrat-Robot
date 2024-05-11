@@ -13,9 +13,13 @@
 
 #include <signal.h>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
+/** @cond INTERNAL */
 inline namespace utils {
+/** @endcond */
 
 /**
  * @brief Wait on a process signal.
@@ -24,6 +28,10 @@ inline namespace utils {
  */
 int signalWait();
 
+/** @cond INTERNAL */
 }  // namespace utils
+/** @endcond */
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

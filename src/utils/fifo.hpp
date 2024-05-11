@@ -13,10 +13,15 @@
 
 #include <vector>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
+/** @cond INTERNAL */
 inline namespace utils {
+/** @endcond */
 
+/** @cond INTERNAL */
 /**
  * @brief Fixed sized FIFO buffer (ring buffer).
  *
@@ -78,7 +83,12 @@ protected:
   // Index where to perform the push operation.
   std::size_t current_index;
 };
+/** @endcond  */
 
+/** @cond INTERNAL */
 }  // namespace utils
+/** @endcond */
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

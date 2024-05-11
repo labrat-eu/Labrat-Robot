@@ -19,9 +19,12 @@
 #include <string>
 #include <unordered_map>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
 
+/** @cond INTERNAL */
 class ServiceMap {
 public:
   class Service {
@@ -101,6 +104,9 @@ private:
 
   std::unordered_map<std::string, Service> map;
 };
+/** @endcond  */
 
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

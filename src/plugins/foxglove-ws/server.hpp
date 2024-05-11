@@ -12,7 +12,9 @@
 
 #include <string>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot::plugins {
 
 class FoxgloveServerPrivate;
@@ -43,4 +45,6 @@ private:
 };
 
 }  // namespace lbot::plugins
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

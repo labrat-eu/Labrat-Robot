@@ -11,7 +11,9 @@
 #include <labrat/lbot/base.hpp>
 #include <labrat/lbot/plugin.hpp>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot::plugins {
 
 class GazeboTimeSource final : public UniquePlugin {
@@ -25,4 +27,6 @@ public:
 };
 
 }  // namespace lbot::plugins
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

@@ -16,7 +16,9 @@
 #include <forward_list>
 #include <memory>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot::plugins {
 
 class SerialBridge final : public Plugin {
@@ -139,4 +141,6 @@ private:
 };
 
 }  // namespace lbot::plugins
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

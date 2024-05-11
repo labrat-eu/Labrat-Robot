@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+/** @cond INTERNAL */
 static const char gz_lbot_bridge_socket_path[] = "/var/tmp/gz_lbot";
 
 struct GzLbotBrideProtocolMessage {
@@ -16,3 +17,4 @@ struct GzLbotBrideProtocolMessage {
   uint64_t iterations;
   bool paused;
 };
+/** @endcond */

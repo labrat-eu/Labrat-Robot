@@ -13,7 +13,9 @@
 #include <string>
 #include <unordered_set>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
 
 class Filter {
@@ -93,4 +95,6 @@ private:
 };
 
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

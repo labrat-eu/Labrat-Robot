@@ -10,9 +10,13 @@
 
 #include <labrat/lbot/base.hpp>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
+/** @cond INTERNAL */
 inline namespace utils {
+/** @endcond */
 
 /**
  * @brief Execution policy for callback functions.
@@ -25,6 +29,10 @@ enum class ExecutionPolicy {
   parallel,
 };
 
+/** @cond INTERNAL */
 }  // namespace utils
+/** @endcond */
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

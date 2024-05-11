@@ -24,9 +24,13 @@
 #include <sched.h>
 #include <sys/prctl.h>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
+/** @cond INTERNAL */
 inline namespace utils {
+/** @endcond */
 
 /**
  * @brief Abstract thread wrapper.
@@ -36,12 +40,22 @@ class Thread {
 public:
   ~Thread() = default;
 
+  /**
+   * @brief Pause execution of the current thread for the specified duration.
+   * 
+   * @param duration Relative duration to sleep.
+   */
   template<class Rep, class Period>
   static void sleepFor(const std::chrono::duration<Rep, Period> &duration) {
     const Clock::time_point time_begin = Clock::now();
     sleepUntil(time_begin + std::chrono::duration_cast<Clock::duration>(duration));
   }
 
+  /**
+   * @brief Pause execution of the current thread until the specified timestamp.
+   * 
+   * @param duration Absolute timestamp until to sleep.
+   */
   template<class Duration>
   static void sleepUntil(const std::chrono::time_point<Clock, Duration> &time) {
     std::mutex mutex;
@@ -184,6 +198,10 @@ private:
   std::jthread thread;
 };
 
+/** @cond INTERNAL */
 }  // namespace utils
+/** @endcond */
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

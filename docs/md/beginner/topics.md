@@ -10,7 +10,7 @@ For each topic you will need exactly one sender that writes data onto the topic.
 
 @image html topics.svg
 
-Topics are distinguished by their name and message type. The convention is to name topics like a file path (e. g. `/path/to/topic`). This helps to order your topics. The message type of a topic has to be known by every sender and receiver at compile time. If there is a type mismatch, a [lbot::ManagementException](@ref labrat::lbot::ManagementException) exception will be raised.
+Topics are distinguished by their name and message type. The convention is to name topics like a file path (e. g. `/path/to/topic`). This helps to order your topics. The message type of a topic has to be known by every sender and receiver at compile time. If there is a type mismatch, a [lbot::ManagementException](@ref lbot::ManagementException) exception will be raised.
 
 # Messages
 Before you can exchange messages over topics you need to know how to define message schemas. Labrat-robot does not define its own message standard but instead makes use of [FlatBuffers](https://flatbuffers.dev/). In order to define a message schema you have to create a `.fbs` FlatBuffer schema file. It is recommended to create a subdirectory in your source folder for your message definitions.
@@ -56,7 +56,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME_MESSAGE})
 ```
 
 ## Using messages in C++
-Inside of labrat-robot, messages appear wrapped inside of the [lbot::Message](@ref labrat::lbot::Message) class. If you want to declare a labrat-robot message you must therefore do it in the following way.
+Inside of labrat-robot, messages appear wrapped inside of the [lbot::Message](@ref lbot::Message) class. If you want to declare a labrat-robot message you must therefore do it in the following way.
 ```cpp
 lbot::Message<examples::msg::ExampleMessage> message;
 ```
@@ -67,26 +67,26 @@ float field_b = message.field_b;
 ```
 
 # Sender
-In order to send a message you need to create a [Node::Sender](@ref labrat::lbot::Node::Sender) object. You must specify the first template argument of [Node::Sender](@ref labrat::lbot::Node::Sender) as the message type you want to send. It is recommended to declare a sender pointer as a member of your node.
+In order to send a message you need to create a [Node::Sender](@ref lbot::Node::Sender) object. You must specify the first template argument of [Node::Sender](@ref lbot::Node::Sender) as the message type you want to send. It is recommended to declare a sender pointer as a member of your node.
 ```cpp
 Sender<examples::msg::ExampleMessage>::Ptr sender;
 ```
-This pointer should then be initialized in the constructor of the node via the [addSender()](@ref labrat::lbot::Node::addSender()) function. The template arguments of the [addSender()](@ref labrat::lbot::Node::addSender()) function must match the [Node::Sender::Ptr](@ref labrat::lbot::Node::Sender::Ptr) object you declared earlier. The first argument of the function itself specifies the name of the topic onto which the data is sent. You don't need to declare the topic anywhere explicitly.
+This pointer should then be initialized in the constructor of the node via the [addSender()](@ref lbot::Node::addSender()) function. The template arguments of the [addSender()](@ref lbot::Node::addSender()) function must match the [Node::Sender::Ptr](@ref lbot::Node::Sender::Ptr) object you declared earlier. The first argument of the function itself specifies the name of the topic onto which the data is sent. You don't need to declare the topic anywhere explicitly.
 ```cpp
 sender = addSender<examples::msg::ExampleMessage>("/examples/test_topic");
 ```
 
-Now you can construct messages and send them over the topic by using the [put()](@ref labrat::lbot::Node::Sender::put()) function.
+Now you can construct messages and send them over the topic by using the [put()](@ref lbot::Node::Sender::put()) function.
 ```cpp
 sender->put(message);
 ```
 
 # Receiver
-In order to receive a message you need to create a [Node::Receiver](@ref labrat::lbot::Node::Receiver) object. It is declared in a similar manner to [Node::Sender](@ref labrat::lbot::Node::Sender).
+In order to receive a message you need to create a [Node::Receiver](@ref lbot::Node::Receiver) object. It is declared in a similar manner to [Node::Sender](@ref lbot::Node::Sender).
 ```cpp
 Receiver<examples::msg::ExampleMessage>::Ptr receiver;
 ```
-Once again this pointer should then be initialized in the constructor of the node. This can be achieved through the [addReceiver()](@ref labrat::lbot::Node::addReceiver())function which behaves similarly to [addSender()](@ref labrat::lbot::Node::addSender()).
+Once again this pointer should then be initialized in the constructor of the node. This can be achieved through the [addReceiver()](@ref lbot::Node::addReceiver())function which behaves similarly to [addSender()](@ref lbot::Node::addSender()).
 ```cpp
 receiver = addReceiver<examples::msg::ExampleMessage>("/examples/test_topic");
 ```
@@ -94,7 +94,7 @@ receiver = addReceiver<examples::msg::ExampleMessage>("/examples/test_topic");
 Now you can receive and deconstruct messages from the topic. For this purpose you have two options.
 
 ## Latest message
-One method to receive a message from a topic is to use the [latest()](@ref labrat::lbot::Node::Receiver::latest()) function. It will return the latest message that was sent by the corresponding sender over the topic. Successive calls to [latest()](@ref labrat::lbot::Node::Receiver::latest()) might return the same message (if no new messages have been sent in the meantime). If no message has been sent yet, a [lbot::TopicNoDataAvailableException](@ref labrat::lbot::TopicNoDataAvailableException) will be thrown. You should therefore always call [latest()](@ref labrat::lbot::Node::Receiver::latest()) inside a try-catch block.
+One method to receive a message from a topic is to use the [latest()](@ref lbot::Node::Receiver::latest()) function. It will return the latest message that was sent by the corresponding sender over the topic. Successive calls to [latest()](@ref lbot::Node::Receiver::latest()) might return the same message (if no new messages have been sent in the meantime). If no message has been sent yet, a [lbot::TopicNoDataAvailableException](@ref lbot::TopicNoDataAvailableException) will be thrown. You should therefore always call [latest()](@ref lbot::Node::Receiver::latest()) inside a try-catch block.
 ```cpp
 try {
   message = receiver->latest();
@@ -102,7 +102,7 @@ try {
 ```
 
 ## Next message
-Another method to receive a message from a topic is to use the [next()](@ref labrat::lbot::Node::Receiver::next()) function. Successive calls to [next()](@ref labrat::lbot::Node::Receiver::next()) will yield different messages sent over the topic in order. If no new message has been sent, this call will block. As long as the internal buffer of the receiver has not been exceeded, you are guaranteed that no message will be skipped. Such an overflow can occur if the receiver thread is not able to keep pace with the sender thread. A [lbot::TopicNoDataAvailableException](@ref labrat::lbot::TopicNoDataAvailableException) will be thrown if the corresponding sender is being deleted. This is done to prevent deadlocks. You should therefore once again call [next()](@ref labrat::lbot::Node::Receiver::next()) only inside a try-catch block.
+Another method to receive a message from a topic is to use the [next()](@ref lbot::Node::Receiver::next()) function. Successive calls to [next()](@ref lbot::Node::Receiver::next()) will yield different messages sent over the topic in order. If no new message has been sent, this call will block. As long as the internal buffer of the receiver has not been exceeded, you are guaranteed that no message will be skipped. Such an overflow can occur if the receiver thread is not able to keep pace with the sender thread. A [lbot::TopicNoDataAvailableException](@ref lbot::TopicNoDataAvailableException) will be thrown if the corresponding sender is being deleted. This is done to prevent deadlocks. You should therefore once again call [next()](@ref lbot::Node::Receiver::next()) only inside a try-catch block.
 ```cpp
 try {
   message = receiver->next();
@@ -110,7 +110,7 @@ try {
 ```
 
 ## Callbacks
-Alternatively, you can also register a callback function that will be called every time a sender puts a message onto the relevant topic. This is the only method that ensures that no message will be missed. It comes, however, with a significant performance penalty compared to calls to [latest()](@ref labrat::lbot::Node::Receiver::latest()) or [next()](@ref labrat::lbot::Node::Receiver::next()). In order to register a callback you need to specify it using the [setCallback()](@ref labrat::lbot::Node::Receiver::setCallback()) method. The first argument is a function pointer of the signature `void (const MessageType &message, DataType *user_ptr)` where `message` holds a const reference to the relevant message and `user_ptr` is a configurable pointer to any data type. The value of `user_ptr` can be specified in the second argument of [setCallback()](@ref labrat::lbot::Node::Receiver::setCallback()). If omitted an invalid pointer will be forwarded to the callback function.
+Alternatively, you can also register a callback function that will be called every time a sender puts a message onto the relevant topic. This is the only method that ensures that no message will be missed. It comes, however, with a significant performance penalty compared to calls to [latest()](@ref lbot::Node::Receiver::latest()) or [next()](@ref lbot::Node::Receiver::next()). In order to register a callback you need to specify it using the [setCallback()](@ref lbot::Node::Receiver::setCallback()) method. The first argument is a function pointer of the signature `void (const MessageType &message, DataType *user_ptr)` where `message` holds a const reference to the relevant message and `user_ptr` is a configurable pointer to any data type. The value of `user_ptr` can be specified in the second argument of [setCallback()](@ref lbot::Node::Receiver::setCallback()). If omitted an invalid pointer will be forwarded to the callback function.
 ```
 void callback(const lbot::Message<examples::msg::ExampleMessage> &message, void *) {...};
 ...

@@ -14,9 +14,13 @@
 
 #include <termios.h>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
+/** @cond INTERNAL */
 inline namespace utils {
+/** @endcond */
 
 /**
  * @brief Convert baud rates to Linux speed values.
@@ -26,6 +30,10 @@ inline namespace utils {
  */
 speed_t toSpeed(u64 baud_rate);
 
+/** @cond INTERNAL */
 }  // namespace utils
+/** @endcond */
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

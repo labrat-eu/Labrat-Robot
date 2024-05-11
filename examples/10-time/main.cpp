@@ -9,10 +9,9 @@
 
 // Time
 //
-// Plugins allow you to globally access messages.
-// This is useful if you want to record messages for later analysis or if you want to debug you program while it is running.
+// There exist multiple feasable time sources to synchronize a robotics program.
 //
-// In this example we will use some existing plugins that might help you in your projects.
+// In this example we will use the gazebo-time plugin to showcase the custom time mode.
 
 class ExampleNode : public lbot::Node {
 public:

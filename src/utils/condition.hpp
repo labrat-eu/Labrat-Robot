@@ -16,10 +16,18 @@
 #include <memory>
 #include <atomic>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
+/** @cond INTERNAL */
 inline namespace utils {
+/** @endcond */
 
+/**
+ * @brief A condition variable primitive.
+ * @details This class is compatible with the STL std::mutex and std::unique_lock classes.
+ */
 class ConditionVariable {
 public:
   using NativeHandle = std::condition_variable::native_handle_type;
@@ -33,35 +41,83 @@ public:
 
   ~ConditionVariable() = default;
 
+  /**
+   * @brief Notify one thread waiting on the condition variable.
+   */
   void notifyOne() noexcept {
     condition->notify_one();
   }
 
+  /**
+   * @brief Notify all threads waiting on the condition variable.
+   */
   void notifyAll() noexcept {
     condition->notify_all();
   }
 
+  /**
+   * @brief Wait on the condition variable.
+   * @details Blocks execution of the current thread until the condition is notified or a spurious wakeup occurs.
+   * @details The provided lock must be locked when calling this function. While waiting the associated mutex will be unlocked. Once the function returns the lock is once again acquired atomically.
+   * 
+   * @param lock Lock to unlock while waiting.
+   */
   void wait(std::unique_lock<std::mutex> &lock) {
     condition->wait(lock);
   }
 
+  /**
+   * @brief Wait on the condition variable.
+   * @details Blocks execution of the current thread until the condition is notified or a spurious wakeup occurs.
+   * @details When the thread wakes up, pred will be called. If it returns false, the thread will continue waiting.
+   * @details The provided lock must be locked when calling this function. While waiting the associated mutex will be unlocked. Once the function returns the lock is once again acquired atomically.
+   * 
+   * @param lock Lock to unlock while waiting.
+   * @param pred Callable object to call on a wakeup.
+   */
   template<class Predicate>
   void wait(std::unique_lock<std::mutex> &lock, Predicate pred) {
     condition->wait(lock, pred);
   }
 
+  /**
+   * @brief Wait on the condition variable. Once the specified timeout is reached, the thread will unblock regardless of any notify calls.
+   * @details Blocks execution of the current thread until the condition is notified or a spurious wakeup occurs.
+   * @details The provided lock must be locked when calling this function. While waiting the associated mutex will be unlocked. Once the function returns the lock is once again acquired atomically.
+   * 
+   * @param lock Lock to unlock while waiting.
+   * @param duration Relative duration after the thread will wakeup.
+   */
   template<class Rep, class Period>
   std::cv_status waitFor(std::unique_lock<std::mutex> &lock, const std::chrono::duration<Rep, Period> &duration) {
     const Clock::time_point time_begin = Clock::now();
     return waitUntil(lock, time_begin + std::chrono::duration_cast<Clock::duration>(duration));
   }
 
+  /**
+   * @brief Wait on the condition variable. Once the specified timeout is reached, the thread will unblock regardless of any notify calls.
+   * @details Blocks execution of the current thread until the condition is notified or a spurious wakeup occurs.
+   * @details When the thread wakes up, pred will be called. If it returns false, the thread will continue waiting.
+   * @details The provided lock must be locked when calling this function. While waiting the associated mutex will be unlocked. Once the function returns the lock is once again acquired atomically.
+   * 
+   * @param lock Lock to unlock while waiting.
+   * @param duration Relative duration after the thread will wakeup.
+   * @param pred Callable object to call on a wakeup.
+   */
   template<class Rep, class Period, class Predicate>
   bool waitFor(std::unique_lock<std::mutex> &lock, const std::chrono::duration<Rep, Period> &duration, Predicate pred) {
     const Clock::time_point time_begin = Clock::now();
     return waitUntil(lock, time_begin + std::chrono::duration_cast<Clock::duration>(duration), pred);
   }
 
+  /**
+   * @brief Wait on the condition variable. Once the specified timeout is reached, the thread will unblock regardless of any notify calls.
+   * @details Blocks execution of the current thread until the condition is notified or a spurious wakeup occurs.
+   * @details The provided lock must be locked when calling this function. While waiting the associated mutex will be unlocked. Once the function returns the lock is once again acquired atomically.
+   * 
+   * @param lock Lock to unlock while waiting.
+   * @param time Absolute timestamp after the thread will wakeup.
+   */
   template<class Duration>
   std::cv_status waitUntil(std::unique_lock<std::mutex> &lock, const std::chrono::time_point<Clock, Duration> &time) {
     switch (Clock::mode) {
@@ -90,6 +146,16 @@ public:
     }
   }
 
+  /**
+   * @brief Wait on the condition variable. Once the specified timeout is reached, the thread will unblock regardless of any notify calls.
+   * @details Blocks execution of the current thread until the condition is notified or a spurious wakeup occurs.
+   * @details When the thread wakes up, pred will be called. If it returns false, the thread will continue waiting.
+   * @details The provided lock must be locked when calling this function. While waiting the associated mutex will be unlocked. Once the function returns the lock is once again acquired atomically.
+   * 
+   * @param lock Lock to unlock while waiting.
+   * @param time Absolute timestamp after the thread will wakeup.
+   * @param pred Callable object to call on a wakeup.
+   */
   template<class Duration, class Predicate>
   bool waitUntil(std::unique_lock<std::mutex> &lock, const std::chrono::time_point<Clock, Duration> &time, Predicate pred) {
     while (!pred()) {
@@ -105,6 +171,10 @@ private:
   std::shared_ptr<std::condition_variable> condition;
 };
 
+/** @cond INTERNAL */
 }  // namespace utils
+/** @endcond */
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

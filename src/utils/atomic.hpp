@@ -12,9 +12,13 @@
 
 #include <atomic>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
+/** @cond INTERNAL */
 inline namespace utils {
+/** @endcond */
 
 /**
  * @brief RAII guard of an atomic value to increment it on construction and decrement it upon destruction.
@@ -150,6 +154,10 @@ inline void spinUntil(std::atomic<T> &value, T required) {
   }
 }
 
+/** @cond INTERNAL */
 }  // namespace utils
+/** @endcond */
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

@@ -10,10 +10,10 @@
 // In this example the central configuration class is showcased.
 
 int main(int argc, char **argv) {
-  lbot::Logger logger("main");
-
   lbot::Config::Ptr config = lbot::Config::get();
   config->load("06-config/config.yaml");
+
+  lbot::Logger logger("main");
 
   config->setParameter("/test_param", 1L);
   logger.logInfo() << "Read parameter '/test_param': " << config->getParameter("/test_param").get<int64_t>();

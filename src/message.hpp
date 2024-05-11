@@ -21,9 +21,12 @@
 
 #include <flatbuffers/flatbuffers.h>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
 
+/** @cond INTERNAL */
 template <auto *Function>
 class ConversionFunction {};
 
@@ -149,6 +152,7 @@ concept can_move_from_ptr = requires(T::Converted &&source, T::Storage &destinat
 };
 template <typename T, typename R = void>
 concept can_move_from = can_move_from_noptr<T> || can_move_from_ptr<T>;
+/** @endcond  */
 
 /**
  * @brief Abstract time class for Message.
@@ -181,8 +185,10 @@ private:
   Clock::time_point lbot_message_base_timestamp;
 };
 
+/** @cond INTERNAL */
 template <typename T>
 concept is_flatbuffer = std::is_base_of_v<flatbuffers::Table, std::remove_const_t<T>>;
+/** @endcond  */
 
 /**
  * @brief Unsafe wrapper of a flatbuf message for use within this library.
@@ -229,11 +235,13 @@ public:
   }
 };
 
+/** @cond INTERNAL */
 template <typename T, typename Flatbuffer = T::Flatbuffer, typename Converted = T::Converted>
 concept is_message = std::derived_from<T, MessageBase<Flatbuffer, Converted>>;
 
 template <typename T, typename Flatbuffer = T::Flatbuffer>
 concept is_const_message = is_message<T, Flatbuffer> && std::is_const_v<Flatbuffer>;
+/** @endcond  */
 
 /**
  * @brief Safe wrapper of a flatbuf message for use within this library.
@@ -285,8 +293,10 @@ public:
   }
 };
 
+/** @cond INTERNAL */
 template <typename T, typename Flatbuffer = T::Flatbuffer>
 concept is_standard_message = std::is_same_v<T, Message<Flatbuffer>>;
+/** @endcond  */
 
 /**
  * @brief Non-templated container to store reflection info about a Message type.
@@ -327,4 +337,6 @@ private:
 };
 
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

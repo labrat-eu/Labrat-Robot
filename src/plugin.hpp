@@ -16,7 +16,9 @@
 #include <string>
 #include <vector>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
 
 class Plugin {
@@ -91,4 +93,6 @@ protected:
 };
 
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

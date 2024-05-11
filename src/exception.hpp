@@ -14,7 +14,9 @@
 #include <exception>
 #include <system_error>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
 
 /**
@@ -173,4 +175,6 @@ class BadUsageException : public Exception {
 };
 
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

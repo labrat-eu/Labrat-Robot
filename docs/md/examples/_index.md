@@ -12,6 +12,7 @@ You can use the following code examples to help start off your project.
 - @subpage example_plugins
 - @subpage example_conversions
 - @subpage example_moves
+- @subpage example_time
 
 # Building
 Navigate to the `examples/` directory.
@@ -109,3 +110,9 @@ Choose the relevant script based on your build type.
 @include examples/09-moves/msg/array.fbs
 # `CMakeLists.txt`
 @include examples/09-moves/CMakeLists.txt
+
+@page example_time Time Example
+# `main.cpp`
+@include examples/10-time/main.cpp
+# `CMakeLists.txt`
+@include examples/10-time/CMakeLists.txt

@@ -18,7 +18,9 @@
 
 #include <flatbuffers/stl_emulation.h>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
 
 /**
@@ -100,4 +102,6 @@ struct MessageInfo {
 };
 
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

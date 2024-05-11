@@ -10,21 +10,25 @@ Any robotics project can be understood to be the sum of many components. A compo
 
 Nodes can communicate with each other via topics and services. This is the only interface they should expose to each other. This ensures that all transactions between nodes can be traced.
 
-In order to create a node, you have to define a class that is derived from [lbot::Node](@ref labrat::lbot::Node).
+In order to create a node, you have to define a class that is derived from [lbot::Node](@ref lbot::Node).
 ```cpp
 class ExampleNode : public lbot::Node { ... }
 ```
 
 # Manager
-Nodes should never be created by directly calling their constructor. Instead you should use the [central manager](@ref labrat::lbot::Manager). You can access it by calling the following function.
+Nodes should never be created by directly calling their constructor. Instead you should use the [central manager](@ref lbot::Manager). You can access it by calling the following function.
+
+@attention
+You should keep a [reference to central manager](@ref lbot::Manager::Ptr) until the end of you `main()` function. Otherwise important resources might be deallocated before your program finishes.
+
 ```cpp
 lbot::Manager::Ptr manager = lbot::Manager::get();
 ```
-Now you can add nodes to the manager. A call to [addNode()](@ref labrat::lbot::Manager::addNode()) will construct the node and will take care of any cleanup after your program has finished. The first argument of the [addNode()](@ref labrat::lbot::Manager::addNode()) function is the name of the node. Afterwards custom arguments can be provided that are forwarded to the nodes constructor. Generally, you can add multiple nodes of the same type, but you cannot add multiple nodes with the same name.
+Now you can add nodes to the manager. A call to [addNode()](@ref lbot::Manager::addNode()) will construct the node and will take care of any cleanup after your program has finished. The first argument of the [addNode()](@ref lbot::Manager::addNode()) function is the name of the node. Afterwards custom arguments can be provided that are forwarded to the nodes constructor. Generally, you can add multiple nodes of the same type, but you cannot add multiple nodes with the same name.
 ```cpp
 manager->addNode<ExampleNode>("node_a", ...);
 ```
-You can remove nodes from the manager explicitly via the [removeNode()](@ref labrat::lbot::Manager::removeNode()) method. However you do not need to do this at the end of your program, as any remaining nodes will be removed automatically.
+You can remove nodes from the manager explicitly via the [removeNode()](@ref lbot::Manager::removeNode()) method. However you do not need to do this at the end of your program, as any remaining nodes will be removed automatically.
 ```cpp
 manager->removeNode("node_a");
 ```
@@ -36,7 +40,7 @@ getLogger().logInfo() << "This node is called " << getName() << ".";
 ```
 
 # Unique Nodes
-Nodes can also inherit from [lbot::UniqueNode](@ref labrat::lbot::UniqueNode). This ensures that only one instance of the node can be added to the central manager. Writing a unique node might therefore be easier, as you do not have to worry about duplicate topic/service names or shared access to hardware resources.
+Nodes can also inherit from [lbot::UniqueNode](@ref lbot::UniqueNode). This ensures that only one instance of the node can be added to the central manager. Writing a unique node might therefore be easier, as you do not have to worry about duplicate topic/service names or shared access to hardware resources.
 ```cpp
 class ExampleNode : public lbot::UniqueNode { ... }
 ```

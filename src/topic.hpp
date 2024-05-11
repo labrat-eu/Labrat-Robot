@@ -20,9 +20,12 @@
 #include <unordered_map>
 #include <vector>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
 
+/** @cond INTERNAL */
 class TopicMap {
 public:
   class Topic {
@@ -147,6 +150,9 @@ private:
 
   std::unordered_map<std::string, Topic> map;
 };
+/** @endcond  */
 
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

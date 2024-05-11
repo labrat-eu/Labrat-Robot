@@ -13,9 +13,13 @@
 #include <cstdint>
 
 // NOLINTBEGIN
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
+/** @cond INTERNAL */
 inline namespace utils {
+/** @endcond */
 
 // Signed integer types.
 using i8 = std::int8_t;
@@ -34,7 +38,11 @@ using f32 = float;
 using f64 = double;
 using f128 = long double;
 
+/** @cond INTERNAL */
 }  // namespace utils
+/** @endcond */
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */
 // NOLINTEND

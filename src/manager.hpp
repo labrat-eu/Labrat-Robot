@@ -28,7 +28,9 @@
 #include <unordered_set>
 #include <variant>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
 
 class Manager;
@@ -39,6 +41,7 @@ class UniqueNode;
 class Plugin;
 class UniquePlugin;
 
+/** @cond INTERNAL */
 template <typename T>
 concept has_topic_callback = requires(T *self, const TopicInfo &info) {
   {
@@ -57,6 +60,7 @@ concept has_message_callback = requires(T *self, const MessageInfo &info) {
     self->messageCallback(info)
   };
 };
+/** @endcond */
 
 /**
  * @brief Central class to manage nodes, plugins, topics and services.
@@ -354,4 +358,6 @@ private:
 };
 
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

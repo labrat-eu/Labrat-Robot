@@ -19,16 +19,26 @@
 #include <queue>
 #include <compare>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
 
 class Manager;
 
+/** @cond INTERNAL */
 inline namespace utils {
+/** @endcond */
 class Thread;
 class ConditionVariable;
+/** @cond INTERNAL */
 }
+/** @endcond */
 
+/**
+ * @brief Central clock class to access the current time.
+ * @details This class is compatible with the STL chrono library.
+ */
 class Clock {
 public:
   using duration = std::chrono::nanoseconds;
@@ -38,7 +48,19 @@ public:
 
   Clock() = delete;
   
+  /**
+   * @brief Check whether the clock has been intialized by the manager.
+   * 
+   * @return true The clock is initialized and time related functions work properly.
+   * @return false The clock is not yet initialized. Time related functions may not work properly.
+   */
   static bool initialized();
+
+  /**
+   * @brief Get the current time.
+   * 
+   * @return time_point The current time.
+   */
   static time_point now();
 
   static constexpr bool is_steady = false;
@@ -93,4 +115,6 @@ static_assert(std::chrono::is_clock_v<Clock>);
 #endif
 
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

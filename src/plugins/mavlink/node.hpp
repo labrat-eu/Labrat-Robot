@@ -15,7 +15,9 @@
 
 typedef struct __mavlink_message mavlink_message_t;
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot::plugins {
 
 /**
@@ -140,4 +142,6 @@ private:
 };
 
 }  // namespace lbot::plugins
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

@@ -14,9 +14,13 @@
 #include <chrono>
 #include <string>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
+/** @cond INTERNAL */
 inline namespace utils {
+/** @endcond */
 
 class TimerTraceBase {
 protected:
@@ -65,6 +69,10 @@ private:
   const std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
 };
 
+/** @cond INTERNAL */
 }  // namespace utils
+/** @endcond */
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

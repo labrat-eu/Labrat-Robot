@@ -13,10 +13,15 @@
 #include <cassert>
 #include <memory>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
+/** @cond INTERNAL */
 inline namespace utils {
+/** @endcond */
 
+/** @cond INTERNAL */
 /**
  * @brief Shared pointer instance that is required to be the last instance pointing to the managed object to be deleted.
  *
@@ -54,7 +59,12 @@ public:
 private:
   bool was_moved = false;
 };
+/** @endcond  */
 
+/** @cond INTERNAL */
 }  // namespace utils
+/** @endcond */
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */

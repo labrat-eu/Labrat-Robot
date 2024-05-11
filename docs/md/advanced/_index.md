@@ -8,4 +8,5 @@ The tutorial consists of the following chapters:
 - @subpage conversions
 - @subpage moves
 - @subpage filter
+- @subpage time
 - @subpage custom_plugins

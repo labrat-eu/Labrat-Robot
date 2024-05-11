@@ -18,9 +18,12 @@
 #include <sstream>
 #include <string>
 
+/** @cond INTERNAL */
 inline namespace labrat {
+/** @endcond */
 namespace lbot {
 
+/** @cond INTERNAL */
 class LoggerNode;
 
 struct LoggerLocation {
@@ -33,6 +36,7 @@ struct LoggerLocation {
 };
 
 #define LBOT_LOGINIT labrat::lbot::LoggerLocation(std::filesystem::path(__FILE__), __LINE__)
+/** @endcond  */
 
 #define logCritical() write(labrat::lbot::Logger::Verbosity::critical, LBOT_LOGINIT)
 #define logError() write(labrat::lbot::Logger::Verbosity::error, LBOT_LOGINIT)
@@ -286,4 +290,6 @@ private:
 };
 
 }  // namespace lbot
+/** @cond INTERNAL */
 }  // namespace labrat
+/** @endcond */
