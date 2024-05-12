@@ -91,7 +91,7 @@ def requirements(self):
 You also need to specify CMake as a build dependency in the `build_requirements()` method.
 ```python
 def build_requirements(self):
-  self.tool_requires("cmake/3.28.1")
+  self.tool_requires("cmake/3.29.3")
 ```
 
 ## `CMakeLists.txt`

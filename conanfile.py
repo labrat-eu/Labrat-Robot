@@ -73,7 +73,7 @@ class LbotConan(ConanFile):
         if self.options.with_system_deps:
             return
 
-        self.tool_requires("cmake/3.28.1")
+        self.tool_requires("cmake/3.29.3")
 
     def layout(self):
         cmake_layout(self)

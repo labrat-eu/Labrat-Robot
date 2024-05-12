@@ -20,7 +20,7 @@ class GzLbotBridgeConan(ConanFile):
         apt.install(["libgz-cmake3-dev", "libgz-sim8-dev"], check = True)
 
     def build_requirements(self):
-        self.tool_requires("cmake/3.28.1")
+        self.tool_requires("cmake/3.29.3")
 
     def layout(self):
         cmake_layout(self)

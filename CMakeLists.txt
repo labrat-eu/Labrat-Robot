@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.22.0)
 
 
-# Include toolchain.
-include(${CMAKE_TOOLCHAIN_FILE})
-
 # Set used languages.
 set(USED_LANGUAGES CXX C ASM)
 
@@ -14,10 +11,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/install)
 # Include tools.
 include(Config)
 include(Options)
-include(ClangFormat)
-include(Doxygen)
-include(IncludeSymlinks)
-include(GenerateFlatbuffer)
 
 # Set build types.
 set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo)
@@ -32,6 +25,14 @@ string(TOUPPER ${CMAKE_BUILD_TYPE} PRJ_BUILD_TYPE_CAPS)
 add_compile_definitions(PRJ_BUILD_TYPE=${CMAKE_BUILD_TYPE} "PRJ_BUILD_TYPE_${PRJ_BUILD_TYPE_CAPS}")
 unset(PRJ_BUILD_TYPE_CAPS)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
+# Create the root project.
+project(${LOCAL_PROJECT_NAME} VERSION ${GIT_VERSION} DESCRIPTION ${LOCAL_PROJECT_DESCRIPTION} LANGUAGES ${USED_LANGUAGES})
+
+include(ClangFormat)
+include(Doxygen)
+include(IncludeSymlinks)
+include(GenerateFlatbuffer)
 
 # Set name definitions.
 add_compile_definitions(
@@ -51,10 +52,6 @@ add_compile_definitions(
   GIT_HASH_SHORT=${GIT_HASH_SHORT}
   GIT_BRANCH=${GIT_BRANCH}
 )
-
-# Create the root project.
-project(${LOCAL_PROJECT_NAME} VERSION ${GIT_VERSION} DESCRIPTION ${LOCAL_PROJECT_DESCRIPTION} LANGUAGES ${USED_LANGUAGES})
-
 
 # Define variables and options here.
 prj_register_option(ENABLE_PLUGINS "Enable building of plugins." ON)

@@ -11,7 +11,7 @@ class LbotTestConan(ConanFile):
         self.requires("flatbuffers/23.5.26")
 
     def build_requirements(self):
-        self.tool_requires("cmake/3.28.1")
+        self.tool_requires("cmake/3.29.3")
         self.test_requires("gtest/1.14.0")
 
     def layout(self):

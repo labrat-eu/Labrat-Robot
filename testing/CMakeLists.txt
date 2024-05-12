@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.22.0)
 
-# Include toolchain.
-include(${CMAKE_TOOLCHAIN_FILE})
 
 project(test CXX)
 

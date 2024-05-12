@@ -31,7 +31,7 @@ class LbotExamplesConan(ConanFile):
         self.requires("lbot/" + get_lbot_version())
 
     def build_requirements(self):
-        self.tool_requires("cmake/3.28.1")
+        self.tool_requires("cmake/3.29.3")
 
     def layout(self):
         cmake_layout(self)
