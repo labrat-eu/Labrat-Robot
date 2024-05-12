@@ -15,7 +15,6 @@ variables:
 
 .init-generic: &init-generic |
   git config --global --add safe.directory '*'
-  git fetch --depth=99999
   export CONAN_HOME=$(pwd)/.tmp/
   mkdir -p .tmp/profiles/
   cp /opt/conan_profile .tmp/profiles/ci

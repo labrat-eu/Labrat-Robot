@@ -15,6 +15,7 @@ conan test testing lbot/<version>
 ## Building the library for development
 ```
 conan install . --build=missing
+conan source .
 conan build .
 ```
 
