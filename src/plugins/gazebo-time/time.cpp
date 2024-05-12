@@ -8,8 +8,8 @@
 
 #include <labrat/lbot/message.hpp>
 #include <labrat/lbot/node.hpp>
-#include <labrat/lbot/msg/timestamp.fb.hpp>
-#include <labrat/lbot/plugins/gazebo-time/msg/gazebo_time.fb.hpp>
+#include <labrat/lbot/msg/timestamp.hpp>
+#include <labrat/lbot/plugins/gazebo-time/msg/gazebo_time.hpp>
 #include <labrat/lbot/plugins/gazebo-time/time.hpp>
 #include <labrat/lbot/plugins/gazebo-time/protocol.hpp>
 

@@ -43,10 +43,6 @@ class LbotExamplesConan(ConanFile):
         toolchain = CMakeToolchain(self)
         toolchain.generate()
 
-        environment = VirtualRunEnv(self)
-        environment.environment().append_path("LBOT_REFLECTION_PATH", os.path.join(self.folders.build, "flatbuffer", "schema"))
-        environment.generate()
-
     def build(self):
         cmake = CMake(self)
         cmake.configure()

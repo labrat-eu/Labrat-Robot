@@ -151,5 +151,3 @@ class LbotConan(ConanFile):
         self.cpp_info.components["plugins"].set_property("cmake_module_target_name", f"{self.name}::plugins")
         self.cpp_info.components["plugins"].libs = ["lbot_plugins"]
         self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "foxglove-websocket::foxglove-websocket", "crc_cpp::crc_cpp"]
-
-        self.runenv_info.append_path("LBOT_REFLECTION_PATH", os.path.join(self.package_folder, "var", "run", "lbot", "schema"))

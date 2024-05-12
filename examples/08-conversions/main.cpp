@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-#include <examples/msg/number.fb.hpp>
+#include <examples/msg/number.hpp>
 
 // Conversions
 //

@@ -101,14 +101,8 @@ void McapRecorder::messageCallback(const MessageInfo &info) {
 McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleTopic(const TopicInfo &info) {
   SchemaMap::iterator schema_iterator = schema_map.find(info.type_hash);
   if (schema_iterator == schema_map.end()) {
-    MessageReflection reflection(info.type_name);
-
-    if (!reflection.isValid()) {
-      throw SchemaUnknownException("Unknown message schema '" + info.type_name + "'.", logger);
-    }
-
     schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
-      std::forward_as_tuple(info.type_name, "flatbuffer", reflection.getBuffer()));
+      std::forward_as_tuple(info.type_name, "flatbuffer", info.type_reflection));
 
     std::lock_guard guard(mutex);
     writer.addSchema(schema_iterator->second);

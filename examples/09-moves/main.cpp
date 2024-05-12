@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include <examples/msg/array.fb.hpp>
+#include <examples/msg/array.hpp>
 
 // Moves
 //

@@ -7,7 +7,7 @@
 
 #include <cmath>
 
-#include <examples/msg/vector.fb.hpp>
+#include <examples/msg/vector.hpp>
 
 // Plugins
 //

@@ -94,16 +94,6 @@ def build_requirements(self):
   self.tool_requires("cmake/3.28.1")
 ```
 
-Finally you need to specify the `LBOT_REFLECTION_PATH` environment variable to include your build folder. You don't really need to concern yourself with why this is. But if you're curious, it must be done so that labrat-robot has access to custom message schemas you might define in your project at runtime.
-```python
-from conan.tools.env import VirtualRunEnv
-
-def generate(self):
-  environment = VirtualRunEnv(self)
-  environment.environment().append_path("LBOT_REFLECTION_PATH", os.path.join(self.folders.build, "flatbuffer", "schema"))
-  environment.generate()
-```
-
 ## `CMakeLists.txt`
 The recommended build system for labrat-robot projects is [CMake](https://cmake.org/). It is configured through `CMakeLists.txt` files.
 

@@ -13,7 +13,6 @@ file(RELATIVE_PATH TARGET_RELATIVE_PATH ${PROJECT_SOURCE_DIR}/src ${CMAKE_CURREN
 set(TARGET_SOURCES
   clock.cpp
   manager.cpp
-  message.cpp
   topic.cpp
   service.cpp
   logger.cpp

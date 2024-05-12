@@ -158,7 +158,7 @@ public:
   std::jthread time_thread;
 
 private:
-  SchemaMap::iterator handleSchema(const std::string &type_name, std::size_t type_hash);
+  SchemaMap::iterator handleSchema(std::string_view type_name, std::size_t type_hash, std::string_view type_reflection);
   void handleParameterRequest(const std::vector<std::string> &names, const std::optional<std::string> &command,
     websocketpp::connection_hdl handle);
 
@@ -192,26 +192,20 @@ void FoxgloveServer::messageCallback(const MessageInfo &info) {
   }
 }
 
-FoxgloveServerPrivate::SchemaMap::iterator FoxgloveServerPrivate::handleSchema(const std::string &type_name, const std::size_t type_hash) {
+FoxgloveServerPrivate::SchemaMap::iterator FoxgloveServerPrivate::handleSchema(std::string_view type_name, const std::size_t type_hash, std::string_view type_reflection) {
   std::lock_guard guard(mutex);
 
   SchemaMap::iterator schema_iterator = schema_map.find(type_hash);
   if (schema_iterator == schema_map.end()) {
-    MessageReflection reflection(type_name);
-
-    if (!reflection.isValid()) {
-      throw SchemaUnknownException("Unknown message schema '" + type_name + "'.", logger);
-    }
-
     schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(type_hash),
-      std::forward_as_tuple(type_name, foxglove::base64Encode(reflection.getBuffer())));
+      std::forward_as_tuple(std::string(type_name), foxglove::base64Encode(type_reflection)));
   }
 
   return schema_iterator;
 }
 
 FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleTopic(const TopicInfo &info) {
-  SchemaMap::iterator schema_iterator = handleSchema(info.type_name, info.type_hash);
+  SchemaMap::iterator schema_iterator = handleSchema(info.type_name, info.type_hash, info.type_reflection);
 
   std::lock_guard guard(mutex);
 

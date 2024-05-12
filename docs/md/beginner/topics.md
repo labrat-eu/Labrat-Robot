@@ -48,7 +48,7 @@ lbot_generate_flatbuffer(TARGET ${TARGET_NAME_MESSAGE} SCHEMAS msg/example_messa
 ```
 The `TARGET` argument expects a string with name of the CMake target to be created. This target will then perform the code generation during the build step. The `SCHEMAS` argument consists of a list of message definition files you want to use. The `TARGET_PATH` determines the path of the C++ header file you need to include to access the message type. It is convention to mirror the namespace of a message in the `TARGET_PATH`. The correct include directive for this example would be:
 ```cpp
-#include <examples/msg/example_message.fb.hpp>
+#include <examples/msg/example_message.hpp>
 ```
 Now you need to link your library or executable target to the message target you just created. This will correctly set the include path, so that you can include the generated header in your code.
 ```cmake

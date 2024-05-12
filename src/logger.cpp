@@ -10,7 +10,7 @@
 #include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/message.hpp>
-#include <labrat/lbot/msg/foxglove/Log.fb.hpp>
+#include <labrat/lbot/msg/foxglove/Log.hpp>
 #include <labrat/lbot/node.hpp>
 
 #include <cstdlib>
@@ -75,13 +75,6 @@ private:
 
 public:
   explicit LoggerNode() : UniqueNode("logger") {
-    const MessageReflection reflection = MessageReflection(EntryMessage::getName());
-    if (!reflection.isValid()) {
-      getLogger().logCritical()
-        << "Message schema of the log message is unknown. Please set the LBOT_REFLECTION_PATH environment variable.";
-      exit(1);
-    }
-
     sender = addSender<EntryMessage>("/log");
   }
 

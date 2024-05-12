@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-#include <examples/msg/numbers.fb.hpp>
+#include <examples/msg/numbers.hpp>
 
 // Topics
 //

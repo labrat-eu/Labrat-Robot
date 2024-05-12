@@ -5,11 +5,12 @@
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/utils/condition.hpp>
 #include <labrat/lbot/utils/thread.hpp>
-#include <labrat/lbot/msg/timestamp.fb.hpp>
+#include <labrat/lbot/msg/timestamp.hpp>
 
 #include <mutex>
 #include <chrono>
 #include <thread>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -42,14 +43,15 @@ public:
   }
 
   void updateTimeAsync(lbot::Clock::time_point time, std::chrono::milliseconds duration) {
-    std::thread([&](lbot::Clock::time_point time, std::chrono::milliseconds duration){
+    threads.emplace_back([&](lbot::Clock::time_point time, std::chrono::milliseconds duration){
       std::this_thread::sleep_for(duration);
       sender->put(time);
-    }, time, duration).detach();
+    }, time, duration);
   }
 
 private:
   Sender<TimeMessage>::Ptr sender;
+  std::vector<std::jthread> threads;
 };
 
 class ClockTest : public LbotTestWithParam<std::string> {};

@@ -5,8 +5,8 @@
 
 #include <cmath>
 
-#include <examples/msg/request.fb.hpp>
-#include <examples/msg/response.fb.hpp>
+#include <examples/msg/request.hpp>
+#include <examples/msg/response.hpp>
 
 // Services
 //

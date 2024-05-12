@@ -11,7 +11,7 @@
 #include <labrat/lbot/node.hpp>
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/utils/thread.hpp>
-#include <labrat/lbot/msg/timestamp.fb.hpp>
+#include <labrat/lbot/msg/timestamp.hpp>
 
 inline namespace labrat {
 namespace lbot {

@@ -201,6 +201,7 @@ public:
   using Storage = MessageBase<std::remove_const_t<FlatbufferType>, ConvertedType>;
   using Flatbuffer = FlatbufferType;
   using Content = typename std::remove_const_t<FlatbufferType>::NativeTableType;
+  using Schema = typename std::remove_const_t<FlatbufferType>::BinarySchema;
   using Converted = ConvertedType;
 
   /**
@@ -230,8 +231,8 @@ public:
    *
    * @return constexpr std::string Name of the type.
    */
-  static inline constexpr std::string getName() {
-    return std::string(Content::TableType::GetFullyQualifiedName());
+  static inline constexpr std::string_view getName() {
+    return std::string_view(Content::TableType::GetFullyQualifiedName());
   }
 };
 
@@ -297,44 +298,6 @@ public:
 template <typename T, typename Flatbuffer = T::Flatbuffer>
 concept is_standard_message = std::is_same_v<T, Message<Flatbuffer>>;
 /** @endcond  */
-
-/**
- * @brief Non-templated container to store reflection info about a Message type.
- *
- */
-class MessageReflection {
-public:
-  /**
-   * @brief Construct a new Message Reflection object by type name.
-   *
-   * @param name Name of the type.
-   */
-  explicit MessageReflection(const std::string &name);
-
-  /**
-   * @brief Get buffer containing the type information.
-   * @details For this function to work properly, the LBOT_REFLECTION_PATH environment variable must be set correctly.
-   *
-   * @return const std::string& String contianing the binary type information.
-   */
-  [[nodiscard]] inline const std::string &getBuffer() const {
-    return buffer;
-  }
-
-  /**
-   * @brief Check whether or not the requested type could be found and the buffer is valid.
-   *
-   * @return true The buffer is valid.
-   * @return false The type could not be found and the type is invalid.
-   */
-  [[nodiscard]] inline bool isValid() const {
-    return valid;
-  }
-
-private:
-  std::string buffer;
-  bool valid;
-};
 
 }  // namespace lbot
 /** @cond INTERNAL */

@@ -15,6 +15,7 @@
 #include <labrat/lbot/utils/types.hpp>
 
 #include <string>
+#include <string_view>
 
 #include <flatbuffers/stl_emulation.h>
 
@@ -29,7 +30,8 @@ namespace lbot {
  */
 struct TopicInfo {
   const std::size_t type_hash;
-  const std::string type_name;
+  const std::string_view type_name;
+  const std::string_view type_reflection;
   const std::size_t topic_hash;
   const std::string topic_name;
 
@@ -46,6 +48,7 @@ struct TopicInfo {
     const TopicInfo result = {
       .type_hash = typeid(typename MessageType::Content).hash_code(),
       .type_name = MessageType::getName(),
+      .type_reflection = std::string_view(reinterpret_cast<const char *>(MessageType::Schema::data()), MessageType::Schema::size()),
       .topic_hash = std::hash<std::string>()(topic_name),
       .topic_name = topic_name,
     };
@@ -60,9 +63,11 @@ struct TopicInfo {
  */
 struct ServiceInfo {
   const std::size_t request_type_hash;
-  const std::string request_type_name;
+  const std::string_view request_type_name;
+  const std::string_view request_type_reflection;
   const std::size_t response_type_hash;
-  const std::string response_type_name;
+  const std::string_view response_type_name;
+  const std::string_view response_type_reflection;
   const std::size_t service_hash;
   const std::string service_name;
   ServiceMap::Service &service;
@@ -81,8 +86,10 @@ struct ServiceInfo {
   static ServiceInfo get(const std::string &service_name, ServiceMap::Service &service) {
     const ServiceInfo result = {.request_type_hash = typeid(typename RequestType::Content).hash_code(),
       .request_type_name = RequestType::getName(),
+      .request_type_reflection = std::string_view(reinterpret_cast<const char *>(RequestType::Schema::data()), RequestType::Schema::size()),
       .response_type_hash = typeid(typename ResponseType::Content).hash_code(),
       .response_type_name = ResponseType::getName(),
+      .response_type_reflection = std::string_view(reinterpret_cast<const char *>(ResponseType::Schema::data()), ResponseType::Schema::size()),
       .service_hash = std::hash<std::string>()(service_name),
       .service_name = service_name,
       .service = service};

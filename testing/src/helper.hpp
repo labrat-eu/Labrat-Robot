@@ -1,5 +1,5 @@
 #include <labrat/lbot/message.hpp>
-#include <labrat/lbot/msg/test.fb.hpp>
+#include <labrat/lbot/msg/test.hpp>
 #include <labrat/lbot/node.hpp>
 #include <labrat/lbot/plugin.hpp>
 

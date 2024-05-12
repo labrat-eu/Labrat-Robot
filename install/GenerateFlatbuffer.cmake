@@ -52,7 +52,6 @@ function(lbot_generate_flatbuffer)
   list(APPEND INT_FLAGS --keep-prefix)
   list(APPEND INT_FLAGS --cpp-std=c++17)
 
-  set(suffix ".fb")
   set(extension "hpp")
 
   # Create rules to generate the code for each schema.
@@ -70,35 +69,22 @@ function(lbot_generate_flatbuffer)
       message(FATAL_ERROR "The flatbuffer file '${schema}' does not contain a namespace.")
     endif()
 
-    set(generated_include "${generated_include_dir}/${filename}${suffix}.${extension}")
+    set(generated_include "${generated_include_dir}/${filename}.${extension}")
+    set(generated_reflection "${generated_include_dir}/${filename}_bfbs.${extension}")
     add_custom_command(
-      OUTPUT ${generated_include}
+      OUTPUT ${generated_include} ${generated_reflection}
       COMMAND ${FLATC} ${FLATC_ARGS}
       -o ${generated_include_dir}
       ${include_params}
       -c ${schema}
-      --filename-suffix ${suffix}
+      --filename-suffix "\"\""
       --filename-ext ${extension}
+      --bfbs-gen-embed
       ${INT_FLAGS}
       DEPENDS ${FLATC_TARGET} ${schema}
       WORKING_DIRECTORY "${working_dir}"
       COMMENT "Building ${schema} flatbuffers...")
-    list(APPEND all_generated_header_files ${generated_include})
-
-    # Geneate the binary flatbuffers schemas.
-    set(binary_schema_dir
-        "${generated_schema_dir}/${schema_namepath}")
-    set(binary_schema
-        "${binary_schema_dir}/${filename}.bfbs")
-    add_custom_command(
-      OUTPUT ${binary_schema}
-      COMMAND ${FLATC} -b --schema
-      -o ${binary_schema_dir}
-      ${include_params}
-      ${schema}
-      DEPENDS ${FLATC_TARGET} ${schema}
-      WORKING_DIRECTORY "${working_dir}")
-    list(APPEND all_generated_binary_files ${binary_schema})
+    list(APPEND all_generated_header_files ${generated_include} ${generated_reflection})
   endforeach()
 
   # Set up interface library
@@ -107,7 +93,6 @@ function(lbot_generate_flatbuffer)
     ${INT_TARGET}
     INTERFACE
       ${all_generated_header_files}
-      ${all_generated_binary_files}
       ${INT_SCHEMAS})
   add_dependencies(
     ${INT_TARGET}
@@ -119,5 +104,4 @@ function(lbot_generate_flatbuffer)
 
   install(FILES ${INT_SCHEMAS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${INT_TARGET_PATH})
   install(FILES ${all_generated_header_files} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${INT_TARGET_PATH})
-  install(DIRECTORY ${generated_schema_dir} DESTINATION ${CMAKE_INSTALL_RUNSTATEDIR}/lbot)
 endfunction(lbot_generate_flatbuffer)
