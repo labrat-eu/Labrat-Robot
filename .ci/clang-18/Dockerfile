@@ -1,6 +1,6 @@
 # Dockerfile to generate a build image for Ubuntu including all build dependencies.
 
-FROM ubuntu:devel
+FROM ubuntu:latest
 LABEL maintainer="labrat.eu"
 
 # Install common packages
