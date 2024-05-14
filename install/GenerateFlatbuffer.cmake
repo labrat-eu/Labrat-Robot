@@ -83,7 +83,7 @@ function(lbot_generate_flatbuffer)
       ${INT_FLAGS}
       DEPENDS ${FLATC_TARGET} ${schema}
       WORKING_DIRECTORY "${working_dir}"
-      COMMENT "Building ${schema} flatbuffers...")
+      COMMENT "Generating flatbuffer ${schema}")
     list(APPEND all_generated_header_files ${generated_include} ${generated_reflection})
   endforeach()
 

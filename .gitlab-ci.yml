@@ -195,11 +195,7 @@ pages:
   <<: *init-gcc
   script:
     - conan source .
-    - conan build . -pr:h=ci -pr:b=ci -o dry_run=True
-    - cd build/Release
-    - cmake . -DLBOT_ENABLE_DOCS=ON
-    - make generate-docs
-    - cd ../../
+    - conan build . -pr:h=ci -pr:b=ci -o docs=True -o skip_build=True
     - cp -r build/Release/docs/html public
   artifacts:
     paths:

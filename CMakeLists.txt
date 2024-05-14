@@ -95,5 +95,3 @@ if(${PRJ_OPT_ENABLE_DOCS})
 endif()
 
 install(FILES install/GenerateFlatbuffer.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake RENAME LbotGenerateFlatbuffer.cmake)
-install(FILES install/Launcher.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake RENAME LbotLauncher.cmake)
-install(FILES install/launcher.sh.in DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake)

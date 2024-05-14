@@ -15,5 +15,3 @@ add_executable(${TARGET_NAME} ${TARGET_SOURCES})
 # Link external libraries to the library target.
 target_link_libraries(${TARGET_NAME} PRIVATE lbot::core lbot::plugins pthread)
 
-# Create launch script
-lbot_add_launcher(TARGET ${TARGET_NAME})

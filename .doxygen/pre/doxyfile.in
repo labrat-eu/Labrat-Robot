@@ -142,3 +142,6 @@ GENERATE_AUTOGEN_DEF = NO
 
 ## Perl output.
 GENERATE_PERLMOD = NO
+
+# Aliases
+ALIASES = lbot_version="@GIT_SEMVER@" lbot_requirements="```python^^def requirements(self):^^  self.requires(\"lbot/@GIT_SEMVER@\")^^```"

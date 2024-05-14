@@ -25,6 +25,3 @@ lbot_generate_flatbuffer(TARGET ${TARGET_NAME_MESSAGE} SCHEMAS ${TARGET_MESSAGES
 # Link external libraries target.
 target_link_libraries(${TARGET_NAME} PRIVATE lbot::core pthread)
 target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME_MESSAGE})
-
-# Create launch script
-lbot_add_launcher(TARGET ${TARGET_NAME})

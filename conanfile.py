@@ -35,8 +35,8 @@ class LbotConan(ConanFile):
     description = "Minimal robot framework to provide an alternative to ROS."
     topics = "robotics", "messaging"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"with_system_deps": [True, False], "dry_run": [True, False]}
-    default_options = {"with_system_deps": False, "dry_run": False}
+    options = {"with_system_deps": [True, False], "skip_build": [True, False], "docs": [True, False], "code_format": [True, False]}
+    default_options = {"with_system_deps": False, "skip_build": False, "docs": False, "code_format": False}
 
     @property
     def _module_path(self):
@@ -116,6 +116,8 @@ class LbotConan(ConanFile):
         toolchain.variables["GIT_HASH"] = version_data["hash"]
         toolchain.variables["GIT_HASH_SHORT"] = version_data["hash_short"]
         toolchain.variables["GIT_BRANCH"] = version_data["branch"]
+        toolchain.variables["LBOT_ENABLE_DOCS"] = self.options.docs
+        toolchain.variables["LBOT_ENABLE_FORMAT"] = self.options.code_format
         toolchain.generate()
 
     def export(self):
@@ -125,9 +127,13 @@ class LbotConan(ConanFile):
         cmake = CMake(self)
         
         cmake.configure()
-        
-        if not self.options.dry_run:
+
+        if not self.options.skip_build:
             cmake.build()
+        if self.options.docs:
+            cmake.build(target="generate-docs")
+        if self.options.code_format:
+            cmake.build(target="format-code")
 
     def package(self):
         cmake = CMake(self)
@@ -135,7 +141,6 @@ class LbotConan(ConanFile):
 
     def package_info(self):
         module_paths = [
-            os.path.join(self._module_path, "LbotLauncher.cmake"),
             os.path.join(self._module_path, "LbotGenerateFlatbuffer.cmake")
         ]
 

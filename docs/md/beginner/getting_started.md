@@ -83,10 +83,7 @@ The `conanfile.py` is the main configuration file for Conan. It will automatical
 For a detailed guide how to set up a Conan project, please refer to the official [documentation](https://docs.conan.io/2/reference/conanfile.html).
 
 In order to use labrat-robot, you have to set it as a dependency in the `requirements()` method.
-```python
-def requirements(self):
-  self.requires("lbot/<version>")  # replace <version> with the installed labrat-robot version
-```
+@lbot_requirements
 
 You also need to specify CMake as a build dependency in the `build_requirements()` method.
 ```python
@@ -110,19 +107,14 @@ Now you can link your target to the labrat-robot core library. This will also co
 target_link_libraries(${TARGET_NAME} PRIVATE lbot::core)
 ```
 
-If you defined an executable target, you also need to create a launch script that will take care of configuring the correct environment for your program.
-```cmake
-lbot_add_launcher(TARGET ${TARGET_NAME})
-```
-
 ## Build and run your program
 You can now build your program through Conan.
 ```shell
 conan build . --build=missing
 ```
 
-In order to start your program, you must use the provided launcher script. It is located inside your build folder.
+You may now start your program. It is located inside your build folder.
 ```shell
-cd build/<Debug|Release>  # Replace <Debug|Release> with your build type
-./launch_<target>.sh      # Replace <target> with the name of your CMake executable target
+cd build/Debug                # You may replace Debug with your build type
+./00-hello-world/hello-world  # Replace with the path to your executable
 ```
