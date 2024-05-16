@@ -29,7 +29,7 @@ class VersionInfo(dict):
 
 class LbotConan(ConanFile):
     name = "lbot"
-    license = "GNU Lesser General Public License v3.0 (LGPL-3.0-or-later)"
+    license = "GNU Lesser General Public License v2.1 or later (LGPL-2.1-or-later)"
     author = "Max Yvon Zimmermann (maxyvon@gmx.de)"
     url = "https://gitlab.com/labrat-eu/lbot"
     description = "Minimal robot framework to provide an alternative to ROS."

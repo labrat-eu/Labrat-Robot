@@ -2,7 +2,7 @@
  * @file server.hpp
  * @author Max Yvon Zimmermann
  *
- * @copyright GNU Lesser General Public License v3.0 (LGPL-3.0-or-later)
+ * @copyright GNU Lesser General Public License v2.1 or later (LGPL-2.1-or-later)
  *
  */
 #pragma once
