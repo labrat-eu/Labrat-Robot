@@ -13,6 +13,8 @@
 #include <labrat/lbot/utils/thread.hpp>
 #include <labrat/lbot/msg/timestamp.hpp>
 
+#include <sstream>
+
 inline namespace labrat {
 namespace lbot {
 
@@ -130,6 +132,29 @@ Clock::time_point Clock::now() {
       throw BadUsageException("Unsupported clock mode");
     }
   }
+}
+
+std::string Clock::format(const time_point time) {
+  std::stringstream stream;
+
+  if (is_initialized && mode == Mode::system) {
+    const std::chrono::system_clock::time_point time_local = std::chrono::time_point<std::chrono::system_clock>(std::chrono::duration_cast<std::chrono::system_clock::duration>(time.time_since_epoch()));
+    const std::time_t c_time = std::chrono::system_clock::to_time_t(time_local);
+
+    stream << std::put_time(std::localtime(&c_time), "%T");
+  } else {
+    const Clock::duration duration = time.time_since_epoch();
+
+    stream.setf(std::ios_base::showbase);
+    stream.fill('0');
+    stream << std::setw(2) << std::chrono::duration_cast<std::chrono::hours>(duration).count() % 24;
+    stream << ":";
+    stream << std::setw(2) << std::chrono::duration_cast<std::chrono::minutes>(duration).count() % 60;
+    stream << ":";
+    stream << std::setw(2) << std::chrono::duration_cast<std::chrono::seconds>(duration).count() % 60;
+  }
+
+  return stream.str();
 }
 
 void Clock::setTime(time_point time) {

@@ -156,10 +156,7 @@ Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity, LoggerLo
 Logger::LogStream::~LogStream() {
   const Clock::time_point now = Clock::initialized() ? Clock::now() : Clock::time_point();
 
-  if (verbosity <= Logger::log_level) {
-    const std::chrono::system_clock::time_point now_local = std::chrono::time_point<std::chrono::system_clock>(std::chrono::duration_cast<std::chrono::system_clock::duration>(now.time_since_epoch()));
-    const std::time_t current_time = std::chrono::system_clock::to_time_t(now_local);
-
+  if (verbosity <= Logger::log_level) { 
     std::lock_guard guard(io_mutex);
 
     std::cout << getVerbosityColor(verbosity) << "[" << getVerbosityShort(verbosity) << "]" << Color(isColorEnabled()) << " ("
@@ -170,7 +167,7 @@ Logger::LogStream::~LogStream() {
     }
 
     if (isTimeEnabled()) {
-      std::cout << " " << std::put_time(std::localtime(&current_time), "%T");
+      std::cout << " " << Clock::format(now);
     }
     if (isLocationEnabled()) {
       std::cout << " " << location.file << ":" << location.line;

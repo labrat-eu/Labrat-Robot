@@ -18,6 +18,7 @@
 #include <mutex>
 #include <queue>
 #include <compare>
+#include <string>
 
 /** @cond INTERNAL */
 inline namespace labrat {
@@ -62,6 +63,14 @@ public:
    * @return time_point The current time.
    */
   static time_point now();
+
+  /**
+   * @brief Convert a time point into a human readable string.
+   * 
+   * @param time Time point to format.
+   * @return std::string Formatted time.
+   */
+  static std::string format(const time_point time);
 
   static constexpr bool is_steady = false;
 
