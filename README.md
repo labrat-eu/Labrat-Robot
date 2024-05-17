@@ -1,4 +1,4 @@
-# Labrat Robot Framework
+# lbot Framework
 
 Minimal robot framework to provide an alternative to ROS.
 

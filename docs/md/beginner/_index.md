@@ -1,7 +1,7 @@
 @page beginner Beginners's Tutorial
 
 # Introduction
-Welcome to the beginner's guide to labrat-robot, a minimal robot framework. This tutorial does not aim to give you a comprehensive guide on all aspects of labrat-robot. Instead the goal is to give you an overview of the most important features of the framework. For a more in-depth documentation please visit the advanced guide.
+Welcome to the beginner's guide to lbot, a minimal robot framework. This tutorial does not aim to give you a comprehensive guide on all aspects of lbot. Instead the goal is to give you an overview of the most important features of the framework. For a more in-depth documentation please visit the advanced guide.
 
 ## Prerequisites
 You should have experience with:

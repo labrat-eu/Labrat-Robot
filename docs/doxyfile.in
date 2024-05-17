@@ -6,7 +6,7 @@ INPUT_ENCODING = UTF-8
 PROJECT_NAME = @LOCAL_PROJECT_NAME@
 PROJECT_BRIEF = @LOCAL_PROJECT_DESCRIPTION@
 PROJECT_NUMBER = @GIT_SEMVER@
-PROJECT_LOGO = @PROJECT_SOURCE_DIR@/.doxygen/img/logo.png
+PROJECT_LOGO = @PROJECT_SOURCE_DIR@/docs/img/logo.png
 
 ## Output config.
 OUTPUT_DIRECTORY = @CMAKE_BINARY_DIR@/docs
@@ -92,8 +92,12 @@ HTML_OUTPUT = html
 HTML_TIMESTAMP = YES
 HTML_DYNAMIC_MENUS = YES
 HTML_DYNAMIC_SECTIONS = YES
-HTML_EXTRA_STYLESHEET = @PROJECT_SOURCE_DIR@/docs/css/doxygen-awesome.css @PROJECT_SOURCE_DIR@/docs/css/doxygen-awesome-sidebar-only.css
-HTML_COLORSTYLE = LIGHT
+HTML_HEADER = @PROJECT_SOURCE_DIR@/docs/css/header.html
+HTML_EXTRA_FILES = @PROJECT_SOURCE_DIR@/docs/css/doxygen-awesome-darkmode-toggle.js @PROJECT_SOURCE_DIR@/docs/css/doxygen-awesome-paragraph-link.js
+HTML_EXTRA_STYLESHEET = @PROJECT_SOURCE_DIR@/docs/css/doxygen-awesome.css @PROJECT_SOURCE_DIR@/docs/css/doxygen-awesome-sidebar-only.css @PROJECT_SOURCE_DIR@/docs/css/doxygen-awesome-sidebar-only-darkmode-toggle.css
+HTML_COLORSTYLE_HUE = 209
+HTML_COLORSTYLE_SAT = 255
+HTML_COLORSTYLE_GAMMA = 113
 GENERATE_TREEVIEW = YES
 DISABLE_INDEX = NO
 FULL_SIDEBAR = NO
@@ -144,4 +148,6 @@ GENERATE_AUTOGEN_DEF = NO
 GENERATE_PERLMOD = NO
 
 # Aliases
-ALIASES = lbot_version="@GIT_SEMVER@" lbot_requirements="```python^^def requirements(self):^^  self.requires(\"lbot/@GIT_SEMVER@\")^^```"
+ALIASES += lbot_version="@GIT_SEMVER@"
+ALIASES += lbot_git="```shell^^git clone https://gitlab.com/labrat.eu/lbot^^cd lbot^^git switch -d @GIT_REF@^^```"
+ALIASES += lbot_requirements="```python^^def requirements(self):^^  self.requires(\"lbot/@GIT_SEMVER@\")^^```"

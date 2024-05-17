@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.22.0)
 
 function(prj_add_doxygen_targets)
-  set(DOXYFILE ${PROJECT_SOURCE_DIR}/.doxygen/doxyfile)
-  set(DOXYFILE_IN ${PROJECT_SOURCE_DIR}/.doxygen/pre/doxyfile.in)
+  set(DOXYFILE ${PROJECT_SOURCE_DIR}/docs/doxyfile)
+  set(DOXYFILE_IN ${PROJECT_SOURCE_DIR}/docs/doxyfile.in)
 
   # Configure doxyfile.
   configure_file(${DOXYFILE_IN} ${DOXYFILE} @ONLY)

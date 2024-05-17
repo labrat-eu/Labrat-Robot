@@ -5,7 +5,7 @@ You may also want to take a look at the [code example](@ref example_plugins).
 
 # Basics
 Plugins are small extensions that encapsulate solutions to common problems. Plugins can be roughly grouped into two categories:
-- Node plugins: plugins that create nodes. They may send/receive topics or provide services. They are usually used to create interfaces to external devices or bridges to other labrat-robot instances.
+- Node plugins: plugins that create nodes. They may send/receive topics or provide services. They are usually used to create interfaces to external devices or bridges to other lbot instances.
 - Trace plugins: plugins that read from topics globally. They are usually used to create data logs for debugging purposes.
 
 # Manager
@@ -19,12 +19,12 @@ manager->removePlugin("plugin_a");
 ```
 
 # Bundled plugins
-The following plugins are currently bundled with labrat-robot
+The following plugins are currently bundled with lbot
 
 | Name          |  Category | Description |
 | ---           | ---       | ---         |
-| udp-bridge    | Node      | A bridge that allows you to connect two labrat-robot instances via UDP. |
-| serial-bridge | Node      | A bridge that allows you to connect two labrat-robot instances via a serial port. |
+| udp-bridge    | Node      | A bridge that allows you to connect two lbot instances via UDP. |
+| serial-bridge | Node      | A bridge that allows you to connect two lbot instances via a serial port. |
 | mcap          | Trace     | Records topics into a [MCAP](https://mcap.dev/) file. MCAP files can be loaded in [Foxglove](https://foxglove.dev/). |
 | foxglove-ws   | Trace     | Opens a [Foxglove](https://foxglove.dev/) WebSocket connection. This allows you to visualize topics within Foxglove while your program is running. |
 | gazebo-time   | Node      | Synchronizes the custom clock with a [gazebo](https://gazebosim.org/home) simulation. |

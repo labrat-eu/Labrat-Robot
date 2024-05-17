@@ -50,6 +50,7 @@ add_compile_definitions(
   GIT_TAG=${GIT_TAG}
   GIT_HASH=${GIT_HASH}
   GIT_HASH_SHORT=${GIT_HASH_SHORT}
+  GIT_REF=${GIT_REF}
   GIT_BRANCH=${GIT_BRANCH}
 )
 

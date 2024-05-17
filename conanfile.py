@@ -17,6 +17,7 @@ class VersionInfo(dict):
 
         at_tag = (self["commit"] == self["tag"])
         super().__setitem__("hash_short", self["hash"][:7])
+        super().__setitem__("ref", self["tag"] if at_tag else self["hash_short"] )
 
         pattern = regex.compile('^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')
         search = pattern.search(self["tag"])
@@ -115,6 +116,7 @@ class LbotConan(ConanFile):
         toolchain.variables["GIT_TAG"] = version_data["tag"]
         toolchain.variables["GIT_HASH"] = version_data["hash"]
         toolchain.variables["GIT_HASH_SHORT"] = version_data["hash_short"]
+        toolchain.variables["GIT_REF"] = version_data["ref"]
         toolchain.variables["GIT_BRANCH"] = version_data["branch"]
         toolchain.variables["LBOT_ENABLE_DOCS"] = self.options.docs
         toolchain.variables["LBOT_ENABLE_FORMAT"] = self.options.code_format

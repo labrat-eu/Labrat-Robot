@@ -13,7 +13,7 @@ For each topic you will need exactly one sender that writes data onto the topic.
 Topics are distinguished by their name and message type. The convention is to name topics like a file path (e. g. `/path/to/topic`). This helps to order your topics. The message type of a topic has to be known by every sender and receiver at compile time. If there is a type mismatch, a [lbot::ManagementException](@ref lbot::ManagementException) exception will be raised.
 
 # Messages
-Before you can exchange messages over topics you need to know how to define message schemas. Labrat-robot does not define its own message standard but instead makes use of [FlatBuffers](https://flatbuffers.dev/). In order to define a message schema you have to create a `.fbs` FlatBuffer schema file. It is recommended to create a subdirectory in your source folder for your message definitions.
+Before you can exchange messages over topics you need to know how to define message schemas. Lbot does not define its own message standard but instead makes use of [FlatBuffers](https://flatbuffers.dev/). In order to define a message schema you have to create a `.fbs` FlatBuffer schema file. It is recommended to create a subdirectory in your source folder for your message definitions.
 ```
 src/
 |- CMakeLists.txt           # define and configure targets
@@ -56,7 +56,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME_MESSAGE})
 ```
 
 ## Using messages in C++
-Inside of labrat-robot, messages appear wrapped inside of the [lbot::Message](@ref lbot::Message) class. If you want to declare a labrat-robot message you must therefore do it in the following way.
+Inside of lbot, messages appear wrapped inside of the [lbot::Message](@ref lbot::Message) class. If you want to declare a lbot message you must therefore do it in the following way.
 ```cpp
 lbot::Message<examples::msg::ExampleMessage> message;
 ```

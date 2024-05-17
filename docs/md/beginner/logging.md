@@ -4,7 +4,7 @@
 You may also want to take a look at the [code example](@ref example_logging).
 
 # Basics
-Labrat-robot comes with its own logging system. In order to use it you need to create a [lbot::Logger](@ref lbot::Logger) object. You are required to specify a name for the logger. The name should be unique, as it allows you to track where your logging messages come from.
+Lbot comes with its own logging system. In order to use it you need to create a [lbot::Logger](@ref lbot::Logger) object. You are required to specify a name for the logger. The name should be unique, as it allows you to track where your logging messages come from.
 ```cpp
 lbot::Logger logger("main");
 ```

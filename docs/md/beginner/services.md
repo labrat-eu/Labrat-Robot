@@ -4,7 +4,7 @@
 You may also want to take a look at the [code example](@ref example_services).
 
 # Basics
-So far we have covered topics as a means of communication between nodes. Topics essentially only allow for uni-directional message passing. However there are many use cases where you want to receive some kind of answer on if a message has been received. Maybe you even want to know the result of some operation. In other words, you want to call up a procedure of one node from another. Within labrat-robot this behavior can be achieved through the use of services.
+So far we have covered topics as a means of communication between nodes. Topics essentially only allow for uni-directional message passing. However there are many use cases where you want to receive some kind of answer on if a message has been received. Maybe you even want to know the result of some operation. In other words, you want to call up a procedure of one node from another. Within lbot this behavior can be achieved through the use of services.
 
 For each service you will need exactly one server that answers any incoming requests on the service. You can create many clients that all call up the same service.
 
