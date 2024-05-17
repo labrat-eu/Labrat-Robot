@@ -26,8 +26,7 @@ void TopicMap::forceFlush() {
       Node::GenericReceiver<void> *receiver = reinterpret_cast<Node::GenericReceiver<void> *>(pointer);
 
       receiver->flush_flag = true;
-      receiver->count.fetch_add(1, std::memory_order_release);
-      receiver->count.notify_one();
+      receiver->condition.notify_one();
     }
   }
 }
