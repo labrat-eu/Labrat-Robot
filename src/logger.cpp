@@ -64,8 +64,8 @@ public:
       (duration % std::chrono::seconds(1)).count());
     destination.name = source.logger_name;
     destination.message = source.message;
-    destination.file = source.file;
-    destination.line = source.line;
+    destination.file = source.location.file_name();
+    destination.line = source.location.line();
   }
 };
 
@@ -134,8 +134,8 @@ void Logger::deinitialize() {
   node.reset();
 }
 
-Logger::LogStream Logger::write(Verbosity verbosity, LoggerLocation &&location) {
-  return LogStream(*this, verbosity, std::move(location));
+Logger::LogStream Logger::log(Verbosity verbosity, const std::source_location &location) {
+  return LogStream(*this, verbosity, location);
 }
 
 void Logger::send(const Entry &entry) {
@@ -150,7 +150,7 @@ void Logger::trace(const Entry &entry) {
   }
 }
 
-Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity, LoggerLocation &&location) :
+Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity, const std::source_location &location) :
   logger(logger), verbosity(verbosity), location(location) {}
 
 Logger::LogStream::~LogStream() {
@@ -170,21 +170,20 @@ Logger::LogStream::~LogStream() {
       std::cout << " " << Clock::format(now);
     }
     if (isLocationEnabled()) {
-      std::cout << " " << location.file << ":" << location.line;
+      std::cout << " " << location.file_name() << ":" << location.line();
     }
 
     std::cout << "): ";
 
-    std::cout << line.str() << std::endl;
+    std::cout << message.str() << std::endl;
   }
 
   Entry entry;
   entry.verbosity = verbosity;
   entry.timestamp = now;
   entry.logger_name = logger.name;
-  entry.message = line.str();
-  entry.file = location.file;
-  entry.line = location.line;
+  entry.message = message.str();
+  entry.location = location;
 
   if (!logger.send_topic) {
     return;
@@ -198,7 +197,7 @@ Logger::LogStream::~LogStream() {
 }
 
 Logger::LogStream &Logger::LogStream::operator<<(std::ostream &(*func)(std::ostream &)) {
-  line << func;
+  message << func;
 
   return *this;
 }

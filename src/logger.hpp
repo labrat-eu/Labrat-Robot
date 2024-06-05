@@ -17,6 +17,7 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <source_location>
 
 /** @cond INTERNAL */
 inline namespace labrat {
@@ -25,24 +26,6 @@ namespace lbot {
 
 /** @cond INTERNAL */
 class LoggerNode;
-
-struct LoggerLocation {
-  std::string file;
-  u32 line;
-
-  LoggerLocation(std::filesystem::path &&path, u32 line) : line(line) {
-    file = path.filename();
-  }
-};
-
-#define LBOT_LOGINIT labrat::lbot::LoggerLocation(std::filesystem::path(__FILE__), __LINE__)
-/** @endcond  */
-
-#define logCritical() write(labrat::lbot::Logger::Verbosity::critical, LBOT_LOGINIT)
-#define logError() write(labrat::lbot::Logger::Verbosity::error, LBOT_LOGINIT)
-#define logWarning() write(labrat::lbot::Logger::Verbosity::warning, LBOT_LOGINIT)
-#define logInfo() write(labrat::lbot::Logger::Verbosity::info, LBOT_LOGINIT)
-#define logDebug() write(labrat::lbot::Logger::Verbosity::debug, LBOT_LOGINIT)
 
 /**
  * @brief Class to print log messages and send them out as messages.
@@ -68,6 +51,8 @@ public:
    */
   class LogStream {
   public:
+    LogStream(LogStream &&rhs) : logger(rhs.logger), verbosity(rhs.verbosity), message(std::forward<std::stringstream>(rhs.message)), location(rhs.location) {}
+
     /**
      * @brief Destroy the Log Stream object.
      * This writes the contents streamed into this instance to the console and sends out a log message.
@@ -79,12 +64,12 @@ public:
      * @brief Generic stream operator overload.
      *
      * @tparam T Type of the object streamed into the Logger.
-     * @param message Object streamed into the Logger.
+     * @param part Object streamed into the Logger.
      * @return LogStream& Self reference.
      */
     template <typename T>
-    inline LogStream &operator<<(const T &message) {
-      line << message;
+    inline LogStream &operator<<(const T &part) {
+      message << part;
 
       return *this;
     }
@@ -104,15 +89,15 @@ public:
      * @param logger Associated logger instance.
      * @param verbosity Verbosity of this instance.
      */
-    LogStream(const Logger &logger, Verbosity verbosity, LoggerLocation &&location);
+    LogStream(const Logger &logger, Verbosity verbosity, const std::source_location &location);
 
     friend class Logger;
 
     const Logger &logger;
     const Verbosity verbosity;
 
-    std::stringstream line;
-    LoggerLocation location;
+    std::stringstream message;
+    std::source_location location;
   };
 
   /**
@@ -125,8 +110,7 @@ public:
     Clock::time_point timestamp;
     std::string logger_name;
     std::string message;
-    std::string file;
-    u32 line;
+    std::source_location location;
   };
 
   /**
@@ -149,7 +133,27 @@ public:
    * @param location Internal struct to specify the code location.
    * @return LogStream The temporary LogStream object.
    */
-  LogStream write(Verbosity verbosity, LoggerLocation &&location);
+  LogStream log(Verbosity verbosity, const std::source_location &location = std::source_location::current());
+
+  inline LogStream logCritical(const std::source_location &location = std::source_location::current()) {
+    return log(Verbosity::critical, location); 
+  }
+
+  inline LogStream logError(const std::source_location &location = std::source_location::current()) {
+    return log(Verbosity::error, location); 
+  }
+
+  inline LogStream logWarning(const std::source_location &location = std::source_location::current()) {
+    return log(Verbosity::warning, location); 
+  }
+
+  inline LogStream logInfo(const std::source_location &location = std::source_location::current()) {
+    return log(Verbosity::info, location); 
+  }
+
+  inline LogStream logDebug(const std::source_location &location = std::source_location::current()) {
+    return log(Verbosity::debug, location); 
+  }
 
   /**
    * @brief Set the log level of the application.
