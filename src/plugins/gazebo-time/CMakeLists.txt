@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.22.0)
 
+find_package(gz-transport13 REQUIRED)
 
 # Set the target name from the path.
 get_filename_component(TARGET_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
@@ -16,7 +17,6 @@ set(TARGET_HEADERS
 
 set(TARGET_SOURCES
   time.cpp
-  protocol.hpp
 )
 
 set(TARGET_MESSAGES
@@ -33,7 +33,7 @@ lbot_generate_flatbuffer(TARGET ${TARGET_NAME_MESSAGE} SCHEMAS ${TARGET_MESSAGES
 set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Link external libraries to the library target.
-target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_msg)
+target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_msg gz-transport13::core)
 # Link internal libraries to the library target.
 target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME}_core)
 

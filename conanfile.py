@@ -2,6 +2,7 @@ from conan import ConanFile, errors
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 from conan.tools.files import copy, update_conandata
 from conan.tools.scm import Git
+from conan.tools.system.package_manager import Apt
 import regex
 import os
 
@@ -36,8 +37,22 @@ class LbotConan(ConanFile):
     description = "Minimal robot framework to provide an alternative to ROS."
     topics = "robotics", "messaging"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"with_system_deps": [True, False], "skip_build": [True, False], "docs": [True, False], "code_format": [True, False]}
-    default_options = {"with_system_deps": False, "skip_build": False, "docs": False, "code_format": False}
+    options = {
+        "system_deps": [True, False],
+        "skip_build": [True, False],
+        "docs": [True, False],
+        "code_format": [True, False],
+        "plugins": [True, False],
+        "plugins_experimental": [True, False]
+    }
+    default_options = {
+        "system_deps": False,
+        "skip_build": False,
+        "docs": False,
+        "code_format": False,
+        "plugins": True,
+        "plugins_experimental": False
+    }
 
     @property
     def _module_path(self):
@@ -59,19 +74,25 @@ class LbotConan(ConanFile):
     def system_requirements(self):
         if self.settings.os != 'Linux':
             raise Exception("Package is only supported on Linux.")
+        
+        if self.options.plugins_experimental:
+            apt = Apt(self)
+            apt.install(["libgz-transport13-dev"], check = True)
 
     def requirements(self):
-        if self.options.with_system_deps:
+        if self.options.system_deps:
             return
 
         self.requires("flatbuffers/23.5.26")
         self.requires("yaml-cpp/0.8.0")
-        self.requires("mcap/1.3.0")
-        self.requires("crc_cpp/1.2.0")
-        self.requires("foxglove-websocket/1.2.0")
+
+        if self.options.plugins:
+            self.requires("mcap/1.3.0")
+            self.requires("crc_cpp/1.2.0")
+            self.requires("foxglove-websocket/1.2.0")
 
     def build_requirements(self):
-        if self.options.with_system_deps:
+        if self.options.system_deps:
             return
 
         self.tool_requires("cmake/3.29.3")
@@ -120,6 +141,8 @@ class LbotConan(ConanFile):
         toolchain.variables["GIT_BRANCH"] = version_data["branch"]
         toolchain.variables["LBOT_ENABLE_DOCS"] = self.options.docs
         toolchain.variables["LBOT_ENABLE_FORMAT"] = self.options.code_format
+        toolchain.variables["LBOT_ENABLE_PLUGINS"] = self.options.plugins
+        toolchain.variables["LBOT_ENABLE_PLUGINS_EXPERIMENTAL"] = self.options.plugins_experimental
         toolchain.generate()
 
     def export(self):
@@ -154,7 +177,11 @@ class LbotConan(ConanFile):
         self.cpp_info.components["core"].libs = ["lbot_core"]
         self.cpp_info.components["core"].requires = ["flatbuffers::flatbuffers", "yaml-cpp::yaml-cpp"]
 
-        self.cpp_info.components["plugins"].set_property("cmake_target_name", f"{self.name}::plugins")
-        self.cpp_info.components["plugins"].set_property("cmake_module_target_name", f"{self.name}::plugins")
-        self.cpp_info.components["plugins"].libs = ["lbot_plugins"]
-        self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "foxglove-websocket::foxglove-websocket", "crc_cpp::crc_cpp"]
+        if self.options.plugins:
+            self.cpp_info.components["plugins"].set_property("cmake_target_name", f"{self.name}::plugins")
+            self.cpp_info.components["plugins"].set_property("cmake_module_target_name", f"{self.name}::plugins")
+            self.cpp_info.components["plugins"].libs = ["lbot_plugins"]
+            self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "foxglove-websocket::foxglove-websocket", "crc_cpp::crc_cpp"]
+
+            if self.options.plugins_experimental:
+                self.cpp_info.components["plugins"].system_libs += ["gz-transport13"]

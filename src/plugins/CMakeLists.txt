@@ -16,7 +16,10 @@ if(${PRJ_OPT_ENABLE_PLUGINS})
   add_subdirectory(mcap)
   add_subdirectory(foxglove-ws)
   add_subdirectory(mavlink)
-  add_subdirectory(gazebo-time)
+
+  if(${PRJ_OPT_ENABLE_PLUGINS_EXPERIMENTAL})
+    add_subdirectory(gazebo-time)
+  endif()
 
   install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()

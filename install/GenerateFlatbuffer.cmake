@@ -58,17 +58,6 @@ function(lbot_generate_flatbuffer)
   foreach(schema ${INT_SCHEMAS})
     get_filename_component(filename ${schema} NAME_WLE)
 
-    # This does not protect from comments. Hopefully this wont be a problem, as this cannot be fixed with regex.
-    file(READ ${schema} schema_file)
-    string(REGEX MATCH "namespace ([a-zA-Z0-9\.]*);" schema_namespace_def "${schema_file}")
-    string(REGEX REPLACE "namespace ([a-zA-Z0-9\.]*);" "\\1" schema_namespace "${schema_namespace_def}")
-    string(REPLACE "." "/" schema_namepath "${schema_namespace}")
-  
-    string(COMPARE EQUAL "${schema_namespace}" "" check_result)
-    if (check_result)
-      message(FATAL_ERROR "The flatbuffer file '${schema}' does not contain a namespace.")
-    endif()
-
     set(generated_include "${generated_include_dir}/${filename}.${extension}")
     set(generated_reflection "${generated_include_dir}/${filename}_bfbs.${extension}")
     add_custom_command(

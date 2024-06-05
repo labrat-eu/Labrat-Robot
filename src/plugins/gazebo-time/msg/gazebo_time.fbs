@@ -8,8 +8,6 @@ table Time {
 table GazeboTime {
   real_time:Time;
   simulation_time:Time;
-  iterations:long;
-  paused:bool;
 }
 
 root_type GazeboTime;

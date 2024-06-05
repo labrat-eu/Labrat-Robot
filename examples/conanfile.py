@@ -1,7 +1,5 @@
 from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.env import VirtualRunEnv
-import os
 import subprocess
 import regex
 
@@ -32,6 +30,9 @@ class LbotExamplesConan(ConanFile):
 
     def build_requirements(self):
         self.tool_requires("cmake/3.29.3")
+
+    def configure(self):
+        self.options["lbot/*"].plugins_experimental = True
 
     def layout(self):
         cmake_layout(self)
