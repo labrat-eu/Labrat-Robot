@@ -26,6 +26,7 @@ namespace lbot {
 
 /** @cond INTERNAL */
 class LoggerNode;
+/** @endcond */
 
 /**
  * @brief Class to print log messages and send them out as messages.
