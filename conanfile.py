@@ -83,20 +83,20 @@ class LbotConan(ConanFile):
         if self.options.system_deps:
             return
 
-        self.requires("flatbuffers/23.5.26")
-        self.requires("yaml-cpp/0.8.0")
+        self.requires("flatbuffers/[>=23.5.26]")
+        self.requires("yaml-cpp/[>=0.8.0]")
 
         if self.options.plugins:
-            self.requires("mcap/1.3.0")
-            self.requires("crc_cpp/1.2.0")
-            self.requires("foxglove-websocket/1.2.0")
+            self.requires("mcap/[>=1.3.0]")
+            self.requires("crc_cpp/[>=1.2.0]")
+            self.requires("foxglove-websocket/[>=1.2.0]")
 
     def build_requirements(self):
         if self.options.system_deps:
             return
 
-        self.tool_requires("cmake/3.29.3")
-        self.tool_requires("flatbuffers/23.5.26")
+        self.tool_requires("cmake/[>=3.22.0]", visible=True)
+        self.tool_requires("flatbuffers/[>=23.5.26]", visible=True)
 
     def layout(self):
         cmake_layout(self)
