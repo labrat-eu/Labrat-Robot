@@ -38,8 +38,8 @@ public:
   ConfigValue(const Sequence &value);
   ConfigValue(Sequence &&value);
 
-  constexpr ConfigValue &operator=(const ConfigValue &rhs);
-  constexpr ConfigValue &operator=(ConfigValue &&rhs);
+  const ConfigValue &operator=(const ConfigValue &rhs);
+  const ConfigValue &operator=(ConfigValue &&rhs);
 
   /**
    * @brief Check whether a valid value is contained.

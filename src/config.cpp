@@ -94,12 +94,12 @@ ConfigValue::ConfigValue(const Sequence &value) : value(value) {}
 
 ConfigValue::ConfigValue(Sequence &&value) : value(std::forward<Sequence>(value)) {}
 
-constexpr ConfigValue &ConfigValue::operator=(const ConfigValue &rhs) {
+const ConfigValue &ConfigValue::operator=(const ConfigValue &rhs) {
   value = rhs.value;
   return *this;
 }
 
-constexpr ConfigValue &ConfigValue::operator=(ConfigValue &&rhs) {
+const ConfigValue &ConfigValue::operator=(ConfigValue &&rhs) {
   value = std::move(rhs.value);
   return *this;
 }

@@ -96,6 +96,7 @@ class LbotConan(ConanFile):
             return
 
         self.tool_requires("cmake/3.29.3")
+        self.tool_requires("flatbuffers/23.5.26")
 
     def layout(self):
         cmake_layout(self)
