@@ -1,0 +1,17 @@
+namespace labrat.lbot.plugins;
+
+table Core {
+  id:short;
+  load:float;
+  user_load:float;
+  kernel_load:float;
+}
+
+table Cpu {
+  load:float;
+  user_load:float;
+  kernel_load:float;
+  cores:[Core];
+}
+
+root_type Cpu;

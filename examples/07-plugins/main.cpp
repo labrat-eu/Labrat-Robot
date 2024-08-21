@@ -1,5 +1,6 @@
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/node.hpp>
+#include <labrat/lbot/plugins/linux/stats.hpp>
 #include <labrat/lbot/plugins/foxglove-ws/server.hpp>
 #include <labrat/lbot/plugins/mcap/recorder.hpp>
 #include <labrat/lbot/utils/signal.hpp>
@@ -74,6 +75,10 @@ int main(int argc, char **argv) {
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
   // Register some existing plugins.
+
+  // The LinuxStats plugin records statistics about your system.
+  // This includes disk usage, CPU load and more.
+  manager->addPlugin<lbot::plugins::LinuxStats>("stats");
 
   // The McapRecorder plugin allows you to trace messages to a mcap file.
   // If you want to see what this program has been doing, you might:

@@ -1,0 +1,14 @@
+namespace labrat.lbot.plugins;
+
+table Disk {
+  name:string;
+  file_system:string;
+  size:ulong;
+  usage:float;
+}
+
+table Disks {
+  disks:[Disk];
+}
+
+root_type Disks;

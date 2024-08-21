@@ -11,6 +11,7 @@ if(${PRJ_OPT_ENABLE_PLUGINS})
   set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${GIT_VERSION})
   set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
 
+  add_subdirectory(linux)
   add_subdirectory(udp-bridge)
   add_subdirectory(serial-bridge)
   add_subdirectory(mcap)

@@ -1,0 +1,10 @@
+namespace labrat.lbot.plugins;
+
+table Memory {
+  total:ulong;
+  usage:float;
+  swap_total:ulong;
+  swap_usage:float;
+}
+
+root_type Memory;
