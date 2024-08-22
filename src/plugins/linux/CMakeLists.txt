@@ -21,6 +21,7 @@ set(TARGET_MESSAGES
   msg/disks.fbs
   msg/cpu.fbs
   msg/memory.fbs
+  msg/process.fbs
 )
 
 add_library(${TARGET_NAME} OBJECT ${TARGET_HEADERS} ${TARGET_SOURCES})

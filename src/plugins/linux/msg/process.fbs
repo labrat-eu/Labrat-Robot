@@ -1,0 +1,32 @@
+namespace labrat.lbot.plugins;
+
+enum ProcessState : ubyte {
+  Unknown,
+  Running,
+  Sleeping,
+  Waiting,
+  Zombie,
+  Stopped,
+  Tracing,
+  Paging,
+  Dead,
+  Wakekill,
+  Waking,
+  Parked,
+  Idle,
+}
+
+table Thread {
+  id:int;
+  name:string;
+  state:ProcessState;
+  load:float;
+  user_load:float;
+  kernel_load:float;
+}
+
+table Process {
+  threads:[Thread];
+}
+
+root_type Process;
