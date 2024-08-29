@@ -16,6 +16,7 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
+#include <type_traits>
 
 /** @cond INTERNAL */
 inline namespace labrat {
@@ -30,13 +31,19 @@ public:
   ConfigValue(const ConfigValue &rhs);
   ConfigValue(ConfigValue &&rhs);
   ConfigValue(bool value);
-  ConfigValue(i64 value);
-  ConfigValue(double value);
   ConfigValue(const char *value);
   ConfigValue(const std::string &value);
   ConfigValue(std::string &&value);
   ConfigValue(const Sequence &value);
   ConfigValue(Sequence &&value);
+
+  template <typename T>
+  requires std::is_integral_v<T> && (!std::is_same_v<T, bool>)
+  ConfigValue(T value) : value(static_cast<i64>(value)) {}
+  
+  template <typename T>
+  requires std::is_floating_point_v<T>
+  ConfigValue(T value) : value(static_cast<double>(value)) {}
 
   const ConfigValue &operator=(const ConfigValue &rhs);
   const ConfigValue &operator=(ConfigValue &&rhs);
@@ -64,6 +71,26 @@ public:
   template <typename T>
   inline bool contains() const {
     return std::holds_alternative<T>(value);
+  }
+
+  /**
+   * @brief Get the contents.
+   *
+   * @tparam T Type to get
+   * @return const T Contents
+   */
+  template <typename T>
+  requires std::is_arithmetic_v<T> && (!std::is_same_v<T, bool>)
+  inline const T get() const {
+    if (contains<i64>()) {
+      return static_cast<T>(std::get<i64>(value));
+    }
+
+    if (contains<double>()) {
+      return static_cast<T>(std::get<double>(value));
+    }
+
+    throw ConfigAccessException("Failed to access config value. The expected type does not match the contained type.");
   }
 
   /**

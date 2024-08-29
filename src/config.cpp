@@ -80,10 +80,6 @@ ConfigValue::ConfigValue(ConfigValue &&rhs) : value(std::move(rhs.value)) {}
 
 ConfigValue::ConfigValue(bool value) : value(value) {}
 
-ConfigValue::ConfigValue(i64 value) : value(value) {}
-
-ConfigValue::ConfigValue(double value) : value(value) {}
-
 ConfigValue::ConfigValue(const char *value) : value(std::string(value)) {}
 
 ConfigValue::ConfigValue(const std::string &value) : value(value) {}
