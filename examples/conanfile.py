@@ -39,6 +39,8 @@ class LbotExamplesConan(ConanFile):
         deps.generate()
 
         toolchain = CMakeToolchain(self)
+        toolchain.variables["CMAKE_RUNTIME_OUTPUT_DIRECTORY"] = "${CMAKE_BINARY_DIR}/bin"
+        toolchain.variables["CMAKE_LIBRARY_OUTPUT_DIRECTORY"] = "${CMAKE_BINARY_DIR}/lib"
         toolchain.generate()
 
     def build(self):

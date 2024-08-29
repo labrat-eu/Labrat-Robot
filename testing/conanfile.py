@@ -8,11 +8,11 @@ class LbotTestConan(ConanFile):
 
     def requirements(self):
         self.requires(self.tested_reference_str)
-        self.requires("flatbuffers/23.5.26")
+        self.requires("flatbuffers/[>=23.5.26]")
 
     def build_requirements(self):
-        self.tool_requires("cmake/3.29.3")
-        self.test_requires("gtest/1.14.0")
+        self.tool_requires("cmake/[>=3.22.0]")
+        self.test_requires("gtest/[>=1.14.0]")
 
     def layout(self):
         cmake_layout(self)
@@ -24,8 +24,8 @@ class LbotTestConan(ConanFile):
         deps.generate()
 
         toolchain = CMakeToolchain(self)
-        toolchain.variables["CMAKE_RUNTIME_OUTPUT_DIRECTORY"] = os.path.join(self.build_folder, "bin")
-        toolchain.variables["CMAKE_LIBRARY_OUTPUT_DIRECTORY"] = os.path.join(self.build_folder, "lib")
+        toolchain.variables["CMAKE_RUNTIME_OUTPUT_DIRECTORY"] = "${CMAKE_BINARY_DIR}/bin"
+        toolchain.variables["CMAKE_LIBRARY_OUTPUT_DIRECTORY"] = "${CMAKE_BINARY_DIR}/lib"
         toolchain.generate()
 
         environment = VirtualRunEnv(self)

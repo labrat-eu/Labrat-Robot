@@ -128,8 +128,8 @@ class LbotConan(ConanFile):
         version_data = self.get_version_data()
 
         toolchain = CMakeToolchain(self)
-        toolchain.variables["CMAKE_RUNTIME_OUTPUT_DIRECTORY"] = os.path.join(self.build_folder, "bin")
-        toolchain.variables["CMAKE_LIBRARY_OUTPUT_DIRECTORY"] = os.path.join(self.build_folder, "lib")
+        toolchain.variables["CMAKE_RUNTIME_OUTPUT_DIRECTORY"] = "${CMAKE_BINARY_DIR}/bin"
+        toolchain.variables["CMAKE_LIBRARY_OUTPUT_DIRECTORY"] = "${CMAKE_BINARY_DIR}/lib"
         toolchain.variables["GIT_VERSION_MAJOR"] = version_data["version_major"]
         toolchain.variables["GIT_VERSION_MINOR"] = version_data["version_minor"]
         toolchain.variables["GIT_VERSION_PATCH"] = version_data["version_patch"]
