@@ -1,8 +1,5 @@
 # Directories
 build/
-bin/
-
-include/
 
 # Vim
 [._]*.s[a-v][a-z]

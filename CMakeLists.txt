@@ -85,8 +85,7 @@ prj_add_include_symlink(TARGET ${CMAKE_CURRENT_LIST_DIR}/src NAME ${LOCAL_PROJEC
 prj_add_include_symlink(TARGET ${CMAKE_CURRENT_LIST_DIR}/submodules/mavlink NAME mavlink)
 
 # Add the project root and build directory to the include path.
-include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/include)
-include_directories(BEFORE ${CMAKE_BINARY_DIR})
+include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
 # Add main source directory.
 add_subdirectory(src)
