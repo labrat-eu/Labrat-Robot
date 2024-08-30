@@ -86,17 +86,11 @@ set(TARGET_MESSAGES_EXTERNAL
 )
 
 # Create library target for the project.
-add_library(${TARGET_NAME} SHARED ${TARGET_HEADERS} ${TARGET_SOURCES})
-
-# Set shared object properties.
-set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${GIT_VERSION})
-set_target_properties(${TARGET_NAME} PROPERTIES SOVERSION ${GIT_VERSION_MAJOR})
-
+add_library(${TARGET_NAME} ${TARGET_HEADERS} ${TARGET_SOURCES})
 
 # Add subtarget source directory.
 add_subdirectory(utils)
 add_subdirectory(plugins)
-
 
 set(TARGET_NAME_MESSAGE ${TARGET_NAME}_msg)
 lbot_generate_flatbuffer(TARGET ${TARGET_NAME_MESSAGE} SCHEMAS ${TARGET_MESSAGES} TARGET_PATH ${LOCAL_PROJECT_PATH_FULL}/${TARGET_RELATIVE_PATH}/msg)

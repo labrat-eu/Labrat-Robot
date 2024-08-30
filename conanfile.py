@@ -69,7 +69,7 @@ class LbotConan(ConanFile):
             raise
     
     def set_version(self):
-        self.version = self.get_version_data()["semver"]
+        self.version = self.get_version_data()["version"]
 
     def system_requirements(self):
         if self.settings.os != 'Linux':

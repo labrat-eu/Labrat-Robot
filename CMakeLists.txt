@@ -69,6 +69,11 @@ message(STATUS "Enabled options: " ${PRJ_ENABLED_OPTIONS_STRING})
 # Save the command line compile commands in the build output.
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
+find_program(CCACHE_FOUND ccache)
+if(CCACHE_FOUND)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+endif()
 
 # Set correct linking path.
 include(GNUInstallDirs)
