@@ -145,7 +145,7 @@ const ConfigValue &Config::getParameter(const std::string &name) const {
   return iter->second;
 }
 
-const ConfigValue &Config::getParameterFallback(const std::string &name, ConfigValue &&fallback) const {
+const ConfigValue Config::getParameterFallback(const std::string &name, ConfigValue &&fallback) const {
   try {
     return getParameter(name);
   } catch (ConfigAccessException &) {

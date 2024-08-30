@@ -169,9 +169,9 @@ public:
    *
    * @param name Name of the parameter
    * @param fallback Value of the fallback parameter
-   * @return const ConfigValue& Value of the parameter
+   * @return const ConfigValue Value of the parameter
    */
-  const ConfigValue &getParameterFallback(const std::string &name, ConfigValue &&fallback) const;
+  const ConfigValue getParameterFallback(const std::string &name, ConfigValue &&fallback) const;
 
   /**
    * @brief Remove a parameter. If it does not exist, do nothing.
