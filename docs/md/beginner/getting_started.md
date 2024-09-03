@@ -14,12 +14,17 @@ If you experience problems while installing Conan, please refer to the official 
 
 To install conan, you need to install [Python](https://www.python.org/)(>=3.10) with pip first. You may use a system package manager of your choice to install it. In this guide we will use apt.
 ```shell
-apt install python3 python3-pip
+apt install gcc g++ python3 python3-pip python3-regex git cmake
 ```
 
 Afterwards you can install Conan with pip.
 ```shell
-pip3 install conan
+pip3 install --break-system-packages conan
+```
+
+You may need to update your `PATH` 
+```
+source ~/.profile
 ```
 
 Please make sure that you installed Conan 2.0 or higher.
@@ -84,7 +89,7 @@ In order to use lbot, you have to set it as a dependency in the `requirements()`
 You also need to specify CMake as a build dependency in the `build_requirements()` method.
 ```python
 def build_requirements(self):
-  self.tool_requires("cmake/3.29.3")
+  self.tool_requires("cmake/[>=3.22.0]")
 ```
 
 ## CMakeLists.txt
