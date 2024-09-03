@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.22.0)
 
 find_package(gz-transport13 REQUIRED)
+find_package(cppzmq REQUIRED)
+find_package(tinyxml2 REQUIRED)
+
+# Fix due to broken target declaration in gz.
+add_library(CPPZMQ::CPPZMQ ALIAS cppzmq-static)
+add_library(TINYXML2::TINYXML2 ALIAS tinyxml2::tinyxml2)
 
 # Set the target name from the path.
 get_filename_component(TARGET_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)

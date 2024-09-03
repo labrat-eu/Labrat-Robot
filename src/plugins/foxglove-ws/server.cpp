@@ -123,7 +123,7 @@ public:
           server->broadcastTime(std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now().time_since_epoch()).count());
         }
 
-        exit_mutex.try_lock_until(time + std::chrono::milliseconds(10));
+        (void)exit_mutex.try_lock_until(time + std::chrono::milliseconds(10));
       }
     });
   }

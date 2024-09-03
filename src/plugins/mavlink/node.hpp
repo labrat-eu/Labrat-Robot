@@ -121,7 +121,7 @@ private:
      */
     template <typename MessageType>
     void registerReceiver(std::string &&topic_name) {
-      typename Node::Receiver<MessageType>::Ptr receiver = addReceiver<MessageType>(topic_name);
+      typename Node::Receiver<MessageType>::Ptr receiver = addReceiver<MessageType>(topic_name, &getSystemInfo());
       receiver->setCallback(&Node::receiverCallback, &getSystemInfo());
 
       registerGenericReceiver(std::move(receiver));

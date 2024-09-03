@@ -1,4 +1,5 @@
 from conan import ConanFile, errors
+from conan.tools import build
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 from conan.tools.files import copy, update_conandata
 from conan.tools.scm import Git
@@ -72,6 +73,8 @@ class LbotConan(ConanFile):
         self.version = self.get_version_data()["version"]
 
     def system_requirements(self):
+        build.check_min_cppstd(self, 20)
+
         if self.settings.os != 'Linux':
             raise Exception("Package is only supported on Linux.")
         
@@ -90,6 +93,10 @@ class LbotConan(ConanFile):
             self.requires("mcap/[>=1.3.0]")
             self.requires("crc_cpp/[>=1.2.0]")
             self.requires("foxglove-websocket/[>=1.2.0]")
+
+        if self.options.plugins_experimental:
+            self.requires("cppzmq/4.10.0")
+            self.requires("tinyxml2/10.0.0")
 
     def build_requirements(self):
         if self.options.system_deps:
@@ -185,4 +192,5 @@ class LbotConan(ConanFile):
             self.cpp_info.components["plugins"].requires = ["core", "mcap::mcap", "foxglove-websocket::foxglove-websocket", "crc_cpp::crc_cpp"]
 
             if self.options.plugins_experimental:
+                self.cpp_info.components["plugins"].requires += ["cppzmq::cppzmq", "tinyxml2::tinyxml2"]
                 self.cpp_info.components["plugins"].system_libs += ["gz-transport13"]
