@@ -18,6 +18,7 @@ set(TARGET_HEADERS
 )
 
 set(TARGET_SOURCES
+  conversions.cpp
   node.cpp
   serial_connection.cpp
   udp_connection.cpp
