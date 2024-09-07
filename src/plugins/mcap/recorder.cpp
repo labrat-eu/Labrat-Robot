@@ -6,6 +6,7 @@
  *
  */
 
+#include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/config.hpp>
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/logger.hpp>
@@ -129,7 +130,7 @@ inline McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleMess
   message.channelId = channel_iterator->second.channel.id;
   message.sequence = channel_iterator->second.index++;
   message.publishTime = std::chrono::duration_cast<std::chrono::nanoseconds>(info.timestamp.time_since_epoch()).count();
-  message.logTime = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+  message.logTime = std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now().time_since_epoch()).count();
   message.data = reinterpret_cast<const std::byte *>(info.serialized_message.data());
   message.dataSize = info.serialized_message.size();
 
