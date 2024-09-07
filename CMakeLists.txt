@@ -56,7 +56,6 @@ add_compile_definitions(
 
 # Define variables and options here.
 prj_register_option(ENABLE_PLUGINS "Enable building of plugins." ON)
-prj_register_option(ENABLE_PLUGINS_EXPERIMENTAL "Enable building of experimantal plugins." OFF)
 prj_register_option(ENABLE_FORMAT "Enable code formatting targets." OFF)
 prj_register_option(ENABLE_DOCS "Enable documnetation generation targets." OFF)
 
