@@ -26,6 +26,7 @@ set(TARGET_TEST_SOURCES
   src/config.cpp
   src/setup.cpp
   src/multisetup.cpp
+  src/timestamp.cpp
   src/manager.cpp
   src/clock.cpp
   src/performance.cpp
