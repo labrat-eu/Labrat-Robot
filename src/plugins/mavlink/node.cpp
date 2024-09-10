@@ -59,6 +59,7 @@
 #include <labrat/lbot/plugins/mavlink/msg/utm_global_position.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/vfr_hud.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/vibration.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/wind_cov.hpp>
 #include <labrat/lbot/plugins/mavlink/node.hpp>
 #include <labrat/lbot/utils/cleanup.hpp>
 #include <labrat/lbot/utils/thread.hpp>
@@ -322,11 +323,14 @@ Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::
   addSender<mavlink::common::OpenDroneIdLocation>("/" + node.getName() + "/in/open_drone_id_location",
     MAVLINK_MSG_ID_OPEN_DRONE_ID_LOCATION);
   addSender<mavlink::common::OpenDroneIdSystem>("/" + node.getName() + "/in/open_drone_id_system", MAVLINK_MSG_ID_OPEN_DRONE_ID_SYSTEM);
+  addSender<mavlink::common::WindCov>("/" + node.getName() + "/in/wind_cov", MAVLINK_MSG_ID_WIND_COV);
 
   addReceiver<mavlink::common::ParamRequestRead>("/" + node.getName() + "/out/param_request_read");
   addReceiver<mavlink::common::SetPositionTargetLocalNed>("/" + node.getName() + "/out/set_position_target_local_ned");
   addReceiver<mavlink::common::CommandInt>("/" + node.getName() + "/out/command_int");
   addReceiver<mavlink::common::CommandLong>("/" + node.getName() + "/out/command_long");
+  addReceiver<mavlink::common::Timesync>("/" + node.getName() + "/out/timesync");
+  addReceiver<mavlink::common::SystemTime>("/" + node.getName() + "/out/system_time");
 
   server.param_request_read =
     addServer<mavlink::common::ParamRequestRead, mavlink::common::ParamValue>("/" + node.getName() + "/srv/param_request_read",

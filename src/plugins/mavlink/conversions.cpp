@@ -58,6 +58,7 @@
 #include <labrat/lbot/plugins/mavlink/msg/utm_global_position.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/vfr_hud.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/vibration.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/wind_cov.hpp>
 #include <labrat/lbot/plugins/mavlink/node.hpp>
 #include <labrat/lbot/utils/string.hpp>
 
@@ -804,6 +805,19 @@ void Mavlink::Node::MavlinkMessage<mavlink::common::OpenDroneIdSystem>::convertF
 }
 
 template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::WindCov>::convertFrom(const Converted &source, Storage &destination) {
+  destination.time_usec = mavlink_msg_wind_cov_get_time_usec(&source);
+  destination.wind_x = mavlink_msg_wind_cov_get_wind_x(&source);
+  destination.wind_y = mavlink_msg_wind_cov_get_wind_y(&source);
+  destination.wind_z = mavlink_msg_wind_cov_get_wind_z(&source);
+  destination.var_horiz = mavlink_msg_wind_cov_get_var_horiz(&source);
+  destination.var_vert = mavlink_msg_wind_cov_get_var_vert(&source);
+  destination.wind_alt = mavlink_msg_wind_cov_get_wind_alt(&source);
+  destination.horiz_accuracy = mavlink_msg_wind_cov_get_horiz_accuracy(&source);
+  destination.vert_accuracy = mavlink_msg_wind_cov_get_vert_accuracy(&source);
+}
+
+template <>
 void Mavlink::Node::MavlinkMessage<mavlink::common::ParamRequestRead>::convertTo(const Storage &source, Converted &destination,
   const Mavlink::SystemInfo *info) {
   if (source.param_id.size() > 16) {
@@ -837,6 +851,20 @@ void Mavlink::Node::MavlinkMessage<mavlink::common::CommandLong>::convertTo(cons
   mavlink_msg_command_long_pack_chan(info->system_id, info->component_id, info->channel_id, &destination, source.target_system,
     source.target_component, static_cast<u16>(source.command), source.confirmation, source.param1, source.param2, source.param3,
     source.param4, source.param5, source.param6, source.param7);
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::Timesync>::convertTo(const Storage &source, Converted &destination,
+  const Mavlink::SystemInfo *info) {
+  mavlink_msg_timesync_pack_chan(info->system_id, info->component_id, info->channel_id, &destination, source.tc1,
+    source.ts1, source.target_system, source.target_component);
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::SystemTime>::convertTo(const Storage &source, Converted &destination,
+  const Mavlink::SystemInfo *info) {
+  mavlink_msg_system_time_pack_chan(info->system_id, info->component_id, info->channel_id, &destination, source.time_unix_usec,
+    source.time_boot_ms);
 }
 
 }  // namespace lbot::plugins
