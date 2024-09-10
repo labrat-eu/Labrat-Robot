@@ -180,6 +180,10 @@ protected:
     }
   }
 
+  MessageTime(const MessageTime &rhs) {
+    lbot_message_base_timestamp = rhs.lbot_message_base_timestamp;
+  }
+
 private:
   // Long name to make ambiguity less likely.
   Clock::time_point lbot_message_base_timestamp;
@@ -211,6 +215,20 @@ public:
   MessageBase() = default;
 
   /**
+   * @brief Construct a new Message Base object
+   * 
+   * @param rhs 
+   */
+  MessageBase(const MessageBase &rhs) : MessageTime(rhs), Content(rhs) {}
+
+  /**
+   * @brief Construct a new Message Base object
+   * 
+   * @param rhs 
+   */
+  MessageBase(MessageBase &&rhs) : MessageTime(rhs), Content(std::forward<Content>(rhs)) {}
+
+  /**
    * @brief Construct a new Message object by specifying the contents stored within the message.
    * Also set the timestamp to the current time.
    *
@@ -225,6 +243,20 @@ public:
    * @param content Contents of the message.
    */
   MessageBase(Content &&content) : Content(std::forward<Content>(content)) {}
+
+  MessageBase &operator=(const MessageBase &rhs) {
+    *dynamic_cast<Content *>(this) = dynamic_cast<const Content &>(rhs);
+    *dynamic_cast<MessageTime *>(this) = dynamic_cast<const MessageTime &>(rhs);
+
+    return *this;
+  } 
+
+  MessageBase &operator=(MessageBase &&rhs) {
+    *dynamic_cast<Content *>(this) = std::forward<Content>(rhs);
+    *dynamic_cast<MessageTime *>(this) = dynamic_cast<const MessageTime &>(rhs);
+
+    return *this;
+  }
 
   /**
    * @brief Get the fully qualified type name.
@@ -262,20 +294,30 @@ public:
   Message() : Super() {}
 
   /**
-   * @brief Construct a new Message object by specifying the contents stored within the message.
-   * Also set the timestamp to the current time.
+   * @brief Copy constructor to copy contents and the timestamp.
    *
-   * @param content Contents of the message.
+   * @param rhs
    */
-  Message(const Content &content) : Super(content) {}
+  Message(const Super &rhs) : Super(rhs) {}
 
   /**
-   * @brief Construct a new Message object by specifying the contents stored within the message.
-   * Also set the timestamp to the current time.
-   *
-   * @param content Contents of the message.
+   * @brief Move constructor to copy contents and the timestamp.
+   * 
+   * @param rhs
    */
-  Message(Content &&content) : Super(std::forward<Content>(content)) {}
+  Message(Super &&rhs) : Super(std::forward<Super>(rhs)) {}
+
+  Message &operator=(const Super &rhs) {
+    *dynamic_cast<Super *>(this) = rhs;
+
+    return *this;
+  } 
+
+  Message &operator=(Super &&rhs) {
+    *dynamic_cast<Super *>(this) = std::forward<Super>(rhs);
+
+    return *this;
+  }
 
   static inline void convertTo(const Super::Storage &source, Super::Converted &destination) {
     destination = source;

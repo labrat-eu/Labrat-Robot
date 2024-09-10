@@ -26,6 +26,7 @@ inline namespace labrat {
 namespace lbot {
 
 class Manager;
+class FreezeGuard;
 
 /** @cond INTERNAL */
 inline namespace utils {
@@ -103,6 +104,9 @@ private:
   static Mode mode;
   static std::atomic<time_point> current_time;
   static std::atomic_flag exit_flag;
+
+  static thread_local time_point freeze_time;
+  static thread_local u32 freeze_count;
   
   static std::shared_ptr<Node> node;
 
@@ -115,6 +119,8 @@ private:
   friend class utils::Thread;
   friend class utils::ConditionVariable;
 
+  friend class FreezeGuard;
+
   friend constexpr std::strong_ordering operator<=>(const WaiterRegistration& lhs, const WaiterRegistration& rhs);
 };
 
@@ -122,6 +128,22 @@ private:
 // TODO: Remove in future release
 static_assert(std::chrono::is_clock_v<Clock>);
 #endif
+
+/**
+ * @brief Guard class that freezes the time of the local thread until it is destroyed.
+ * 
+ */
+class FreezeGuard {
+public:
+  inline FreezeGuard() {
+    Clock::freeze_time = Clock::initialized() ? Clock::now() : Clock::time_point();
+    ++Clock::freeze_count;
+  }
+
+  inline ~FreezeGuard() {
+    --Clock::freeze_count;
+  }
+};
 
 }  // namespace lbot
 /** @cond INTERNAL */

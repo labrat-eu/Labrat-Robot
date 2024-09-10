@@ -69,6 +69,9 @@ Clock::Mode Clock::mode;
 std::atomic<Clock::time_point> Clock::current_time;
 std::atomic_flag Clock::exit_flag;
 
+thread_local Clock::time_point Clock::freeze_time;
+thread_local u32 Clock::freeze_count = 0;
+
 std::shared_ptr<Clock::Node> Clock::node;
 
 std::priority_queue<Clock::WaiterRegistration> Clock::waiter_queue;
@@ -111,6 +114,10 @@ bool Clock::initialized() {
 }
   
 Clock::time_point Clock::now() {
+  if (freeze_count != 0) {
+    return freeze_time;
+  }
+
   if (!is_initialized) {
     throw ClockException("Clock is not initialized");
   }
@@ -227,7 +234,6 @@ inline constexpr std::strong_ordering operator<=>(const Clock::WaiterRegistratio
   // Reversed so that earlier times show up at the top of the priority queue.
   return rhs.wakeup_time <=> lhs.wakeup_time;
 }
-
 
 }  // namespace lbot
 }  // namespace labrat

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <labrat/lbot/base.hpp>
+#include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/manager.hpp>
@@ -182,6 +183,8 @@ public:
      * @param container Object containing the data to be sent out.
      */
     void put(const Converted &container) override {
+      FreezeGuard freeze_guard;
+
       const std::size_t receiver_count = GenericSender<Converted>::topic.getReceivers().size() + GenericSender<Converted>::topic.getConstReceivers().size();
       if (receiver_count != 0) {
         Storage storage;
@@ -215,6 +218,8 @@ public:
 
           {
             std::lock_guard guard(receiver->message_buffer[index].mutex);
+            receiver->message_buffer[index].message = Storage();
+
             Convert<MessageType::convertFrom>::call(container, receiver->message_buffer[index].message, user_ptr);
             receiver->message_buffer[index].update_flag = true;
             receiver->count.store(local_count, std::memory_order_release);
@@ -288,6 +293,8 @@ public:
 
             {
               std::lock_guard guard(receiver->message_buffer[index].mutex);
+              receiver->message_buffer[index].message = Storage();
+
               Move<MessageType::moveFrom>::call(std::forward<Converted>(container), receiver->message_buffer[index].message, user_ptr);
 
               if (receiver->callback.valid()) {
@@ -363,6 +370,8 @@ public:
      * @param container Object caintaining the data to be sent out.
      */
     void trace(const Converted &container) override {
+      FreezeGuard freeze_guard;
+
       MessageType message;
       MessageInfo message_info = {.topic_info = GenericSender<Converted>::topic_info};
 
