@@ -12,5 +12,5 @@ CC=clang-18
 CXX=clang-18
 
 [conf]
-tools.build:cxxflags=['-fexperimental-library', '-pg', '--coverage']
+tools.build:cxxflags=['-fexperimental-library', '-fprofile-instr-generate', '-fcoverage-mapping']
 tools.build:exelinkflags=['-lc++', '-lm']

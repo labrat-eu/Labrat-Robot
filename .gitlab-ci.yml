@@ -43,10 +43,12 @@ variables:
 .build-generic: &build-generic |
   if [ $LBOT_NIGHTLY_PIPELINE ]; then rm -rf $CONAN_USER_HOME/.conan/data; fi
   conan remove -c $CONAN_NAME/*
+  conan source .
   conan build . -b=missing -pr:h=ci -pr:b=ci
-  conan export-pkg . -name $CONAN_NAME -pr:h=ci -pr:b=ci
+  conan export-pkg . --name $CONAN_NAME -pr:h=ci -pr:b=ci
 
 .test-generic: &test-generic |
+  conan export-pkg . --name $CONAN_NAME -pr:h=ci -pr:b=ci
   CTEST_OUTPUT_ON_FAILURE=1 conan test -b=missing -pr:h=ci -pr:b=ci testing $CONAN_NAME/$(conan inspect . | grep -Po "(?<=version: ).*" | head -n1)
 
 .examples-generic: &examples-generic |
@@ -137,7 +139,7 @@ test:clang-18:
     - *test-generic
   after_script:
     - cp `find -L testing/build/ -name report.xml` test_report.xml
-    - gcovr . -f=src/* -e=src/plugins* --txt --cobertura coverage.xml
+    - gcovr testing build -f=src/* -e=src/plugins* --txt --cobertura coverage.xml
     - sed -i 's/filename="build\/RelWithDebInfo\/include\/labrat\/lbot/filename="src/g' coverage.xml
 
 examples:clang-18:
@@ -191,7 +193,7 @@ test:gcc-13:
     - *test-generic
   after_script:
     - cp `find -L testing/build/ -name report.xml` test_report.xml
-    - gcovr . -f=src/* -e=src/plugins* --txt --cobertura coverage.xml
+    - gcovr testing build -f=src/* -e=src/plugins* --txt --cobertura coverage.xml
     - sed -i 's/filename="build\/RelWithDebInfo\/include\/labrat\/lbot/filename="src/g' coverage.xml
 
 examples:gcc-13:
