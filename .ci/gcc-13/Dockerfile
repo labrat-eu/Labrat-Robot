@@ -5,7 +5,7 @@ LABEL maintainer="labrat.eu"
 
 # Install common packages
 RUN apt-get update
-RUN apt-get install -y python3-venv python3-pip git cmake make socat
+RUN apt-get install -y python3-venv python3-pip git cmake make socat gcovr
 
 # Python setup
 RUN python3 -m venv /.venv

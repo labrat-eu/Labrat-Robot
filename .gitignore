@@ -32,4 +32,7 @@ report*
 # Conan
 CMakeUserPresets.json
 
+# gcovr
+coverage.xml
+
 *.mcap

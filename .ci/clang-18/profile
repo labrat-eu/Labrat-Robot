@@ -1,6 +1,6 @@
 [settings]
 arch=x86_64
-build_type=Release
+build_type=RelWithDebInfo
 compiler=clang
 compiler.cppstd=20
 compiler.libcxx=libc++
@@ -12,5 +12,5 @@ CC=clang-18
 CXX=clang-18
 
 [conf]
-tools.build:cxxflags=['-fexperimental-library']
+tools.build:cxxflags=['-fexperimental-library', '-pg', '--coverage']
 tools.build:exelinkflags=['-lc++', '-lm']
