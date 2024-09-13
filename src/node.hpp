@@ -185,7 +185,10 @@ public:
     void put(const Converted &container) override {
       FreezeGuard freeze_guard;
 
-      const std::size_t receiver_count = GenericSender<Converted>::topic.getReceivers().size() + GenericSender<Converted>::topic.getConstReceivers().size();
+      TopicMap::Topic::ReceiverList receiver_list = GenericSender<Converted>::topic.getReceivers();
+      TopicMap::Topic::ReceiverList const_receiver_list = GenericSender<Converted>::topic.getConstReceivers();
+
+      const std::size_t receiver_count = receiver_list.size() + const_receiver_list.size();
       if (receiver_count != 0) {
         Storage storage;
         bool storage_initialized = false;
@@ -193,8 +196,8 @@ public:
         std::vector<std::future<void>> futures;
         futures.reserve(receiver_count);
 
-        for (auto &range : {GenericSender<Converted>::topic.getReceivers(), GenericSender<Converted>::topic.getConstReceivers()}) {
-          for (void *pointer : range) {
+        for (TopicMap::Topic::ReceiverList *range : {&receiver_list, &const_receiver_list}) {
+          for (void *pointer : *range) {
             Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
             if (receiver->callback.valid()) {
@@ -210,7 +213,7 @@ public:
           }
         }
 
-        for (void *pointer : GenericSender<Converted>::topic.getReceivers()) {
+        for (void *pointer : receiver_list) {
           Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
           const std::size_t local_count = receiver->count.load(std::memory_order_relaxed) + 1;
@@ -249,11 +252,12 @@ public:
       if constexpr (!can_move_from<MessageType>) {
         put(container);
       } else {
-        const std::size_t normal_receive_count = GenericSender<Converted>::topic.getReceivers().size();
-        const std::size_t const_receive_count = GenericSender<Converted>::topic.getConstReceivers().size();
-        std::size_t receive_count = normal_receive_count;
+        TopicMap::Topic::ReceiverList receiver_list = GenericSender<Converted>::topic.getReceivers();
+        TopicMap::Topic::ReceiverList const_receiver_list = GenericSender<Converted>::topic.getConstReceivers();
 
-        if (const_receive_count != 0) {
+        std::size_t receive_count = receiver_list.size();
+
+        if (const_receiver_list.size() != 0) {
           receive_count += 1;
         }
 
@@ -284,9 +288,9 @@ public:
         }
 
         if (plugin_iterator == plugin_end) {
-          if (normal_receive_count != 0) {
+          if (receiver_list.size() != 0) {
             // Send to a receiver.
-            Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(*GenericSender<Converted>::topic.getReceivers().begin());
+            Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(*receiver_list.begin());
 
             const std::size_t local_count = receiver->count.load(std::memory_order_relaxed) + 1;
             const std::size_t index = local_count & receiver->index_mask;
@@ -312,9 +316,9 @@ public:
             Move<MessageType::moveFrom>::call(std::forward<Converted>(container), storage, user_ptr);
 
             std::vector<std::future<void>> futures;
-            futures.reserve(const_receive_count);
+            futures.reserve(const_receiver_list.size());
 
-            for (void *pointer : GenericSender<Converted>::topic.getConstReceivers()) {
+            for (void *pointer : const_receiver_list) {
               Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
               if (receiver->callback.valid()) {
@@ -356,7 +360,9 @@ public:
      *
      */
     void flush() override {
-      for (void *pointer : GenericSender<Converted>::topic.getReceivers()) {
+      TopicMap::Topic::ReceiverList receiver_list = GenericSender<Converted>::topic.getReceivers();
+
+      for (void *pointer : receiver_list) {
         Receiver<MessageType> *receiver = reinterpret_cast<Receiver<MessageType> *>(pointer);
 
         receiver->flush_flag = true;
