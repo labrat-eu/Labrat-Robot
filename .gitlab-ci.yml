@@ -121,11 +121,17 @@ test:clang-18:
       - test_report.xml
     reports:
       junit: test_report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+  coverage: '/^TOTAL.*\s+(\d+\%)$/'
   <<: *init-clang
   script:
     - *test-generic
   after_script:
     - cp `find -L testing/build/ -name report.xml` test_report.xml
+    - gcovr . -f=src/* --cobertura coverage.xml
+    - sed -i 's/filename="build\/RelWithDebInfo\/include\/labrat\/lbot/filename="src/g' coverage.xml
 
 examples:clang-18:
   stage: test
@@ -164,11 +170,17 @@ test:gcc-13:
       - test_report.xml
     reports:
       junit: test_report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+  coverage: '/^TOTAL.*\s+(\d+\%)$/'
   <<: *init-gcc
   script:
     - *test-generic
   after_script:
     - cp `find -L testing/build/ -name report.xml` test_report.xml
+    - gcovr . -f=src/* --cobertura coverage.xml
+    - sed -i 's/filename="build\/RelWithDebInfo\/include\/labrat\/lbot/filename="src/g' coverage.xml
 
 examples:gcc-13:
   stage: test
@@ -196,7 +208,7 @@ pages:
   script:
     - conan source .
     - conan build . -pr:h=ci -pr:b=ci -o docs=True -o skip_build=True
-    - cp -r build/Release/docs/html public
+    - cp -r build/Debug/docs/html public
   artifacts:
     paths:
       - public
