@@ -19,6 +19,7 @@
 #include <queue>
 #include <compare>
 #include <string>
+#include <vector>
 
 /** @cond INTERNAL */
 inline namespace labrat {
@@ -59,11 +60,18 @@ public:
   static bool initialized();
 
   /**
+   * @brief Wait until the clock is initialized.
+   * 
+   * @details The function may also return after a spurious wakeup or when the program is shutting down.
+   */
+  static void waitUntilInitialized();
+
+  /**
    * @brief Get the current time.
    * 
    * @return time_point The current time.
    */
-  static time_point now();
+  static time_point now() noexcept;
 
   /**
    * @brief Convert a time point into a human readable string.
@@ -78,12 +86,14 @@ public:
 private:
   class Node;
   class SenderNode;
-  class ReceiverNode;
+  class SynchronizedNode;
+  class SteppedNode;
 
   enum class Mode {
     system,
     steady,
-    custom,
+    synchronized,
+    stepped
   };
 
   struct WaiterRegistration {
@@ -97,23 +107,32 @@ private:
   static void deinitialize();
   static void cleanup();
 
+  static void synchronize(duration offset, i32 drift, std::chrono::steady_clock::duration now);
+
   static void setTime(time_point time);
   static WaiterRegistration registerWaiter(time_point wakeup_time, std::shared_ptr<std::condition_variable> condition = std::make_shared<std::condition_variable>());
 
-  static bool is_initialized;
   static Mode mode;
-  static std::atomic<time_point> current_time;
+  static bool is_initialized;
+  static std::condition_variable is_initialized_condition;
   static std::atomic_flag exit_flag;
+
+  static duration current_offset;
+  static i32 current_drift;
+  static std::chrono::steady_clock::duration last_sync;
+
+  static std::atomic<time_point> current_time;
 
   static thread_local time_point freeze_time;
   static thread_local u32 freeze_count;
   
-  static std::shared_ptr<Node> node;
+  static std::vector<std::shared_ptr<Node>> nodes;
 
   static std::priority_queue<WaiterRegistration> waiter_queue;
   static std::mutex mutex;
 
-  friend class ReceiverNode;
+  friend class SynchronizedNode;
+  friend class SteppedNode;
 
   friend class Manager;
   friend class utils::Thread;
@@ -136,7 +155,7 @@ static_assert(std::chrono::is_clock_v<Clock>);
 class FreezeGuard {
 public:
   inline FreezeGuard() {
-    Clock::freeze_time = Clock::initialized() ? Clock::now() : Clock::time_point();
+    Clock::freeze_time = Clock::now();
     ++Clock::freeze_count;
   }
 

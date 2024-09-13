@@ -175,9 +175,7 @@ protected:
    *
    */
   MessageTime() {
-    if (Clock::initialized()) {
-      lbot_message_base_timestamp = Clock::now();
-    }
+    lbot_message_base_timestamp = Clock::now();
   }
 
   MessageTime(const MessageTime &rhs) {

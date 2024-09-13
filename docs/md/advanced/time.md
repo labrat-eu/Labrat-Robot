@@ -1,7 +1,7 @@
 @page time Time
 
 @note
-You may also want to take a look at the [code example](@ref example_time).
+You may also want to take a look at the [synchronized time](@ref example_time_synchronized) and [stepped time](@ref example_time_stepped) code examples.
 
 # Basics
 There exist multiple feasable time sources to synchronize a robotics program.
@@ -12,7 +12,8 @@ The following time sources are supported by lbot:
 | ---           | ---                         | ---         |
 | system        | [`std::chrono::system_clock`](https://en.cppreference.com/w/cpp/chrono/system_clock) | The clock of your system. This usually is the real world time. It may be adjusted at any time. |
 | steady        | [`std::chrono::steady_clock`](https://en.cppreference.com/w/cpp/chrono/steady_clock) | A monotonic clock that cannot decrease as time moves forward. The time between ticks is constnt. However this clock is not related to the real world time. |
-| custom        | -                           | A user provided clock. This is the preferred option when working with a simulator as this clock source allows for slowing, accelerating and stopping of time. |
+| synchronized  | -                           | A clock synchronized to an external time source. The source should roughly match the speed of the steady clock. |
+| stepped       | -                           | An incremental user provided clock. This is the preferred option when working with a simulator as this clock source allows for arbitrary slowing, accelerating and stopping of time. |
 
 By default the system time is used by lbot. In order to change the time source you need to specify the `/lbot/clock_mode` parameter accordingly. This needs to be done **before** instanciating the [central manager](@ref lbot::Manager).
 ```cpp
@@ -49,7 +50,14 @@ condition.waitFor(lock, std::chrono::seconds(1))
 ```
 
 # Custom clocks
-When setting the `/lbot/clock_mode` parameter to `custom` you are required to update the clock yourself.
-This is achieved by writing on the `/time` topic. The type of the topic must be `lbot::Timestamp`.
+## Synchronized
+When setting the `/lbot/clock_mode` parameter to `synchronized` you are required to handle synchronization requests.
+This is achieved by receiving the `/synchronized_time/request` topic. The type of the topic is `lbot::Timesync`.
+It contains a request timestamp that must be returned on the `/synchronized_time/response` topic, alongside a response timestamp.
+The response timestamp should contain the current time of another system.
+
+## Stepped
+When setting the `/lbot/clock_mode` parameter to `stepped` you are required to update the clock yourself.
+This is achieved by writing on the `/stepped_time/input` topic. The type of the topic must be `lbot::Timestamp`.
 Successive updates are required to be in order (the clock cannot be decreased).
 The custom clock is a purely discrete clock and no interpolation between update is done.

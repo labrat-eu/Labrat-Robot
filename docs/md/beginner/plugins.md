@@ -27,7 +27,6 @@ The following plugins are currently bundled with lbot
 | serial-bridge | Node      | A bridge that allows you to connect two lbot instances via a serial port. |
 | mcap          | Trace     | Records topics into a [MCAP](https://mcap.dev/) file. MCAP files can be loaded in [Foxglove](https://foxglove.dev/). |
 | foxglove-ws   | Trace     | Opens a [Foxglove](https://foxglove.dev/) WebSocket connection. This allows you to visualize topics within Foxglove while your program is running. |
-| gazebo-time   | Node      | Synchronizes the custom clock with a [gazebo](https://gazebosim.org/home) simulation. |
 | mavlink       | Node      | Creates an interface to read/write common [MAVLink](https://mavlink.io/en/) messages. |
 
 ## MCAP

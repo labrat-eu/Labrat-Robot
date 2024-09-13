@@ -6,6 +6,7 @@
 #include <labrat/lbot/utils/condition.hpp>
 #include <labrat/lbot/utils/thread.hpp>
 #include <labrat/lbot/msg/timestamp.hpp>
+#include <labrat/lbot/msg/timesync.hpp>
 
 #include <mutex>
 #include <chrono>
@@ -32,10 +33,36 @@ public:
   }
 };
 
-class TimeNode : public UniqueNode {
+class SynchronizedTimeNode : public lbot::Node {
 public:
-  TimeNode() {
-    sender = addSender<TimeMessage>("/time");
+  SynchronizedTimeNode() {
+    sender_response = addSender<lbot::Timesync>("/synchronized_time/response");
+
+    receiver_request = addReceiver<const lbot::Timesync>("/synchronized_time/request");
+    receiver_request->setCallback(&SynchronizedTimeNode::callback, this);
+  }
+
+private:
+  static void callback(const lbot::Message<lbot::Timesync> &message_in, SynchronizedTimeNode *self) {
+    const auto now = std::chrono::system_clock::now().time_since_epoch();
+
+    lbot::Message<lbot::Timesync> message_out;
+
+    message_out.request = std::make_unique<foxglove::Time>(*message_in.request);
+    message_out.response = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(now).count(),
+      (std::chrono::duration_cast<std::chrono::nanoseconds>(now) % std::chrono::seconds(1)).count());
+
+    self->sender_response->put(message_out);
+  }
+
+  Sender<lbot::Timesync>::Ptr sender_response;
+  Receiver<const lbot::Timesync>::Ptr receiver_request;
+};
+
+class SteppedTimeNode : public UniqueNode {
+public:
+  SteppedTimeNode() {
+    sender = addSender<TimeMessage>("/stepped_time/input");
   }
 
   void updateTime(lbot::Clock::time_point time) {
@@ -60,24 +87,51 @@ TEST_P(ClockTest, setup) {
   lbot::Config::Ptr config = lbot::Config::get();
   config->setParameter("/lbot/clock_mode", GetParam());
 
-  EXPECT_THROW(lbot::Clock::now(), lbot::ClockException);
-
   ASSERT_FALSE(lbot::Clock::initialized());
+  EXPECT_EQ(lbot::Clock::now(), lbot::Clock::time_point());
+  
   lbot::Manager::Ptr manager = lbot::Manager::get();
-  ASSERT_TRUE(lbot::Clock::initialized());
+  
+  if (GetParam() == "synchronized") {
+    ASSERT_FALSE(lbot::Clock::initialized());
 
-  if (GetParam() == "custom") {
     lbot::Clock::time_point t1 = lbot::Clock::now();
     lbot::Clock::time_point t2 = lbot::Clock::now();
 
     EXPECT_EQ(t1, t2);
 
-    std::shared_ptr<TimeNode> node = manager->addNode<TimeNode>("test");
-    node->updateTime(t1 + std::chrono::milliseconds(100));
+    std::shared_ptr<SynchronizedTimeNode> node_synchronized = manager->addNode<SynchronizedTimeNode>("test");
+
+    Clock::waitUntilInitialized();
+    ASSERT_TRUE(lbot::Clock::initialized());
+    
+    lbot::Clock::time_point t3 = lbot::Clock::now();
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    lbot::Clock::time_point t4 = lbot::Clock::time_point(std::chrono::duration_cast<lbot::Clock::duration>(std::chrono::system_clock::now().time_since_epoch()));
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    lbot::Clock::time_point t5 = lbot::Clock::now();
+
+    EXPECT_LE(t3, t4);
+    EXPECT_LE(t3, t5);
+    EXPECT_LE(t4, t5);
+  } else if (GetParam() == "stepped") {
+    ASSERT_FALSE(lbot::Clock::initialized());
+
+    lbot::Clock::time_point t1 = lbot::Clock::now();
+    lbot::Clock::time_point t2 = lbot::Clock::now();
+
+    EXPECT_EQ(t1, t2);
+
+    std::shared_ptr<SteppedTimeNode> node_stepped = manager->addNode<SteppedTimeNode>("test");
+    node_stepped->updateTime(t1 + std::chrono::milliseconds(100));
+
+    ASSERT_TRUE(lbot::Clock::initialized());
     lbot::Clock::time_point t3 = lbot::Clock::now();
 
     EXPECT_EQ(t3, t1 + std::chrono::milliseconds(100));
   } else {
+    ASSERT_TRUE(lbot::Clock::initialized());
+
     lbot::Clock::time_point t1 = lbot::Clock::now();
     lbot::Clock::time_point t2;
     if (GetParam() == "system") {
@@ -90,8 +144,6 @@ TEST_P(ClockTest, setup) {
     EXPECT_LE(t1, t2);
     EXPECT_LE(t1, t3);
     EXPECT_LE(t2, t3);
-
-    EXPECT_THROW(manager->addNode<TimeNode>("test"), lbot::ManagementException);
   }
 }
 
@@ -100,25 +152,33 @@ TEST_P(ClockTest, sleep) {
   config->setParameter("/lbot/clock_mode", GetParam());
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
-  std::shared_ptr<TimeNode> node;
-  if (GetParam() == "custom") {
-    node = manager->addNode<TimeNode>("test");
-  } else {
-    ASSERT_THROW(manager->addNode<TimeNode>("test"), lbot::ManagementException);
+  std::shared_ptr<SynchronizedTimeNode> node_synchronized;
+  if (GetParam() == "synchronized") {
+    node_synchronized = manager->addNode<SynchronizedTimeNode>("test");
+
+    Clock::waitUntilInitialized();
+    ASSERT_TRUE(lbot::Clock::initialized());
+  }
+
+  std::shared_ptr<SteppedTimeNode> node_stepped;
+  if (GetParam() == "stepped") {
+    node_stepped = manager->addNode<SteppedTimeNode>("test");
+
+    node_stepped->updateTime(lbot::Clock::now());
   }
 
   lbot::Clock::time_point t1 = lbot::Clock::now();
 
-  if (GetParam() == "custom") {
-    node->updateTimeAsync(t1 + std::chrono::milliseconds(100), std::chrono::milliseconds(100));
+  if (GetParam() == "stepped") {
+    node_stepped->updateTimeAsync(t1 + std::chrono::milliseconds(100), std::chrono::milliseconds(100));
   }
   lbot::Thread::sleepFor(std::chrono::milliseconds(100));
   lbot::Clock::time_point t2 = lbot::Clock::now();
 
   EXPECT_GE(t2, t1 + std::chrono::milliseconds(100));
 
-  if (GetParam() == "custom") {
-    node->updateTimeAsync(t1 + std::chrono::milliseconds(200), std::chrono::milliseconds(100));
+  if (GetParam() == "stepped") {
+    node_stepped->updateTimeAsync(t1 + std::chrono::milliseconds(200), std::chrono::milliseconds(100));
   }
   lbot::Thread::sleepUntil(t1 + std::chrono::milliseconds(200));
   lbot::Clock::time_point t3 = lbot::Clock::now();
@@ -130,14 +190,14 @@ TEST_P(ClockTest, sleep) {
 
   EXPECT_GE(t4, t3);
 
-  if (GetParam() == "custom") {
-    node->updateTimeAsync(t3 + std::chrono::milliseconds(200), std::chrono::milliseconds(100));
+  if (GetParam() == "stepped") {
+    node_stepped->updateTimeAsync(t3 + std::chrono::milliseconds(200), std::chrono::milliseconds(100));
   }
   lbot::Thread::sleepUntil(t3 + std::chrono::milliseconds(100));
   lbot::Clock::time_point t5 = lbot::Clock::now();
 
   EXPECT_GE(t5, t3 + std::chrono::milliseconds(100));
-  if (GetParam() == "custom") {
+  if (GetParam() == "stepped") {
     EXPECT_EQ(t5, t3 + std::chrono::milliseconds(200));
   }
 
@@ -147,9 +207,9 @@ TEST_P(ClockTest, sleep) {
     check_a = true;
   });
 
-  if (GetParam() == "custom") {
-    node->updateTimeAsync(t5 + std::chrono::milliseconds(100), std::chrono::milliseconds(100));
-    node->updateTimeAsync(t5 + std::chrono::milliseconds(200), std::chrono::milliseconds(200));
+  if (GetParam() == "stepped") {
+    node_stepped->updateTimeAsync(t5 + std::chrono::milliseconds(100), std::chrono::milliseconds(100));
+    node_stepped->updateTimeAsync(t5 + std::chrono::milliseconds(200), std::chrono::milliseconds(200));
   }
   lbot::Thread::sleepUntil(t5 + std::chrono::milliseconds(200));
 
@@ -164,9 +224,9 @@ TEST_P(ClockTest, sleep) {
     check_b = true;
   });
 
-  if (GetParam() == "custom") {
-    node->updateTimeAsync(t6 + std::chrono::milliseconds(100), std::chrono::milliseconds(100));
-    node->updateTimeAsync(t6 + std::chrono::milliseconds(200), std::chrono::milliseconds(200));
+  if (GetParam() == "stepped") {
+    node_stepped->updateTimeAsync(t6 + std::chrono::milliseconds(100), std::chrono::milliseconds(100));
+    node_stepped->updateTimeAsync(t6 + std::chrono::milliseconds(200), std::chrono::milliseconds(200));
   }
   lbot::Thread::sleepUntil(t6 + std::chrono::milliseconds(100));
 
@@ -179,11 +239,19 @@ TEST_P(ClockTest, condition) {
   config->setParameter("/lbot/clock_mode", GetParam());
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
-  std::shared_ptr<TimeNode> node;
-  if (GetParam() == "custom") {
-    node = manager->addNode<TimeNode>("test");
-  } else {
-    ASSERT_THROW(manager->addNode<TimeNode>("test"), lbot::ManagementException);
+  std::shared_ptr<SynchronizedTimeNode> node_synchronized;
+  if (GetParam() == "synchronized") {
+    node_synchronized = manager->addNode<SynchronizedTimeNode>("test");
+
+    Clock::waitUntilInitialized();
+    ASSERT_TRUE(lbot::Clock::initialized());
+  }
+
+  std::shared_ptr<SteppedTimeNode> node_stepped;
+  if (GetParam() == "stepped") {
+    node_stepped = manager->addNode<SteppedTimeNode>("test");
+
+    node_stepped->updateTime(lbot::Clock::now());
   }
 
   std::mutex mutex;
@@ -192,16 +260,16 @@ TEST_P(ClockTest, condition) {
 
   lbot::Clock::time_point t1 = lbot::Clock::now();
 
-  if (GetParam() == "custom") {
-    node->updateTimeAsync(t1 + std::chrono::milliseconds(100), std::chrono::milliseconds(100));
+  if (GetParam() == "stepped") {
+    node_stepped->updateTimeAsync(t1 + std::chrono::milliseconds(100), std::chrono::milliseconds(100));
   }
   EXPECT_EQ(condition.waitFor(lock, std::chrono::milliseconds(100)), std::cv_status::timeout);
   lbot::Clock::time_point t2 = lbot::Clock::now();
 
   EXPECT_GE(t2, t1 + std::chrono::milliseconds(100));
 
-  if (GetParam() == "custom") {
-    node->updateTimeAsync(t1 + std::chrono::milliseconds(200), std::chrono::milliseconds(100));
+  if (GetParam() == "stepped") {
+    node_stepped->updateTimeAsync(t1 + std::chrono::milliseconds(200), std::chrono::milliseconds(100));
   }
   EXPECT_EQ(condition.waitUntil(lock, t1 + std::chrono::milliseconds(200)), std::cv_status::timeout);
   lbot::Clock::time_point t3 = lbot::Clock::now();
@@ -213,14 +281,14 @@ TEST_P(ClockTest, condition) {
 
   EXPECT_GE(t4, t3);
 
-  if (GetParam() == "custom") {
-    node->updateTimeAsync(t3 + std::chrono::milliseconds(200), std::chrono::milliseconds(100));
+  if (GetParam() == "stepped") {
+    node_stepped->updateTimeAsync(t3 + std::chrono::milliseconds(200), std::chrono::milliseconds(100));
   }
   EXPECT_EQ(condition.waitUntil(lock, t3 + std::chrono::milliseconds(100)), std::cv_status::timeout);
   lbot::Clock::time_point t5 = lbot::Clock::now();
 
   EXPECT_GE(t5, t3 + std::chrono::milliseconds(100));
-  if (GetParam() == "custom") {
+  if (GetParam() == "stepped") {
     EXPECT_EQ(t5, t3 + std::chrono::milliseconds(200));
   }
 
@@ -229,9 +297,9 @@ TEST_P(ClockTest, condition) {
     condition.notifyOne();
   });
 
-  if (GetParam() == "custom") {
-    node->updateTimeAsync(t5 + std::chrono::milliseconds(100), std::chrono::milliseconds(100));
-    node->updateTimeAsync(t5 + std::chrono::milliseconds(200), std::chrono::milliseconds(200));
+  if (GetParam() == "stepped") {
+    node_stepped->updateTimeAsync(t5 + std::chrono::milliseconds(100), std::chrono::milliseconds(100));
+    node_stepped->updateTimeAsync(t5 + std::chrono::milliseconds(200), std::chrono::milliseconds(200));
   }
   EXPECT_EQ(condition.waitUntil(lock, t5 + std::chrono::milliseconds(200)), std::cv_status::no_timeout);
 
@@ -243,7 +311,7 @@ TEST_P(ClockTest, condition) {
   thread_a.join();
 }
 
-INSTANTIATE_TEST_SUITE_P(clock, ClockTest, testing::Values("system", "steady", "custom"));
+INSTANTIATE_TEST_SUITE_P(clock, ClockTest, testing::Values("system", "steady", "synchronized", "stepped"));
 
 }  // namespace lbot::test
 }  // namespace labrat

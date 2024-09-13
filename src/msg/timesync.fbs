@@ -1,0 +1,10 @@
+include "foxglove/Time.fbs";
+
+namespace labrat.lbot;
+
+table Timesync {
+  request:foxglove.Time;
+  response:foxglove.Time;
+}
+
+root_type Timesync;

@@ -1,0 +1,11 @@
+include "foxglove/Time.fbs";
+
+namespace labrat.lbot;
+
+table TimesyncStatus {
+  offset:long;
+  drift:float;
+  round_trip_time:int;
+}
+
+root_type TimesyncStatus;

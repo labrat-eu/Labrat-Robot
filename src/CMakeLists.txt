@@ -38,6 +38,8 @@ set(TARGET_HEADERS
 
 set(TARGET_MESSAGES
   msg/timestamp.fbs
+  msg/timesync.fbs
+  msg/timesync_status.fbs
   msg/test.fbs
 )
 

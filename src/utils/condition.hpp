@@ -11,6 +11,7 @@
 #include <labrat/lbot/base.hpp>
 #include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/utils/types.hpp>
 
 #include <condition_variable>
 #include <memory>
@@ -120,6 +121,10 @@ public:
    */
   template<class Duration>
   std::cv_status waitUntil(std::unique_lock<std::mutex> &lock, const std::chrono::time_point<Clock, Duration> &time) {
+    if (!Clock::initialized()) {
+      throw ClockException("Timed wait on uninitialized clock attempted.");
+    }
+
     switch (Clock::mode) {
       case (Clock::Mode::system): {
         return condition->wait_until(lock, std::chrono::system_clock::time_point(std::chrono::duration_cast<std::chrono::system_clock::duration>(time.time_since_epoch())));
@@ -129,7 +134,23 @@ public:
         return condition->wait_until(lock, std::chrono::steady_clock::time_point(std::chrono::duration_cast<std::chrono::steady_clock::duration>(time.time_since_epoch())));
       }
 
-      case (Clock::Mode::custom): {
+      case (Clock::Mode::synchronized): {
+        std::cv_status result;
+
+        do {
+          const std::chrono::steady_clock::duration now = std::chrono::steady_clock::now().time_since_epoch();
+
+          // This is a close estimate to make the fixed point math easier.
+          const std::chrono::steady_clock::duration diff = time.time_since_epoch() - Clock::current_offset;
+          const std::chrono::steady_clock::duration then = diff - ((diff - Clock::last_sync) * Clock::current_drift / (i64)1E6);
+
+          result = condition->wait_until(lock, std::chrono::steady_clock::time_point(then));
+        } while (result == std::cv_status::timeout && Clock::now() < time);
+
+        return result;
+      }
+
+      case (Clock::Mode::stepped): {
         Clock::WaiterRegistration registration = Clock::registerWaiter(std::chrono::time_point_cast<Clock::duration>(time), condition);
 
         if (registration.waitable) {

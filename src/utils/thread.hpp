@@ -160,6 +160,10 @@ public:
       std::mutex mutex;
       std::unique_lock lock(mutex);
 
+      while (!(token.stop_requested() || Clock::initialized())) {
+        Clock::waitUntilInitialized();
+      }
+
       while (!token.stop_requested()) {
         const Clock::time_point time_begin = Clock::now();
 

@@ -19,6 +19,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <type_traits>
 
 /** @cond INTERNAL */
 inline namespace labrat {
@@ -109,7 +110,7 @@ public:
   template <typename T>
   requires is_message<T>
   Topic &addSender(const std::string &topic_name, void *sender) {
-    Topic &topic = getTopicInternal(topic_name, typeid(typename T::Content).hash_code());
+    Topic &topic = getTopicInternal(topic_name, typeid(typename std::remove_const_t<T>::Content).hash_code());
 
     topic.addSender(sender);
 
@@ -127,7 +128,7 @@ public:
   template <typename T>
   requires is_message<T>
   Topic &addReceiver(const std::string &topic_name, void *receiver) {
-    Topic &topic = getTopicInternal(topic_name, typeid(typename T::Content).hash_code());
+    Topic &topic = getTopicInternal(topic_name, typeid(typename std::remove_const_t<T>::Content).hash_code());
 
     topic.addReceiver(receiver, is_const_message<T>);
 

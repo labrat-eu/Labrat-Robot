@@ -154,7 +154,7 @@ Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity, const st
   logger(logger), verbosity(verbosity), location(location) {}
 
 Logger::LogStream::~LogStream() {
-  const Clock::time_point now = Clock::initialized() ? Clock::now() : Clock::time_point();
+  const Clock::time_point now = Clock::now();
 
   if (verbosity <= Logger::log_level) { 
     std::lock_guard guard(io_mutex);

@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.22.0)
 find_package(lbot MODULE REQUIRED)
 
 # Set the target name.
-set(TARGET_NAME time)
+set(TARGET_NAME time-synchronized)
 
 set(TARGET_SOURCES
   main.cpp
