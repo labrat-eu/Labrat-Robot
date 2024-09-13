@@ -38,4 +38,4 @@ class LbotTestConan(ConanFile):
 
     def test(self):
         cmake = CMake(self)
-        cmake.test(cli_args=['ARGS=--output-junit report.xml --output-on-failure'], env = "conanrun")
+        cmake.test(cli_args=['ARGS=--output-junit report.xml --output-on-failure --schedule-random'])
