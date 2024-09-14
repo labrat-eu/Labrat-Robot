@@ -35,7 +35,6 @@ variables:
     key: gcc
     paths:
       - .tmp/
-      - build/
   before_script:
     - *init-generic
 
@@ -112,7 +111,6 @@ build:clang-18:
   stage: build
   image: $CI_REGISTRY_IMAGE:clang-18
   artifacts:
-    name: $CI_JOB_NAME
     paths:
       - build/*
   <<: *init-clang
@@ -166,7 +164,6 @@ build:gcc-13:
   stage: build
   image: $CI_REGISTRY_IMAGE:gcc-13
   artifacts:
-    name: $CI_JOB_NAME
     paths:
       - build/*
   <<: *init-gcc

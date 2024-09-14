@@ -77,11 +77,18 @@ private:
 class Clock::SynchronizedNode : public Clock::Node {
 public:
   SynchronizedNode() {
+    lbot::Config::Ptr config = lbot::Config::get();
+
     sender_request = addSender<TimesyncMessage>("/synchronized_time/request");
     sender_status = addSender<TimesyncStatus>("/synchronized_time/status");
     
     receiver_response = addReceiver<const TimesyncMessage>("/synchronized_time/response");
     receiver_response->setCallback(&SynchronizedNode::receiverCallbackWrapper, this);
+
+    update_interval = std::chrono::milliseconds(config->getParameterFallback("/lbot/synchronized_time/update_interval", 100).get<int>());
+    max_round_trip_time = std::chrono::milliseconds(config->getParameterFallback("/lbot/synchronized_time/max_round_trip_time", 20).get<int>());
+    max_timejump = update_interval / 2;
+    max_drift = config->getParameterFallback("/lbot/synchronized_time/max_drift", 0.1).get<double>() * 1E6;
 
     filter_index = 0;
     first_flag = true;
@@ -101,7 +108,6 @@ private:
     const std::chrono::steady_clock::duration now = std::chrono::steady_clock::now().time_since_epoch();
 
     const std::chrono::steady_clock::duration round_trip_time = now - message.request;
-    static const std::chrono::steady_clock::duration max_round_trip_time = std::chrono::milliseconds(20);
     
     if (round_trip_time >= max_round_trip_time) {
       getLogger().logWarning() << "High round trip time detected. Skipping timesync.";
@@ -120,9 +126,6 @@ private:
     filter_timestamps[filter_index] = now;
 
     const i32 drift = filter_valid ? (filter_offset_total.count() * (i64)1E6) / total_filter_duration.count() : 0;
-
-    static const std::chrono::steady_clock::duration max_timejump = update_interval / 2;
-    static const i32 max_drift = 0.1 * 1E6;
 
     const std::chrono::steady_clock::duration offset_clamped = first_flag ? offset : std::clamp(offset, last_offset - max_timejump, last_offset + max_timejump);
     const i32 drift_clamped = std::clamp(drift, -max_drift, max_drift);
@@ -153,7 +156,11 @@ private:
     self->receiverCallback(message);
   }
 
-  static constexpr std::chrono::steady_clock::duration update_interval = std::chrono::milliseconds(100);
+  static std::chrono::steady_clock::duration update_interval;
+  static std::chrono::steady_clock::duration max_round_trip_time;
+  static std::chrono::steady_clock::duration max_timejump;
+  static i32 max_drift;
+
   static const i32 filter_size = 8;
 
   std::array<std::chrono::steady_clock::duration, filter_size> filter_timestamps;
@@ -206,12 +213,17 @@ std::vector<std::shared_ptr<Clock::Node>> Clock::nodes;
 std::priority_queue<Clock::WaiterRegistration> Clock::waiter_queue;
 std::mutex Clock::mutex;
 
+std::chrono::steady_clock::duration Clock::SynchronizedNode::update_interval;
+std::chrono::steady_clock::duration Clock::SynchronizedNode::max_round_trip_time;
+std::chrono::steady_clock::duration Clock::SynchronizedNode::max_timejump;
+i32 Clock::SynchronizedNode::max_drift;
+
 void Clock::initialize() {
   if (is_initialized) {
     throw ClockException("Clock is already initialized");
   }
 
-  const std::string &mode_name = lbot::Config::get()->getParameterFallback("/lbot/clock_mode", "system").get<std::string>();
+  const std::string mode_name = lbot::Config::get()->getParameterFallback("/lbot/clock_mode", "system").get<std::string>();
 
   if (mode_name == "system") {
     mode = Mode::system;
