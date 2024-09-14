@@ -12,4 +12,4 @@ CC=gcc-13
 CXX=g++-13
 
 [conf]
-tools.build:cxxflags=['-pg', '--coverage']
+tools.build:cxxflags=['--coverage']
