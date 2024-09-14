@@ -137,7 +137,7 @@ test:clang-18:
     - *test-generic
   after_script:
     - cp `find -L testing/build/ -name report.xml` test_report.xml
-    - gcovr testing build -f=src/* -e=src/plugins* --txt --cobertura coverage.xml
+    - gcovr testing build -f=src/* -e=src/plugins* --txt --cobertura coverage.xml --gcov-executable "llvm-cov-18 gcov"
     - sed -i 's/filename="build\/RelWithDebInfo\/include\/labrat\/lbot/filename="src/g' coverage.xml
 
 examples:clang-18:
@@ -215,11 +215,12 @@ examples:gcc-13:
 pages:
   stage: deploy
   image: $CI_REGISTRY_IMAGE:doxygen
+  dependencies: []
   <<: *init-gcc
   script:
     - conan source .
     - conan build . -pr:h=ci -pr:b=ci -o docs=True -o skip_build=True
-    - cp -r build/Debug/docs/html public
+    - cp -r build/RelWithDebInfo/docs/html public
   artifacts:
     paths:
       - public

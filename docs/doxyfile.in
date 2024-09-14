@@ -150,4 +150,4 @@ GENERATE_PERLMOD = NO
 # Aliases
 ALIASES += lbot_version="@GIT_SEMVER@"
 ALIASES += lbot_git="```shell^^git clone https://gitlab.com/labrat.eu/lbot^^cd lbot^^git switch -d @GIT_REF@^^```"
-ALIASES += lbot_requirements="```python^^def requirements(self):^^  self.requires(\"lbot/@GIT_SEMVER@\")^^```"
+ALIASES += lbot_requirements="```python^^def requirements(self):^^  self.requires(\"lbot/@GIT_VERSION@\")^^```"

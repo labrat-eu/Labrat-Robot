@@ -33,6 +33,7 @@ report*
 CMakeUserPresets.json
 
 # gcovr
+*.profraw
 coverage.xml
 
 *.mcap
