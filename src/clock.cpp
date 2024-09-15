@@ -201,7 +201,8 @@ std::atomic_flag Clock::exit_flag;
 
 Clock::duration Clock::current_offset;
 i32 Clock::current_drift;
-std::chrono::steady_clock::duration Clock::last_sync;
+std::atomic<std::chrono::steady_clock::duration> Clock::last_sync;
+thread_local Clock::time_point Clock::last_synchronized_estimate;
 
 std::atomic<Clock::time_point> Clock::current_time;
 
@@ -290,8 +291,32 @@ Clock::time_point Clock::now() noexcept {
     }
 
     case Mode::synchronized: {
+      duration offset;
+      i32 drift;
+      std::chrono::steady_clock::duration last_sync_before = last_sync.load(std::memory_order_acquire);
+      
+      while (true) {
+        offset = current_offset;
+        drift = current_drift;
+
+        const std::chrono::steady_clock::duration last_sync_after = last_sync.load(std::memory_order_seq_cst);
+
+        if (last_sync_before == last_sync_after) {
+          break;
+        }
+
+        last_sync_before = last_sync_after;
+      }
+
       const duration now = std::chrono::steady_clock::now().time_since_epoch();
-      return time_point(std::chrono::duration_cast<duration>(now + current_offset + (now - last_sync) * current_drift / (i64)1E6));
+      const time_point new_estimate(std::chrono::duration_cast<duration>(now + offset + (now - last_sync_before) * drift / (i64)1E6));
+
+      // Ensure that time is never going backwards. 
+      if (new_estimate > last_synchronized_estimate) {
+        last_synchronized_estimate = new_estimate;
+      }
+
+      return last_synchronized_estimate;
     }
 
     case Mode::stepped: {
@@ -330,7 +355,7 @@ std::string Clock::format(const time_point time) {
 void Clock::synchronize(duration offset, i32 drift, std::chrono::steady_clock::duration now) {
   current_offset = offset;
   current_drift = drift;
-  last_sync = now;
+  last_sync.store(now, std::memory_order_release);
 
   if (!(is_initialized || exit_flag.test(std::memory_order_acquire))) {
     is_initialized = true;

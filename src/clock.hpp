@@ -119,7 +119,8 @@ private:
 
   static duration current_offset;
   static i32 current_drift;
-  static std::chrono::steady_clock::duration last_sync;
+  static std::atomic<std::chrono::steady_clock::duration> last_sync;
+  static thread_local time_point last_synchronized_estimate;
 
   static std::atomic<time_point> current_time;
 

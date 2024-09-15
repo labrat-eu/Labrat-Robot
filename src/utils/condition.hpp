@@ -138,11 +138,28 @@ public:
         std::cv_status result;
 
         do {
+          Clock::duration offset;
+          i32 drift;
+          std::chrono::steady_clock::duration last_sync_before = Clock::last_sync.load(std::memory_order_acquire);
+          
+          while (true) {
+            offset = Clock::current_offset;
+            drift = Clock::current_drift;
+
+            const std::chrono::steady_clock::duration last_sync_after = Clock::last_sync.load(std::memory_order_seq_cst);
+
+            if (last_sync_before == last_sync_after) {
+              break;
+            }
+
+            last_sync_before = last_sync_after;
+          }
+
           const std::chrono::steady_clock::duration now = std::chrono::steady_clock::now().time_since_epoch();
 
           // This is a close estimate to make the fixed point math easier.
-          const std::chrono::steady_clock::duration diff = time.time_since_epoch() - Clock::current_offset;
-          const std::chrono::steady_clock::duration then = diff - ((diff - Clock::last_sync) * Clock::current_drift / (i64)1E6);
+          const std::chrono::steady_clock::duration diff = time.time_since_epoch() - offset;
+          const std::chrono::steady_clock::duration then = diff - ((diff - last_sync_before) * drift / (i64)1E6);
 
           result = condition->wait_until(lock, std::chrono::steady_clock::time_point(then));
         } while (result == std::cv_status::timeout && Clock::now() < time);
