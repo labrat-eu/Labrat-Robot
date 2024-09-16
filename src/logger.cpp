@@ -18,136 +18,217 @@
 #include <iomanip>
 #include <iostream>
 #include <mutex>
+#include <chrono>
+#include <sstream>
+#include <memory>
 
 inline namespace labrat {
 namespace lbot {
 
-Logger::Verbosity Logger::log_level = Verbosity::info;
-bool Logger::use_color = true;
-bool Logger::print_location = false;
-bool Logger::print_time = true;
-
-static std::mutex io_mutex;
-
-class EntryMessage : public MessageBase<foxglove::Log, Logger::Entry> {
+class Logger::Private {
 public:
-  static void convertFrom(const Converted &source, Storage &destination) {
-    switch (source.verbosity) {
+  class Entry {
+  public:
+    Verbosity verbosity;
+    Clock::time_point timestamp;
+    std::string logger_name;
+    std::string message;
+    std::source_location location;
+  };
+
+  class EntryMessage : public MessageBase<foxglove::Log, Entry> {
+  public:
+    static void convertFrom(const Converted &source, Storage &destination) {
+      switch (source.verbosity) {
+        case (Logger::Verbosity::critical): {
+          destination.level = foxglove::LogLevel::FATAL;
+          break;
+        }
+
+        case (Logger::Verbosity::error): {
+          destination.level = foxglove::LogLevel::ERROR;
+          break;
+        }
+
+        case (Logger::Verbosity::warning): {
+          destination.level = foxglove::LogLevel::WARNING;
+          break;
+        }
+
+        case (Logger::Verbosity::info): {
+          destination.level = foxglove::LogLevel::INFO;
+          break;
+        }
+
+        case (Logger::Verbosity::debug): {
+          destination.level = foxglove::LogLevel::DEBUG;
+          break;
+        }
+      }
+
+      const Clock::duration duration = source.timestamp.time_since_epoch();
+      destination.timestamp = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(duration).count(),
+        (duration % std::chrono::seconds(1)).count());
+      destination.name = source.logger_name;
+      destination.message = source.message;
+      destination.file = source.location.file_name();
+      destination.line = source.location.line();
+    }
+  };
+
+  class Node : public UniqueNode {
+  private:
+    Sender<EntryMessage>::Ptr sender;
+
+  public:
+    explicit Node() : UniqueNode("logger") {
+      sender = addSender<EntryMessage>("/log");
+    }
+
+    void send(const Entry &entry) {
+      sender->put(entry);
+    }
+
+    void trace(const Entry &entry) {
+      sender->trace(entry);
+    }
+  };
+
+  class Color {
+  public:
+    enum class Code : i16 {
+      black = 30,
+      red = 31,
+      green = 32,
+      yellow = 33,
+      blue = 34,
+      magenta = 35,
+      cyan = 36,
+      white = 37,
+      normal = 39,
+    };
+
+    explicit Color(bool enable_color, Code code = Code::normal) : code(code), enable_color(enable_color) {}
+
+    friend std::ostream &
+
+    operator<<(std::ostream &stream, const Color &color) {
+      if (color.enable_color) {
+        return stream << "\033[" << static_cast<i16>(color.code) << "m";
+      }
+
+      return stream;
+    }
+
+  private:
+    const Code code;
+    const bool enable_color;
+  };
+
+  static std::string getVerbosityLong(Logger::Verbosity verbosity) {
+    switch (verbosity) {
       case (Logger::Verbosity::critical): {
-        destination.level = foxglove::LogLevel::FATAL;
-        break;
+        return "critical";
       }
 
       case (Logger::Verbosity::error): {
-        destination.level = foxglove::LogLevel::ERROR;
-        break;
+        return "error";
       }
 
       case (Logger::Verbosity::warning): {
-        destination.level = foxglove::LogLevel::WARNING;
-        break;
+        return "warning";
       }
 
       case (Logger::Verbosity::info): {
-        destination.level = foxglove::LogLevel::INFO;
-        break;
+        return "info";
       }
 
       case (Logger::Verbosity::debug): {
-        destination.level = foxglove::LogLevel::DEBUG;
-        break;
+        return "debug";
+      }
+
+      default: {
+        return "";
       }
     }
-
-    const Clock::duration duration = source.timestamp.time_since_epoch();
-    destination.timestamp = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(duration).count(),
-      (duration % std::chrono::seconds(1)).count());
-    destination.name = source.logger_name;
-    destination.message = source.message;
-    destination.file = source.location.file_name();
-    destination.line = source.location.line();
-  }
-};
-
-class LoggerNode : public UniqueNode {
-private:
-  Sender<EntryMessage>::Ptr sender;
-
-public:
-  explicit LoggerNode() : UniqueNode("logger") {
-    sender = addSender<EntryMessage>("/log");
   }
 
-  void send(const Logger::Entry &entry) {
-    sender->put(entry);
-  }
+  static std::string getVerbosityShort(Logger::Verbosity verbosity) {
+    switch (verbosity) {
+      case (Logger::Verbosity::critical): {
+        return "CRIT";
+      }
 
-  void trace(const Logger::Entry &entry) {
-    sender->trace(entry);
-  }
-};
+      case (Logger::Verbosity::error): {
+        return "ERRO";
+      }
 
-class Color {
-public:
-  enum class Code : i16 {
-    black = 30,
-    red = 31,
-    green = 32,
-    yellow = 33,
-    blue = 34,
-    magenta = 35,
-    cyan = 36,
-    white = 37,
-    normal = 39,
-  };
+      case (Logger::Verbosity::warning): {
+        return "WARN";
+      }
 
-  explicit Color(bool enable_color, Code code = Code::normal) : code(code), enable_color(enable_color) {}
+      case (Logger::Verbosity::info): {
+        return "INFO";
+      }
 
-  friend std::ostream &
+      case (Logger::Verbosity::debug): {
+        return "DBUG";
+      }
 
-  operator<<(std::ostream &stream, const Color &color) {
-    if (color.enable_color) {
-      return stream << "\033[" << static_cast<i16>(color.code) << "m";
+      default: {
+        return "";
+      }
     }
-
-    return stream;
   }
 
-private:
-  const Code code;
-  const bool enable_color;
+  static Color getVerbosityColor(Logger::Verbosity verbosity) {
+    switch (verbosity) {
+      case (Logger::Verbosity::critical):
+      case (Logger::Verbosity::error): {
+        return Color(Logger::isColorEnabled(), Color::Code::red);
+      }
+
+      case (Logger::Verbosity::warning): {
+        return Color(Logger::isColorEnabled(), Color::Code::yellow);
+      }
+
+      case (Logger::Verbosity::info): {
+        return Color(Logger::isColorEnabled(), Color::Code::cyan);
+      }
+
+      case (Logger::Verbosity::debug): {
+        return Color(Logger::isColorEnabled(), Color::Code::magenta);
+      }
+
+      default: {
+        return Color(Logger::isColorEnabled());
+      }
+    }
+  }
+
+  Logger::Verbosity log_level = Verbosity::info;
+  bool use_color = true;
+  bool print_location = false;
+  bool print_time = true;
+
+  std::shared_ptr<Node> node;
+  std::mutex io_mutex;
 };
 
-std::string getVerbosityLong(Logger::Verbosity verbosity);
-std::string getVerbosityShort(Logger::Verbosity verbosity);
-Color getVerbosityColor(Logger::Verbosity verbosity);
-
-std::shared_ptr<LoggerNode> Logger::node;
+static Logger::Private priv;
 
 Logger::Logger(std::string name) : name(std::move(name)) {}
 
 void Logger::initialize() {
-  node = Manager::get()->addNode<LoggerNode>("logger");
+  priv.node = Manager::get()->addNode<Private::Node>("logger");
 }
 
 void Logger::deinitialize() {
-  node.reset();
+  priv.node.reset();
 }
 
 Logger::LogStream Logger::log(Verbosity verbosity, const std::source_location &location) {
   return LogStream(*this, verbosity, location);
-}
-
-void Logger::send(const Entry &entry) {
-  if (node) {
-    node->send(entry);
-  }
-}
-
-void Logger::trace(const Entry &entry) {
-  if (node) {
-    node->trace(entry);
-  }
 }
 
 Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity, const std::source_location &location) :
@@ -156,10 +237,10 @@ Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity, const st
 Logger::LogStream::~LogStream() {
   const Clock::time_point now = Clock::now();
 
-  if (verbosity <= Logger::log_level) { 
-    std::lock_guard guard(io_mutex);
+  if (verbosity <= priv.log_level) { 
+    std::lock_guard guard(priv.io_mutex);
 
-    std::cout << getVerbosityColor(verbosity) << "[" << getVerbosityShort(verbosity) << "]" << Color(isColorEnabled()) << " ("
+    std::cout << Private::getVerbosityColor(verbosity) << "[" << Private::getVerbosityShort(verbosity) << "]" << Logger::Private::Color(isColorEnabled()) << " ("
               << logger.name;
 
     if (isLocationEnabled() || isTimeEnabled()) {
@@ -178,7 +259,7 @@ Logger::LogStream::~LogStream() {
     std::cout << message.str() << std::endl;
   }
 
-  Entry entry;
+  Private::Entry entry;
   entry.verbosity = verbosity;
   entry.timestamp = now;
   entry.logger_name = logger.name;
@@ -189,10 +270,12 @@ Logger::LogStream::~LogStream() {
     return;
   }
 
-  if (verbosity <= Verbosity::info) {
-    logger.send(entry);
-  } else {
-    logger.trace(entry);
+  if (priv.node) {
+    if (verbosity <= Verbosity::info) {
+      priv.node->send(entry);
+    } else {
+      priv.node->trace(entry);
+    }
   }
 }
 
@@ -202,85 +285,60 @@ Logger::LogStream &Logger::LogStream::operator<<(std::ostream &(*func)(std::ostr
   return *this;
 }
 
-std::string getVerbosityLong(Logger::Verbosity verbosity) {
-  switch (verbosity) {
-    case (Logger::Verbosity::critical): {
-      return "critical";
-    }
-
-    case (Logger::Verbosity::error): {
-      return "error";
-    }
-
-    case (Logger::Verbosity::warning): {
-      return "warning";
-    }
-
-    case (Logger::Verbosity::info): {
-      return "info";
-    }
-
-    case (Logger::Verbosity::debug): {
-      return "debug";
-    }
-
-    default: {
-      return "";
-    }
-  }
+void Logger::setLogLevel(Verbosity level) {
+  priv.log_level = level;
 }
 
-std::string getVerbosityShort(Logger::Verbosity verbosity) {
-  switch (verbosity) {
-    case (Logger::Verbosity::critical): {
-      return "CRIT";
-    }
-
-    case (Logger::Verbosity::error): {
-      return "ERRO";
-    }
-
-    case (Logger::Verbosity::warning): {
-      return "WARN";
-    }
-
-    case (Logger::Verbosity::info): {
-      return "INFO";
-    }
-
-    case (Logger::Verbosity::debug): {
-      return "DBUG";
-    }
-
-    default: {
-      return "";
-    }
-  }
+Logger::Verbosity Logger::getLogLevel() {
+  return priv.log_level;
 }
 
-Color getVerbosityColor(Logger::Verbosity verbosity) {
-  switch (verbosity) {
-    case (Logger::Verbosity::critical):
-    case (Logger::Verbosity::error): {
-      return Color(Logger::isColorEnabled(), Color::Code::red);
-    }
+void Logger::enableTopic() {
+  send_topic = true;
+}
 
-    case (Logger::Verbosity::warning): {
-      return Color(Logger::isColorEnabled(), Color::Code::yellow);
-    }
+void Logger::disableTopic() {
+  send_topic = false;
+}
 
-    case (Logger::Verbosity::info): {
-      return Color(Logger::isColorEnabled(), Color::Code::cyan);
-    }
+bool Logger::isTopicEnabled() const {
+  return send_topic;
+}
 
-    case (Logger::Verbosity::debug): {
-      return Color(Logger::isColorEnabled(), Color::Code::magenta);
-    }
+void Logger::enableColor() {
+  priv.use_color = true;
+}
 
-    default: {
-      return Color(Logger::isColorEnabled());
-    }
-  }
+void Logger::disableColor() {
+  priv.use_color = false;
+}
+
+bool Logger::isColorEnabled() {
+  return priv.use_color;
+}
+
+void Logger::enableLocation() {
+  priv.print_location = true;
+}
+
+void Logger::disableLocation() {
+  priv.print_location = false;
+}
+
+bool Logger::isLocationEnabled() {
+  return priv.print_location;
+}
+
+void Logger::enableTime() {
+  priv.print_time = true;
+}
+
+void Logger::disableTime() {
+  priv.print_time = false;
+}
+
+bool Logger::isTimeEnabled() {
+  return priv.print_time;
 }
 
 }  // namespace lbot

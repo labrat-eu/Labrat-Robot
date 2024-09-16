@@ -72,6 +72,14 @@ struct convert<labrat::lbot::ConfigValue> {
 inline namespace labrat {
 namespace lbot {
 
+class Config::Private {
+public:
+  Config::ParameterMap parameter_map;
+};
+
+static std::weak_ptr<Config> instance;
+static Config::Private priv;
+
 ConfigValue::ConfigValue() = default;
 
 ConfigValue::ConfigValue(const ConfigValue &rhs) : value(rhs.value) {}
@@ -108,9 +116,9 @@ ConfigValue::operator bool() const {
   return isValid();
 }
 
-std::weak_ptr<Config> Config::instance;
-
-Config::Config() = default;
+Config::Config() {
+  priv = Private();
+}
 
 Config::~Config() = default;
 
@@ -126,19 +134,19 @@ Config::Ptr Config::get() {
 }
 
 const ConfigValue &Config::setParameter(const std::string &name, ConfigValue &&value) {
-  ParameterMap::const_iterator iter = parameter_map.find(name);
+  ParameterMap::const_iterator iter = priv.parameter_map.find(name);
 
-  if (iter != parameter_map.end()) {
-    parameter_map.erase(iter);
+  if (iter != priv.parameter_map.end()) {
+    priv.parameter_map.erase(iter);
   }
 
-  return parameter_map.emplace_hint(iter, std::make_pair(name, std::forward<ConfigValue>(value)))->second;
+  return priv.parameter_map.emplace_hint(iter, std::make_pair(name, std::forward<ConfigValue>(value)))->second;
 }
 
 const ConfigValue &Config::getParameter(const std::string &name) const {
-  ParameterMap::const_iterator iter = parameter_map.find(name);
+  ParameterMap::const_iterator iter = priv.parameter_map.find(name);
 
-  if (iter == parameter_map.end()) {
+  if (iter == priv.parameter_map.end()) {
     throw ConfigAccessException("Failed to access config value. No parameter with the requested name exists.");
   }
 
@@ -154,23 +162,23 @@ const ConfigValue Config::getParameterFallback(const std::string &name, ConfigVa
 }
 
 void Config::removeParameter(const std::string &name) {
-  ParameterMap::const_iterator iter = parameter_map.find(name);
+  ParameterMap::const_iterator iter = priv.parameter_map.find(name);
 
-  if (iter != parameter_map.end()) {
-    parameter_map.erase(iter);
+  if (iter != priv.parameter_map.end()) {
+    priv.parameter_map.erase(iter);
   }
 }
 
 void Config::clear() noexcept {
-  parameter_map.clear();
+  priv.parameter_map.clear();
 }
 
 Config::ParameterMap::const_iterator Config::begin() const {
-  return parameter_map.begin();
+  return priv.parameter_map.begin();
 }
 
 Config::ParameterMap::const_iterator Config::end() const {
-  return parameter_map.end();
+  return priv.parameter_map.end();
 }
 
 void Config::load(const std::string &filename) {

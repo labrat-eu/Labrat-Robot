@@ -117,20 +117,13 @@ private:
  *
  */
 class Config {
-private:
-  /**
-   * @brief Construct a new Config object.
-   *
-   */
-  Config();
-
-  static std::weak_ptr<Config> instance;
-
-  using ParameterMap = std::unordered_map<std::string, ConfigValue>;
-  ParameterMap parameter_map;
-
 public:
+  /** @cond INTERNAL */
+  class Private;
+  /** @endcond */
+
   using Ptr = std::shared_ptr<Config>;
+  using ParameterMap = std::unordered_map<std::string, ConfigValue>;
 
   /**
    * @brief Destroy the Config object.
@@ -192,6 +185,13 @@ public:
    * @brief Parse parameters from a configuration file. This will remove all existing parameters.
    */
   void load(const std::string &filename);
+
+private:
+  /**
+   * @brief Construct a new Config object.
+   *
+   */
+  Config();
 };
 
 }  // namespace lbot

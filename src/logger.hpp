@@ -11,11 +11,7 @@
 #include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/utils/types.hpp>
 
-#include <chrono>
-#include <filesystem>
-#include <memory>
 #include <ostream>
-#include <sstream>
 #include <string>
 #include <source_location>
 
@@ -24,16 +20,16 @@ inline namespace labrat {
 /** @endcond */
 namespace lbot {
 
-/** @cond INTERNAL */
-class LoggerNode;
-/** @endcond */
-
 /**
  * @brief Class to print log messages and send them out as messages.
  *
  */
 class Logger {
 public:
+  /** @cond INTERNAL */
+  class Private;
+  /** @endcond */
+
   /**
    * @brief Verbosity level of the application.
    *
@@ -102,19 +98,6 @@ public:
   };
 
   /**
-   * @brief Log entry to be sent out as a foxglove::Log message.
-   *
-   */
-  class Entry {
-  public:
-    Verbosity verbosity;
-    Clock::time_point timestamp;
-    std::string logger_name;
-    std::string message;
-    std::source_location location;
-  };
-
-  /**
    * @brief Construct a new Logger object.
    *
    * @param name Name of the logger.
@@ -161,136 +144,86 @@ public:
    *
    * @param level The verbosity below no log entries are printed out to the console.
    */
-  static inline void setLogLevel(Verbosity level) {
-    log_level = level;
-  }
+  static void setLogLevel(Verbosity level);
 
   /**
    * @brief Get the log level of the application.
    *
    */
-  static inline Verbosity getLogLevel() {
-    return log_level;
-  }
+  static Verbosity getLogLevel();
 
   /**
    * @brief Enable the generation of messages onto the /log topic from this instance.
    */
-  inline void enableTopic() {
-    send_topic = true;
-  }
+  void enableTopic();
 
   /**
    * @brief Disable the generation of messages onto the /log topic from this instance.
    */
-  inline void disableTopic() {
-    send_topic = false;
-  }
+  void disableTopic();
 
   /**
    * @brief Check whether the generation of messages onto the /log topic from this instance is enabled.
    *
    */
-  inline bool isTopicEnabled() {
-    return send_topic;
-  }
+  bool isTopicEnabled() const;
 
   /**
    * @brief Enable colored console output.
    */
-  static inline void enableColor() {
-    use_color = true;
-  }
+  static void enableColor();
 
   /**
    * @brief Disable colored console output.
    */
-  static inline void disableColor() {
-    use_color = false;
-  }
+  static void disableColor();
 
   /**
    * @brief Check whether colored output is enabled.
    *
    */
-  static inline bool isColorEnabled() {
-    return use_color;
-  }
+  static bool isColorEnabled();
 
   /**
    * @brief Enable file location output.
    */
-  static inline void enableLocation() {
-    print_location = true;
-  }
+  static void enableLocation();
 
   /**
    * @brief Disable file location output.
    */
-  static inline void disableLocation() {
-    print_location = false;
-  }
+  static void disableLocation();
 
   /**
    * @brief Check whether file location output is enabled.
    *
    */
-  static inline bool isLocationEnabled() {
-    return print_location;
-  }
+  static bool isLocationEnabled();
 
   /**
    * @brief Enable time output.
    */
-  static inline void enableTime() {
-    print_time = true;
-  }
+  static void enableTime();
 
   /**
    * @brief Disable time output.
    */
-  static inline void disableTime() {
-    print_time = false;
-  }
+  static void disableTime();
 
   /**
    * @brief Check whether time output is enabled.
    *
    */
-  static inline bool isTimeEnabled() {
-    return print_time;
-  }
+  static bool isTimeEnabled();
 
 private:
   static void initialize();
   static void deinitialize();
 
-  /**
-   * @brief Send out a message entry over the logger node.
-   *
-   * @param entry Log entry to be sent out.
-   */
-  static void send(const Entry &entry);
-
-  /**
-   * @brief Trace a message entry over the logger node.
-   *
-   * @param entry Log entry to be sent out.
-   */
-  static void trace(const Entry &entry);
-
-  friend class LogStream;
-
   const std::string name;
   bool send_topic = true;
 
-  static std::shared_ptr<LoggerNode> node;
-
-  static Verbosity log_level;
-  static bool use_color;
-  static bool print_location;
-  static bool print_time;
-
+  friend class LogStream;
   friend class Manager;
 };
 
