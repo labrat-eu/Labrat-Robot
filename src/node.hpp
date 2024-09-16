@@ -183,14 +183,14 @@ public:
      * @param container Object containing the data to be sent out.
      */
     void put(const Converted &container) override {
-      FreezeGuard freeze_guard;
+      const Clock::time_point now = Clock::now();
 
       TopicMap::Topic::ReceiverList receiver_list = GenericSender<Converted>::topic.getReceivers();
       TopicMap::Topic::ReceiverList const_receiver_list = GenericSender<Converted>::topic.getConstReceivers();
 
       const std::size_t receiver_count = receiver_list.size() + const_receiver_list.size();
       if (receiver_count != 0) {
-        Storage storage;
+        Storage storage(now);
         bool storage_initialized = false;
 
         std::vector<std::future<void>> futures;
@@ -221,7 +221,7 @@ public:
 
           {
             std::lock_guard guard(receiver->message_buffer[index].mutex);
-            receiver->message_buffer[index].message = Storage();
+            receiver->message_buffer[index].message = Storage(now);
 
             Convert<MessageType::convertFrom>::call(container, receiver->message_buffer[index].message, user_ptr);
             receiver->message_buffer[index].update_flag = true;
@@ -287,6 +287,8 @@ public:
           return;
         }
 
+        const Clock::time_point now = Clock::now();
+
         if (plugin_iterator == plugin_end) {
           if (receiver_list.size() != 0) {
             // Send to a receiver.
@@ -297,7 +299,7 @@ public:
 
             {
               std::lock_guard guard(receiver->message_buffer[index].mutex);
-              receiver->message_buffer[index].message = Storage();
+              receiver->message_buffer[index].message = Storage(now);
 
               Move<MessageType::moveFrom>::call(std::forward<Converted>(container), receiver->message_buffer[index].message, user_ptr);
 
@@ -312,7 +314,7 @@ public:
             receiver->flush_flag = false;
             receiver->condition.notify_one();
           } else {
-            Storage storage;
+            Storage storage(now);
             Move<MessageType::moveFrom>::call(std::forward<Converted>(container), storage, user_ptr);
 
             std::vector<std::future<void>> futures;
@@ -376,7 +378,7 @@ public:
      * @param container Object caintaining the data to be sent out.
      */
     void trace(const Converted &container) override {
-      FreezeGuard freeze_guard;
+      const Clock::time_point now = Clock::now();
 
       MessageType message;
       MessageInfo message_info = {.topic_info = GenericSender<Converted>::topic_info};
@@ -971,6 +973,8 @@ public:
        */
       template <typename ServerRequestType, typename ServerResponseType>
       typename ServerResponseType::Storage callInternal(const typename ServerRequestType::Storage &request, void *user_ptr, void *handler_ptr) const {
+        const Clock::time_point now = Clock::now();
+
         typename ServerResponseType::Converted response_converted;
         
         if constexpr (is_standard_message<ServerRequestType>) {
@@ -985,7 +989,7 @@ public:
         if constexpr (is_standard_message<ServerResponseType>) {
           return response_converted;
         } else {
-          typename ServerResponseType::Storage response;
+          typename ServerResponseType::Storage response(now);
 
           if constexpr (can_move_from<ServerResponseType>) {
             Move<ServerResponseType::moveFrom>::call(std::move(response_converted), response, user_ptr);
@@ -1208,6 +1212,8 @@ public:
       const std::launch launch_policy = (policy == ExecutionPolicy::parallel) ? std::launch::async : std::launch::deferred;
 
       return std::async(launch_policy, [this](RequestConverted request) -> ResponseConverted {
+        const Clock::time_point now = Clock::now();
+
         ServiceMap::Service::ServerReference reference =
           GenericClient<RequestConverted, ResponseConverted>::service_info.service.getServer();
         Server<RequestType, ResponseType> *server = reference;
@@ -1219,7 +1225,7 @@ public:
           throw ServiceUnavailableException("Service has no registered handler.", node.getLogger());
         }
 
-        RequestStorage request_storage;
+        RequestStorage request_storage(now);
 
         if constexpr (can_move_from<RequestType>) {
           Move<RequestType::moveFrom>::call(std::move(request), request_storage, user_ptr);
@@ -1228,15 +1234,20 @@ public:
         }
 
         ResponseStorage response_storage = server->handler.call(request_storage, server->user_ptr, server->handler_ptr);
-        ResponseConverted response;
 
-        if constexpr (can_move_to<ResponseType>) {
-          Move<ResponseType::moveTo>::call(std::move(response_storage), response, user_ptr);
+        if constexpr (is_standard_message<ResponseStorage>) {
+          return response_storage;
         } else {
-          Convert<ResponseType::convertTo>::call(response_storage, response, user_ptr);
-        }
+          ResponseConverted response;
 
-        return response;
+          if constexpr (can_move_to<ResponseType>) {
+            Move<ResponseType::moveTo>::call(std::move(response_storage), response, user_ptr);
+          } else {
+            Convert<ResponseType::convertTo>::call(response_storage, response, user_ptr);
+          }
+
+          return response;
+        }
       }, request);
     }
 

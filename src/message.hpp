@@ -178,6 +178,15 @@ protected:
     lbot_message_base_timestamp = Clock::now();
   }
 
+  /**
+   * @brief Construct a new Message Base object and set the timestamp to the specified time.
+   *
+   * @param timestamp Timestamp of the message
+   */
+  MessageTime(Clock::time_point timestamp) {
+    lbot_message_base_timestamp = timestamp;
+  }
+
   MessageTime(const MessageTime &rhs) {
     lbot_message_base_timestamp = rhs.lbot_message_base_timestamp;
   }
@@ -211,6 +220,13 @@ public:
    *
    */
   MessageBase() = default;
+
+  /**
+   * @brief Default constructor to only set the timestamp to the specified time.
+   *
+   * @param timestamp Timestamp of the message
+   */
+  MessageBase(Clock::time_point timestamp) : MessageTime(timestamp) {}
 
   /**
    * @brief Construct a new Message Base object

@@ -17,10 +17,14 @@
 #include <labrat/lbot/msg/timesync_status.hpp>
 
 #include <sstream>
-#include <chrono>
 #include <cmath>
 #include <array>
 #include <mutex>
+#include <atomic>
+#include <queue>
+#include <compare>
+#include <string>
+#include <vector>
 
 inline namespace labrat {
 namespace lbot {
@@ -56,9 +60,43 @@ public:
   }
 };
 
-class Clock::Node : public UniqueNode {};
+class Clock::Private {
+public:
+  class Node;
+  class SenderNode;
+  class SynchronizedNode;
+  class SteppedNode;
 
-class Clock::SenderNode : public Clock::Node {
+  static void synchronize(duration offset, i32 drift, std::chrono::steady_clock::duration now);
+  static void setTime(time_point time);
+
+  Clock::Mode mode;
+  bool is_initialized = false;
+  std::condition_variable is_initialized_condition;
+  std::atomic_flag exit_flag;
+
+  Clock::duration current_offset;
+  i32 current_drift;
+  std::atomic<std::chrono::steady_clock::duration> last_sync;
+
+  std::atomic<Clock::time_point> current_time;
+
+  std::vector<std::shared_ptr<Node>> nodes;
+
+  std::priority_queue<Clock::WaiterRegistration> waiter_queue;
+  std::mutex mutex;
+
+  std::chrono::steady_clock::duration update_interval;
+  std::chrono::steady_clock::duration max_round_trip_time;
+  std::chrono::steady_clock::duration max_timejump;
+  i32 max_drift;
+};
+
+static Clock::Private priv;
+
+class Clock::Private::Node : public UniqueNode {};
+
+class Clock::Private::SenderNode : public Clock::Private::Node {
 public:
   SenderNode() {
     sender = addSender<TimestampMessage>("/time");
@@ -74,7 +112,7 @@ private:
   TimerThread thread;
 };
 
-class Clock::SynchronizedNode : public Clock::Node {
+class Clock::Private::SynchronizedNode : public Clock::Private::Node {
 public:
   SynchronizedNode() {
     lbot::Config::Ptr config = lbot::Config::get();
@@ -85,10 +123,10 @@ public:
     receiver_response = addReceiver<const TimesyncMessage>("/synchronized_time/response");
     receiver_response->setCallback(&SynchronizedNode::receiverCallbackWrapper, this);
 
-    update_interval = std::chrono::milliseconds(config->getParameterFallback("/lbot/synchronized_time/update_interval", 100).get<int>());
-    max_round_trip_time = std::chrono::milliseconds(config->getParameterFallback("/lbot/synchronized_time/max_round_trip_time", 20).get<int>());
-    max_timejump = update_interval / 2;
-    max_drift = config->getParameterFallback("/lbot/synchronized_time/max_drift", 0.1).get<double>() * 1E6;
+    priv.update_interval = std::chrono::milliseconds(config->getParameterFallback("/lbot/synchronized_time/update_interval", 100).get<int>());
+    priv.max_round_trip_time = std::chrono::milliseconds(config->getParameterFallback("/lbot/synchronized_time/max_round_trip_time", 20).get<int>());
+    priv.max_timejump = priv.update_interval / 2;
+    priv.max_drift = config->getParameterFallback("/lbot/synchronized_time/max_drift", 0.1).get<double>() * 1E6;
 
     filter_index = 0;
     first_flag = true;
@@ -101,7 +139,7 @@ private:
     const TimesyncInternal timesync = {.request = std::chrono::steady_clock::now().time_since_epoch()};
     sender_request->put(timesync);
 
-    std::this_thread::sleep_for(update_interval);
+    std::this_thread::sleep_for(priv.update_interval);
   }
 
   inline void receiverCallback(const TimesyncInternal &message) {
@@ -109,7 +147,7 @@ private:
 
     const std::chrono::steady_clock::duration round_trip_time = now - message.request;
     
-    if (round_trip_time >= max_round_trip_time) {
+    if (round_trip_time >= priv.max_round_trip_time) {
       getLogger().logWarning() << "High round trip time detected. Skipping timesync.";
       return;
     }
@@ -127,8 +165,8 @@ private:
 
     const i32 drift = filter_valid ? (filter_offset_total.count() * (i64)1E6) / total_filter_duration.count() : 0;
 
-    const std::chrono::steady_clock::duration offset_clamped = first_flag ? offset : std::clamp(offset, last_offset - max_timejump, last_offset + max_timejump);
-    const i32 drift_clamped = std::clamp(drift, -max_drift, max_drift);
+    const std::chrono::steady_clock::duration offset_clamped = first_flag ? offset : std::clamp(offset, last_offset - priv.max_timejump, last_offset + priv.max_timejump);
+    const i32 drift_clamped = std::clamp(drift, -priv.max_drift, priv.max_drift);
 
     if (offset_clamped != offset) {
       getLogger().logWarning() << "Timejump detected.";
@@ -138,7 +176,7 @@ private:
       getLogger().logWarning() << "High timedrift detected.";
     }
 
-    Clock::synchronize(offset_clamped, drift_clamped, now);
+    priv.synchronize(offset_clamped, drift_clamped, now);
 
     filter_index = (filter_index + 1) % filter_size;
     first_flag = false;
@@ -152,14 +190,9 @@ private:
     sender_status->put(status);
   }
 
-  static void receiverCallbackWrapper(const TimesyncInternal &message, Clock::SynchronizedNode *self) {
+  static void receiverCallbackWrapper(const TimesyncInternal &message, Clock::Private::SynchronizedNode *self) {
     self->receiverCallback(message);
   }
-
-  static std::chrono::steady_clock::duration update_interval;
-  static std::chrono::steady_clock::duration max_round_trip_time;
-  static std::chrono::steady_clock::duration max_timejump;
-  static i32 max_drift;
 
   static const i32 filter_size = 8;
 
@@ -179,7 +212,7 @@ private:
   LoopThread thread;
 };
 
-class Clock::SteppedNode : public Clock::Node {
+class Clock::Private::SteppedNode : public Clock::Private::Node {
 public:
   SteppedNode() {
     receiver = addReceiver<const TimestampMessage>("/stepped_time/input");
@@ -188,100 +221,71 @@ public:
 
 private:
   static void receiverCallback(const Clock::time_point &message) {
-    Clock::setTime(message);
+    priv.setTime(message);
   }
 
   Receiver<const TimestampMessage>::Ptr receiver;
 };
 
-Clock::Mode Clock::mode;
-bool Clock::is_initialized = false;
-std::condition_variable Clock::is_initialized_condition;
-std::atomic_flag Clock::exit_flag;
-
-Clock::duration Clock::current_offset;
-i32 Clock::current_drift;
-std::atomic<std::chrono::steady_clock::duration> Clock::last_sync;
-thread_local Clock::time_point Clock::last_synchronized_estimate;
-
-std::atomic<Clock::time_point> Clock::current_time;
-
-thread_local Clock::time_point Clock::freeze_time;
-thread_local u32 Clock::freeze_count = 0;
-
-std::vector<std::shared_ptr<Clock::Node>> Clock::nodes;
-
-std::priority_queue<Clock::WaiterRegistration> Clock::waiter_queue;
-std::mutex Clock::mutex;
-
-std::chrono::steady_clock::duration Clock::SynchronizedNode::update_interval;
-std::chrono::steady_clock::duration Clock::SynchronizedNode::max_round_trip_time;
-std::chrono::steady_clock::duration Clock::SynchronizedNode::max_timejump;
-i32 Clock::SynchronizedNode::max_drift;
-
 void Clock::initialize() {
-  if (is_initialized) {
+  if (priv.is_initialized) {
     throw ClockException("Clock is already initialized");
   }
 
   const std::string mode_name = lbot::Config::get()->getParameterFallback("/lbot/clock_mode", "system").get<std::string>();
 
   if (mode_name == "system") {
-    mode = Mode::system;
-    is_initialized = true;
+    priv.mode = Mode::system;
+    priv.is_initialized = true;
   } else if (mode_name == "steady") {
-    mode = Mode::steady;
-    is_initialized = true;
+    priv.mode = Mode::steady;
+    priv.is_initialized = true;
   } else if (mode_name == "synchronized") {
-    mode = Mode::synchronized;
+    priv.mode = Mode::synchronized;
   } else if (mode_name == "stepped") {
-    mode = Mode::stepped;
+    priv.mode = Mode::stepped;
   } else {
     throw InvalidArgumentException("Invalid clock mode"); 
   }
 
-  is_initialized_condition.notify_all();
-  exit_flag.clear();
+  priv.is_initialized_condition.notify_all();
+  priv.exit_flag.clear();
 
-  if (mode == Mode::synchronized) {
-    nodes.emplace_back(Manager::get()->addNode<SynchronizedNode>("timesync"));
-  } else if (mode == Mode::stepped) {
-    nodes.emplace_back(Manager::get()->addNode<SteppedNode>("timestep"));
+  if (priv.mode == Mode::synchronized) {
+    priv.nodes.emplace_back(Manager::get()->addNode<Private::SynchronizedNode>("timesync"));
+  } else if (priv.mode == Mode::stepped) {
+    priv.nodes.emplace_back(Manager::get()->addNode<Private::SteppedNode>("timestep"));
   }
 
-  nodes.emplace_back(Manager::get()->addNode<SenderNode>("time sender"));
+  priv.nodes.emplace_back(Manager::get()->addNode<Private::SenderNode>("time sender"));
 }
 
 void Clock::waitUntilInitialized() {
-  if (!is_initialized) {
+  if (!priv.is_initialized) {
     std::mutex mutex;
     std::unique_lock lock(mutex);
 
-    is_initialized_condition.wait(lock);
+    priv.is_initialized_condition.wait(lock);
   }
 }
 
 void Clock::deinitialize() {
   cleanup();
 
-  is_initialized = false;
-  is_initialized_condition.notify_all();
+  priv.is_initialized = false;
+  priv.is_initialized_condition.notify_all();
 }
 
 bool Clock::initialized() {
-  return is_initialized;
+  return priv.is_initialized;
 }
   
 Clock::time_point Clock::now() noexcept {
-  if (freeze_count != 0) {
-    return freeze_time;
-  }
-
-  if (!is_initialized) {
+  if (!priv.is_initialized) {
     return {};
   }
 
-  switch (mode) {
+  switch (priv.mode) {
     case Mode::system: {
       return time_point(std::chrono::duration_cast<duration>(std::chrono::system_clock::now().time_since_epoch()));
     }
@@ -291,25 +295,11 @@ Clock::time_point Clock::now() noexcept {
     }
 
     case Mode::synchronized: {
-      duration offset;
-      i32 drift;
-      std::chrono::steady_clock::duration last_sync_before = last_sync.load(std::memory_order_acquire);
-      
-      while (true) {
-        offset = current_offset;
-        drift = current_drift;
-
-        const std::chrono::steady_clock::duration last_sync_after = last_sync.load(std::memory_order_seq_cst);
-
-        if (last_sync_before == last_sync_after) {
-          break;
-        }
-
-        last_sync_before = last_sync_after;
-      }
-
+      const SynchronizationParameters parameters = getSynchronizationParameters();
       const duration now = std::chrono::steady_clock::now().time_since_epoch();
-      const time_point new_estimate(std::chrono::duration_cast<duration>(now + offset + (now - last_sync_before) * drift / (i64)1E6));
+      const time_point new_estimate(std::chrono::duration_cast<duration>(now + parameters.offset + (now - parameters.last_sync) * parameters.drift / (i64)1E6));
+
+      static thread_local Clock::time_point last_synchronized_estimate;
 
       // Ensure that time is never going backwards. 
       if (new_estimate > last_synchronized_estimate) {
@@ -320,7 +310,7 @@ Clock::time_point Clock::now() noexcept {
     }
 
     case Mode::stepped: {
-      return time_point(current_time.load());
+      return time_point(priv.current_time.load());
     }
 
     default: {
@@ -332,7 +322,7 @@ Clock::time_point Clock::now() noexcept {
 std::string Clock::format(const time_point time) {
   std::stringstream stream;
 
-  if (is_initialized && mode == Mode::system) {
+  if (priv.is_initialized && priv.mode == Mode::system) {
     const std::chrono::system_clock::time_point time_local = std::chrono::time_point<std::chrono::system_clock>(std::chrono::duration_cast<std::chrono::system_clock::duration>(time.time_since_epoch()));
     const std::time_t c_time = std::chrono::system_clock::to_time_t(time_local);
 
@@ -352,44 +342,26 @@ std::string Clock::format(const time_point time) {
   return stream.str();
 }
 
-void Clock::synchronize(duration offset, i32 drift, std::chrono::steady_clock::duration now) {
-  current_offset = offset;
-  current_drift = drift;
-  last_sync.store(now, std::memory_order_release);
-
-  if (!(is_initialized || exit_flag.test(std::memory_order_acquire))) {
-    is_initialized = true;
-    is_initialized_condition.notify_all();
-  }
+Clock::Mode Clock::getMode() {
+  return priv.mode;
 }
 
-void Clock::setTime(time_point time) {
-  if (is_initialized && time < current_time.load(std::memory_order_relaxed)) {
-    throw ClockException("Updated time is in the past");
-  }
+Clock::SynchronizationParameters Clock::getSynchronizationParameters() {
+  SynchronizationParameters result;
+  std::chrono::steady_clock::duration last_sync_before = priv.last_sync.load(std::memory_order_acquire);
+  
+  while (true) {
+    result.offset = priv.current_offset;
+    result.drift = priv.current_drift;
 
-  current_time.store(time, std::memory_order_seq_cst);
+    const std::chrono::steady_clock::duration last_sync_after = priv.last_sync.load(std::memory_order_seq_cst);
 
-  if (!(is_initialized || exit_flag.test(std::memory_order_acquire))) {
-    is_initialized = true;
-    is_initialized_condition.notify_all();
-  }
-
-  {
-    std::lock_guard guard(mutex);
-
-    while (!waiter_queue.empty()) {
-      WaiterRegistration top = waiter_queue.top();
-
-      if (top.wakeup_time > time) {
-        break;
-      }
-
-      *top.status = std::cv_status::timeout;
-      top.condition->notify_all();
-
-      waiter_queue.pop();
+    if (last_sync_before == last_sync_after) {
+      result.last_sync = last_sync_after;
+      return result;
     }
+
+    last_sync_before = last_sync_after;
   }
 }
 
@@ -402,10 +374,10 @@ Clock::WaiterRegistration Clock::registerWaiter(const time_point wakeup_time, st
   };
 
   {
-    std::lock_guard guard(mutex);
+    std::lock_guard guard(priv.mutex);
 
-    if (wakeup_time > current_time.load(std::memory_order_acquire) && !exit_flag.test(std::memory_order_acquire)) {
-      waiter_queue.emplace(result);
+    if (wakeup_time > priv.current_time.load(std::memory_order_acquire) && !priv.exit_flag.test(std::memory_order_acquire)) {
+      priv.waiter_queue.emplace(result);
       return result;
     }
   }
@@ -416,21 +388,64 @@ Clock::WaiterRegistration Clock::registerWaiter(const time_point wakeup_time, st
 }
 
 void Clock::cleanup() {
-  nodes.clear();
+  priv.nodes.clear();
 
-  exit_flag.test_and_set(std::memory_order_seq_cst);
+  priv.exit_flag.test_and_set(std::memory_order_seq_cst);
 
-  if (mode == Mode::stepped) {
-    std::lock_guard guard(mutex);
+  if (priv.mode == Mode::stepped) {
+    std::lock_guard guard(priv.mutex);
 
-    while (!waiter_queue.empty()) {
-      WaiterRegistration top = waiter_queue.top();
+    while (!priv.waiter_queue.empty()) {
+      WaiterRegistration top = priv.waiter_queue.top();
       top.condition->notify_all();
 
-      waiter_queue.pop();
+      priv.waiter_queue.pop();
     }
   }
 }
+
+void Clock::Private::synchronize(duration offset, i32 drift, std::chrono::steady_clock::duration now) {
+  priv.current_offset = offset;
+  priv.current_drift = drift;
+  priv.last_sync.store(now, std::memory_order_release);
+
+  if (!(priv.is_initialized || priv.exit_flag.test(std::memory_order_acquire))) {
+    priv.is_initialized = true;
+    priv.is_initialized_condition.notify_all();
+  }
+}
+
+
+void Clock::Private::setTime(time_point time) {
+  if (priv.is_initialized && time < priv.current_time.load(std::memory_order_relaxed)) {
+    throw ClockException("Updated time is in the past");
+  }
+
+  priv.current_time.store(time, std::memory_order_seq_cst);
+
+  if (!(priv.is_initialized || priv.exit_flag.test(std::memory_order_acquire))) {
+    priv.is_initialized = true;
+    priv.is_initialized_condition.notify_all();
+  }
+
+  {
+    std::lock_guard guard(priv.mutex);
+
+    while (!priv.waiter_queue.empty()) {
+      WaiterRegistration top = priv.waiter_queue.top();
+
+      if (top.wakeup_time > time) {
+        break;
+      }
+
+      *top.status = std::cv_status::timeout;
+      top.condition->notify_all();
+
+      priv.waiter_queue.pop();
+    }
+  }
+}
+
 
 inline constexpr std::strong_ordering operator<=>(const Clock::WaiterRegistration& lhs, const Clock::WaiterRegistration& rhs) {
   // Reversed so that earlier times show up at the top of the priority queue.

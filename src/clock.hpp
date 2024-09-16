@@ -11,15 +11,9 @@
 #include <labrat/lbot/base.hpp>
 #include <labrat/lbot/utils/types.hpp>
 
-#include <memory>
 #include <chrono>
-#include <atomic>
 #include <condition_variable>
-#include <mutex>
-#include <queue>
-#include <compare>
-#include <string>
-#include <vector>
+#include <memory>
 
 /** @cond INTERNAL */
 inline namespace labrat {
@@ -27,7 +21,6 @@ inline namespace labrat {
 namespace lbot {
 
 class Manager;
-class FreezeGuard;
 
 /** @cond INTERNAL */
 inline namespace utils {
@@ -44,6 +37,10 @@ class ConditionVariable;
  */
 class Clock {
 public:
+  /** @cond INTERNAL */
+  class Private;
+  /** @endcond */
+
   using duration = std::chrono::nanoseconds;
   using rep = duration::rep;
   using period = duration::period;
@@ -84,16 +81,17 @@ public:
   static constexpr bool is_steady = false;
 
 private:
-  class Node;
-  class SenderNode;
-  class SynchronizedNode;
-  class SteppedNode;
-
   enum class Mode {
     system,
     steady,
     synchronized,
     stepped
+  };
+
+  struct SynchronizationParameters {
+    duration offset;
+    i32 drift;
+    std::chrono::steady_clock::duration last_sync;
   };
 
   struct WaiterRegistration {
@@ -106,40 +104,15 @@ private:
   static void initialize();
   static void deinitialize();
   static void cleanup();
-
-  static void synchronize(duration offset, i32 drift, std::chrono::steady_clock::duration now);
-
-  static void setTime(time_point time);
+  
+  static Mode getMode();  
+  static SynchronizationParameters getSynchronizationParameters();
   static WaiterRegistration registerWaiter(time_point wakeup_time, std::shared_ptr<std::condition_variable> condition = std::make_shared<std::condition_variable>());
 
-  static Mode mode;
-  static bool is_initialized;
-  static std::condition_variable is_initialized_condition;
-  static std::atomic_flag exit_flag;
-
-  static duration current_offset;
-  static i32 current_drift;
-  static std::atomic<std::chrono::steady_clock::duration> last_sync;
-  static thread_local time_point last_synchronized_estimate;
-
-  static std::atomic<time_point> current_time;
-
-  static thread_local time_point freeze_time;
-  static thread_local u32 freeze_count;
-  
-  static std::vector<std::shared_ptr<Node>> nodes;
-
-  static std::priority_queue<WaiterRegistration> waiter_queue;
-  static std::mutex mutex;
-
-  friend class SynchronizedNode;
-  friend class SteppedNode;
+  friend class Private;
 
   friend class Manager;
-  friend class utils::Thread;
   friend class utils::ConditionVariable;
-
-  friend class FreezeGuard;
 
   friend constexpr std::strong_ordering operator<=>(const WaiterRegistration& lhs, const WaiterRegistration& rhs);
 };
@@ -148,22 +121,6 @@ private:
 // TODO: Remove in future release
 static_assert(std::chrono::is_clock_v<Clock>);
 #endif
-
-/**
- * @brief Guard class that freezes the time of the local thread until it is destroyed.
- * 
- */
-class FreezeGuard {
-public:
-  inline FreezeGuard() {
-    Clock::freeze_time = Clock::now();
-    ++Clock::freeze_count;
-  }
-
-  inline ~FreezeGuard() {
-    --Clock::freeze_count;
-  }
-};
 
 }  // namespace lbot
 /** @cond INTERNAL */
