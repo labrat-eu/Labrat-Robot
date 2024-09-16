@@ -25,6 +25,7 @@
 #include <compare>
 #include <string>
 #include <vector>
+#include <iomanip>
 
 inline namespace labrat {
 namespace lbot {
