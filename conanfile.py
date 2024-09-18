@@ -39,16 +39,12 @@ class LbotConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "system_deps": [True, False],
-        "skip_build": [True, False],
-        "docs": [True, False],
-        "code_format": [True, False],
+        "shared": [True, False],
         "plugins": [True, False]
     }
     default_options = {
         "system_deps": False,
-        "skip_build": False,
-        "docs": False,
-        "code_format": False,
+        "shared": False,
         "plugins": True
     }
 
@@ -136,8 +132,6 @@ class LbotConan(ConanFile):
         toolchain.variables["GIT_HASH_SHORT"] = version_data["hash_short"]
         toolchain.variables["GIT_REF"] = version_data["ref"]
         toolchain.variables["GIT_BRANCH"] = version_data["branch"]
-        toolchain.variables["LBOT_ENABLE_DOCS"] = self.options.docs
-        toolchain.variables["LBOT_ENABLE_FORMAT"] = self.options.code_format
         toolchain.variables["LBOT_ENABLE_PLUGINS"] = self.options.plugins
         toolchain.generate()
 
@@ -148,13 +142,7 @@ class LbotConan(ConanFile):
         cmake = CMake(self)
         
         cmake.configure()
-
-        if not self.options.skip_build:
-            cmake.build()
-        if self.options.docs:
-            cmake.build(target="generate-docs")
-        if self.options.code_format:
-            cmake.build(target="format-code")
+        cmake.build()
 
     def package(self):
         cmake = CMake(self)
