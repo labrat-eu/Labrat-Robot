@@ -215,11 +215,10 @@ examples:gcc-13:
 pages:
   stage: deploy
   image: $CI_REGISTRY_IMAGE:doxygen
-  dependencies: []
+  dependencies: ["build:gcc-13"]
   <<: *init-gcc
   script:
-    - conan source .
-    - conan build . -pr:h=ci -pr:b=ci -o docs=True -o skip_build=True
+    - doxygen build/RelWithDebInfo/doxyfile 
     - cp -r build/RelWithDebInfo/docs/html public
   artifacts:
     paths:

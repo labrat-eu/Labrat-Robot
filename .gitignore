@@ -16,10 +16,6 @@ tags
 # Visual Studio Code
 .vscode/*
 
-# Clang
-.clang-format
-.clang-tidy
-
 # Docker
 docker-compose.yml
 

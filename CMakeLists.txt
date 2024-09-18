@@ -89,14 +89,7 @@ include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 # Add main source directory.
 add_subdirectory(src)
 
-if(${PRJ_OPT_ENABLE_FORMAT})
-  # Add clang format targets.
-  prj_add_clang_format_targets(SOURCEPATH ${CMAKE_CURRENT_LIST_DIR}/src ${CMAKE_CURRENT_LIST_DIR}/testing/src ${CMAKE_CURRENT_LIST_DIR}/examples/0*)
-endif()
-
-if(${PRJ_OPT_ENABLE_DOCS})
-  # Add doxygen targets.
-  prj_add_doxygen_targets()
-endif()
+prj_configure_clang_format()
+prj_configure_doxygen()
 
 install(FILES install/GenerateFlatbuffer.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake RENAME LbotGenerateFlatbuffer.cmake)
