@@ -114,8 +114,7 @@ public:
 static Clock::Private priv;
 
 class Clock::Private::Node : public UniqueNode
-{
-};
+{};
 
 class Clock::Private::SenderNode : public Clock::Private::Node
 {

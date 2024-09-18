@@ -29,8 +29,7 @@ namespace lbot {
 /** @cond INTERNAL */
 template <auto *Function>
 class ConversionFunction
-{
-};
+{};
 
 template <
   typename OriginalType,
@@ -101,8 +100,7 @@ concept can_convert_from = can_convert_from_noptr<T> || can_convert_from_ptr<T>;
 
 template <auto *Function>
 class MoveFunction
-{
-};
+{};
 
 template <
   typename OriginalType,
