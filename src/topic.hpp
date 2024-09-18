@@ -17,9 +17,9 @@
 #include <atomic>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
-#include <type_traits>
 
 /** @cond INTERNAL */
 inline namespace labrat {
@@ -27,9 +27,11 @@ inline namespace labrat {
 namespace lbot {
 
 /** @cond INTERNAL */
-class TopicMap {
+class TopicMap
+{
 public:
-  class Topic {
+  class Topic
+  {
   private:
     void *sender;
     std::vector<void *> receivers;
@@ -43,13 +45,19 @@ public:
   public:
     using Handle = std::size_t;
 
-    class ReceiverList {
+    class ReceiverList
+    {
     public:
-      explicit inline ReceiverList(Topic &topic, bool is_const) : topic(topic), receivers(is_const ? topic.const_receivers : topic.receivers) {
+      explicit inline ReceiverList(Topic &topic, bool is_const) :
+        topic(topic),
+        receivers(is_const ? topic.const_receivers : topic.receivers)
+      {
         while (true) {
           topic.use_count.fetch_add(1);
 
-          [[likely]] if (!topic.change_flag.test()) { break; }
+          [[likely]] if (!topic.change_flag.test()) {
+            break;
+          }
 
           topic.use_count.fetch_sub(1);
           topic.use_count.notify_all();
@@ -57,24 +65,31 @@ public:
         }
       }
 
-      inline ReceiverList(ReceiverList &&rhs) noexcept : topic(rhs.topic), receivers(rhs.receivers) {
+      inline ReceiverList(ReceiverList &&rhs) noexcept :
+        topic(rhs.topic),
+        receivers(rhs.receivers)
+      {
         topic.use_count.fetch_add(1);
       }
 
-      inline ~ReceiverList() {
+      inline ~ReceiverList()
+      {
         topic.use_count.fetch_sub(1);
         topic.use_count.notify_all();
       }
 
-      [[nodiscard]] inline std::vector<void *>::iterator begin() const {
+      [[nodiscard]] inline std::vector<void *>::iterator begin() const
+      {
         return receivers.begin();
       }
 
-      [[nodiscard]] inline std::vector<void *>::iterator end() const {
+      [[nodiscard]] inline std::vector<void *>::iterator end() const
+      {
         return receivers.end();
       }
 
-      [[nodiscard]] inline std::size_t size() const {
+      [[nodiscard]] inline std::size_t size() const
+      {
         return receivers.size();
       }
 
@@ -89,11 +104,13 @@ public:
     void addSender(void *new_sender);
     void removeSender(void *old_sender);
 
-    [[nodiscard]] inline ReceiverList getReceivers() {
+    [[nodiscard]] inline ReceiverList getReceivers()
+    {
       return ReceiverList(*this, false);
     }
 
-    [[nodiscard]] inline ReceiverList getConstReceivers() {
+    [[nodiscard]] inline ReceiverList getConstReceivers()
+    {
       return ReceiverList(*this, true);
     }
 
@@ -109,7 +126,8 @@ public:
 
   template <typename T>
   requires is_message<T>
-  Topic &addSender(const std::string &topic_name, void *sender) {
+  Topic &addSender(const std::string &topic_name, void *sender)
+  {
     Topic &topic = getTopicInternal(topic_name, typeid(typename std::remove_const_t<T>::Content).hash_code());
 
     topic.addSender(sender);
@@ -117,7 +135,8 @@ public:
     return topic;
   }
 
-  Topic &removeSender(const std::string &topic_name, void *sender) {
+  Topic &removeSender(const std::string &topic_name, void *sender)
+  {
     Topic &topic = getTopicInternal(topic_name);
 
     topic.removeSender(sender);
@@ -127,7 +146,8 @@ public:
 
   template <typename T>
   requires is_message<T>
-  Topic &addReceiver(const std::string &topic_name, void *receiver) {
+  Topic &addReceiver(const std::string &topic_name, void *receiver)
+  {
     Topic &topic = getTopicInternal(topic_name, typeid(typename std::remove_const_t<T>::Content).hash_code());
 
     topic.addReceiver(receiver, is_const_message<T>);
@@ -135,7 +155,8 @@ public:
     return topic;
   }
 
-  Topic &removeReceiver(const std::string &topic_name, void *receiver) {
+  Topic &removeReceiver(const std::string &topic_name, void *receiver)
+  {
     Topic &topic = getTopicInternal(topic_name);
 
     topic.removeReceiver(receiver);

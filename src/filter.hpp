@@ -18,7 +18,8 @@ inline namespace labrat {
 /** @endcond */
 namespace lbot {
 
-class Filter {
+class Filter
+{
 public:
   Filter() = default;
 
@@ -29,7 +30,8 @@ public:
    * @return true The callback should be performed.
    * @return false The callback should not be performed.
    */
-  inline bool check(std::size_t topic_hash) const {
+  inline bool check(std::size_t topic_hash) const
+  {
     return set.contains(topic_hash) ^ mode;
   }
 
@@ -40,7 +42,8 @@ public:
    * @return true The callback should be performed.
    * @return false The callback should not be performed.
    */
-  inline bool check(const std::string &topic_name) const {
+  inline bool check(const std::string &topic_name) const
+  {
     return check(std::hash<std::string>()(topic_name));
   }
 
@@ -50,7 +53,8 @@ public:
    *
    * @param topic_name Name of the topic.
    */
-  inline void whitelist(const std::string &topic_name) {
+  inline void whitelist(const std::string &topic_name)
+  {
     add<false>(std::hash<std::string>()(topic_name));
   }
 
@@ -60,7 +64,8 @@ public:
    *
    * @param topic_name Name of the topic.
    */
-  inline void blacklist(const std::string &topic_name) {
+  inline void blacklist(const std::string &topic_name)
+  {
     add<true>(std::hash<std::string>()(topic_name));
   }
 
@@ -74,7 +79,8 @@ private:
    * @param topic_hash Hash of the topic to be added to the filter-
    */
   template <bool Mode>
-  void add(std::size_t topic_hash) {
+  void add(std::size_t topic_hash)
+  {
     if (mode != Mode) {
       set.clear();
       mode = Mode;

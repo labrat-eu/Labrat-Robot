@@ -13,17 +13,18 @@
 #include <labrat/lbot/utils/types.hpp>
 
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <variant>
 #include <vector>
-#include <type_traits>
 
 /** @cond INTERNAL */
 inline namespace labrat {
 /** @endcond */
 namespace lbot {
 
-class ConfigValue {
+class ConfigValue
+{
 public:
   using Sequence = std::vector<ConfigValue>;
 
@@ -39,11 +40,15 @@ public:
 
   template <typename T>
   requires std::is_integral_v<T> && (!std::is_same_v<T, bool>)
-  ConfigValue(T value) : value(static_cast<i64>(value)) {}
-  
+  ConfigValue(T value) :
+    value(static_cast<i64>(value))
+  {}
+
   template <typename T>
   requires std::is_floating_point_v<T>
-  ConfigValue(T value) : value(static_cast<double>(value)) {}
+  ConfigValue(T value) :
+    value(static_cast<double>(value))
+  {}
 
   const ConfigValue &operator=(const ConfigValue &rhs);
   const ConfigValue &operator=(ConfigValue &&rhs);
@@ -69,7 +74,8 @@ public:
    * @return false The specified type is not contained
    */
   template <typename T>
-  inline bool contains() const {
+  inline bool contains() const
+  {
     return std::holds_alternative<T>(value);
   }
 
@@ -81,7 +87,8 @@ public:
    */
   template <typename T>
   requires std::is_arithmetic_v<T> && (!std::is_same_v<T, bool>)
-  inline const T get() const {
+  inline const T get() const
+  {
     if (contains<i64>()) {
       return static_cast<T>(std::get<i64>(value));
     }
@@ -100,7 +107,8 @@ public:
    * @return const T& Contents
    */
   template <typename T>
-  inline const T &get() const {
+  inline const T &get() const
+  {
     try {
       return std::get<T>(value);
     } catch (const std::bad_variant_access &) {
@@ -116,7 +124,8 @@ private:
  * @brief Central configuration storage class.
  *
  */
-class Config {
+class Config
+{
 public:
   /** @cond INTERNAL */
   class Private;

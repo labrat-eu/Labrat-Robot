@@ -33,22 +33,30 @@ NamespaceIndentation: None
 RequiresExpressionIndentation: OuterScope
 
 # Brace rules.
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterStruct: true
+  AfterEnum: true
+  AfterUnion: true
+  AfterFunction: true
+  SplitEmptyFunction: false
 InsertBraces: true
 RemoveParentheses: ReturnStatement
 
 # Function signature line brake rules.
-AllowAllArgumentsOnNextLine: false
+AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: false
 AlwaysBreakAfterReturnType: None
 AlwaysBreakTemplateDeclarations: Yes
-BinPackArguments: true
-BinPackParameters: true
+BinPackArguments: false
+BinPackParameters: false
+PackConstructorInitializers: Never
 BreakBeforeBinaryOperators: NonAssignment
-RequiresClausePosition: SingleLine
+RequiresClausePosition: OwnLine
 
 # Block line break rules.
-AllowShortBlocksOnASingleLine: Never
+AllowShortBlocksOnASingleLine: Empty
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: Empty
@@ -73,7 +81,7 @@ Cpp11BracedListStyle: true
 ReflowComments: true
 
 # Alignment rules.
-AlignAfterOpenBracket: DontAlign
+AlignAfterOpenBracket: BlockIndent
 AlignArrayOfStructures: None
 AlignConsecutiveAssignments: None
 AlignConsecutiveBitFields: None

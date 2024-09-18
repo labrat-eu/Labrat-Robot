@@ -16,11 +16,15 @@ namespace lbot {
 
 TopicMap::TopicMap() = default;
 
-TopicMap::Topic::Topic(Handle handle, std::string name) : handle(handle), name(std::move(name)) {
+TopicMap::Topic::Topic(Handle handle, std::string name) :
+  handle(handle),
+  name(std::move(name))
+{
   sender = nullptr;
 }
 
-void TopicMap::forceFlush() {
+void TopicMap::forceFlush()
+{
   for (std::pair<const std::string, Topic> &entry : map) {
     for (void *pointer : entry.second.getReceivers()) {
       Node::GenericReceiver<void> *receiver = reinterpret_cast<Node::GenericReceiver<void> *>(pointer);
@@ -31,7 +35,8 @@ void TopicMap::forceFlush() {
   }
 }
 
-TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic) {
+TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic)
+{
   if (topic.empty()) {
     throw ManagementException("Topic name name must be non-empty.");
   }
@@ -45,7 +50,8 @@ TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic) {
   return iterator->second;
 }
 
-TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic, Topic::Handle handle) {
+TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic, Topic::Handle handle)
+{
   if (topic.empty()) {
     throw ManagementException("Topic name name must be non-empty.");
   }
@@ -60,11 +66,13 @@ TopicMap::Topic &TopicMap::getTopicInternal(const std::string &topic, Topic::Han
   return result;
 }
 
-void *TopicMap::Topic::getSender() const {
+void *TopicMap::Topic::getSender() const
+{
   return sender;
 }
 
-void TopicMap::Topic::addSender(void *new_sender) {
+void TopicMap::Topic::addSender(void *new_sender)
+{
   if (sender != nullptr) {
     throw ManagementException("A sender has already been registered for this topic.");
   }
@@ -72,7 +80,8 @@ void TopicMap::Topic::addSender(void *new_sender) {
   sender = new_sender;
 }
 
-void TopicMap::Topic::removeSender(void *old_sender) {
+void TopicMap::Topic::removeSender(void *old_sender)
+{
   if (sender != old_sender) {
     throw ManagementException("The sender to be removed does not match the existing sender.");
   }
@@ -80,7 +89,8 @@ void TopicMap::Topic::removeSender(void *old_sender) {
   sender = nullptr;
 }
 
-void TopicMap::Topic::addReceiver(void *new_receiver, bool is_const) {
+void TopicMap::Topic::addReceiver(void *new_receiver, bool is_const)
+{
   FlagGuard guard(change_flag);
   waitUntil<std::size_t>(use_count, 0);
 
@@ -91,7 +101,8 @@ void TopicMap::Topic::addReceiver(void *new_receiver, bool is_const) {
   }
 }
 
-void TopicMap::Topic::removeReceiver(void *old_receiver) {
+void TopicMap::Topic::removeReceiver(void *old_receiver)
+{
   FlagGuard guard(change_flag);
   waitUntil<std::size_t>(use_count, 0);
 

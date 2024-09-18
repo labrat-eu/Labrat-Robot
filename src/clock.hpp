@@ -28,14 +28,15 @@ inline namespace utils {
 class Thread;
 class ConditionVariable;
 /** @cond INTERNAL */
-}
+}  // namespace utils
 /** @endcond */
 
 /**
  * @brief Central clock class to access the current time.
  * @details This class is compatible with the STL chrono library.
  */
-class Clock {
+class Clock
+{
 public:
   /** @cond INTERNAL */
   class Private;
@@ -47,10 +48,10 @@ public:
   using time_point = std::chrono::time_point<Clock>;
 
   Clock() = delete;
-  
+
   /**
    * @brief Check whether the clock has been intialized by the manager.
-   * 
+   *
    * @return true The clock is initialized and time related functions work properly.
    * @return false The clock is not yet initialized. Time related functions may not work properly.
    */
@@ -58,21 +59,21 @@ public:
 
   /**
    * @brief Wait until the clock is initialized.
-   * 
+   *
    * @details The function may also return after a spurious wakeup or when the program is shutting down.
    */
   static void waitUntilInitialized();
 
   /**
    * @brief Get the current time.
-   * 
+   *
    * @return time_point The current time.
    */
   static time_point now() noexcept;
 
   /**
    * @brief Convert a time point into a human readable string.
-   * 
+   *
    * @param time Time point to format.
    * @return std::string Formatted time.
    */
@@ -81,20 +82,23 @@ public:
   static constexpr bool is_steady = false;
 
 private:
-  enum class Mode {
+  enum class Mode
+  {
     system,
     steady,
     synchronized,
     stepped
   };
 
-  struct SynchronizationParameters {
+  struct SynchronizationParameters
+  {
     duration offset;
     i32 drift;
     std::chrono::steady_clock::duration last_sync;
   };
 
-  struct WaiterRegistration {
+  struct WaiterRegistration
+  {
     time_point wakeup_time;
     std::shared_ptr<std::condition_variable> condition;
     std::shared_ptr<std::cv_status> status;
@@ -104,17 +108,18 @@ private:
   static void initialize();
   static void deinitialize();
   static void cleanup();
-  
-  static Mode getMode();  
+
+  static Mode getMode();
   static SynchronizationParameters getSynchronizationParameters();
-  static WaiterRegistration registerWaiter(time_point wakeup_time, std::shared_ptr<std::condition_variable> condition = std::make_shared<std::condition_variable>());
+  static WaiterRegistration
+  registerWaiter(time_point wakeup_time, std::shared_ptr<std::condition_variable> condition = std::make_shared<std::condition_variable>());
 
   friend class Private;
 
   friend class Manager;
   friend class utils::ConditionVariable;
 
-  friend constexpr std::strong_ordering operator<=>(const WaiterRegistration& lhs, const WaiterRegistration& rhs);
+  friend constexpr std::strong_ordering operator<=>(const WaiterRegistration &lhs, const WaiterRegistration &rhs);
 };
 
 #ifndef __clang__

@@ -27,14 +27,17 @@ inline namespace utils {
  * @tparam T Type of the underlying atomic object.
  */
 template <typename T>
-class ConsumerGuard {
+class ConsumerGuard
+{
 public:
   /**
    * @brief Increment the atomic object.
    *
    * @param object The atomic object to be guarded.
    */
-  explicit inline ConsumerGuard(std::atomic<T> &object) : object(object) {
+  explicit inline ConsumerGuard(std::atomic<T> &object) :
+    object(object)
+  {
     ++object;
   }
 
@@ -44,7 +47,9 @@ public:
    * @param object The atomic object to be guarded.
    * @param pred Predicate guarateed to be false on return.
    */
-  explicit inline ConsumerGuard(std::atomic<T> &object, std::atomic_flag &pred) : object(object) {
+  explicit inline ConsumerGuard(std::atomic<T> &object, std::atomic_flag &pred) :
+    object(object)
+  {
     while (true) {
       ++object;
 
@@ -63,7 +68,8 @@ public:
    * @brief Decrement the atomic object and notify all threads waiting on it.
    *
    */
-  inline ~ConsumerGuard() {
+  inline ~ConsumerGuard()
+  {
     --object;
     object.notify_all();
   }
@@ -77,14 +83,17 @@ private:
  * Use it as a mutex with information of third party threads on whether the resource is currently locked.
  *
  */
-class FlagGuard {
+class FlagGuard
+{
 public:
   /**
    * @brief Atomically wait for the atomic flag to become unset and set it.
    *
    * @param flag The atomic flag
    */
-  explicit inline FlagGuard(std::atomic_flag &flag) : flag(flag) {
+  explicit inline FlagGuard(std::atomic_flag &flag) :
+    flag(flag)
+  {
     while (flag.test_and_set()) {
       flag.wait(true);
     }
@@ -94,7 +103,8 @@ public:
    * @brief Unset the atomic flag and notify all threads waiting on it.
    *
    */
-  inline ~FlagGuard() {
+  inline ~FlagGuard()
+  {
     flag.clear();
     flag.notify_all();
   }
@@ -110,7 +120,8 @@ private:
  * @param flag The atomic flag object.
  */
 template <bool RequiredValue = true>
-inline void flagBlock(std::atomic_flag &flag) {
+inline void flagBlock(std::atomic_flag &flag)
+{
   while (flag.test() != RequiredValue) {
     flag.wait(!RequiredValue);
   }
@@ -124,7 +135,8 @@ inline void flagBlock(std::atomic_flag &flag) {
  * @param required The required value.
  */
 template <typename T>
-inline void waitUntil(std::atomic<T> &value, T required) {
+inline void waitUntil(std::atomic<T> &value, T required)
+{
   while (true) {
     const std::size_t result = value.load();
 
@@ -144,7 +156,8 @@ inline void waitUntil(std::atomic<T> &value, T required) {
  * @param required The required value.
  */
 template <typename T>
-inline void spinUntil(std::atomic<T> &value, T required) {
+inline void spinUntil(std::atomic<T> &value, T required)
+{
   while (true) {
     const std::size_t result = value.load();
 

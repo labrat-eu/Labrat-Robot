@@ -22,7 +22,8 @@ namespace lbot {
 inline namespace utils {
 /** @endcond */
 
-class TimerTraceBase {
+class TimerTraceBase
+{
 protected:
   TimerTraceBase() = default;
 
@@ -30,12 +31,17 @@ protected:
 };
 
 template <typename DurationResolution = std::chrono::milliseconds>
-class TimerTrace : public TimerTraceBase {
+class TimerTrace : public TimerTraceBase
+{
 public:
   TimerTrace(std::string &&description, labrat::lbot::Logger &logger = default_logger) :
-    logger(logger), description(std::forward<std::string>(description)), start_time(std::chrono::high_resolution_clock::now()) {}
+    logger(logger),
+    description(std::forward<std::string>(description)),
+    start_time(std::chrono::high_resolution_clock::now())
+  {}
 
-  ~TimerTrace() {
+  ~TimerTrace()
+  {
     const DurationResolution duration =
       std::chrono::duration_cast<DurationResolution>(std::chrono::high_resolution_clock::now() - start_time);
 

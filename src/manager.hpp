@@ -66,28 +66,37 @@ concept has_message_callback = requires(T *self, const MessageInfo &info) {
  * @brief Central class to manage nodes, plugins, topics and services.
  *
  */
-class Manager {
+class Manager
+{
 private:
   /**
    * @brief Class containing data required for registering a node.
    *
    */
-  struct NodeRegistration {
+  struct NodeRegistration
+  {
     using Map = std::unordered_map<std::string, NodeRegistration>;
 
     std::string name;
     std::optional<std::size_t> type_hash;
     FinalPtr<Node> node;
 
-    NodeRegistration(FinalPtr<Node> &&node) : node(std::forward<FinalPtr<Node>>(node)){}
-    NodeRegistration(NodeRegistration &&rhs) : name(std::move(rhs.name)), type_hash(rhs.type_hash), node(std::move(rhs.node)) {}
+    NodeRegistration(FinalPtr<Node> &&node) :
+      node(std::forward<FinalPtr<Node>>(node))
+    {}
+    NodeRegistration(NodeRegistration &&rhs) :
+      name(std::move(rhs.name)),
+      type_hash(rhs.type_hash),
+      node(std::move(rhs.node))
+    {}
   };
 
   /**
    * @brief Class containing data required for registering a plugin.
    *
    */
-  struct PluginRegistration {
+  struct PluginRegistration
+  {
     using List = std::list<PluginRegistration>;
 
     std::string name;
@@ -100,7 +109,9 @@ private:
     void (*service_callback)(void *plugin, const ServiceInfo &info);
     void (*message_callback)(void *plugin, const MessageInfo &info);
 
-    PluginRegistration(FinalPtr<Plugin> &&plugin) : plugin(std::forward<FinalPtr<Plugin>>(plugin)){}
+    PluginRegistration(FinalPtr<Plugin> &&plugin) :
+      plugin(std::forward<FinalPtr<Plugin>>(plugin))
+    {}
   };
 
   /**
@@ -108,7 +119,8 @@ private:
    * This data will be copied by a node upon construction.
    *
    */
-  struct NodeEnvironment final {
+  struct NodeEnvironment final
+  {
     std::string name;
 
     PluginRegistration::List &plugin_list;
@@ -124,7 +136,8 @@ private:
    * This data will be copied by a plugin upon construction.
    *
    */
-  struct PluginEnvironment final {
+  struct PluginEnvironment final
+  {
     std::string name;
   };
 
@@ -135,7 +148,8 @@ private:
   Manager();
 
   template <typename T>
-  static void callPluginTopicCallback(void *plugin, const TopicInfo &info) {
+  static void callPluginTopicCallback(void *plugin, const TopicInfo &info)
+  {
     {
       T *self = reinterpret_cast<T *>(plugin);
       self->topicCallback(info);
@@ -143,7 +157,8 @@ private:
   }
 
   template <typename T>
-  static void callPluginServiceCallback(void *plugin, const ServiceInfo &info) {
+  static void callPluginServiceCallback(void *plugin, const ServiceInfo &info)
+  {
     {
       T *self = reinterpret_cast<T *>(plugin);
       self->serviceCallback(info);
@@ -151,7 +166,8 @@ private:
   }
 
   template <typename T>
-  static void callPluginMessageCallback(void *plugin, const MessageInfo &info) {
+  static void callPluginMessageCallback(void *plugin, const MessageInfo &info)
+  {
     {
       T *self = reinterpret_cast<T *>(plugin);
       self->messageCallback(info);
@@ -201,7 +217,9 @@ public:
    * @return std::shared_ptr<T> Pointer to the created node.
    */
   template <typename T, typename... Args>
-  std::shared_ptr<T> addNode(std::string name, Args &&...args) requires std::is_base_of_v<Node, T> {
+  std::shared_ptr<T> addNode(std::string name, Args &&...args)
+  requires std::is_base_of_v<Node, T>
+  {
     createNodeEnvironment(name);
 
     if (name.empty()) {
@@ -246,7 +264,9 @@ public:
    * @return std::shared_ptr<T> Pointer to the created plugin.
    */
   template <typename T, typename... Args>
-  std::shared_ptr<T> addPlugin(std::string name, Args &&...args) requires std::is_base_of_v<Plugin, T> {
+  std::shared_ptr<T> addPlugin(std::string name, Args &&...args)
+  requires std::is_base_of_v<Plugin, T>
+  {
     return addPlugin<T>(std::move(name), Filter(), std::forward<Args>(args)...);
   }
 
@@ -260,7 +280,9 @@ public:
    * @return std::shared_ptr<T> Pointer to the created plugin.
    */
   template <typename T, typename... Args>
-  std::shared_ptr<T> addPlugin(std::string name, Filter filter, Args &&...args) requires std::is_base_of_v<Plugin, T> {
+  std::shared_ptr<T> addPlugin(std::string name, Filter filter, Args &&...args)
+  requires std::is_base_of_v<Plugin, T>
+  {
     createPluginEnvironment(name);
 
     if (name.empty()) {
@@ -313,7 +335,7 @@ public:
     }
 
     plugin_list.emplace_back(std::move(registration));
-  
+
     return result;
   }
 
@@ -322,7 +344,8 @@ public:
    *
    * @param name Name of the node to be removed.
    */
-  inline void removeNode(const std::string &name) {
+  inline void removeNode(const std::string &name)
+  {
     removeNodeInternal(name);
   }
 
@@ -331,7 +354,8 @@ public:
    *
    * @param name Name of the plugin to be removed.
    */
-  inline void removePlugin(const std::string &name) {
+  inline void removePlugin(const std::string &name)
+  {
     removePluginInternal(name);
   }
 

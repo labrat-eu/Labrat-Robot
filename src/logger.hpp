@@ -12,8 +12,8 @@
 #include <labrat/lbot/utils/types.hpp>
 
 #include <ostream>
-#include <string>
 #include <source_location>
+#include <string>
 
 /** @cond INTERNAL */
 inline namespace labrat {
@@ -24,7 +24,8 @@ namespace lbot {
  * @brief Class to print log messages and send them out as messages.
  *
  */
-class Logger {
+class Logger
+{
 public:
   /** @cond INTERNAL */
   class Private;
@@ -34,7 +35,8 @@ public:
    * @brief Verbosity level of the application.
    *
    */
-  enum class Verbosity : u8 {
+  enum class Verbosity : u8
+  {
     critical,
     error,
     warning,
@@ -46,9 +48,15 @@ public:
    * @brief Temporary object to be used for stream operations on the Logger.
    *
    */
-  class LogStream {
+  class LogStream
+  {
   public:
-    LogStream(LogStream &&rhs) : logger(rhs.logger), verbosity(rhs.verbosity), message(std::forward<std::stringstream>(rhs.message)), location(rhs.location) {}
+    LogStream(LogStream &&rhs) :
+      logger(rhs.logger),
+      verbosity(rhs.verbosity),
+      message(std::forward<std::stringstream>(rhs.message)),
+      location(rhs.location)
+    {}
 
     /**
      * @brief Destroy the Log Stream object.
@@ -65,7 +73,8 @@ public:
      * @return LogStream& Self reference.
      */
     template <typename T>
-    inline LogStream &operator<<(const T &part) {
+    inline LogStream &operator<<(const T &part)
+    {
       message << part;
 
       return *this;
@@ -119,24 +128,29 @@ public:
    */
   LogStream log(Verbosity verbosity, const std::source_location &location = std::source_location::current());
 
-  inline LogStream logCritical(const std::source_location &location = std::source_location::current()) {
-    return log(Verbosity::critical, location); 
+  inline LogStream logCritical(const std::source_location &location = std::source_location::current())
+  {
+    return log(Verbosity::critical, location);
   }
 
-  inline LogStream logError(const std::source_location &location = std::source_location::current()) {
-    return log(Verbosity::error, location); 
+  inline LogStream logError(const std::source_location &location = std::source_location::current())
+  {
+    return log(Verbosity::error, location);
   }
 
-  inline LogStream logWarning(const std::source_location &location = std::source_location::current()) {
-    return log(Verbosity::warning, location); 
+  inline LogStream logWarning(const std::source_location &location = std::source_location::current())
+  {
+    return log(Verbosity::warning, location);
   }
 
-  inline LogStream logInfo(const std::source_location &location = std::source_location::current()) {
-    return log(Verbosity::info, location); 
+  inline LogStream logInfo(const std::source_location &location = std::source_location::current())
+  {
+    return log(Verbosity::info, location);
   }
 
-  inline LogStream logDebug(const std::source_location &location = std::source_location::current()) {
-    return log(Verbosity::debug, location); 
+  inline LogStream logDebug(const std::source_location &location = std::source_location::current())
+  {
+    return log(Verbosity::debug, location);
   }
 
   /**

@@ -6,8 +6,8 @@
  *
  */
 
-#include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/clock.hpp>
+#include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/plugin.hpp>
 #include <labrat/lbot/utils/atomic.hpp>
@@ -23,7 +23,8 @@ thread_local std::optional<Manager::PluginEnvironment> Manager::plugin_environme
 
 Manager::Manager() = default;
 
-Manager::~Manager() {
+Manager::~Manager()
+{
   topic_map.forceFlush();
 
   Logger::deinitialize();
@@ -41,7 +42,8 @@ Manager::~Manager() {
   instance_flag = false;
 }
 
-Manager::Ptr Manager::get() {
+Manager::Ptr Manager::get()
+{
   if (!instance.expired()) {
     return instance.lock();
   }
@@ -52,7 +54,7 @@ Manager::Ptr Manager::get() {
   Logger::initialize();
 
   if (!instance_flag) {
-    throw ManagementException("Manager should not be created twice."); 
+    throw ManagementException("Manager should not be created twice.");
   }
 
   Clock::initialize();
@@ -60,7 +62,8 @@ Manager::Ptr Manager::get() {
   return result;
 }
 
-void Manager::removeNodeInternal(const std::string &name) {
+void Manager::removeNodeInternal(const std::string &name)
+{
   const NodeRegistration::Map::iterator iterator = node_map.find(name);
 
   if (iterator == node_map.end()) {
@@ -74,7 +77,8 @@ void Manager::removeNodeInternal(const std::string &name) {
   node_map.erase(iterator);
 }
 
-void Manager::removePluginInternal(const std::string &name) {
+void Manager::removePluginInternal(const std::string &name)
+{
   const std::list<PluginRegistration>::iterator iterator =
     std::find_if(plugin_list.begin(), plugin_list.end(), [&name](const PluginRegistration &plugin) {
     return name == plugin.name;
@@ -109,15 +113,25 @@ void Manager::removePluginInternal(const std::string &name) {
   }
 }
 
-void Manager::createNodeEnvironment(const std::string &name) {
-  node_environment.emplace(NodeEnvironment{.name = name, .plugin_list = plugin_list, .topic_map = topic_map, .service_map = service_map, .plugin_update_flag = plugin_update_flag, .plugin_use_count = plugin_use_count});
+void Manager::createNodeEnvironment(const std::string &name)
+{
+  node_environment.emplace(NodeEnvironment{
+    .name = name,
+    .plugin_list = plugin_list,
+    .topic_map = topic_map,
+    .service_map = service_map,
+    .plugin_update_flag = plugin_update_flag,
+    .plugin_use_count = plugin_use_count
+  });
 }
 
-void Manager::createPluginEnvironment(const std::string &name) {
+void Manager::createPluginEnvironment(const std::string &name)
+{
   plugin_environment.emplace(PluginEnvironment{.name = name});
 }
 
-Manager::NodeEnvironment Manager::getNodeEnvironment() {
+Manager::NodeEnvironment Manager::getNodeEnvironment()
+{
   if (!node_environment.has_value()) {
     throw ManagementException("A node must be created through the central manager.");
   }
@@ -128,7 +142,8 @@ Manager::NodeEnvironment Manager::getNodeEnvironment() {
   return result;
 }
 
-Manager::PluginEnvironment Manager::getPluginEnvironment() {
+Manager::PluginEnvironment Manager::getPluginEnvironment()
+{
   if (!plugin_environment.has_value()) {
     throw ManagementException("A plugin must be created through the central manager.");
   }

@@ -28,11 +28,17 @@ namespace lbot {
 
 /** @cond INTERNAL */
 template <auto *Function>
-class ConversionFunction {};
+class ConversionFunction
+{
+};
 
-template <typename OriginalType, typename ConvertedType, typename DataType,
+template <
+  typename OriginalType,
+  typename ConvertedType,
+  typename DataType,
   auto (*Function)(const OriginalType &, ConvertedType &, DataType *)->void>
-class ConversionFunction<Function> {
+class ConversionFunction<Function>
+{
 public:
   /**
    * @brief Call the stored conversion function.
@@ -41,13 +47,15 @@ public:
    * @param destination Object to be converted to.
    * @param user_ptr User pointer to access generic external data.
    */
-  static inline void call(const OriginalType &source, ConvertedType &destination, void *user_ptr) {
+  static inline void call(const OriginalType &source, ConvertedType &destination, void *user_ptr)
+  {
     Function(source, destination, reinterpret_cast<DataType *>(user_ptr));
   }
 };
 
 template <typename OriginalType, typename ConvertedType, auto (*Function)(const OriginalType &, ConvertedType &)->void>
-class ConversionFunction<Function> {
+class ConversionFunction<Function>
+{
 public:
   /**
    * @brief Call the stored conversion function.
@@ -55,7 +63,8 @@ public:
    * @param source Object to be converted.
    * @param destination Object to be converted to.
    */
-  static inline void call(const OriginalType &source, ConvertedType &destination, void *) {
+  static inline void call(const OriginalType &source, ConvertedType &destination, void *)
+  {
     Function(source, destination);
   }
 };
@@ -91,11 +100,17 @@ template <typename T, typename R = void>
 concept can_convert_from = can_convert_from_noptr<T> || can_convert_from_ptr<T>;
 
 template <auto *Function>
-class MoveFunction {};
+class MoveFunction
+{
+};
 
-template <typename OriginalType, typename ConvertedType, typename DataType,
+template <
+  typename OriginalType,
+  typename ConvertedType,
+  typename DataType,
   auto (*Function)(OriginalType &&, ConvertedType &, DataType *)->void>
-class MoveFunction<Function> {
+class MoveFunction<Function>
+{
 public:
   /**
    * @brief Call the stored conversion function.
@@ -104,13 +119,15 @@ public:
    * @param destination Object to be converted to.
    * @param user_ptr User pointer to access generic external data.
    */
-  static inline void call(OriginalType &&source, ConvertedType &destination, void *user_ptr) {
+  static inline void call(OriginalType &&source, ConvertedType &destination, void *user_ptr)
+  {
     Function(std::forward<OriginalType>(source), destination, reinterpret_cast<DataType *>(user_ptr));
   }
 };
 
 template <typename OriginalType, typename ConvertedType, auto (*Function)(OriginalType &&, ConvertedType &)->void>
-class MoveFunction<Function> {
+class MoveFunction<Function>
+{
 public:
   /**
    * @brief Call the stored conversion function.
@@ -118,7 +135,8 @@ public:
    * @param source Object to be converted.
    * @param destination Object to be converted to.
    */
-  static inline void call(OriginalType &&source, ConvertedType &destination, void *) {
+  static inline void call(OriginalType &&source, ConvertedType &destination, void *)
+  {
     Function(std::forward<OriginalType>(source), destination);
   }
 };
@@ -158,14 +176,16 @@ concept can_move_from = can_move_from_noptr<T> || can_move_from_ptr<T>;
  * @brief Abstract time class for Message.
  *
  */
-class MessageTime {
+class MessageTime
+{
 public:
   /**
    * @brief Get the timestamp of the object.
    *
    * @return Clock::time_point
    */
-  [[nodiscard]] inline Clock::time_point getTimestamp() const {
+  [[nodiscard]] inline Clock::time_point getTimestamp() const
+  {
     return lbot_message_base_timestamp;
   }
 
@@ -174,7 +194,8 @@ protected:
    * @brief Construct a new Message Base object and set the timestamp to the current time.
    *
    */
-  MessageTime() {
+  MessageTime()
+  {
     lbot_message_base_timestamp = Clock::now();
   }
 
@@ -183,11 +204,13 @@ protected:
    *
    * @param timestamp Timestamp of the message
    */
-  MessageTime(Clock::time_point timestamp) {
+  MessageTime(Clock::time_point timestamp)
+  {
     lbot_message_base_timestamp = timestamp;
   }
 
-  MessageTime(const MessageTime &rhs) {
+  MessageTime(const MessageTime &rhs)
+  {
     lbot_message_base_timestamp = rhs.lbot_message_base_timestamp;
   }
 
@@ -207,7 +230,9 @@ concept is_flatbuffer = std::is_base_of_v<flatbuffers::Table, std::remove_const_
  * @tparam T
  */
 template <typename FlatbufferType, typename ConvertedType>
-requires is_flatbuffer<FlatbufferType> class MessageBase : public MessageTime, public std::remove_const_t<FlatbufferType>::NativeTableType {
+requires is_flatbuffer<FlatbufferType>
+class MessageBase : public MessageTime, public std::remove_const_t<FlatbufferType>::NativeTableType
+{
 public:
   using Storage = MessageBase<std::remove_const_t<FlatbufferType>, ConvertedType>;
   using Flatbuffer = FlatbufferType;
@@ -226,21 +251,29 @@ public:
    *
    * @param timestamp Timestamp of the message
    */
-  MessageBase(Clock::time_point timestamp) : MessageTime(timestamp) {}
+  MessageBase(Clock::time_point timestamp) :
+    MessageTime(timestamp)
+  {}
 
   /**
    * @brief Construct a new Message Base object
-   * 
-   * @param rhs 
+   *
+   * @param rhs
    */
-  MessageBase(const MessageBase &rhs) : MessageTime(rhs), Content(rhs) {}
+  MessageBase(const MessageBase &rhs) :
+    MessageTime(rhs),
+    Content(rhs)
+  {}
 
   /**
    * @brief Construct a new Message Base object
-   * 
-   * @param rhs 
+   *
+   * @param rhs
    */
-  MessageBase(MessageBase &&rhs) : MessageTime(rhs), Content(std::forward<Content>(rhs)) {}
+  MessageBase(MessageBase &&rhs) :
+    MessageTime(rhs),
+    Content(std::forward<Content>(rhs))
+  {}
 
   /**
    * @brief Construct a new Message object by specifying the contents stored within the message.
@@ -248,7 +281,9 @@ public:
    *
    * @param content Contents of the message.
    */
-  MessageBase(const Content &content) : Content(content) {}
+  MessageBase(const Content &content) :
+    Content(content)
+  {}
 
   /**
    * @brief Construct a new Message object by specifying the contents stored within the message.
@@ -256,16 +291,20 @@ public:
    *
    * @param content Contents of the message.
    */
-  MessageBase(Content &&content) : Content(std::forward<Content>(content)) {}
+  MessageBase(Content &&content) :
+    Content(std::forward<Content>(content))
+  {}
 
-  MessageBase &operator=(const MessageBase &rhs) {
+  MessageBase &operator=(const MessageBase &rhs)
+  {
     *dynamic_cast<Content *>(this) = dynamic_cast<const Content &>(rhs);
     *dynamic_cast<MessageTime *>(this) = dynamic_cast<const MessageTime &>(rhs);
 
     return *this;
-  } 
+  }
 
-  MessageBase &operator=(MessageBase &&rhs) {
+  MessageBase &operator=(MessageBase &&rhs)
+  {
     *dynamic_cast<Content *>(this) = std::forward<Content>(rhs);
     *dynamic_cast<MessageTime *>(this) = dynamic_cast<const MessageTime &>(rhs);
 
@@ -277,7 +316,8 @@ public:
    *
    * @return constexpr std::string Name of the type.
    */
-  static inline constexpr std::string_view getName() {
+  static inline constexpr std::string_view getName()
+  {
     return std::string_view(Content::TableType::GetFullyQualifiedName());
   }
 };
@@ -296,7 +336,9 @@ concept is_const_message = is_message<T, Flatbuffer> && std::is_const_v<Flatbuff
  * @tparam T
  */
 template <typename FlatbufferType>
-requires is_flatbuffer<FlatbufferType> class Message final : public MessageBase<FlatbufferType, Message<std::remove_const_t<FlatbufferType>>> {
+requires is_flatbuffer<FlatbufferType>
+class Message final : public MessageBase<FlatbufferType, Message<std::remove_const_t<FlatbufferType>>>
+{
 public:
   using Super = MessageBase<FlatbufferType, Message<std::remove_const_t<FlatbufferType>>>;
   using Content = typename Super::Content;
@@ -305,47 +347,59 @@ public:
    * @brief Default constructor to only set the timestamp to the current time.
    *
    */
-  Message() : Super() {}
+  Message() :
+    Super()
+  {}
 
   /**
    * @brief Copy constructor to copy contents and the timestamp.
    *
    * @param rhs
    */
-  Message(const Super &rhs) : Super(rhs) {}
+  Message(const Super &rhs) :
+    Super(rhs)
+  {}
 
   /**
    * @brief Move constructor to copy contents and the timestamp.
-   * 
+   *
    * @param rhs
    */
-  Message(Super &&rhs) : Super(std::forward<Super>(rhs)) {}
+  Message(Super &&rhs) :
+    Super(std::forward<Super>(rhs))
+  {}
 
-  Message &operator=(const Super &rhs) {
+  Message &operator=(const Super &rhs)
+  {
     *dynamic_cast<Super *>(this) = rhs;
 
     return *this;
-  } 
+  }
 
-  Message &operator=(Super &&rhs) {
+  Message &operator=(Super &&rhs)
+  {
     *dynamic_cast<Super *>(this) = std::forward<Super>(rhs);
 
     return *this;
   }
 
-  static inline void convertTo(const Super::Storage &source, Super::Converted &destination) {
+  static inline void convertTo(const Super::Storage &source, Super::Converted &destination)
+  {
     destination = source;
   }
 
-  static inline void moveTo(Super::Storage &&source, Super::Converted &destination) {
+  static inline void moveTo(Super::Storage &&source, Super::Converted &destination)
+  {
     destination = std::move(source);
   }
 
-  static inline void convertFrom(const Super::Converted &source, Super::Storage &destination) {
+  static inline void convertFrom(const Super::Converted &source, Super::Storage &destination)
+  {
     destination = source;
   }
 
-  static inline void moveFrom(Super::Converted &&source, Super::Storage &destination) {
+  static inline void moveFrom(Super::Converted &&source, Super::Storage &destination)
+  {
     destination = std::move(source);
   }
 };

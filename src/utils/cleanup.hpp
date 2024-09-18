@@ -19,26 +19,34 @@ inline namespace utils {
 /** @endcond */
 
 /** @cond INTERNAL */
-class CleanupLock {
+class CleanupLock
+{
 public:
-  class Guard {
+  class Guard
+  {
   public:
-    explicit Guard(CleanupLock &lock) : lock(lock) {
+    explicit Guard(CleanupLock &lock) :
+      lock(lock)
+    {
       State expected_state = State::unlocked;
       lock.state.compare_exchange_strong(expected_state, State::locked);
     }
 
-    Guard(Guard &&rhs) noexcept : lock(rhs.lock) {
+    Guard(Guard &&rhs) noexcept :
+      lock(rhs.lock)
+    {
       rhs.unlock_at_destroy = false;
     }
 
-    ~Guard() {
+    ~Guard()
+    {
       if (unlock_at_destroy) {
         lock.state.store(State::unlocked);
       }
     }
 
-    [[nodiscard]] inline bool valid() const {
+    [[nodiscard]] inline bool valid() const
+    {
       return lock.state.load() == State::locked;
     }
 
@@ -47,17 +55,22 @@ public:
     bool unlock_at_destroy = true;
   };
 
-  CleanupLock() : state(State::unlocked) {}
+  CleanupLock() :
+    state(State::unlocked)
+  {}
 
-  ~CleanupLock() {
+  ~CleanupLock()
+  {
     destroy();
   }
 
-  Guard lock() {
+  Guard lock()
+  {
     return Guard(*this);
   }
 
-  void destroy() {
+  void destroy()
+  {
     if (state.load() == State::deleted) {
       return;
     }
@@ -74,7 +87,8 @@ public:
   }
 
 private:
-  enum class State : u8 {
+  enum class State : u8
+  {
     unlocked,
     locked,
     deleted,

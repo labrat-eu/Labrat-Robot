@@ -28,14 +28,17 @@ inline namespace utils {
  * @tparam T Type of the values stored.
  */
 template <typename T>
-class Fifo {
+class Fifo
+{
 public:
   /**
    * @brief Construct a new Fifo object. The buffer will be initialized with zeroes.
    *
    * @param[in] size Number of elements to be stored.
    */
-  explicit Fifo(std::size_t size) : data(size) {
+  explicit Fifo(std::size_t size) :
+    data(size)
+  {
     current_index = 0;
   }
 
@@ -45,7 +48,8 @@ public:
    * @param[in] value Value to be stored.
    * @return T Last value stored inside the buffer that was pushed out.
    */
-  T push(T value) {
+  T push(T value)
+  {
     // Increment the current index.
     current_index = (current_index + 1) % data.size();
 
@@ -62,7 +66,8 @@ public:
    * @param[in] i Index relative to the last element pushed.
    * @return T Stored value.
    */
-  T peakFront(std::size_t i = 0) const {
+  T peakFront(std::size_t i = 0) const
+  {
     return data[(current_index - (i % data.size()) + data.size()) % data.size()];
   }
 
@@ -72,7 +77,8 @@ public:
    * @param[in] i Index relative to the first element pushed.
    * @return T Stored value.
    */
-  T peakBack(std::size_t i = 0) const {
+  T peakBack(std::size_t i = 0) const
+  {
     return data[(current_index + 1 + i) % data.size()];
   }
 

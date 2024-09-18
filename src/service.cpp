@@ -14,11 +14,15 @@ namespace lbot {
 
 ServiceMap::ServiceMap() = default;
 
-ServiceMap::Service::Service(Handle handle, std::string name) : handle(handle), name(std::move(name)) {
+ServiceMap::Service::Service(Handle handle, std::string name) :
+  handle(handle),
+  name(std::move(name))
+{
   server = nullptr;
 }
 
-ServiceMap::Service &ServiceMap::getServiceInternal(const std::string &service) {
+ServiceMap::Service &ServiceMap::getServiceInternal(const std::string &service)
+{
   if (service.empty()) {
     throw ManagementException("Service name name must be non-empty.");
   }
@@ -32,7 +36,8 @@ ServiceMap::Service &ServiceMap::getServiceInternal(const std::string &service) 
   return iterator->second;
 }
 
-ServiceMap::Service &ServiceMap::getServiceInternal(const std::string &service, Service::Handle handle) {
+ServiceMap::Service &ServiceMap::getServiceInternal(const std::string &service, Service::Handle handle)
+{
   if (service.empty()) {
     throw ManagementException("Service name name must be non-empty.");
   }
@@ -47,7 +52,8 @@ ServiceMap::Service &ServiceMap::getServiceInternal(const std::string &service, 
   return result;
 }
 
-void ServiceMap::Service::addServer(void *new_server) {
+void ServiceMap::Service::addServer(void *new_server)
+{
   waitUntil<std::size_t>(use_count, 0);
 
   if (server != nullptr) {
@@ -57,7 +63,8 @@ void ServiceMap::Service::addServer(void *new_server) {
   server = new_server;
 }
 
-void ServiceMap::Service::removeServer(void *old_server) {
+void ServiceMap::Service::removeServer(void *old_server)
+{
   waitUntil<std::size_t>(use_count, 0);
 
   if (server != old_server) {

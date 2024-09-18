@@ -12,7 +12,8 @@ inline namespace labrat {
 namespace lbot {
 inline namespace utils {
 
-speed_t toSpeed(u64 baud_rate) {
+speed_t toSpeed(u64 baud_rate)
+{
   switch (baud_rate) {
     case (57600): {
       return B57600;

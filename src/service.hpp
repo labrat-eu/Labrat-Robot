@@ -25,9 +25,11 @@ inline namespace labrat {
 namespace lbot {
 
 /** @cond INTERNAL */
-class ServiceMap {
+class ServiceMap
+{
 public:
-  class Service {
+  class Service
+  {
   private:
     void *server;
 
@@ -36,23 +38,30 @@ public:
   public:
     using Handle = std::size_t;
 
-    class ServerReference {
+    class ServerReference
+    {
     public:
-      explicit inline ServerReference(Service &service) : service(service) {
+      explicit inline ServerReference(Service &service) :
+        service(service)
+      {
         service.use_count.fetch_add(1);
       }
 
-      inline ServerReference(ServerReference &&rhs) noexcept : service(rhs.service) {
+      inline ServerReference(ServerReference &&rhs) noexcept :
+        service(rhs.service)
+      {
         service.use_count.fetch_add(1);
       }
 
-      inline ~ServerReference() {
+      inline ~ServerReference()
+      {
         service.use_count.fetch_sub(1);
         service.use_count.notify_all();
       }
 
       template <typename T>
-      inline operator T *() {
+      inline operator T *()
+      {
         return reinterpret_cast<T *>(service.server);
       }
 
@@ -62,7 +71,8 @@ public:
 
     Service(Handle handle, std::string name);
 
-    ServerReference getServer() {
+    ServerReference getServer()
+    {
       return ServerReference(*this);
     }
 
@@ -77,7 +87,8 @@ public:
   ~ServiceMap() = default;
 
   template <typename T, typename U>
-  Service &addServer(const std::string &service_name, void *server) {
+  Service &addServer(const std::string &service_name, void *server)
+  {
     Service &service = getServiceInternal(service_name, typeid(T).hash_code() ^ typeid(U).hash_code());
 
     service.addServer(server);
@@ -85,7 +96,8 @@ public:
     return service;
   }
 
-  Service &removeServer(const std::string &service_name, void *server) {
+  Service &removeServer(const std::string &service_name, void *server)
+  {
     Service &service = getServiceInternal(service_name);
 
     service.removeServer(server);
@@ -94,7 +106,8 @@ public:
   }
 
   template <typename T, typename U>
-  Service &getService(const std::string &service_name) {
+  Service &getService(const std::string &service_name)
+  {
     return getServiceInternal(service_name, typeid(T).hash_code() ^ typeid(U).hash_code());
   }
 

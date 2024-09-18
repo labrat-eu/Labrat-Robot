@@ -28,7 +28,8 @@ namespace lbot {
  * @brief Information on a topic provided on callbacks.
  *
  */
-struct TopicInfo {
+struct TopicInfo
+{
   const std::size_t type_hash;
   const std::string_view type_name;
   const std::string_view type_reflection;
@@ -44,7 +45,9 @@ struct TopicInfo {
    * @return TopicInfo Information about the topic.
    */
   template <typename MessageType>
-  requires is_message<MessageType> static TopicInfo get(const std::string &topic_name) {
+  requires is_message<MessageType>
+  static TopicInfo get(const std::string &topic_name)
+  {
     const TopicInfo result = {
       .type_hash = typeid(typename MessageType::Content).hash_code(),
       .type_name = MessageType::getName(),
@@ -61,7 +64,8 @@ struct TopicInfo {
  * @brief Information on a service provided on callbacks.
  *
  */
-struct ServiceInfo {
+struct ServiceInfo
+{
   const std::size_t request_type_hash;
   const std::string_view request_type_name;
   const std::string_view request_type_reflection;
@@ -83,16 +87,20 @@ struct ServiceInfo {
    */
   template <typename RequestType, typename ResponseType>
   requires is_message<RequestType> && is_message<ResponseType>
-  static ServiceInfo get(const std::string &service_name, ServiceMap::Service &service) {
-    const ServiceInfo result = {.request_type_hash = typeid(typename RequestType::Content).hash_code(),
+  static ServiceInfo get(const std::string &service_name, ServiceMap::Service &service)
+  {
+    const ServiceInfo result = {
+      .request_type_hash = typeid(typename RequestType::Content).hash_code(),
       .request_type_name = RequestType::getName(),
       .request_type_reflection = std::string_view(reinterpret_cast<const char *>(RequestType::Schema::data()), RequestType::Schema::size()),
       .response_type_hash = typeid(typename ResponseType::Content).hash_code(),
       .response_type_name = ResponseType::getName(),
-      .response_type_reflection = std::string_view(reinterpret_cast<const char *>(ResponseType::Schema::data()), ResponseType::Schema::size()),
+      .response_type_reflection =
+        std::string_view(reinterpret_cast<const char *>(ResponseType::Schema::data()), ResponseType::Schema::size()),
       .service_hash = std::hash<std::string>()(service_name),
       .service_name = service_name,
-      .service = service};
+      .service = service
+    };
 
     return result;
   }
@@ -102,7 +110,8 @@ struct ServiceInfo {
  * @brief Information on a message provided on callbacks.
  *
  */
-struct MessageInfo {
+struct MessageInfo
+{
   const TopicInfo &topic_info;
   Clock::time_point timestamp;
   flatbuffers::span<u8> serialized_message;

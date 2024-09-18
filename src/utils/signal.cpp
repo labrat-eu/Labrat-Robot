@@ -12,7 +12,8 @@ inline namespace labrat {
 namespace lbot {
 inline namespace utils {
 
-int signalWait() {
+int signalWait()
+{
   sigset_t signal_mask;
   if (int res = sigemptyset(&signal_mask)) {
     throw labrat::lbot::SystemException("Failed to create signal set.", res);
@@ -31,7 +32,6 @@ int signalWait() {
 
   return signal;
 }
-
 
 }  // namespace utils
 }  // namespace lbot

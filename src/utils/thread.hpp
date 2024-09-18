@@ -36,28 +36,31 @@ inline namespace utils {
  * @brief Abstract thread wrapper.
  *
  */
-class Thread {
+class Thread
+{
 public:
   ~Thread() = default;
 
   /**
    * @brief Pause execution of the current thread for the specified duration.
-   * 
+   *
    * @param duration Relative duration to sleep.
    */
-  template<class Rep, class Period>
-  static void sleepFor(const std::chrono::duration<Rep, Period> &duration) {
+  template <class Rep, class Period>
+  static void sleepFor(const std::chrono::duration<Rep, Period> &duration)
+  {
     const Clock::time_point time_begin = Clock::now();
     sleepUntil(time_begin + std::chrono::duration_cast<Clock::duration>(duration));
   }
 
   /**
    * @brief Pause execution of the current thread until the specified timestamp.
-   * 
+   *
    * @param duration Absolute timestamp until to sleep.
    */
-  template<class Duration>
-  static void sleepUntil(const std::chrono::time_point<Clock, Duration> &time) {
+  template <class Duration>
+  static void sleepUntil(const std::chrono::time_point<Clock, Duration> &time)
+  {
     std::mutex mutex;
     std::unique_lock<std::mutex> lock(mutex);
     ConditionVariable condition;
@@ -67,7 +70,8 @@ public:
 protected:
   Thread() = default;
 
-  static void setup(const std::string &name, i32 priority) {
+  static void setup(const std::string &name, i32 priority)
+  {
     // Set name of the thread in applications like top/htop for better performance debugging.
     if (prctl(PR_SET_NAME, name.c_str())) {
       throw labrat::lbot::SystemException("Failed to set thread name.", errno);
@@ -83,8 +87,7 @@ protected:
       if (sched_setscheduler(0, SCHED_RR, &scheduler_parameter)) {
         throw labrat::lbot::SystemException("Failed to specify scheduling algorithm.", errno);
       }
-    } catch (labrat::lbot::SystemException &) {
-    }
+    } catch (labrat::lbot::SystemException &) {}
   }
 };
 
@@ -92,12 +95,14 @@ protected:
  * @brief Wrapper of a std::jthread to execute a function in an endless loop.
  *
  */
-class LoopThread : public Thread {
+class LoopThread : public Thread
+{
 public:
   LoopThread() = default;
   LoopThread(LoopThread &) = delete;
 
-  LoopThread(LoopThread &&rhs) noexcept : thread(std::move(rhs.thread)){};
+  LoopThread(LoopThread &&rhs) noexcept :
+    thread(std::move(rhs.thread)){};
 
   /**
    * @brief Start the thread.
@@ -108,7 +113,8 @@ public:
    * @param args Arguments function to be executed repeatedly.
    */
   template <typename Function, typename... Args>
-  LoopThread(Function &&function, const std::string &name, i32 priority, Args &&...args) {
+  LoopThread(Function &&function, const std::string &name, i32 priority, Args &&...args)
+  {
     thread = std::jthread([name, priority](std::stop_token token, Function &&function, Args &&...args) {
       setup(name, priority);
 
@@ -120,7 +126,8 @@ public:
     }, std::forward<Function>(function), std::forward<Args>(args)...);
   }
 
-  void operator=(LoopThread &&rhs) noexcept {
+  void operator=(LoopThread &&rhs) noexcept
+  {
     thread = std::move(rhs.thread);
   }
 
@@ -132,12 +139,16 @@ private:
  * @brief Wrapper of a std::jthread to execute a function in an endless loop with a minimum time interval between calls.
  *
  */
-class TimerThread : public Thread {
+class TimerThread : public Thread
+{
 public:
   TimerThread() = default;
   TimerThread(TimerThread &) = delete;
 
-  TimerThread(TimerThread &&rhs) noexcept : condition(std::move(rhs.condition)), exit_flag(std::move(rhs.exit_flag)), thread(std::move(rhs.thread)) {};
+  TimerThread(TimerThread &&rhs) noexcept :
+    condition(std::move(rhs.condition)),
+    exit_flag(std::move(rhs.exit_flag)),
+    thread(std::move(rhs.thread)){};
 
   /**
    * @brief Start the thread.
@@ -149,12 +160,19 @@ public:
    * @param args Arguments function to be executed repeatedly.
    */
   template <typename Function, typename R, typename P, typename... Args>
-  TimerThread(Function &&function, const std::chrono::duration<R, P> &interval, const std::string &name, i32 priority, Args &&...args) {
+  TimerThread(Function &&function, const std::chrono::duration<R, P> &interval, const std::string &name, i32 priority, Args &&...args)
+  {
     condition = std::make_shared<ConditionVariable>();
     exit_flag = std::make_shared<bool>(false);
 
     thread = std::jthread(
-      [interval, name, priority](std::stop_token token, std::shared_ptr<ConditionVariable> condition, std::shared_ptr<bool> exit_flag, Function &&function, Args &&...args) {
+      [interval, name, priority](
+        std::stop_token token,
+        std::shared_ptr<ConditionVariable> condition,
+        std::shared_ptr<bool> exit_flag,
+        Function &&function,
+        Args &&...args
+      ) {
       setup(name, priority);
 
       std::mutex mutex;
@@ -177,10 +195,16 @@ public:
 
         condition->waitUntil(lock, time_begin + interval);
       }
-    }, condition, exit_flag, std::forward<Function>(function), std::forward<Args>(args)...);
+    },
+      condition,
+      exit_flag,
+      std::forward<Function>(function),
+      std::forward<Args>(args)...
+    );
   }
 
-  ~TimerThread() {
+  ~TimerThread()
+  {
     if (exit_flag) {
       *exit_flag = true;
     }
@@ -190,7 +214,8 @@ public:
     }
   }
 
-  void operator=(TimerThread &&rhs) noexcept {
+  void operator=(TimerThread &&rhs) noexcept
+  {
     condition = std::move(rhs.condition);
     exit_flag = std::move(rhs.exit_flag);
     thread = std::move(rhs.thread);

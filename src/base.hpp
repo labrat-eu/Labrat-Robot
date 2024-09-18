@@ -11,7 +11,6 @@
 #define FLATBUFFERS_USE_STD_OPTIONAL 1
 #define FLATBUFFERS_USE_STD_SPAN 1
 
-
 /** @cond INTERNAL */
 inline namespace labrat {
 /** @endcond */
@@ -21,5 +20,5 @@ namespace lbot::test {
 void lbotReset();
 /** @endcond  */
 
-}
-}
+}  // namespace lbot::test
+}  // namespace labrat

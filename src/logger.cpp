@@ -6,28 +6,30 @@
  *
  */
 
-#include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/clock.hpp>
+#include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/message.hpp>
 #include <labrat/lbot/msg/foxglove/Log.hpp>
 #include <labrat/lbot/node.hpp>
 
+#include <chrono>
 #include <cstdlib>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
-#include <mutex>
-#include <chrono>
-#include <sstream>
 #include <memory>
+#include <mutex>
+#include <sstream>
 
 inline namespace labrat {
 namespace lbot {
 
-class Logger::Private {
+class Logger::Private
+{
 public:
-  class Entry {
+  class Entry
+  {
   public:
     Verbosity verbosity;
     Clock::time_point timestamp;
@@ -36,9 +38,11 @@ public:
     std::source_location location;
   };
 
-  class EntryMessage : public MessageBase<foxglove::Log, Entry> {
+  class EntryMessage : public MessageBase<foxglove::Log, Entry>
+  {
   public:
-    static void convertFrom(const Converted &source, Storage &destination) {
+    static void convertFrom(const Converted &source, Storage &destination)
+    {
       switch (source.verbosity) {
         case (Logger::Verbosity::critical): {
           destination.level = foxglove::LogLevel::FATAL;
@@ -67,8 +71,9 @@ public:
       }
 
       const Clock::duration duration = source.timestamp.time_since_epoch();
-      destination.timestamp = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(duration).count(),
-        (duration % std::chrono::seconds(1)).count());
+      destination.timestamp = std::make_unique<foxglove::Time>(
+        std::chrono::duration_cast<std::chrono::seconds>(duration).count(), (duration % std::chrono::seconds(1)).count()
+      );
       destination.name = source.logger_name;
       destination.message = source.message;
       destination.file = source.location.file_name();
@@ -76,27 +81,34 @@ public:
     }
   };
 
-  class Node : public UniqueNode {
+  class Node : public UniqueNode
+  {
   private:
     Sender<EntryMessage>::Ptr sender;
 
   public:
-    explicit Node() : UniqueNode("logger") {
+    explicit Node() :
+      UniqueNode("logger")
+    {
       sender = addSender<EntryMessage>("/log");
     }
 
-    void send(const Entry &entry) {
+    void send(const Entry &entry)
+    {
       sender->put(entry);
     }
 
-    void trace(const Entry &entry) {
+    void trace(const Entry &entry)
+    {
       sender->trace(entry);
     }
   };
 
-  class Color {
+  class Color
+  {
   public:
-    enum class Code : i16 {
+    enum class Code : i16
+    {
       black = 30,
       red = 31,
       green = 32,
@@ -108,11 +120,15 @@ public:
       normal = 39,
     };
 
-    explicit Color(bool enable_color, Code code = Code::normal) : code(code), enable_color(enable_color) {}
+    explicit Color(bool enable_color, Code code = Code::normal) :
+      code(code),
+      enable_color(enable_color)
+    {}
 
     friend std::ostream &
 
-    operator<<(std::ostream &stream, const Color &color) {
+    operator<<(std::ostream &stream, const Color &color)
+    {
       if (color.enable_color) {
         return stream << "\033[" << static_cast<i16>(color.code) << "m";
       }
@@ -125,7 +141,8 @@ public:
     const bool enable_color;
   };
 
-  static std::string getVerbosityLong(Logger::Verbosity verbosity) {
+  static std::string getVerbosityLong(Logger::Verbosity verbosity)
+  {
     switch (verbosity) {
       case (Logger::Verbosity::critical): {
         return "critical";
@@ -153,7 +170,8 @@ public:
     }
   }
 
-  static std::string getVerbosityShort(Logger::Verbosity verbosity) {
+  static std::string getVerbosityShort(Logger::Verbosity verbosity)
+  {
     switch (verbosity) {
       case (Logger::Verbosity::critical): {
         return "CRIT";
@@ -181,7 +199,8 @@ public:
     }
   }
 
-  static Color getVerbosityColor(Logger::Verbosity verbosity) {
+  static Color getVerbosityColor(Logger::Verbosity verbosity)
+  {
     switch (verbosity) {
       case (Logger::Verbosity::critical):
       case (Logger::Verbosity::error): {
@@ -217,31 +236,40 @@ public:
 
 static Logger::Private priv;
 
-Logger::Logger(std::string name) : name(std::move(name)) {}
+Logger::Logger(std::string name) :
+  name(std::move(name))
+{}
 
-void Logger::initialize() {
+void Logger::initialize()
+{
   priv.node = Manager::get()->addNode<Private::Node>("logger");
 }
 
-void Logger::deinitialize() {
+void Logger::deinitialize()
+{
   priv.node.reset();
 }
 
-Logger::LogStream Logger::log(Verbosity verbosity, const std::source_location &location) {
+Logger::LogStream Logger::log(Verbosity verbosity, const std::source_location &location)
+{
   return LogStream(*this, verbosity, location);
 }
 
 Logger::LogStream::LogStream(const Logger &logger, Verbosity verbosity, const std::source_location &location) :
-  logger(logger), verbosity(verbosity), location(location) {}
+  logger(logger),
+  verbosity(verbosity),
+  location(location)
+{}
 
-Logger::LogStream::~LogStream() {
+Logger::LogStream::~LogStream()
+{
   const Clock::time_point now = Clock::now();
 
-  if (verbosity <= priv.log_level) { 
+  if (verbosity <= priv.log_level) {
     std::lock_guard guard(priv.io_mutex);
 
-    std::cout << Private::getVerbosityColor(verbosity) << "[" << Private::getVerbosityShort(verbosity) << "]" << Logger::Private::Color(isColorEnabled()) << " ("
-              << logger.name;
+    std::cout << Private::getVerbosityColor(verbosity) << "[" << Private::getVerbosityShort(verbosity) << "]"
+              << Logger::Private::Color(isColorEnabled()) << " (" << logger.name;
 
     if (isLocationEnabled() || isTimeEnabled()) {
       std::cout << " @";
@@ -279,65 +307,80 @@ Logger::LogStream::~LogStream() {
   }
 }
 
-Logger::LogStream &Logger::LogStream::operator<<(std::ostream &(*func)(std::ostream &)) {
+Logger::LogStream &Logger::LogStream::operator<<(std::ostream &(*func)(std::ostream &))
+{
   message << func;
 
   return *this;
 }
 
-void Logger::setLogLevel(Verbosity level) {
+void Logger::setLogLevel(Verbosity level)
+{
   priv.log_level = level;
 }
 
-Logger::Verbosity Logger::getLogLevel() {
+Logger::Verbosity Logger::getLogLevel()
+{
   return priv.log_level;
 }
 
-void Logger::enableTopic() {
+void Logger::enableTopic()
+{
   send_topic = true;
 }
 
-void Logger::disableTopic() {
+void Logger::disableTopic()
+{
   send_topic = false;
 }
 
-bool Logger::isTopicEnabled() const {
+bool Logger::isTopicEnabled() const
+{
   return send_topic;
 }
 
-void Logger::enableColor() {
+void Logger::enableColor()
+{
   priv.use_color = true;
 }
 
-void Logger::disableColor() {
+void Logger::disableColor()
+{
   priv.use_color = false;
 }
 
-bool Logger::isColorEnabled() {
+bool Logger::isColorEnabled()
+{
   return priv.use_color;
 }
 
-void Logger::enableLocation() {
+void Logger::enableLocation()
+{
   priv.print_location = true;
 }
 
-void Logger::disableLocation() {
+void Logger::disableLocation()
+{
   priv.print_location = false;
 }
 
-bool Logger::isLocationEnabled() {
+bool Logger::isLocationEnabled()
+{
   return priv.print_location;
 }
 
-void Logger::enableTime() {
+void Logger::enableTime()
+{
   priv.print_time = true;
 }
 
-void Logger::disableTime() {
+void Logger::disableTime()
+{
   priv.print_time = false;
 }
 
-bool Logger::isTimeEnabled() {
+bool Logger::isTimeEnabled()
+{
   return priv.print_time;
 }
 

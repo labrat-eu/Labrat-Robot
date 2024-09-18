@@ -16,30 +16,28 @@
 namespace YAML {
 
 template <>
-struct convert<labrat::lbot::ConfigValue> {
-  static bool decode(const Node &node, labrat::lbot::ConfigValue &rhs) {
+struct convert<labrat::lbot::ConfigValue>
+{
+  static bool decode(const Node &node, labrat::lbot::ConfigValue &rhs)
+  {
     switch (node.Type()) {
       case YAML::NodeType::Scalar: {
         try {
           rhs = node.as<bool>();
           return true;
-        } catch (TypedBadConversion<bool> &) {
-        }
+        } catch (TypedBadConversion<bool> &) {}
         try {
           rhs = node.as<lbot::i64>();
           return true;
-        } catch (TypedBadConversion<lbot::i64> &) {
-        }
+        } catch (TypedBadConversion<lbot::i64> &) {}
         try {
           rhs = node.as<double>();
           return true;
-        } catch (TypedBadConversion<double> &) {
-        }
+        } catch (TypedBadConversion<double> &) {}
         try {
           rhs = node.as<std::string>();
           return true;
-        } catch (TypedBadConversion<std::string> &) {
-        }
+        } catch (TypedBadConversion<std::string> &) {}
 
         return false;
       }
@@ -72,7 +70,8 @@ struct convert<labrat::lbot::ConfigValue> {
 inline namespace labrat {
 namespace lbot {
 
-class Config::Private {
+class Config::Private
+{
 public:
   Config::ParameterMap parameter_map;
 };
@@ -82,47 +81,69 @@ static Config::Private priv;
 
 ConfigValue::ConfigValue() = default;
 
-ConfigValue::ConfigValue(const ConfigValue &rhs) : value(rhs.value) {}
+ConfigValue::ConfigValue(const ConfigValue &rhs) :
+  value(rhs.value)
+{}
 
-ConfigValue::ConfigValue(ConfigValue &&rhs) : value(std::move(rhs.value)) {}
+ConfigValue::ConfigValue(ConfigValue &&rhs) :
+  value(std::move(rhs.value))
+{}
 
-ConfigValue::ConfigValue(bool value) : value(value) {}
+ConfigValue::ConfigValue(bool value) :
+  value(value)
+{}
 
-ConfigValue::ConfigValue(const char *value) : value(std::string(value)) {}
+ConfigValue::ConfigValue(const char *value) :
+  value(std::string(value))
+{}
 
-ConfigValue::ConfigValue(const std::string &value) : value(value) {}
+ConfigValue::ConfigValue(const std::string &value) :
+  value(value)
+{}
 
-ConfigValue::ConfigValue(std::string &&value) : value(std::forward<std::string>(value)) {}
+ConfigValue::ConfigValue(std::string &&value) :
+  value(std::forward<std::string>(value))
+{}
 
-ConfigValue::ConfigValue(const Sequence &value) : value(value) {}
+ConfigValue::ConfigValue(const Sequence &value) :
+  value(value)
+{}
 
-ConfigValue::ConfigValue(Sequence &&value) : value(std::forward<Sequence>(value)) {}
+ConfigValue::ConfigValue(Sequence &&value) :
+  value(std::forward<Sequence>(value))
+{}
 
-const ConfigValue &ConfigValue::operator=(const ConfigValue &rhs) {
+const ConfigValue &ConfigValue::operator=(const ConfigValue &rhs)
+{
   value = rhs.value;
   return *this;
 }
 
-const ConfigValue &ConfigValue::operator=(ConfigValue &&rhs) {
+const ConfigValue &ConfigValue::operator=(ConfigValue &&rhs)
+{
   value = std::move(rhs.value);
   return *this;
 }
 
-bool ConfigValue::isValid() const {
+bool ConfigValue::isValid() const
+{
   return !std::holds_alternative<std::monostate>(value);
 }
 
-ConfigValue::operator bool() const {
+ConfigValue::operator bool() const
+{
   return isValid();
 }
 
-Config::Config() {
+Config::Config()
+{
   priv = Private();
 }
 
 Config::~Config() = default;
 
-Config::Ptr Config::get() {
+Config::Ptr Config::get()
+{
   if (instance.use_count()) {
     return instance.lock();
   }
@@ -133,7 +154,8 @@ Config::Ptr Config::get() {
   return result;
 }
 
-const ConfigValue &Config::setParameter(const std::string &name, ConfigValue &&value) {
+const ConfigValue &Config::setParameter(const std::string &name, ConfigValue &&value)
+{
   ParameterMap::const_iterator iter = priv.parameter_map.find(name);
 
   if (iter != priv.parameter_map.end()) {
@@ -143,7 +165,8 @@ const ConfigValue &Config::setParameter(const std::string &name, ConfigValue &&v
   return priv.parameter_map.emplace_hint(iter, std::make_pair(name, std::forward<ConfigValue>(value)))->second;
 }
 
-const ConfigValue &Config::getParameter(const std::string &name) const {
+const ConfigValue &Config::getParameter(const std::string &name) const
+{
   ParameterMap::const_iterator iter = priv.parameter_map.find(name);
 
   if (iter == priv.parameter_map.end()) {
@@ -153,7 +176,8 @@ const ConfigValue &Config::getParameter(const std::string &name) const {
   return iter->second;
 }
 
-const ConfigValue Config::getParameterFallback(const std::string &name, ConfigValue &&fallback) const {
+const ConfigValue Config::getParameterFallback(const std::string &name, ConfigValue &&fallback) const
+{
   try {
     return getParameter(name);
   } catch (ConfigAccessException &) {
@@ -161,7 +185,8 @@ const ConfigValue Config::getParameterFallback(const std::string &name, ConfigVa
   }
 }
 
-void Config::removeParameter(const std::string &name) {
+void Config::removeParameter(const std::string &name)
+{
   ParameterMap::const_iterator iter = priv.parameter_map.find(name);
 
   if (iter != priv.parameter_map.end()) {
@@ -169,19 +194,23 @@ void Config::removeParameter(const std::string &name) {
   }
 }
 
-void Config::clear() noexcept {
+void Config::clear() noexcept
+{
   priv.parameter_map.clear();
 }
 
-Config::ParameterMap::const_iterator Config::begin() const {
+Config::ParameterMap::const_iterator Config::begin() const
+{
   return priv.parameter_map.begin();
 }
 
-Config::ParameterMap::const_iterator Config::end() const {
+Config::ParameterMap::const_iterator Config::end() const
+{
   return priv.parameter_map.end();
 }
 
-void Config::load(const std::string &filename) {
+void Config::load(const std::string &filename)
+{
   YAML::Node file;
 
   try {
@@ -190,7 +219,8 @@ void Config::load(const std::string &filename) {
     throw ConfigParseException("Failed to load '" + filename + "'.");
   }
 
-  struct NodeInfo {
+  struct NodeInfo
+  {
     const std::string name;
     YAML::const_iterator iter;
     YAML::const_iterator end;

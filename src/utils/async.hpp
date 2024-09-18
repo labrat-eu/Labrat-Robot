@@ -20,12 +20,14 @@ inline namespace utils {
 
 /**
  * @brief Execution policy for callback functions.
- *  
+ *
  */
-enum class ExecutionPolicy {
+enum class ExecutionPolicy
+{
   /** Execution is performed within the same thread. Preferred for callbacks with a small computational cost. */
   serial,
-  /** A new thread will be created. This allows multiple callbacks to be executed concurrently. Preferred for callbacks with a large computational cost. */
+  /** A new thread will be created. This allows multiple callbacks to be executed concurrently. Preferred for callbacks with a large
+   * computational cost. */
   parallel,
 };
 

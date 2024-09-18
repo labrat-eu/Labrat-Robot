@@ -60,3 +60,9 @@ If you want to make the development version available to other conan projects on
 ```
 conan export-pkg .
 ```
+
+## Automatically format the code
+You may automatically format the code by running the following command.
+```
+clang-format -i --style=file:build/Debug/.clang-format src/*.cpp src/*.hpp src/**/*.cpp src/**/*.hpp
+```

@@ -23,7 +23,8 @@ namespace lbot {
  * @brief Generic exception class.
  *
  */
-class Exception : std::exception {
+class Exception : std::exception
+{
 public:
   /**
    * @brief Construct a new Exception object
@@ -110,67 +111,83 @@ protected:
   const std::string message;
 };
 
-class SystemException : public Exception {
+class SystemException : public Exception
+{
   using Exception::Exception;
 };
 
-class IoException : public Exception {
+class IoException : public Exception
+{
   using Exception::Exception;
 };
 
-class RuntimeException : public Exception {
+class RuntimeException : public Exception
+{
   using Exception::Exception;
 };
 
-class RuntimeRecursionException : public Exception {
+class RuntimeRecursionException : public Exception
+{
   using Exception::Exception;
 };
 
-class InvalidArgumentException : public Exception {
+class InvalidArgumentException : public Exception
+{
   using Exception::Exception;
 };
 
-class ManagementException : public Exception {
+class ManagementException : public Exception
+{
   using Exception::Exception;
 };
 
-class ClockException : public Exception {
+class ClockException : public Exception
+{
   using Exception::Exception;
 };
 
-class TopicNoDataAvailableException : public Exception {
+class TopicNoDataAvailableException : public Exception
+{
   using Exception::Exception;
 };
 
-class ServiceUnavailableException : public Exception {
+class ServiceUnavailableException : public Exception
+{
   using Exception::Exception;
 };
 
-class ServiceTimeoutException : public Exception {
+class ServiceTimeoutException : public Exception
+{
   using Exception::Exception;
 };
 
-class SerializationException : public Exception {
+class SerializationException : public Exception
+{
   using Exception::Exception;
 };
 
-class ConversionException : public Exception {
+class ConversionException : public Exception
+{
   using Exception::Exception;
 };
 
-class SchemaUnknownException : public Exception {
+class SchemaUnknownException : public Exception
+{
   using Exception::Exception;
 };
 
-class ConfigAccessException : public Exception {
+class ConfigAccessException : public Exception
+{
   using Exception::Exception;
 };
 
-class ConfigParseException : public Exception {
+class ConfigParseException : public Exception
+{
   using Exception::Exception;
 };
 
-class BadUsageException : public Exception {
+class BadUsageException : public Exception
+{
   using Exception::Exception;
 };
 
