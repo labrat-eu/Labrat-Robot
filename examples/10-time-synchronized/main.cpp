@@ -1,7 +1,7 @@
-#include <labrat/lbot/manager.hpp>
-#include <labrat/lbot/node.hpp>
 #include <labrat/lbot/config.hpp>
+#include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/msg/timesync.hpp>
+#include <labrat/lbot/node.hpp>
 #include <labrat/lbot/plugins/foxglove-ws/server.hpp>
 #include <labrat/lbot/plugins/mcap/recorder.hpp>
 #include <labrat/lbot/utils/signal.hpp>
@@ -15,9 +15,11 @@
 //
 // In this example we will showcase the synchronized time mode.
 
-class TimeNode : public lbot::Node {
+class TimeNode : public lbot::Node
+{
 public:
-  TimeNode() {
+  TimeNode()
+  {
     sender_response = addSender<lbot::Timesync>("/synchronized_time/response");
 
     receiver_request = addReceiver<const lbot::Timesync>("/synchronized_time/request");
@@ -25,14 +27,17 @@ public:
   }
 
 private:
-  static void callback(const lbot::Message<lbot::Timesync> &message_in, TimeNode *self) {
+  static void callback(const lbot::Message<lbot::Timesync> &message_in, TimeNode *self)
+  {
     const auto now = std::chrono::system_clock::now().time_since_epoch();
 
     lbot::Message<lbot::Timesync> message_out;
 
     message_out.request = std::make_unique<foxglove::Time>(*message_in.request);
-    message_out.response = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(now).count(),
-      (std::chrono::duration_cast<std::chrono::nanoseconds>(now) % std::chrono::seconds(1)).count());
+    message_out.response = std::make_unique<foxglove::Time>(
+      std::chrono::duration_cast<std::chrono::seconds>(now).count(),
+      (std::chrono::duration_cast<std::chrono::nanoseconds>(now) % std::chrono::seconds(1)).count()
+    );
 
     self->sender_response->put(message_out);
   }
@@ -41,14 +46,17 @@ private:
   Receiver<const lbot::Timesync>::Ptr receiver_request;
 };
 
-class ExampleNode : public lbot::Node {
+class ExampleNode : public lbot::Node
+{
 public:
-  ExampleNode() {
+  ExampleNode()
+  {
     thread = lbot::TimerThread(&ExampleNode::loopFunction, std::chrono::seconds(1), "sender_thread", 1, this);
   }
 
 private:
-  void loopFunction() {
+  void loopFunction()
+  {
     getLogger().logInfo() << "Test message (" << i++ << ")";
   }
 
@@ -57,7 +65,8 @@ private:
   uint64_t i = 0;
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   // Specify that we use an external time source.
   lbot::Config::Ptr config = lbot::Config::get();
   config->setParameter("/lbot/clock_mode", "synchronized");

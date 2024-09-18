@@ -1,7 +1,7 @@
-#include <labrat/lbot/manager.hpp>
-#include <labrat/lbot/node.hpp>
 #include <labrat/lbot/config.hpp>
+#include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/msg/timestamp.hpp>
+#include <labrat/lbot/node.hpp>
 #include <labrat/lbot/plugins/foxglove-ws/server.hpp>
 #include <labrat/lbot/plugins/mcap/recorder.hpp>
 #include <labrat/lbot/utils/signal.hpp>
@@ -15,15 +15,18 @@
 //
 // In this example we will showcase the stepped time mode.
 
-class TimeNode : public lbot::Node {
+class TimeNode : public lbot::Node
+{
 public:
-  TimeNode() {
+  TimeNode()
+  {
     sender_time = addSender<lbot::Timestamp>("/stepped_time/input");
     thread = lbot::LoopThread(&TimeNode::loopFunction, "time_thread", 1, this);
   }
 
 private:
-  void loopFunction() {
+  void loopFunction()
+  {
     lbot::Message<lbot::Timestamp> message;
     message.value = std::make_unique<foxglove::Time>(++i, 0);
     sender_time->put(message);
@@ -37,14 +40,17 @@ private:
   uint64_t i = 0;
 };
 
-class ExampleNode : public lbot::Node {
+class ExampleNode : public lbot::Node
+{
 public:
-  ExampleNode() {
+  ExampleNode()
+  {
     thread = lbot::TimerThread(&ExampleNode::loopFunction, std::chrono::seconds(1), "sender_thread", 1, this);
   }
 
 private:
-  void loopFunction() {
+  void loopFunction()
+  {
     getLogger().logInfo() << "Test message (" << i++ << ")";
   }
 
@@ -53,7 +59,8 @@ private:
   uint64_t i = 0;
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   // Specify that we use an external time source.
   lbot::Config::Ptr config = lbot::Config::get();
   config->setParameter("/lbot/clock_mode", "stepped");

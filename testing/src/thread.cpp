@@ -11,7 +11,8 @@
 inline namespace labrat {
 namespace lbot::test {
 
-void test_func(std::vector<int> vec, int *loop_count, std::atomic_bool *exit_flag) {
+void test_func(std::vector<int> vec, int *loop_count, std::atomic_bool *exit_flag)
+{
   EXPECT_EQ(vec.size(), 5);
 
   if (++(*loop_count) >= 10) {
@@ -20,9 +21,11 @@ void test_func(std::vector<int> vec, int *loop_count, std::atomic_bool *exit_fla
   }
 }
 
-class ThreadTest : public LbotTest {};
+class ThreadTest : public LbotTest
+{};
 
-TEST_F(ThreadTest, loop) {
+TEST_F(ThreadTest, loop)
+{
   std::vector<int> vec = {1, 2, 3, 4, 5};
   int loop_count = 0;
   std::atomic_bool exit_flag;
@@ -33,7 +36,8 @@ TEST_F(ThreadTest, loop) {
   }
 }
 
-TEST_F(ThreadTest, timer) {
+TEST_F(ThreadTest, timer)
+{
   lbot::Manager::Ptr manager = lbot::Manager::get();
 
   std::vector<int> vec = {1, 2, 3, 4, 5};

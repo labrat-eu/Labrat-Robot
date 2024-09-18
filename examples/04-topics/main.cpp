@@ -14,9 +14,11 @@
 // In this example we will construct two nodes, one to send messages and one to receive them.
 // Classes and code patterns are showcased.
 
-class SenderNode : public lbot::Node {
+class SenderNode : public lbot::Node
+{
 public:
-  SenderNode() {
+  SenderNode()
+  {
     // Register a sender on the topic with the name "/examples/numbers".
     // There can only be one sender per topic.
     // The type of this sender must match any previously registered receiver on the same topic.
@@ -26,7 +28,8 @@ public:
   }
 
 private:
-  void senderFunction() {
+  void senderFunction()
+  {
     // Construct a message.
     lbot::Message<examples::msg::Numbers> message;
     message.iteration = ++i;
@@ -42,9 +45,11 @@ private:
   uint64_t i = 0;
 };
 
-class ReceiverNode : public lbot::Node {
+class ReceiverNode : public lbot::Node
+{
 public:
-  ReceiverNode() {
+  ReceiverNode()
+  {
     // Register a receiver on the topic with the name "/examples/numbers".
     // The type of this receiver must match any previously registered sender and receiver on the same topic.
     receiver = addReceiver<lbot::Message<examples::msg::Numbers>>("/examples/numbers");
@@ -53,7 +58,8 @@ public:
   }
 
 private:
-  void receiverFunction() {
+  void receiverFunction()
+  {
     // Receiver::next() might throw an exception if no data is available.
     try {
       // Receive a message.
@@ -65,15 +71,15 @@ private:
       lbot::Message<examples::msg::Numbers> message = receiver->next();
 
       getLogger().logInfo() << "Received message: " << message.value;
-    } catch (lbot::TopicNoDataAvailableException &) {
-    }
+    } catch (lbot::TopicNoDataAvailableException &) {}
   }
 
   Receiver<lbot::Message<examples::msg::Numbers>>::Ptr receiver;
   lbot::LoopThread receiver_thread;
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   lbot::Logger logger("main");
   lbot::Manager::Ptr manager = lbot::Manager::get();
 

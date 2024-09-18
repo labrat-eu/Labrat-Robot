@@ -9,13 +9,16 @@
 inline namespace labrat {
 namespace lbot::test {
 
-static void testCallback(const Message<TestFlatbuffer> &message, int *num) {
+static void testCallback(const Message<TestFlatbuffer> &message, int *num)
+{
   ++(*num);
 }
 
-class MultisetupTest : public LbotTest {};
+class MultisetupTest : public LbotTest
+{};
 
-TEST_F(MultisetupTest, const_move) {
+TEST_F(MultisetupTest, const_move)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_sender(manager->addNode<TestNode>("node_sender"));

@@ -19,22 +19,27 @@
 //
 // In this example we will extend the 04-topics example to work with conversion functions.
 
-class ConversionMessage : public lbot::MessageBase<examples::msg::Number, float> {
+class ConversionMessage : public lbot::MessageBase<examples::msg::Number, float>
+{
 public:
   // Convert a number message to a float.
-  static void convertTo(const Storage &source, float &destination) {
+  static void convertTo(const Storage &source, float &destination)
+  {
     destination = source.value;
   }
 
   // Convert a float to a number message.
-  static void convertFrom(const float &source, Storage &destination) {
+  static void convertFrom(const float &source, Storage &destination)
+  {
     destination.value = source;
   }
 };
 
-class SenderNode : public lbot::Node {
+class SenderNode : public lbot::Node
+{
 public:
-  SenderNode() {
+  SenderNode()
+  {
     // Register a sender with the previously defined conversion function.
     sender = addSender<ConversionMessage>("/examples/number");
 
@@ -42,7 +47,8 @@ public:
   }
 
 private:
-  void senderFunction() {
+  void senderFunction()
+  {
     // Send the data directly without having to construct a message first.
     sender->put(std::sin(++i / 100.0));
   }
@@ -53,9 +59,11 @@ private:
   uint64_t i = 0;
 };
 
-class ReceiverNode : public lbot::Node {
+class ReceiverNode : public lbot::Node
+{
 public:
-  ReceiverNode() {
+  ReceiverNode()
+  {
     // Register a receiver with the previously defined conversion function.
     receiver = addReceiver<ConversionMessage>("/examples/number");
 
@@ -63,20 +71,21 @@ public:
   }
 
 private:
-  void receiverFunction() {
+  void receiverFunction()
+  {
     // Receiver::latest() might throw an exception if no data is available.
     try {
       // Process the data directly without having to deconstruct a message first.
       getLogger().logInfo() << "Received message: " << receiver->latest();
-    } catch (lbot::TopicNoDataAvailableException &) {
-    }
+    } catch (lbot::TopicNoDataAvailableException &) {}
   }
 
   Receiver<ConversionMessage>::Ptr receiver;
   lbot::TimerThread receiver_thread;
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   lbot::Logger logger("main");
   lbot::Manager::Ptr manager = lbot::Manager::get();
 

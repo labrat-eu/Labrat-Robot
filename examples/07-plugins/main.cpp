@@ -1,7 +1,7 @@
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/node.hpp>
-#include <labrat/lbot/plugins/linux/stats.hpp>
 #include <labrat/lbot/plugins/foxglove-ws/server.hpp>
+#include <labrat/lbot/plugins/linux/stats.hpp>
 #include <labrat/lbot/plugins/mcap/recorder.hpp>
 #include <labrat/lbot/utils/signal.hpp>
 #include <labrat/lbot/utils/thread.hpp>
@@ -13,7 +13,8 @@
 //
 // In this example we will use some existing plugins that might help you in your projects.
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   lbot::Logger logger("main");
   lbot::Manager::Ptr manager = lbot::Manager::get();
 

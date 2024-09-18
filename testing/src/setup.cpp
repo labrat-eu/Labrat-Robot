@@ -9,9 +9,11 @@
 inline namespace labrat {
 namespace lbot::test {
 
-class SetupTest : public LbotTest {};
+class SetupTest : public LbotTest
+{};
 
-TEST_F(SetupTest, latest) {
+TEST_F(SetupTest, latest)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -54,7 +56,8 @@ TEST_F(SetupTest, latest) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST_F(SetupTest, next) {
+TEST_F(SetupTest, next)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -123,7 +126,8 @@ TEST_F(SetupTest, next) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST_F(SetupTest, move) {
+TEST_F(SetupTest, move)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -159,7 +163,8 @@ TEST_F(SetupTest, move) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST_F(SetupTest, callback) {
+TEST_F(SetupTest, callback)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   TestContainer message_b;
@@ -189,7 +194,8 @@ TEST_F(SetupTest, callback) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST_F(SetupTest, server) {
+TEST_F(SetupTest, server)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));

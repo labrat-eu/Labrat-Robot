@@ -4,7 +4,8 @@
 //
 // Minimal sample program.
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   lbot::Logger logger("main");
   logger.logInfo() << "Hello world!";
 

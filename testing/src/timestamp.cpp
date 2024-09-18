@@ -8,13 +8,16 @@
 inline namespace labrat {
 namespace lbot::test {
 
-static void testCallback(const Message<TestFlatbuffer> &message, int *num) {
+static void testCallback(const Message<TestFlatbuffer> &message, int *num)
+{
   ++(*num);
 }
 
-class TimestampTest : public LbotTest {};
+class TimestampTest : public LbotTest
+{};
 
-TEST_F(TimestampTest, latest) {
+TEST_F(TimestampTest, latest)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_sender(manager->addNode<TestNode>("node_sender"));
@@ -39,7 +42,8 @@ TEST_F(TimestampTest, latest) {
   EXPECT_EQ(message_sender.getTimestamp(), message_b.getTimestamp());
 }
 
-TEST_F(TimestampTest, next) {
+TEST_F(TimestampTest, next)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_sender(manager->addNode<TestNode>("node_sender"));
@@ -64,7 +68,8 @@ TEST_F(TimestampTest, next) {
   EXPECT_EQ(message_sender.getTimestamp(), message_b.getTimestamp());
 }
 
-TEST_F(TimestampTest, move) {
+TEST_F(TimestampTest, move)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_sender(manager->addNode<TestNode>("node_sender"));

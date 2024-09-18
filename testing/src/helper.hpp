@@ -10,17 +10,21 @@
 inline namespace labrat {
 namespace lbot::test {
 
-class LbotTest : public ::testing::Test {
+class LbotTest : public ::testing::Test
+{
 protected:
-  virtual void SetUp() {
+  virtual void SetUp()
+  {
     lbotReset();
   }
 };
 
 template <typename... Args>
-class LbotTestWithParam : public ::testing::TestWithParam<Args ...> {
+class LbotTestWithParam : public ::testing::TestWithParam<Args...>
+{
 protected:
-  virtual void SetUp() {
+  virtual void SetUp()
+  {
     lbotReset();
   }
 };
@@ -46,40 +50,47 @@ static_assert(can_move_from<TestConstMessage>);
 static_assert(can_convert_to<TestConstMessage>);
 static_assert(can_move_to<TestConstMessage>);
 
-class TestContainer {
+class TestContainer
+{
 public:
   u64 integral_field = 0;
   double float_field = 0;
   std::vector<u8> buffer;
 
-  bool operator==(const TestContainer &rhs) const {
+  bool operator==(const TestContainer &rhs) const
+  {
     return (integral_field == rhs.integral_field) && (float_field == rhs.float_field) && (buffer == rhs.buffer);
   }
 };
 
-class TestMessageConv : public lbot::MessageBase<TestFlatbuffer, TestContainer> {
+class TestMessageConv : public lbot::MessageBase<TestFlatbuffer, TestContainer>
+{
 public:
   using Message = lbot::MessageBase<TestFlatbuffer, TestContainer>;
 
-  static void convertFrom(const TestContainer &source, Message &destination) {
+  static void convertFrom(const TestContainer &source, Message &destination)
+  {
     destination.integral_field = source.integral_field;
     destination.float_field = source.float_field;
     destination.buffer = source.buffer;
   }
 
-  static void moveFrom(TestContainer &&source, Message &destination) {
+  static void moveFrom(TestContainer &&source, Message &destination)
+  {
     destination.integral_field = source.integral_field;
     destination.float_field = source.float_field;
     destination.buffer = std::forward<std::vector<u8>>(source.buffer);
   }
 
-  static void convertTo(const Message &source, TestContainer &destination) {
+  static void convertTo(const Message &source, TestContainer &destination)
+  {
     destination.integral_field = source.integral_field;
     destination.float_field = source.float_field;
     destination.buffer = source.buffer;
   }
 
-  static void moveTo(Message &&source, TestContainer &destination) {
+  static void moveTo(Message &&source, TestContainer &destination)
+  {
     destination.integral_field = source.integral_field;
     destination.float_field = source.float_field;
     destination.buffer = std::forward<std::vector<u8>>(source.buffer);
@@ -92,32 +103,37 @@ static_assert(can_move_from<TestMessageConv>);
 static_assert(can_convert_to<TestMessageConv>);
 static_assert(can_move_to<TestMessageConv>);
 
-class TestMessageConvPtr : public lbot::MessageBase<TestFlatbuffer, TestContainer> {
+class TestMessageConvPtr : public lbot::MessageBase<TestFlatbuffer, TestContainer>
+{
 public:
   using Message = lbot::MessageBase<TestFlatbuffer, TestContainer>;
 
-  static void convertFrom(const TestContainer &source, Message &destination, bool *called) {
+  static void convertFrom(const TestContainer &source, Message &destination, bool *called)
+  {
     destination.integral_field = source.integral_field;
     destination.float_field = source.float_field;
     destination.buffer = source.buffer;
     *called = true;
   }
 
-  static void moveFrom(TestContainer &&source, Message &destination, bool *called) {
+  static void moveFrom(TestContainer &&source, Message &destination, bool *called)
+  {
     destination.integral_field = source.integral_field;
     destination.float_field = source.float_field;
     destination.buffer = std::forward<std::vector<u8>>(source.buffer);
     *called = true;
   }
 
-  static void convertTo(const Message &source, TestContainer &destination, bool *called) {
+  static void convertTo(const Message &source, TestContainer &destination, bool *called)
+  {
     destination.integral_field = source.integral_field;
     destination.float_field = source.float_field;
     destination.buffer = source.buffer;
     *called = true;
   }
 
-  static void moveTo(Message &&source, TestContainer &destination, bool *called) {
+  static void moveTo(Message &&source, TestContainer &destination, bool *called)
+  {
     destination.integral_field = source.integral_field;
     destination.float_field = source.float_field;
     destination.buffer = std::forward<std::vector<u8>>(source.buffer);
@@ -131,15 +147,19 @@ static_assert(can_move_from<TestMessageConvPtr>);
 static_assert(can_convert_to<TestMessageConvPtr>);
 static_assert(can_move_to<TestMessageConvPtr>);
 
-class TestUniqueNode : public lbot::UniqueNode {
+class TestUniqueNode : public lbot::UniqueNode
+{
 public:
-  TestUniqueNode() : lbot::UniqueNode("test_node") {}
+  TestUniqueNode() :
+    lbot::UniqueNode("test_node")
+  {}
 };
 
-class TestNode : public lbot::Node {
+class TestNode : public lbot::Node
+{
 public:
-  TestNode(const std::string &sender_topic = "", const std::string &receiver_topic = "",
-    int buffer_size = 10) {
+  TestNode(const std::string &sender_topic = "", const std::string &receiver_topic = "", int buffer_size = 10)
+  {
     if (!sender_topic.empty()) {
       sender = addSender<TestMessageConv>(sender_topic);
     }
@@ -148,8 +168,8 @@ public:
     }
   }
 
-  TestNode(const std::string &sender_topic, const std::string &receiver_topic,
-    void *sender_ptr, void *receiver_ptr, int buffer_size = 10) {
+  TestNode(const std::string &sender_topic, const std::string &receiver_topic, void *sender_ptr, void *receiver_ptr, int buffer_size = 10)
+  {
     if (!sender_topic.empty()) {
       sender_p = addSender<TestMessageConvPtr>(sender_topic, sender_ptr);
     }
@@ -170,15 +190,19 @@ public:
   Receiver<TestMessageConvPtr>::Ptr receiver_p;
 };
 
-class TestUniquePlugin : public lbot::UniquePlugin {
+class TestUniquePlugin : public lbot::UniquePlugin
+{
 public:
-  TestUniquePlugin() : lbot::UniquePlugin("test_plugin") {
+  TestUniquePlugin() :
+    lbot::UniquePlugin("test_plugin")
+  {
     addNode<TestNode>("node_a", "main", "void");
     addNode<TestNode>("node_b", "void", "main");
   }
 };
 
-class TestPlugin : public lbot::Plugin {
+class TestPlugin : public lbot::Plugin
+{
 public:
   TestPlugin() = default;
 };

@@ -11,9 +11,11 @@
 //
 // This example showcases helper classes to make working with threads easier.
 
-class PrimeNode : public lbot::Node {
+class PrimeNode : public lbot::Node
+{
 public:
-  PrimeNode() {
+  PrimeNode()
+  {
     // Create two threads, one to continuously calculate prime numbers, and one to output the status every second.
 
     // The lbot::LoopThread class will create a new thread that calls the provided function continuously.
@@ -29,7 +31,8 @@ public:
 
 private:
   // Will be called continuously.
-  void loopFunction() {
+  void loopFunction()
+  {
     ++i;
 
     for (uint64_t j = 2; j < std::sqrt(i); ++j) {
@@ -42,7 +45,8 @@ private:
   }
 
   // Will be called every second.
-  void timerFunction() {
+  void timerFunction()
+  {
     getLogger().logInfo() << "The highest prime so far is: " << max_prime;
   }
 
@@ -54,7 +58,8 @@ private:
   uint64_t i = 2;
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   lbot::Logger logger("main");
   lbot::Manager::Ptr manager = lbot::Manager::get();
 

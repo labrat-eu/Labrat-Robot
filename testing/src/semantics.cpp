@@ -9,9 +9,11 @@
 inline namespace labrat {
 namespace lbot::test {
 
-class SemanticsTest : public LbotTest {};
+class SemanticsTest : public LbotTest
+{};
 
-TEST_F(SemanticsTest, DISABLED_sender) {
+TEST_F(SemanticsTest, DISABLED_sender)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
@@ -37,7 +39,8 @@ static void callbackFuncNoPtr(const TestMessage &) {}
 static void callbackFuncConv(const TestContainer &, int *) {}
 static void callbackFuncConvNoPtr(const TestContainer &) {}
 
-TEST_F(SemanticsTest, DISABLED_receiver) {
+TEST_F(SemanticsTest, DISABLED_receiver)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
@@ -64,12 +67,25 @@ TEST_F(SemanticsTest, DISABLED_receiver) {
   receiver_d->setCallback(&callbackFuncConvNoPtr);
 }
 
-static TestMessage handlerFunc(const TestMessage &, int *) {return{};}
-static TestMessage handlerFuncNoPtr(const TestMessage &) {return{};}
-static TestContainer handlerFuncConv(const TestContainer &, int *) {return{};}
-static TestContainer handlerFuncConvNoPtr(const TestContainer &) {return{};}
+static TestMessage handlerFunc(const TestMessage &, int *)
+{
+  return {};
+}
+static TestMessage handlerFuncNoPtr(const TestMessage &)
+{
+  return {};
+}
+static TestContainer handlerFuncConv(const TestContainer &, int *)
+{
+  return {};
+}
+static TestContainer handlerFuncConvNoPtr(const TestContainer &)
+{
+  return {};
+}
 
-TEST_F(SemanticsTest, DISABLED_server) {
+TEST_F(SemanticsTest, DISABLED_server)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));
@@ -90,7 +106,8 @@ TEST_F(SemanticsTest, DISABLED_server) {
   server_f->setHandler(handlerFuncConvNoPtr);
 }
 
-TEST_F(SemanticsTest, DISABLED_client) {
+TEST_F(SemanticsTest, DISABLED_client)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node(manager->addNode<TestNode>("node"));

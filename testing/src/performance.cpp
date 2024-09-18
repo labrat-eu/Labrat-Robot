@@ -9,14 +9,17 @@
 inline namespace labrat {
 namespace lbot::test {
 
-struct MessageSize {
+struct MessageSize
+{
   const u64 limit;
   const u64 size;
 };
 
-class PerformanceTest : public LbotTestWithParam<MessageSize> {};
+class PerformanceTest : public LbotTestWithParam<MessageSize>
+{};
 
-TEST_P(PerformanceTest, put) {
+TEST_P(PerformanceTest, put)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -25,7 +28,7 @@ TEST_P(PerformanceTest, put) {
   TestContainer message_a;
   message_a.buffer.resize(GetParam().size);
 
-  for (u64 i = 1; i <=GetParam().limit; ++i) {
+  for (u64 i = 1; i <= GetParam().limit; ++i) {
     message_a.integral_field = i;
 
     node_a->sender->put(message_a);
@@ -33,7 +36,7 @@ TEST_P(PerformanceTest, put) {
 
   TestContainer message_b = node_b->receiver->latest();
 
-  EXPECT_EQ(message_b.integral_field,GetParam().limit);
+  EXPECT_EQ(message_b.integral_field, GetParam().limit);
 
   node_a = std::shared_ptr<TestNode>();
   ASSERT_NO_THROW(manager->removeNode("node_a"));
@@ -41,7 +44,8 @@ TEST_P(PerformanceTest, put) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST_P(PerformanceTest, latest) {
+TEST_P(PerformanceTest, latest)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -55,7 +59,7 @@ TEST_P(PerformanceTest, latest) {
 
   TestContainer message_b;
 
-  for (u64 i = 0; i <GetParam().limit; ++i) {
+  for (u64 i = 0; i < GetParam().limit; ++i) {
     message_b = node_b->receiver->latest();
   }
 
@@ -67,7 +71,8 @@ TEST_P(PerformanceTest, latest) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST_P(PerformanceTest, next) {
+TEST_P(PerformanceTest, next)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -79,7 +84,7 @@ TEST_P(PerformanceTest, next) {
 
   TestContainer message_b;
 
-  for (u64 i = 0; i <GetParam().limit; ++i) {
+  for (u64 i = 0; i < GetParam().limit; ++i) {
     node_a->sender->put(message_a);
     message_b = node_b->receiver->next();
   }
@@ -92,7 +97,8 @@ TEST_P(PerformanceTest, next) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST_P(PerformanceTest, callback) {
+TEST_P(PerformanceTest, callback)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -111,7 +117,7 @@ TEST_P(PerformanceTest, callback) {
 
   node_b->receiver->setCallback(callback, &message_b);
 
-  for (u64 i = 0; i <GetParam().limit; ++i) {
+  for (u64 i = 0; i < GetParam().limit; ++i) {
     node_a->sender->put(message_a);
   }
 
@@ -123,7 +129,8 @@ TEST_P(PerformanceTest, callback) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST_P(PerformanceTest, callback_parallel) {
+TEST_P(PerformanceTest, callback_parallel)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -142,7 +149,7 @@ TEST_P(PerformanceTest, callback_parallel) {
 
   node_b->receiver->setCallback(callback, &message_b, lbot::ExecutionPolicy::parallel);
 
-  for (u64 i = 0; i <GetParam().limit; ++i) {
+  for (u64 i = 0; i < GetParam().limit; ++i) {
     node_a->sender->put(message_a);
   }
 
@@ -154,7 +161,8 @@ TEST_P(PerformanceTest, callback_parallel) {
   ASSERT_NO_THROW(manager->removeNode("node_b"));
 }
 
-TEST_P(PerformanceTest, callback_multi) {
+TEST_P(PerformanceTest, callback_multi)
+{
   labrat::lbot::Manager::Ptr manager = labrat::lbot::Manager::get();
 
   std::shared_ptr<TestNode> node_a(manager->addNode<TestNode>("node_a", "main", "void"));
@@ -179,7 +187,7 @@ TEST_P(PerformanceTest, callback_multi) {
   node_c->receiver->setCallback(callback, &message_c, lbot::ExecutionPolicy::parallel);
   node_d->receiver->setCallback(callback, &message_d, lbot::ExecutionPolicy::parallel);
 
-  for (u64 i = 0; i <GetParam().limit; ++i) {
+  for (u64 i = 0; i < GetParam().limit; ++i) {
     node_a->sender->put(message_a);
   }
 
@@ -197,10 +205,11 @@ TEST_P(PerformanceTest, callback_multi) {
   ASSERT_NO_THROW(manager->removeNode("node_d"));
 }
 
-INSTANTIATE_TEST_SUITE_P(performance, PerformanceTest, testing::Values(
-  MessageSize{.limit = 100000, .size = 1},
-  MessageSize{.limit = 1000, .size = 10000000}),
-  [](const testing::TestParamInfo<PerformanceTest::ParamType>& info) {
+INSTANTIATE_TEST_SUITE_P(
+  performance,
+  PerformanceTest,
+  testing::Values(MessageSize{.limit = 100000, .size = 1}, MessageSize{.limit = 1000, .size = 10000000}),
+  [](const testing::TestParamInfo<PerformanceTest::ParamType> &info) {
     if (info.param.size == 1) {
       return "small";
     } else {

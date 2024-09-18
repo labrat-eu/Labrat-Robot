@@ -1,11 +1,12 @@
-#include <helper.hpp>
-
 #include <labrat/lbot/manager.hpp>
+
+#include <helper.hpp>
 
 inline namespace labrat {
 namespace lbot::test {
 
-void lbotReset() {
+void lbotReset()
+{
   if (lbot::Manager::instance.expired()) {
     lbot::Manager::instance.reset();
   }
@@ -13,5 +14,5 @@ void lbotReset() {
   lbot::Manager::instance_flag = true;
 }
 
-}
-}
+}  // namespace lbot::test
+}  // namespace labrat

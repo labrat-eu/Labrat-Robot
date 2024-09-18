@@ -8,7 +8,8 @@
 //
 // This example showcases the logging system.
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   // First we create a logger object.
   lbot::Logger logger("main");
 
@@ -35,8 +36,7 @@ int main(int argc, char **argv) {
   // Exceptions are also printed through the logging system.
   try {
     throw lbot::Exception("Something went wrong.");
-  } catch (lbot::Exception &e) {
-  }
+  } catch (lbot::Exception &e) {}
 
   return 0;
 }

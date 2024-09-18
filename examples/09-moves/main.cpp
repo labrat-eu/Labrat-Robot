@@ -21,32 +21,39 @@
 //
 // In this example we will extend the 08-conversions example to work with move functions.
 
-class ConversionMessage : public lbot::MessageBase<examples::msg::Array, std::vector<float>> {
+class ConversionMessage : public lbot::MessageBase<examples::msg::Array, std::vector<float>>
+{
 public:
   // Convert an array message to a vector.
-  static void convertTo(const Storage &source, std::vector<float> &destination) {
+  static void convertTo(const Storage &source, std::vector<float> &destination)
+  {
     destination = source.values;
   }
 
   // Convert a vector to an array message.
-  static void convertFrom(const std::vector<float> &source, Storage &destination) {
+  static void convertFrom(const std::vector<float> &source, Storage &destination)
+  {
     destination.values = source;
   }
 
   // Move an array message to a vector.
-  static void moveTo(Storage &&source, std::vector<float> &destination) {
+  static void moveTo(Storage &&source, std::vector<float> &destination)
+  {
     destination = std::forward<std::vector<float>>(source.values);
   }
 
   // Move a vector to an array message.
-  static void moveFrom(std::vector<float> &&source, Storage &destination) {
+  static void moveFrom(std::vector<float> &&source, Storage &destination)
+  {
     destination.values = std::forward<std::vector<float>>(source);
   }
 };
 
-class SenderNode : public lbot::Node {
+class SenderNode : public lbot::Node
+{
 public:
-  SenderNode() {
+  SenderNode()
+  {
     // Register a sender with the previously defined move function.
     sender = addSender<examples::msg::Array>("/examples/vector");
 
@@ -54,7 +61,8 @@ public:
   }
 
 private:
-  void senderFunction() {
+  void senderFunction()
+  {
     lbot::Message<examples::msg::Array> message;
     message.values.resize(10000000L);
 
@@ -75,9 +83,11 @@ private:
   lbot::TimerThread sender_thread;
 };
 
-class ReceiverNode : public lbot::Node {
+class ReceiverNode : public lbot::Node
+{
 public:
-  ReceiverNode() {
+  ReceiverNode()
+  {
     // Register a receiver with the previously defined move function.
     receiver = addReceiver<ConversionMessage>("/examples/vector");
 
@@ -85,7 +95,8 @@ public:
   }
 
 private:
-  void receiverFunction() {
+  void receiverFunction()
+  {
     // Receiver::next() might throw an exception if the topic has been flushed.
     try {
       std::vector<float> data;
@@ -96,15 +107,15 @@ private:
       }
 
       getLogger().logInfo() << "Received vector of size: " << data.size();
-    } catch (lbot::TopicNoDataAvailableException &) {
-    }
+    } catch (lbot::TopicNoDataAvailableException &) {}
   }
 
   Receiver<ConversionMessage>::Ptr receiver;
   lbot::TimerThread receiver_thread;
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   lbot::Logger::setLogLevel(lbot::Logger::Verbosity::debug);
 
   lbot::Logger logger("main");

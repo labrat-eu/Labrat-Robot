@@ -15,9 +15,11 @@
 // In this example we will construct two nodes, one to send requests and one to answer them.
 // Classes and code patterns are showcased.
 
-class ServerNode : public lbot::Node {
+class ServerNode : public lbot::Node
+{
 public:
-  ServerNode() {
+  ServerNode()
+  {
     // Register a server on the service with the name "/examples/power" and the handler ServerNode::handleRequest().
     // There can only be one server per service.
     // The type of this server must match any previously registered client on the same service.
@@ -28,7 +30,8 @@ public:
 private:
   // When a request has been made, this function will be called to respond.
   // Handler functions must be static.
-  static lbot::Message<examples::msg::Response> handleRequest(const lbot::Message<examples::msg::Request> &request) {
+  static lbot::Message<examples::msg::Response> handleRequest(const lbot::Message<examples::msg::Request> &request)
+  {
     // Construct a response message.
     lbot::Message<examples::msg::Response> response;
     response.result = std::pow(request.base, request.exponent);
@@ -42,9 +45,11 @@ private:
   Server<examples::msg::Request, examples::msg::Response>::Ptr server;
 };
 
-class ClientNode : public lbot::Node {
+class ClientNode : public lbot::Node
+{
 public:
-  ClientNode() {
+  ClientNode()
+  {
     // Register a client on the service with the name "/examples/power".
     // The type of this client must match any previously registered server or client on the same service.
     client = addClient<examples::msg::Request, examples::msg::Response>("/examples/power");
@@ -53,7 +58,8 @@ public:
   }
 
 private:
-  void clientFunction() {
+  void clientFunction()
+  {
     // Construct a request message.
     lbot::Message<examples::msg::Request> request;
     request.base = 2;
@@ -80,7 +86,8 @@ private:
   float e = 0;
 };
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   lbot::Logger logger("main");
   lbot::Manager::Ptr manager = lbot::Manager::get();
 

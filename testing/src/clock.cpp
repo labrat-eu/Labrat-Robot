@@ -1,15 +1,15 @@
 #include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/config.hpp>
-#include <labrat/lbot/manager.hpp>
-#include <labrat/lbot/node.hpp>
 #include <labrat/lbot/exception.hpp>
-#include <labrat/lbot/utils/condition.hpp>
-#include <labrat/lbot/utils/thread.hpp>
+#include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/msg/timestamp.hpp>
 #include <labrat/lbot/msg/timesync.hpp>
+#include <labrat/lbot/node.hpp>
+#include <labrat/lbot/utils/condition.hpp>
+#include <labrat/lbot/utils/thread.hpp>
 
-#include <mutex>
 #include <chrono>
+#include <mutex>
 #include <thread>
 #include <vector>
 
@@ -20,22 +20,30 @@
 inline namespace labrat {
 namespace lbot::test {
 
-class TimeMessage : public MessageBase<labrat::lbot::Timestamp, lbot::Clock::time_point> {
+class TimeMessage : public MessageBase<labrat::lbot::Timestamp, lbot::Clock::time_point>
+{
 public:
-  static void convertFrom(const Converted &source, Storage &destination) {
+  static void convertFrom(const Converted &source, Storage &destination)
+  {
     const lbot::Clock::duration duration = source.time_since_epoch();
-    destination.value = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(duration).count(),
-      (duration % std::chrono::seconds(1)).count());
+    destination.value = std::make_unique<foxglove::Time>(
+      std::chrono::duration_cast<std::chrono::seconds>(duration).count(), (duration % std::chrono::seconds(1)).count()
+    );
   }
 
-  static void convertTo(const Storage &source, Converted &destination) {
-    destination = lbot::Clock::time_point(std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::seconds(source.value->sec()) + std::chrono::nanoseconds(source.value->nsec())));
+  static void convertTo(const Storage &source, Converted &destination)
+  {
+    destination = lbot::Clock::time_point(std::chrono::duration_cast<std::chrono::nanoseconds>(
+      std::chrono::seconds(source.value->sec()) + std::chrono::nanoseconds(source.value->nsec())
+    ));
   }
 };
 
-class SynchronizedTimeNode : public lbot::Node {
+class SynchronizedTimeNode : public lbot::Node
+{
 public:
-  SynchronizedTimeNode() {
+  SynchronizedTimeNode()
+  {
     sender_response = addSender<lbot::Timesync>("/synchronized_time/response");
 
     receiver_request = addReceiver<const lbot::Timesync>("/synchronized_time/request");
@@ -43,14 +51,17 @@ public:
   }
 
 private:
-  static void callback(const lbot::Message<lbot::Timesync> &message_in, SynchronizedTimeNode *self) {
+  static void callback(const lbot::Message<lbot::Timesync> &message_in, SynchronizedTimeNode *self)
+  {
     const auto now = std::chrono::system_clock::now().time_since_epoch();
 
     lbot::Message<lbot::Timesync> message_out;
 
     message_out.request = std::make_unique<foxglove::Time>(*message_in.request);
-    message_out.response = std::make_unique<foxglove::Time>(std::chrono::duration_cast<std::chrono::seconds>(now).count(),
-      (std::chrono::duration_cast<std::chrono::nanoseconds>(now) % std::chrono::seconds(1)).count());
+    message_out.response = std::make_unique<foxglove::Time>(
+      std::chrono::duration_cast<std::chrono::seconds>(now).count(),
+      (std::chrono::duration_cast<std::chrono::nanoseconds>(now) % std::chrono::seconds(1)).count()
+    );
 
     self->sender_response->put(message_out);
   }
@@ -59,18 +70,22 @@ private:
   Receiver<const lbot::Timesync>::Ptr receiver_request;
 };
 
-class SteppedTimeNode : public UniqueNode {
+class SteppedTimeNode : public UniqueNode
+{
 public:
-  SteppedTimeNode() {
+  SteppedTimeNode()
+  {
     sender = addSender<TimeMessage>("/stepped_time/input");
   }
 
-  void updateTime(lbot::Clock::time_point time) {
+  void updateTime(lbot::Clock::time_point time)
+  {
     sender->put(time);
   }
 
-  void updateTimeAsync(lbot::Clock::time_point time, std::chrono::milliseconds duration) {
-    threads.emplace_back([&](lbot::Clock::time_point time, std::chrono::milliseconds duration){
+  void updateTimeAsync(lbot::Clock::time_point time, std::chrono::milliseconds duration)
+  {
+    threads.emplace_back([&](lbot::Clock::time_point time, std::chrono::milliseconds duration) {
       std::this_thread::sleep_for(duration);
       sender->put(time);
     }, time, duration);
@@ -81,17 +96,19 @@ private:
   std::vector<std::jthread> threads;
 };
 
-class ClockTest : public LbotTestWithParam<std::string> {};
+class ClockTest : public LbotTestWithParam<std::string>
+{};
 
-TEST_P(ClockTest, setup) {
+TEST_P(ClockTest, setup)
+{
   lbot::Config::Ptr config = lbot::Config::get();
   config->setParameter("/lbot/clock_mode", GetParam());
 
   ASSERT_FALSE(lbot::Clock::initialized());
   EXPECT_EQ(lbot::Clock::now(), lbot::Clock::time_point());
-  
+
   lbot::Manager::Ptr manager = lbot::Manager::get();
-  
+
   if (GetParam() == "synchronized") {
     ASSERT_FALSE(lbot::Clock::initialized());
 
@@ -104,10 +121,11 @@ TEST_P(ClockTest, setup) {
 
     Clock::waitUntilInitialized();
     ASSERT_TRUE(lbot::Clock::initialized());
-    
+
     lbot::Clock::time_point t3 = lbot::Clock::now();
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    lbot::Clock::time_point t4 = lbot::Clock::time_point(std::chrono::duration_cast<lbot::Clock::duration>(std::chrono::system_clock::now().time_since_epoch()));
+    lbot::Clock::time_point t4 =
+      lbot::Clock::time_point(std::chrono::duration_cast<lbot::Clock::duration>(std::chrono::system_clock::now().time_since_epoch()));
     std::this_thread::sleep_for(std::chrono::milliseconds(20));
     lbot::Clock::time_point t5 = lbot::Clock::now();
 
@@ -147,7 +165,8 @@ TEST_P(ClockTest, setup) {
   }
 }
 
-TEST_P(ClockTest, sleep) {
+TEST_P(ClockTest, sleep)
+{
   lbot::Config::Ptr config = lbot::Config::get();
   config->setParameter("/lbot/clock_mode", GetParam());
   lbot::Manager::Ptr manager = lbot::Manager::get();
@@ -234,7 +253,8 @@ TEST_P(ClockTest, sleep) {
   thread_b.join();
 }
 
-TEST_P(ClockTest, condition) {
+TEST_P(ClockTest, condition)
+{
   lbot::Config::Ptr config = lbot::Config::get();
   config->setParameter("/lbot/clock_mode", GetParam());
   lbot::Manager::Ptr manager = lbot::Manager::get();

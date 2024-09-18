@@ -7,9 +7,11 @@
 inline namespace labrat {
 namespace lbot::test {
 
-class ConfigTest : public LbotTest {};
+class ConfigTest : public LbotTest
+{};
 
-TEST_F(ConfigTest, parse) {
+TEST_F(ConfigTest, parse)
+{
   lbot::Config::Ptr config = lbot::Config::get();
 
   ASSERT_NO_THROW(config->load("../../data/test_config.yaml"));

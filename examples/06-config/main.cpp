@@ -9,7 +9,8 @@
 //
 // In this example the central configuration class is showcased.
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   lbot::Config::Ptr config = lbot::Config::get();
   config->load("06-config/config.yaml");
 
