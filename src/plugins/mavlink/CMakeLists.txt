@@ -250,7 +250,7 @@ set(TARGET_MESSAGES
 )
 
 add_library(${TARGET_NAME} OBJECT ${TARGET_HEADERS} ${TARGET_SOURCES})
-target_sources(lbot_plugins PRIVATE $<TARGET_OBJECTS:${TARGET_NAME}>)
+target_link_libraries(lbot_plugins PUBLIC ${TARGET_NAME})
 
 # Set library properties.
 set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
