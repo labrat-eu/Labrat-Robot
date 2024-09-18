@@ -1,6 +1,7 @@
 stages:
   - setup
   - build
+  - quality
   - test
   - deploy
 
@@ -116,6 +117,15 @@ build:clang-18:
   <<: *init-clang
   script:
     - *build-generic
+
+format:clang-18:
+  stage: quality
+  needs: ["build:clang-18"]
+  image: $CI_REGISTRY_IMAGE:clang-18
+  dependencies: ["build:clang-18"]
+  <<: *init-clang
+  script:
+    - clang-format-18 -n -Werror --style=file:build/Debug/.clang-format src/**.cpp src/**.hpp
 
 test:clang-18:
   stage: test
