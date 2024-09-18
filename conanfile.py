@@ -75,7 +75,7 @@ class LbotConan(ConanFile):
         if self.options.system_deps:
             return
 
-        self.requires("flatbuffers/[>=23.5.26]")
+        self.requires("flatbuffers/[>=23.5.26]", transitive_headers=True)
         self.requires("yaml-cpp/[>=0.8.0]")
 
         if self.options.plugins:
