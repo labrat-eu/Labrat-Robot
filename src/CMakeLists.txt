@@ -4,6 +4,10 @@ cmake_minimum_required(VERSION 3.22.0)
 find_package(flatbuffers MODULE REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
+if (NOT TARGET flatbuffers::flatbuffers)
+  add_library(flatbuffers::flatbuffers ALIAS flatbuffers::flatbuffers_shared)
+endif()
+
 # Set the target name from the project name.
 set(TARGET_NAME ${LOCAL_PROJECT_NAME}_core)
 
