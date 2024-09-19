@@ -24,7 +24,8 @@ class McapRecorderPrivate;
  * @brief Class to register a plugin to the manager that will record messages into an MCAP file.
  *
  */
-class McapRecorder : public UniquePlugin {
+class McapRecorder : public UniquePlugin
+{
 public:
   /**
    * @brief Construct a new Mcap Recorder object.

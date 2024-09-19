@@ -12,16 +12,17 @@
 #include <labrat/lbot/message.hpp>
 #include <labrat/lbot/node.hpp>
 
-#include <span>
 #include <forward_list>
 #include <memory>
+#include <span>
 
 /** @cond INTERNAL */
 inline namespace labrat {
 /** @endcond */
 namespace lbot::plugins {
 
-class SerialBridge final : public Plugin {
+class SerialBridge final : public Plugin
+{
 public:
   /**
    * @brief Construct a new Serial Bridge object.
@@ -39,7 +40,8 @@ public:
    * @param topic_name Name of the topic.
    */
   template <typename MessageType>
-  void registerSender(const std::string topic_name) {
+  void registerSender(const std::string topic_name)
+  {
     node->registerSender<MessageType>(topic_name);
   }
 
@@ -50,7 +52,8 @@ public:
    * @param topic_name Name of the topic.
    */
   template <typename MessageType>
-  void registerReceiver(const std::string topic_name) {
+  void registerReceiver(const std::string topic_name)
+  {
     node->registerReceiver<MessageType>(topic_name);
   }
 
@@ -62,23 +65,29 @@ private:
    * It will forward to and receive from the peer system.
    *
    */
-  class Node final : public lbot::Node {
+  class Node final : public lbot::Node
+  {
   private:
-    struct PayloadInfo {
+    struct PayloadInfo
+    {
       std::size_t topic_hash;
       flatbuffers::span<u8> payload;
     };
 
     template <typename T>
-    requires is_flatbuffer<T> struct PayloadMessage : public MessageBase<T, PayloadInfo> {
+    requires is_flatbuffer<T>
+    struct PayloadMessage : public MessageBase<T, PayloadInfo>
+    {
       std::size_t topic_hash;
       flatbuffers::span<u8> payload;
 
-      static void convertFrom(const PayloadInfo &source, MessageBase<T, PayloadInfo> &destination) {
+      static void convertFrom(const PayloadInfo &source, MessageBase<T, PayloadInfo> &destination)
+      {
         flatbuffers::GetRoot<T>(source.payload.data())->UnPackTo(&destination);
       }
 
-      static void convertTo(const MessageBase<T, PayloadInfo> &source, PayloadInfo &destination, const TopicInfo *topic_info) {
+      static void convertTo(const MessageBase<T, PayloadInfo> &source, PayloadInfo &destination, const TopicInfo *topic_info)
+      {
         destination.topic_hash = topic_info->topic_hash;
 
         flatbuffers::FlatBufferBuilder builder;
@@ -105,7 +114,8 @@ private:
      * @param topic_name Name of the topic.
      */
     template <typename MessageType>
-    void registerSender(const std::string topic_name) {
+    void registerSender(const std::string topic_name)
+    {
       registerGenericSender(addSender<PayloadMessage<MessageType>>(topic_name));
     }
 
@@ -117,9 +127,11 @@ private:
      */
     template <typename FlatbufferType>
     requires is_flatbuffer<FlatbufferType>
-    void registerReceiver(const std::string topic_name) {
+    void registerReceiver(const std::string topic_name)
+    {
       TopicInfo *topic_info = &topic_infos.emplace_front(TopicInfo::get<PayloadMessage<FlatbufferType>>(topic_name));
-      typename Node::Receiver<PayloadMessage<FlatbufferType>>::Ptr receiver = addReceiver<PayloadMessage<FlatbufferType>>(topic_name, topic_info);
+      typename Node::Receiver<PayloadMessage<FlatbufferType>>::Ptr receiver =
+        addReceiver<PayloadMessage<FlatbufferType>>(topic_name, topic_info);
       receiver->setCallback(&Node::receiverCallback, priv);
 
       registerGenericReceiver(std::move(receiver));

@@ -6,8 +6,8 @@
  *
  */
 
-#include <labrat/lbot/message.hpp>
 #include <labrat/lbot/exception.hpp>
+#include <labrat/lbot/message.hpp>
 #include <labrat/lbot/node.hpp>
 #include <labrat/lbot/plugins/linux/msg/cpu.hpp>
 #include <labrat/lbot/plugins/linux/msg/disks.hpp>
@@ -16,15 +16,15 @@
 #include <labrat/lbot/plugins/linux/stats.hpp>
 #include <labrat/lbot/utils/thread.hpp>
 
+#include <charconv>
+#include <cmath>
+#include <filesystem>
+#include <forward_list>
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <unordered_set>
 #include <unordered_map>
-#include <forward_list>
-#include <charconv>
-#include <filesystem>
-#include <cmath> 
+#include <unordered_set>
 
 #include <linux/version.h>
 #include <sys/statvfs.h>
@@ -32,7 +32,8 @@
 inline namespace labrat {
 namespace lbot::plugins {
 
-struct CpuRawCounters {
+struct CpuRawCounters
+{
   uint64_t user_time;
   uint64_t nice_time;
   uint64_t system_time;
@@ -44,7 +45,8 @@ struct CpuRawCounters {
   uint64_t guest;
   uint64_t guest_nice;
 
-  CpuRawCounters operator-(const CpuRawCounters &rhs) const {
+  CpuRawCounters operator-(const CpuRawCounters &rhs) const
+  {
     return CpuRawCounters{
       user_time - rhs.user_time,
       nice_time - rhs.nice_time,
@@ -60,11 +62,13 @@ struct CpuRawCounters {
   }
 };
 
-struct ProcessRawCounters {
+struct ProcessRawCounters
+{
   uint64_t user_time;
   uint64_t system_time;
 
-  ProcessRawCounters operator-(const ProcessRawCounters &rhs) const {
+  ProcessRawCounters operator-(const ProcessRawCounters &rhs) const
+  {
     return ProcessRawCounters{
       user_time - rhs.user_time,
       system_time - rhs.system_time,
@@ -72,7 +76,8 @@ struct ProcessRawCounters {
   }
 };
 
-inline ProcessState charToProcessState(char c) {
+inline ProcessState charToProcessState(char c)
+{
   switch (c) {
     case 'R': {
       return ProcessState::Running;
@@ -89,22 +94,22 @@ inline ProcessState charToProcessState(char c) {
     case 'T': {
       return ProcessState::Stopped;
     }
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 33)
     case 't': {
       return ProcessState::Tracing;
     }
 #endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0)
     case 'W': {
       return ProcessState::Paging;
     }
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0)
     case 'X': {
       return ProcessState::Dead;
     }
 #endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,13,0) && LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 13, 0) && LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 33)
     case 'x': {
       return ProcessState::Dead;
     }
@@ -115,12 +120,12 @@ inline ProcessState charToProcessState(char c) {
       return ProcessState::Waking;
     }
 #endif
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3,13,0) && LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 13, 0) && LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0)
     case 'P': {
       return ProcessState::Parked;
     }
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
     case 'I': {
       return ProcessState::Idle;
     }
@@ -131,7 +136,8 @@ inline ProcessState charToProcessState(char c) {
   }
 }
 
-class LinuxStatsNode : public UniqueNode {
+class LinuxStatsNode : public UniqueNode
+{
 public:
   LinuxStatsNode();
   ~LinuxStatsNode();
@@ -144,7 +150,7 @@ private:
   void readProcess();
   void readMemory();
   void readDisks();
-  
+
   Sender<Cpu>::Ptr sender_cpu;
   Sender<Process>::Ptr sender_process;
   Sender<Memory>::Ptr sender_memory;
@@ -159,13 +165,15 @@ private:
   TimerThread thread_slow;
 };
 
-LinuxStats::LinuxStats() {
+LinuxStats::LinuxStats()
+{
   addNode<LinuxStatsNode>("linux-time");
 }
 
 LinuxStats::~LinuxStats() = default;
 
-LinuxStatsNode::LinuxStatsNode() {
+LinuxStatsNode::LinuxStatsNode()
+{
   sender_cpu = addSender<Cpu>("/linux/cpu");
   sender_process = addSender<Process>("/linux/process");
   sender_memory = addSender<Memory>("/linux/memory");
@@ -179,17 +187,20 @@ LinuxStatsNode::LinuxStatsNode() {
 
 LinuxStatsNode::~LinuxStatsNode() = default;
 
-void LinuxStatsNode::loopFast() {
+void LinuxStatsNode::loopFast()
+{
   readCpu();
   readProcess();
   readMemory();
 }
 
-void LinuxStatsNode::loopSlow() {
+void LinuxStatsNode::loopSlow()
+{
   readDisks();
 }
 
-void LinuxStatsNode::readCpu() {
+void LinuxStatsNode::readCpu()
+{
   Message<Cpu> message;
 
   if (!cpu_counter_map.empty()) {
@@ -210,13 +221,40 @@ void LinuxStatsNode::readCpu() {
 
     int id = -1;
     CpuRawCounters counters;
-    
+
     if (buffer.data()[3] == ' ') {
-      if (!std::sscanf(buffer.data() + 4, "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu", &counters.user_time, &counters.nice_time, &counters.system_time, &counters.idle_time, &counters.io_wait, &counters.irq, &counters.soft_irq, &counters.steal, &counters.guest, &counters.guest_nice)) {
+      if (!std::sscanf(
+            buffer.data() + 4,
+            "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+            &counters.user_time,
+            &counters.nice_time,
+            &counters.system_time,
+            &counters.idle_time,
+            &counters.io_wait,
+            &counters.irq,
+            &counters.soft_irq,
+            &counters.steal,
+            &counters.guest,
+            &counters.guest_nice
+          )) {
         throw SystemException("Failed to parse CPU stats", errno);
       }
     } else {
-      if (!std::sscanf(buffer.data() + 3, "%d %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu", &id, &counters.user_time, &counters.nice_time, &counters.system_time, &counters.idle_time, &counters.io_wait, &counters.irq, &counters.soft_irq, &counters.steal, &counters.guest, &counters.guest_nice)) {
+      if (!std::sscanf(
+            buffer.data() + 3,
+            "%d %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+            &id,
+            &counters.user_time,
+            &counters.nice_time,
+            &counters.system_time,
+            &counters.idle_time,
+            &counters.io_wait,
+            &counters.irq,
+            &counters.soft_irq,
+            &counters.steal,
+            &counters.guest,
+            &counters.guest_nice
+          )) {
         throw SystemException("Failed to parse core stats", errno);
       }
     }
@@ -230,7 +268,8 @@ void LinuxStatsNode::readCpu() {
     const CpuRawCounters diff = counters - iter->second;
     iter->second = counters;
 
-    const float total_time = diff.user_time + diff.nice_time + diff.system_time + diff.irq + diff.soft_irq + diff.idle_time + diff.io_wait + diff.steal;
+    const float total_time =
+      diff.user_time + diff.nice_time + diff.system_time + diff.irq + diff.soft_irq + diff.idle_time + diff.io_wait + diff.steal;
     const float user_load = (float)diff.user_time / total_time;
     const float kernel_load = (float)diff.system_time / total_time;
     const float load = user_load + kernel_load;
@@ -255,13 +294,14 @@ void LinuxStatsNode::readCpu() {
   sender_cpu->put(std::move(message));
 }
 
-void LinuxStatsNode::readProcess() {
+void LinuxStatsNode::readProcess()
+{
   const int cpu_count = cpu_counter_map.size() - 1;
   if (cpu_count < 1 || std::isnan(total_cpu_time)) {
     return;
   }
 
-  const float total_time_per_cpu = total_cpu_time / cpu_count; 
+  const float total_time_per_cpu = total_cpu_time / cpu_count;
 
   Message<Process> message;
 
@@ -313,7 +353,27 @@ void LinuxStatsNode::readProcess() {
     strncpy(name.data(), name_start, name.size() - 1);
     name.back() = '\0';
 
-    if (!std::sscanf(name_end + 2, "%c %d %d %d %d %d %u %lu %lu %lu %lu %lu %lu %ld %ld %ld %ld", &state, &parent_id, &group_id, &session_id, &tty, &foreground_group_id, &flags, &minor_faults, &children_minor_faults, &major_faults, &children_major_faults, &counters.user_time, &counters.system_time, &children_counters.user_time, &children_counters.system_time, &priority, &nice)) {
+    if (!std::sscanf(
+          name_end + 2,
+          "%c %d %d %d %d %d %u %lu %lu %lu %lu %lu %lu %ld %ld %ld %ld",
+          &state,
+          &parent_id,
+          &group_id,
+          &session_id,
+          &tty,
+          &foreground_group_id,
+          &flags,
+          &minor_faults,
+          &children_minor_faults,
+          &major_faults,
+          &children_major_faults,
+          &counters.user_time,
+          &counters.system_time,
+          &children_counters.user_time,
+          &children_counters.system_time,
+          &priority,
+          &nice
+        )) {
       throw SystemException("Failed to parse thread stats", errno);
     }
 
@@ -338,7 +398,8 @@ void LinuxStatsNode::readProcess() {
   sender_process->put(std::move(message));
 }
 
-void LinuxStatsNode::readMemory() {
+void LinuxStatsNode::readMemory()
+{
   std::ifstream info("/proc/meminfo");
 
   if (!info) {
@@ -390,7 +451,8 @@ void LinuxStatsNode::readMemory() {
   sender_memory->put(std::move(message));
 }
 
-void LinuxStatsNode::readDisks() {
+void LinuxStatsNode::readDisks()
+{
   Message<Disks> message;
 
   std::ifstream info("/proc/mounts");
@@ -407,12 +469,13 @@ void LinuxStatsNode::readDisks() {
 
     std::string mount_point;
     std::string attributes;
-    
+
     linestream >> disk->name >> mount_point >> disk->file_system >> attributes;
 
-    static const std::unordered_set<std::string> supported_file_systems = {
-      "ext2", "ext3", "ext4", "vfat", "ntfs", "zfs", "hfs", "reiserfs", "reiser4", "fuseblk", "exfat", "f2fs", "hfs+", "jfs", "btrfs", "bcachefs", "minix", "nilfs", "xfs", "apfs"
-    };
+    static const std::unordered_set<std::string> supported_file_systems = {"ext2",     "ext3",  "ext4",     "vfat",    "ntfs",
+                                                                           "zfs",      "hfs",   "reiserfs", "reiser4", "fuseblk",
+                                                                           "exfat",    "f2fs",  "hfs+",     "jfs",     "btrfs",
+                                                                           "bcachefs", "minix", "nilfs",    "xfs",     "apfs"};
 
     if (!supported_file_systems.contains(disk->file_system)) {
       continue;

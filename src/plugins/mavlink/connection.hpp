@@ -22,7 +22,8 @@ namespace lbot::plugins {
  * @brief Abstract class to provide general means for a MavlinkNode to connect itself to a MAVLink network.
  *
  */
-class MavlinkConnection {
+class MavlinkConnection
+{
 public:
   using Ptr = std::unique_ptr<MavlinkConnection>;
 

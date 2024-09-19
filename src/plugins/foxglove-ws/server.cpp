@@ -6,12 +6,12 @@
  *
  */
 
+#include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/config.hpp>
 #include <labrat/lbot/exception.hpp>
 #include <labrat/lbot/logger.hpp>
 #include <labrat/lbot/manager.hpp>
 #include <labrat/lbot/message.hpp>
-#include <labrat/lbot/clock.hpp>
 #include <labrat/lbot/plugins/foxglove-ws/server.hpp>
 
 #include <atomic>
@@ -28,7 +28,8 @@
 inline namespace labrat {
 namespace lbot::plugins {
 
-static foxglove::ParameterValue convertParameterValue(const ConfigValue &source) {
+static foxglove::ParameterValue convertParameterValue(const ConfigValue &source)
+{
   if (source.contains<bool>()) {
     return foxglove::ParameterValue(source.get<bool>());
   } else if (source.contains<i64>()) {
@@ -52,9 +53,12 @@ static foxglove::ParameterValue convertParameterValue(const ConfigValue &source)
   }
 }
 
-class FoxgloveServerPrivate {
+class FoxgloveServerPrivate
+{
 public:
-  FoxgloveServerPrivate() : logger("foxglove-ws") {
+  FoxgloveServerPrivate() :
+    logger("foxglove-ws")
+  {
     logger.disableTopic();
 
     Config::Ptr config = Config::get();
@@ -99,8 +103,8 @@ public:
     handlers.unsubscribeHandler = [&](foxglove::ChannelId channel_id, websocketpp::connection_hdl) -> void {
       logger.logInfo() << "Client unsubscribed from " << channel_id;
     };
-    handlers.parameterRequestHandler = [&](const std::vector<std::string> &names, const std::optional<std::string> &command,
-                                         websocketpp::connection_hdl handle) -> void {
+    handlers.parameterRequestHandler =
+      [&](const std::vector<std::string> &names, const std::optional<std::string> &command, websocketpp::connection_hdl handle) -> void {
       logger.logInfo() << "Parameter request received";
 
       handleParameterRequest(names, command, handle);
@@ -128,7 +132,8 @@ public:
     });
   }
 
-  ~FoxgloveServerPrivate() {
+  ~FoxgloveServerPrivate()
+  {
     time_thread.request_stop();
     exit_mutex.unlock();
 
@@ -141,11 +146,15 @@ public:
     server->stop();
   }
 
-  struct SchemaInfo {
+  struct SchemaInfo
+  {
     std::string name;
     std::string definition;
 
-    SchemaInfo(std::string name, std::string definition) : name(std::move(name)), definition(std::move(definition)) {}
+    SchemaInfo(std::string name, std::string definition) :
+      name(std::move(name)),
+      definition(std::move(definition))
+    {}
   };
 
   using SchemaMap = std::unordered_map<std::size_t, SchemaInfo>;
@@ -159,8 +168,11 @@ public:
 
 private:
   SchemaMap::iterator handleSchema(std::string_view type_name, std::size_t type_hash, std::string_view type_reflection);
-  void handleParameterRequest(const std::vector<std::string> &names, const std::optional<std::string> &command,
-    websocketpp::connection_hdl handle);
+  void handleParameterRequest(
+    const std::vector<std::string> &names,
+    const std::optional<std::string> &command,
+    websocketpp::connection_hdl handle
+  );
 
   SchemaMap schema_map;
   ChannelIdMap channel_id_map;
@@ -172,39 +184,51 @@ private:
   Logger logger;
 };
 
-FoxgloveServer::FoxgloveServer() : UniquePlugin("foxglove-ws") {
+FoxgloveServer::FoxgloveServer() :
+  UniquePlugin("foxglove-ws")
+{
   priv = new FoxgloveServerPrivate();
 }
 
-FoxgloveServer::~FoxgloveServer() {
+FoxgloveServer::~FoxgloveServer()
+{
   delete priv;
 }
 
-void FoxgloveServer::topicCallback(const TopicInfo &info) {
+void FoxgloveServer::topicCallback(const TopicInfo &info)
+{
   if (priv->enable_callbacks.test()) {
     (void)priv->handleTopic(info);
   }
 }
 
-void FoxgloveServer::messageCallback(const MessageInfo &info) {
+void FoxgloveServer::messageCallback(const MessageInfo &info)
+{
   if (priv->enable_callbacks.test()) {
     (void)priv->handleMessage(info);
   }
 }
 
-FoxgloveServerPrivate::SchemaMap::iterator FoxgloveServerPrivate::handleSchema(std::string_view type_name, const std::size_t type_hash, std::string_view type_reflection) {
+FoxgloveServerPrivate::SchemaMap::iterator
+FoxgloveServerPrivate::handleSchema(std::string_view type_name, const std::size_t type_hash, std::string_view type_reflection)
+{
   std::lock_guard guard(mutex);
 
   SchemaMap::iterator schema_iterator = schema_map.find(type_hash);
   if (schema_iterator == schema_map.end()) {
-    schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(type_hash),
-      std::forward_as_tuple(std::string(type_name), foxglove::base64Encode(type_reflection)));
+    schema_iterator = schema_map.emplace_hint(
+      schema_iterator,
+      std::piecewise_construct,
+      std::forward_as_tuple(type_hash),
+      std::forward_as_tuple(std::string(type_name), foxglove::base64Encode(type_reflection))
+    );
   }
 
   return schema_iterator;
 }
 
-FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleTopic(const TopicInfo &info) {
+FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleTopic(const TopicInfo &info)
+{
   SchemaMap::iterator schema_iterator = handleSchema(info.type_name, info.type_hash, info.type_reflection);
 
   std::lock_guard guard(mutex);
@@ -228,21 +252,30 @@ FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleTopic
   return channel_id_iterator;
 }
 
-FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleMessage(const MessageInfo &info) {
+FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleMessage(const MessageInfo &info)
+{
   ChannelIdMap::iterator channel_id_iterator = channel_id_map.find(info.topic_info.topic_hash);
   if (channel_id_iterator == channel_id_map.end()) {
     channel_id_iterator = handleTopic(info.topic_info);
   }
 
   std::lock_guard guard(mutex);
-  server->broadcastMessage(channel_id_iterator->second, std::chrono::duration_cast<std::chrono::nanoseconds>(info.timestamp.time_since_epoch()).count(), info.serialized_message.data(),
-    info.serialized_message.size());
+  server->broadcastMessage(
+    channel_id_iterator->second,
+    std::chrono::duration_cast<std::chrono::nanoseconds>(info.timestamp.time_since_epoch()).count(),
+    info.serialized_message.data(),
+    info.serialized_message.size()
+  );
 
   return channel_id_iterator;
 }
 
-void FoxgloveServerPrivate::handleParameterRequest(const std::vector<std::string> &names, const std::optional<std::string> &command,
-  websocketpp::connection_hdl handle) {
+void FoxgloveServerPrivate::handleParameterRequest(
+  const std::vector<std::string> &names,
+  const std::optional<std::string> &command,
+  websocketpp::connection_hdl handle
+)
+{
   std::vector<foxglove::Parameter> parameters;
 
   if (command == "get-all-params") {

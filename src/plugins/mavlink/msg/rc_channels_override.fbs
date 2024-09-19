@@ -3,6 +3,8 @@ include "common.fbs";
 namespace mavlink.common;
 
 table RcChannelsOverride {
+  target_system:ubyte;
+  target_component:ubyte;
   chan1_raw:ushort;
   chan2_raw:ushort;
   chan3_raw:ushort;
@@ -11,8 +13,6 @@ table RcChannelsOverride {
   chan6_raw:ushort;
   chan7_raw:ushort;
   chan8_raw:ushort;
-  target_system:ubyte;
-  target_component:ubyte;
   chan9_raw:ushort;
   chan10_raw:ushort;
   chan11_raw:ushort;

@@ -29,14 +29,17 @@
 inline namespace labrat {
 namespace lbot::plugins {
 
-class UdpBridge::NodePrivate {
+class UdpBridge::NodePrivate
+{
 public:
-  struct BridgeSender {
+  struct BridgeSender
+  {
     std::unordered_map<std::string, Node::GenericSender<UdpBridge::Node::PayloadInfo>::Ptr> map;
     std::unordered_map<std::size_t, Node::GenericSender<UdpBridge::Node::PayloadInfo>::Ptr &> adapter;
   } sender;
 
-  struct BridgeReceiver {
+  struct BridgeReceiver
+  {
     std::vector<Node::GenericReceiver<UdpBridge::Node::PayloadInfo>::Ptr> vector;
   } receiver;
 
@@ -50,18 +53,21 @@ private:
   static constexpr std::size_t buffer_size = 16384;
   static constexpr std::size_t payload_size = buffer_size / 2;
 
-  struct TopicInfo {
+  struct TopicInfo
+  {
     std::size_t topic_hash;
     std::string_view topic_name;
     std::string_view type_name;
   };
 
-  struct HeaderWire {
+  struct HeaderWire
+  {
     u8 magic;
     u8 version_major;
     u8 version_minor;
 
-    enum class Type : u8 {
+    enum class Type : u8
+    {
       payload = 0,
       topic_info = 1,
       topic_request = 2,
@@ -76,14 +82,16 @@ private:
     static constexpr u8 version_major_check = GIT_VERSION_MAJOR;
     static constexpr u8 version_minor_check = GIT_VERSION_MINOR;
 
-    inline void init() {
+    inline void init()
+    {
       magic = magic_check;
       version_major = version_major_check;
       version_minor = version_minor_check;
     }
   };
 
-  struct TopicWire {
+  struct TopicWire
+  {
     HeaderWire header;
 
     u16 topic_name_end;
@@ -94,7 +102,8 @@ private:
 
   static_assert(sizeof(TopicWire) <= buffer_size);
 
-  struct PayloadWire {
+  struct PayloadWire
+  {
     HeaderWire header;
 
     std::array<u8, payload_size> data;
@@ -131,22 +140,26 @@ private:
 };
 
 UdpBridge::UdpBridge(const std::string &address, u16 port, u16 local_port) :
-  Plugin() {
+  Plugin()
+{
   node = addNode<UdpBridge::Node>(getName(), address, port, local_port);
 }
 
 UdpBridge::~UdpBridge() = default;
 
 UdpBridge::Node::Node(const std::string &address, u16 port, u16 local_port) :
-  lbot::Node() {
+  lbot::Node()
+{
   priv = new UdpBridge::NodePrivate(address, port, local_port, *this);
 }
 
-UdpBridge::Node::~Node() {
+UdpBridge::Node::~Node()
+{
   delete priv;
 }
 
-void UdpBridge::Node::registerGenericSender(Node::GenericSender<UdpBridge::Node::PayloadInfo>::Ptr &&sender) {
+void UdpBridge::Node::registerGenericSender(Node::GenericSender<UdpBridge::Node::PayloadInfo>::Ptr &&sender)
+{
   if (!priv->sender.map
          .try_emplace(sender->getTopicInfo().topic_name, std::forward<Node::GenericSender<UdpBridge::Node::PayloadInfo>::Ptr>(sender))
          .second) {
@@ -154,15 +167,19 @@ void UdpBridge::Node::registerGenericSender(Node::GenericSender<UdpBridge::Node:
   }
 }
 
-void UdpBridge::Node::registerGenericReceiver(Node::GenericReceiver<UdpBridge::Node::PayloadInfo>::Ptr &&receiver) {
+void UdpBridge::Node::registerGenericReceiver(Node::GenericReceiver<UdpBridge::Node::PayloadInfo>::Ptr &&receiver)
+{
   priv->receiver.vector.emplace_back(std::forward<Node::GenericReceiver<UdpBridge::Node::PayloadInfo>::Ptr>(receiver));
 }
 
-void UdpBridge::Node::receiverCallback(const UdpBridge::Node::PayloadInfo &message, UdpBridge::NodePrivate *node) {
+void UdpBridge::Node::receiverCallback(const UdpBridge::Node::PayloadInfo &message, UdpBridge::NodePrivate *node)
+{
   node->writePayloadMessage(message);
 }
 
-UdpBridge::NodePrivate::NodePrivate(const std::string &address, u16 port, u16 local_port, UdpBridge::Node &node) : node(node) {
+UdpBridge::NodePrivate::NodePrivate(const std::string &address, u16 port, u16 local_port, UdpBridge::Node &node) :
+  node(node)
+{
   file_descriptor = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
   if (file_descriptor == -1) {
@@ -204,7 +221,8 @@ UdpBridge::NodePrivate::NodePrivate(const std::string &address, u16 port, u16 lo
 
 UdpBridge::NodePrivate::~NodePrivate() = default;
 
-void UdpBridge::NodePrivate::readLoop() {
+void UdpBridge::NodePrivate::readLoop()
+{
   std::array<u8, buffer_size> buffer;
   const std::size_t number_bytes = read(buffer.data(), buffer_size);
 
@@ -279,7 +297,8 @@ void UdpBridge::NodePrivate::readLoop() {
   }
 }
 
-void UdpBridge::NodePrivate::readPayloadMessage(const UdpBridge::Node::PayloadInfo &message) {
+void UdpBridge::NodePrivate::readPayloadMessage(const UdpBridge::Node::PayloadInfo &message)
+{
   auto iterator = sender.adapter.find(message.topic_hash);
 
   if (iterator == sender.adapter.end()) {
@@ -292,7 +311,8 @@ void UdpBridge::NodePrivate::readPayloadMessage(const UdpBridge::Node::PayloadIn
   iterator->second->put(message);
 }
 
-void UdpBridge::NodePrivate::readTopicInfoMessage(const TopicInfo &message) {
+void UdpBridge::NodePrivate::readTopicInfoMessage(const TopicInfo &message)
+{
   auto iterator = sender.map.find(std::string(message.topic_name));
 
   if (iterator == sender.map.end()) {
@@ -309,7 +329,8 @@ void UdpBridge::NodePrivate::readTopicInfoMessage(const TopicInfo &message) {
   sender.adapter.try_emplace(message.topic_hash, iterator->second);
 }
 
-void UdpBridge::NodePrivate::readTopicRequestMessage(std::size_t topic_hash) {
+void UdpBridge::NodePrivate::readTopicRequestMessage(std::size_t topic_hash)
+{
   for (const Node::GenericReceiver<UdpBridge::Node::PayloadInfo>::Ptr &receiver : receiver.vector) {
     if (receiver->getTopicInfo().topic_hash == topic_hash) {
       TopicInfo message;
@@ -325,7 +346,8 @@ void UdpBridge::NodePrivate::readTopicRequestMessage(std::size_t topic_hash) {
   node.getLogger().logDebug() << "Requested topic hash receiver not found (topic hash: " << topic_hash << ").";
 }
 
-void UdpBridge::NodePrivate::writePayloadMessage(const UdpBridge::Node::PayloadInfo &message) {
+void UdpBridge::NodePrivate::writePayloadMessage(const UdpBridge::Node::PayloadInfo &message)
+{
   PayloadWire raw;
 
   if (message.payload.size() > payload_size) {
@@ -348,7 +370,8 @@ void UdpBridge::NodePrivate::writePayloadMessage(const UdpBridge::Node::PayloadI
   write(reinterpret_cast<u8 *>(&raw), length);
 }
 
-void UdpBridge::NodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
+void UdpBridge::NodePrivate::writeTopicInfoMessage(const TopicInfo &message)
+{
   if (message.topic_name.empty()) {
     node.getLogger().logError() << "The sent topic name must not be empty.";
     return;
@@ -387,7 +410,8 @@ void UdpBridge::NodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
   write(reinterpret_cast<u8 *>(&raw), length);
 }
 
-void UdpBridge::NodePrivate::writeTopicRequestMessage(std::size_t topic_hash) {
+void UdpBridge::NodePrivate::writeTopicRequestMessage(std::size_t topic_hash)
+{
   HeaderWire raw;
 
   raw.init();
@@ -401,7 +425,8 @@ void UdpBridge::NodePrivate::writeTopicRequestMessage(std::size_t topic_hash) {
   write(reinterpret_cast<u8 *>(&raw), sizeof(HeaderWire));
 }
 
-std::size_t UdpBridge::NodePrivate::write(const u8 *buffer, std::size_t size) {
+std::size_t UdpBridge::NodePrivate::write(const u8 *buffer, std::size_t size)
+{
   const ssize_t result = sendto(file_descriptor, buffer, size, 0, reinterpret_cast<sockaddr *>(&remote_address), sizeof(sockaddr_in));
 
   if (result < 0) {
@@ -411,7 +436,8 @@ std::size_t UdpBridge::NodePrivate::write(const u8 *buffer, std::size_t size) {
   return result;
 }
 
-std::size_t UdpBridge::NodePrivate::read(u8 *buffer, std::size_t size) {
+std::size_t UdpBridge::NodePrivate::read(u8 *buffer, std::size_t size)
+{
   {
     epoll_event event;
     const ssize_t result = epoll_pwait(epoll_handle, &event, 1, timeout, &signal_mask);

@@ -26,7 +26,8 @@ namespace lbot::plugins {
  * @brief MavlinkConnection implementation for UDP sockets.
  *
  */
-class MavlinkUdpConnection final : public MavlinkConnection {
+class MavlinkUdpConnection final : public MavlinkConnection
+{
 public:
   /**
    * @brief Construct a new Mavlink Udp Connection object.

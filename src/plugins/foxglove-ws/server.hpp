@@ -23,7 +23,8 @@ class FoxgloveServerPrivate;
  * @brief Class to register a plugin to the manager that will open a websocket server in order to forward massages to Foxglove Studio.
  *
  */
-class FoxgloveServer : public UniquePlugin {
+class FoxgloveServer : public UniquePlugin
+{
 public:
   /**
    * @brief Construct a new Foxglove Server object.

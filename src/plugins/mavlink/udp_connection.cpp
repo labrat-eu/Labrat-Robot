@@ -21,7 +21,8 @@
 inline namespace labrat {
 namespace lbot::plugins {
 
-MavlinkUdpConnection::MavlinkUdpConnection(const std::string &address, u16 port, u16 local_port) {
+MavlinkUdpConnection::MavlinkUdpConnection(const std::string &address, u16 port, u16 local_port)
+{
   file_descriptor = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
   if (file_descriptor == -1) {
@@ -59,12 +60,14 @@ MavlinkUdpConnection::MavlinkUdpConnection(const std::string &address, u16 port,
   sigaddset(&signal_mask, SIGINT);
 }
 
-MavlinkUdpConnection::~MavlinkUdpConnection() {
+MavlinkUdpConnection::~MavlinkUdpConnection()
+{
   close(epoll_handle);
   close(file_descriptor);
 }
 
-std::size_t MavlinkUdpConnection::write(const u8 *buffer, std::size_t size) {
+std::size_t MavlinkUdpConnection::write(const u8 *buffer, std::size_t size)
+{
   const ssize_t result = sendto(file_descriptor, buffer, size, 0, reinterpret_cast<sockaddr *>(&remote_address), sizeof(sockaddr_in));
 
   if (result < 0) {
@@ -74,7 +77,8 @@ std::size_t MavlinkUdpConnection::write(const u8 *buffer, std::size_t size) {
   return result;
 }
 
-std::size_t MavlinkUdpConnection::read(u8 *buffer, std::size_t size) {
+std::size_t MavlinkUdpConnection::read(u8 *buffer, std::size_t size)
+{
   {
     epoll_event event;
     const i32 result = epoll_pwait(epoll_handle, &event, 1, timeout, &signal_mask);

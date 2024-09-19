@@ -125,7 +125,8 @@ format:clang-18:
   dependencies: ["build:clang-18"]
   <<: *init-clang
   script:
-    - clang-format-18 -n -Werror --style=file:build/RelWithDebInfo/.clang-format src/*.cpp src/*.hpp src/**/*.cpp src/**/*.hpp
+    - shopt -s globstar
+    - clang-format-18 -n -Werror --style=file:build/RelWithDebInfo/.clang-format src/**.cpp src/**.hpp
 
 test:clang-18:
   stage: test

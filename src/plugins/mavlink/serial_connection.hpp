@@ -26,7 +26,8 @@ namespace lbot::plugins {
  * @brief MavlinkConnection implementation for serial ports.
  *
  */
-class MavlinkSerialConnection final : public MavlinkConnection {
+class MavlinkSerialConnection final : public MavlinkConnection
+{
 public:
   /**
    * @brief Construct a new Mavlink Serial Connection object.

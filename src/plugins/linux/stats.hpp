@@ -16,11 +16,12 @@ inline namespace labrat {
 /** @endcond */
 namespace lbot::plugins {
 
-class LinuxStats final : public UniquePlugin {
+class LinuxStats final : public UniquePlugin
+{
 public:
   /**
    * @brief Construct a new Gazebo Time Source object
-   * 
+   *
    */
   LinuxStats();
   ~LinuxStats();

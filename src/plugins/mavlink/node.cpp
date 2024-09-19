@@ -25,6 +25,7 @@
 #include <labrat/lbot/plugins/mavlink/msg/estimator_status.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/extended_sys_state.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/global_position_int.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/gps_global_origin.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/gps_raw_int.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/gps_status.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/heartbeat.hpp>
@@ -34,6 +35,7 @@
 #include <labrat/lbot/plugins/mavlink/msg/local_position_ned.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/local_position_ned_system_global_offset.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/mission_current.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/nav_controller_output.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/odometry.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/open_drone_id_location.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/open_drone_id_system.hpp>
@@ -43,10 +45,9 @@
 #include <labrat/lbot/plugins/mavlink/msg/ping.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/position_target_global_int.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/position_target_local_ned.hpp>
-#include <labrat/lbot/plugins/mavlink/msg/gps_global_origin.hpp>
-#include <labrat/lbot/plugins/mavlink/msg/nav_controller_output.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/raw_imu.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/rc_channels.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/rc_channels_override.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/rc_channels_raw.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/scaled_imu.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/scaled_pressure.hpp>
@@ -76,12 +77,14 @@
 inline namespace labrat {
 namespace lbot::plugins {
 
-class Mavlink::NodePrivate {
+class Mavlink::NodePrivate
+{
 public:
   std::unordered_map<u16, Node::GenericSender<mavlink_message_t>::Ptr> sender_map;
   std::vector<Node::GenericReceiver<mavlink_message_t>::Ptr> receiver_vector;
 
-  struct MavlinkServer {
+  struct MavlinkServer
+  {
     template <typename T, typename U>
     struct ServerInfo;
 
@@ -89,7 +92,8 @@ public:
     static Message<U> handle(const Message<T> &request, ServerInfo<T, U> *info);
 
     template <typename T, typename U>
-    struct ServerInfo {
+    struct ServerInfo
+    {
       using Ptr = std::unique_ptr<ServerInfo<T, U>>;
 
       Mavlink::Node *const node;
@@ -99,7 +103,8 @@ public:
       typename Node::Server<T, U>::Ptr server;
 
       ServerInfo(Mavlink::Node *node, const std::string &service, const std::string &sender_topic, const std::string &receiver_topic) :
-        node(node) {
+        node(node)
+      {
         sender = node->addSender<T>(sender_topic);
         receiver = node->addReceiver<U>(receiver_topic);
 
@@ -123,18 +128,21 @@ public:
 
 private:
   template <typename FlatbufferType>
-  void addSender(std::string &&topic_name, u16 id) {
+  void addSender(std::string &&topic_name, u16 id)
+  {
     node.registerSender<Mavlink::Node::MavlinkMessage<FlatbufferType>>(std::forward<std::string>(topic_name), id);
   }
 
   template <typename FlatbufferType>
-  void addReceiver(std::string &&topic_name) {
+  void addReceiver(std::string &&topic_name)
+  {
     node.registerReceiver<Mavlink::Node::MavlinkMessage<FlatbufferType>>(std::forward<std::string>(topic_name));
   }
 
   template <typename RequestType, typename ResponseType>
-  typename MavlinkServer::ServerInfo<RequestType, ResponseType>::Ptr addServer(const std::string &service, const std::string &sender_topic,
-    const std::string &receiver_topic) {
+  typename MavlinkServer::ServerInfo<RequestType, ResponseType>::Ptr
+  addServer(const std::string &service, const std::string &sender_topic, const std::string &receiver_topic)
+  {
     typename MavlinkServer::ServerInfo<RequestType, ResponseType>::Ptr result =
       std::make_unique<MavlinkServer::ServerInfo<RequestType, ResponseType>>(&node, service, sender_topic, receiver_topic);
 
@@ -164,7 +172,9 @@ template <>
 Message<mavlink::common::ParamValue>
 Mavlink::NodePrivate::MavlinkServer::handle<mavlink::common::ParamRequestRead, mavlink::common::ParamValue>(
   const Message<mavlink::common::ParamRequestRead> &request,
-  ServerInfo<mavlink::common::ParamRequestRead, mavlink::common::ParamValue> *info) {
+  ServerInfo<mavlink::common::ParamRequestRead, mavlink::common::ParamValue> *info
+)
+{
   Message<mavlink::common::ParamValue> result;
 
   do {
@@ -183,7 +193,10 @@ Mavlink::NodePrivate::MavlinkServer::handle<mavlink::common::ParamRequestRead, m
 
 template <>
 Message<mavlink::common::CommandAck> Mavlink::NodePrivate::MavlinkServer::handle<mavlink::common::CommandInt, mavlink::common::CommandAck>(
-  const Message<mavlink::common::CommandInt> &request, ServerInfo<mavlink::common::CommandInt, mavlink::common::CommandAck> *info) {
+  const Message<mavlink::common::CommandInt> &request,
+  ServerInfo<mavlink::common::CommandInt, mavlink::common::CommandAck> *info
+)
+{
   Message<mavlink::common::CommandAck> result;
 
   do {
@@ -202,7 +215,10 @@ Message<mavlink::common::CommandAck> Mavlink::NodePrivate::MavlinkServer::handle
 
 template <>
 Message<mavlink::common::CommandAck> Mavlink::NodePrivate::MavlinkServer::handle<mavlink::common::CommandLong, mavlink::common::CommandAck>(
-  const Message<mavlink::common::CommandLong> &request, ServerInfo<mavlink::common::CommandLong, mavlink::common::CommandAck> *info) {
+  const Message<mavlink::common::CommandLong> &request,
+  ServerInfo<mavlink::common::CommandLong, mavlink::common::CommandAck> *info
+)
+{
   Message<mavlink::common::CommandAck> result;
 
   do {
@@ -219,38 +235,46 @@ Message<mavlink::common::CommandAck> Mavlink::NodePrivate::MavlinkServer::handle
   return result;
 }
 
-Mavlink::Mavlink(MavlinkConnection::Ptr &&connection) : Plugin() {
+Mavlink::Mavlink(MavlinkConnection::Ptr &&connection) :
+  Plugin()
+{
   node = addNode<Node>(getName(), std::forward<MavlinkConnection::Ptr>(connection));
 }
 
 Mavlink::~Mavlink() = default;
 
-Mavlink::Node::Node(MavlinkConnection::Ptr &&connection) {
+Mavlink::Node::Node(MavlinkConnection::Ptr &&connection)
+{
   std::allocator<Mavlink::NodePrivate> allocator;
   priv = allocator.allocate(1);
 
   priv = std::construct_at(priv, std::forward<MavlinkConnection::Ptr>(connection), *this);
 }
 
-Mavlink::Node::~Node() {
+Mavlink::Node::~Node()
+{
   delete priv;
 }
 
-Mavlink::SystemInfo &Mavlink::Node::getSystemInfo() const {
+Mavlink::SystemInfo &Mavlink::Node::getSystemInfo() const
+{
   return priv->system_info;
 }
 
-void Mavlink::Node::registerGenericSender(Node::GenericSender<mavlink_message_t>::Ptr &&sender, u16 id) {
+void Mavlink::Node::registerGenericSender(Node::GenericSender<mavlink_message_t>::Ptr &&sender, u16 id)
+{
   if (!priv->sender_map.try_emplace(id, std::forward<Node::GenericSender<mavlink_message_t>::Ptr>(sender)).second) {
     throw ManagementException("A sender has already been registered for the MAVLink message ID '" + std::to_string(id) + "'.");
   }
 }
 
-void Mavlink::Node::registerGenericReceiver(Node::GenericReceiver<mavlink_message_t>::Ptr &&receiver) {
+void Mavlink::Node::registerGenericReceiver(Node::GenericReceiver<mavlink_message_t>::Ptr &&receiver)
+{
   priv->receiver_vector.emplace_back(std::forward<Node::GenericReceiver<mavlink_message_t>::Ptr>(receiver));
 }
 
-void Mavlink::Node::receiverCallback(const mavlink_message_t &message, SystemInfo *system_info) {
+void Mavlink::Node::receiverCallback(const mavlink_message_t &message, SystemInfo *system_info)
+{
   Mavlink::NodePrivate *node = system_info->node;
   CleanupLock::Guard guard = node->lock.lock();
 
@@ -262,7 +286,9 @@ void Mavlink::Node::receiverCallback(const mavlink_message_t &message, SystemInf
 }
 
 Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::Node &node) :
-  connection(std::forward<MavlinkConnection::Ptr>(connection)), node(node) {
+  connection(std::forward<MavlinkConnection::Ptr>(connection)),
+  node(node)
+{
   system_info.node = this;
   system_info.channel_id = MAVLINK_COMM_0;
   system_info.system_id = 0xf0;
@@ -288,22 +314,27 @@ Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::
   addSender<mavlink::common::NavControllerOutput>("/" + node.getName() + "/in/nav_controller_output", MAVLINK_MSG_ID_NAV_CONTROLLER_OUTPUT);
   addSender<mavlink::common::RcChannels>("/" + node.getName() + "/in/rc_channels", MAVLINK_MSG_ID_RC_CHANNELS);
   addSender<mavlink::common::RcChannelsRaw>("/" + node.getName() + "/in/rc_channels_raw", MAVLINK_MSG_ID_RC_CHANNELS_RAW);
+  addSender<mavlink::common::RcChannelsOverride>("/" + node.getName() + "/in/rc_channels_override", MAVLINK_MSG_ID_RC_CHANNELS_OVERRIDE);
   addSender<mavlink::common::ServoOutputRaw>("/" + node.getName() + "/in/servo_output_raw", MAVLINK_MSG_ID_SERVO_OUTPUT_RAW);
   addSender<mavlink::common::VfrHud>("/" + node.getName() + "/in/vfr_hud", MAVLINK_MSG_ID_VFR_HUD);
   addSender<mavlink::common::CommandInt>("/" + node.getName() + "/in/command_int", MAVLINK_MSG_ID_COMMAND_INT);
   addSender<mavlink::common::CommandLong>("/" + node.getName() + "/in/command_long", MAVLINK_MSG_ID_COMMAND_LONG);
   addSender<mavlink::common::CommandAck>("/" + node.getName() + "/in/command_ack", MAVLINK_MSG_ID_COMMAND_ACK);
-  addSender<mavlink::common::PositionTargetLocalNed>("/" + node.getName() + "/in/position_target_local_ned",
-    MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED);
+  addSender<mavlink::common::PositionTargetLocalNed>(
+    "/" + node.getName() + "/in/position_target_local_ned", MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED
+  );
   addSender<mavlink::common::AttitudeTarget>("/" + node.getName() + "/in/attitude_target", MAVLINK_MSG_ID_ATTITUDE_TARGET);
-  addSender<mavlink::common::PositionTargetGlobalInt>("/" + node.getName() + "/in/position_target_global_int",
-    MAVLINK_MSG_ID_POSITION_TARGET_GLOBAL_INT);
-  addSender<mavlink::common::LocalPositionNedSystemGlobalOffset>("/" + node.getName() + "/in/local_position_ned_system_global_offset",
-    MAVLINK_MSG_ID_LOCAL_POSITION_NED_SYSTEM_GLOBAL_OFFSET);
+  addSender<mavlink::common::PositionTargetGlobalInt>(
+    "/" + node.getName() + "/in/position_target_global_int", MAVLINK_MSG_ID_POSITION_TARGET_GLOBAL_INT
+  );
+  addSender<mavlink::common::LocalPositionNedSystemGlobalOffset>(
+    "/" + node.getName() + "/in/local_position_ned_system_global_offset", MAVLINK_MSG_ID_LOCAL_POSITION_NED_SYSTEM_GLOBAL_OFFSET
+  );
   addSender<mavlink::common::HighresImu>("/" + node.getName() + "/in/highres_imu", MAVLINK_MSG_ID_HIGHRES_IMU);
   addSender<mavlink::common::Timesync>("/" + node.getName() + "/in/timesync", MAVLINK_MSG_ID_TIMESYNC);
-  addSender<mavlink::common::ActuatorControlTarget>("/" + node.getName() + "/in/actuator_control_target",
-    MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET);
+  addSender<mavlink::common::ActuatorControlTarget>(
+    "/" + node.getName() + "/in/actuator_control_target", MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET
+  );
   addSender<mavlink::common::Altitude>("/" + node.getName() + "/in/altitude", MAVLINK_MSG_ID_ALTITUDE);
   addSender<mavlink::common::BatteryStatus>("/" + node.getName() + "/in/battery_status", MAVLINK_MSG_ID_BATTERY_STATUS);
   addSender<mavlink::common::AutopilotVersion>("/" + node.getName() + "/in/autopilot_version", MAVLINK_MSG_ID_AUTOPILOT_VERSION);
@@ -316,12 +347,15 @@ Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::
   addSender<mavlink::common::MissionCurrent>("/" + node.getName() + "/in/mission_current", MAVLINK_MSG_ID_MISSION_CURRENT);
   addSender<mavlink::common::Odometry>("/" + node.getName() + "/in/odometry", MAVLINK_MSG_ID_ODOMETRY);
   addSender<mavlink::common::UtmGlobalPosition>("/" + node.getName() + "/in/utm_global_position", MAVLINK_MSG_ID_UTM_GLOBAL_POSITION);
-  addSender<mavlink::common::TimeEstimateToTarget>("/" + node.getName() + "/in/time_estimate_to_target",
-    MAVLINK_MSG_ID_TIME_ESTIMATE_TO_TARGET);
-  addSender<mavlink::common::CurrentEventSequence>("/" + node.getName() + "/in/current_event_sequence",
-    MAVLINK_MSG_ID_CURRENT_EVENT_SEQUENCE);
-  addSender<mavlink::common::OpenDroneIdLocation>("/" + node.getName() + "/in/open_drone_id_location",
-    MAVLINK_MSG_ID_OPEN_DRONE_ID_LOCATION);
+  addSender<mavlink::common::TimeEstimateToTarget>(
+    "/" + node.getName() + "/in/time_estimate_to_target", MAVLINK_MSG_ID_TIME_ESTIMATE_TO_TARGET
+  );
+  addSender<mavlink::common::CurrentEventSequence>(
+    "/" + node.getName() + "/in/current_event_sequence", MAVLINK_MSG_ID_CURRENT_EVENT_SEQUENCE
+  );
+  addSender<mavlink::common::OpenDroneIdLocation>(
+    "/" + node.getName() + "/in/open_drone_id_location", MAVLINK_MSG_ID_OPEN_DRONE_ID_LOCATION
+  );
   addSender<mavlink::common::OpenDroneIdSystem>("/" + node.getName() + "/in/open_drone_id_system", MAVLINK_MSG_ID_OPEN_DRONE_ID_SYSTEM);
   addSender<mavlink::common::WindCov>("/" + node.getName() + "/in/wind_cov", MAVLINK_MSG_ID_WIND_COV);
 
@@ -331,14 +365,19 @@ Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::
   addReceiver<mavlink::common::CommandLong>("/" + node.getName() + "/out/command_long");
   addReceiver<mavlink::common::Timesync>("/" + node.getName() + "/out/timesync");
   addReceiver<mavlink::common::SystemTime>("/" + node.getName() + "/out/system_time");
+  addReceiver<mavlink::common::RcChannelsOverride>("/" + node.getName() + "/out/rc_channels_override");
 
-  server.param_request_read =
-    addServer<mavlink::common::ParamRequestRead, mavlink::common::ParamValue>("/" + node.getName() + "/srv/param_request_read",
-      "/" + node.getName() + "/out/param_request_read", "/" + node.getName() + "/in/param_value");
-  server.command_int = addServer<mavlink::common::CommandInt, mavlink::common::CommandAck>("/" + node.getName() + "/srv/command_int",
-    "/" + node.getName() + "/out/command_int", "/" + node.getName() + "/in/command_ack");
-  server.command_long = addServer<mavlink::common::CommandLong, mavlink::common::CommandAck>("/" + node.getName() + "/srv/command_long",
-    "/" + node.getName() + "/out/command_long", "/" + node.getName() + "/in/command_ack");
+  server.param_request_read = addServer<mavlink::common::ParamRequestRead, mavlink::common::ParamValue>(
+    "/" + node.getName() + "/srv/param_request_read",
+    "/" + node.getName() + "/out/param_request_read",
+    "/" + node.getName() + "/in/param_value"
+  );
+  server.command_int = addServer<mavlink::common::CommandInt, mavlink::common::CommandAck>(
+    "/" + node.getName() + "/srv/command_int", "/" + node.getName() + "/out/command_int", "/" + node.getName() + "/in/command_ack"
+  );
+  server.command_long = addServer<mavlink::common::CommandLong, mavlink::common::CommandAck>(
+    "/" + node.getName() + "/srv/command_long", "/" + node.getName() + "/out/command_long", "/" + node.getName() + "/in/command_ack"
+  );
 
   read_thread = LoopThread(&Mavlink::NodePrivate::readLoop, "mavlink read", 1, this);
   heartbeat_thread = TimerThread(&Mavlink::NodePrivate::heartbeatLoop, std::chrono::milliseconds(500), "mavlink hb", 1, this);
@@ -346,7 +385,8 @@ Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::
 
 Mavlink::NodePrivate::~NodePrivate() = default;
 
-void Mavlink::NodePrivate::readLoop() {
+void Mavlink::NodePrivate::readLoop()
+{
   std::array<u8, buffer_size> buffer;
   const std::size_t number_bytes = connection->read(buffer.data(), buffer_size);
 
@@ -360,15 +400,26 @@ void Mavlink::NodePrivate::readLoop() {
   }
 }
 
-void Mavlink::NodePrivate::heartbeatLoop() {
+void Mavlink::NodePrivate::heartbeatLoop()
+{
   mavlink_message_t message;
-  mavlink_msg_heartbeat_pack_chan(system_info.system_id, system_info.component_id, system_info.channel_id, &message,
-    MAV_TYPE_ONBOARD_CONTROLLER, MAV_AUTOPILOT_INVALID, 0, 0, MAV_STATE_ACTIVE);
+  mavlink_msg_heartbeat_pack_chan(
+    system_info.system_id,
+    system_info.component_id,
+    system_info.channel_id,
+    &message,
+    MAV_TYPE_ONBOARD_CONTROLLER,
+    MAV_AUTOPILOT_INVALID,
+    0,
+    0,
+    MAV_STATE_ACTIVE
+  );
 
   writeMessage(message);
 }
 
-void Mavlink::NodePrivate::readMessage(const mavlink_message_t &message) {
+void Mavlink::NodePrivate::readMessage(const mavlink_message_t &message)
+{
   auto iterator = sender_map.find(message.msgid);
 
   if (iterator == sender_map.end()) {
@@ -379,7 +430,8 @@ void Mavlink::NodePrivate::readMessage(const mavlink_message_t &message) {
   iterator->second->put(message);
 }
 
-void Mavlink::NodePrivate::writeMessage(const mavlink_message_t &message) {
+void Mavlink::NodePrivate::writeMessage(const mavlink_message_t &message)
+{
   std::array<u8, MAVLINK_MAX_PACKET_LEN> buffer;
   const std::size_t number_bytes = mavlink_msg_to_send_buffer(buffer.data(), &message);
 

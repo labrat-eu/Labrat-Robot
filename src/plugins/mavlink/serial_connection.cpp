@@ -20,7 +20,8 @@
 inline namespace labrat {
 namespace lbot::plugins {
 
-MavlinkSerialConnection::MavlinkSerialConnection(const std::string &port, u64 baud_rate) {
+MavlinkSerialConnection::MavlinkSerialConnection(const std::string &port, u64 baud_rate)
+{
   file_descriptor = open(port.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 
   if (file_descriptor == -1) {
@@ -77,12 +78,14 @@ MavlinkSerialConnection::MavlinkSerialConnection(const std::string &port, u64 ba
   sigaddset(&signal_mask, SIGINT);
 }
 
-MavlinkSerialConnection::~MavlinkSerialConnection() {
+MavlinkSerialConnection::~MavlinkSerialConnection()
+{
   close(epoll_handle);
   close(file_descriptor);
 }
 
-std::size_t MavlinkSerialConnection::write(const u8 *buffer, std::size_t size) {
+std::size_t MavlinkSerialConnection::write(const u8 *buffer, std::size_t size)
+{
   const ssize_t result = ::write(file_descriptor, buffer, size);
 
   if (result < 0 && errno != EAGAIN) {
@@ -95,7 +98,8 @@ std::size_t MavlinkSerialConnection::write(const u8 *buffer, std::size_t size) {
   return result;
 }
 
-std::size_t MavlinkSerialConnection::read(u8 *buffer, std::size_t size) {
+std::size_t MavlinkSerialConnection::read(u8 *buffer, std::size_t size)
+{
   {
     epoll_event event;
     const ssize_t result = epoll_pwait(epoll_handle, &event, 1, timeout, &signal_mask);

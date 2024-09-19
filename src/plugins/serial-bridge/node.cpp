@@ -31,14 +31,17 @@
 inline namespace labrat {
 namespace lbot::plugins {
 
-class SerialBridge::NodePrivate {
+class SerialBridge::NodePrivate
+{
 public:
-  struct BridgeSender {
+  struct BridgeSender
+  {
     std::unordered_map<std::string, Node::GenericSender<SerialBridge::Node::PayloadInfo>::Ptr> map;
     std::unordered_map<std::size_t, Node::GenericSender<SerialBridge::Node::PayloadInfo>::Ptr &> adapter;
   } sender;
 
-  struct BridgeReceiver {
+  struct BridgeReceiver
+  {
     std::vector<Node::GenericReceiver<SerialBridge::Node::PayloadInfo>::Ptr> vector;
   } receiver;
 
@@ -52,18 +55,21 @@ private:
   static constexpr std::size_t buffer_size = 16384;
   static constexpr std::size_t payload_size = buffer_size / 2;
 
-  struct TopicInfo {
+  struct TopicInfo
+  {
     std::size_t topic_hash;
     std::string_view topic_name;
     std::string_view type_name;
   };
 
-  struct HeaderWire {
+  struct HeaderWire
+  {
     u8 magic;
     u8 version_major;
     u8 version_minor;
 
-    enum class Type : u8 {
+    enum class Type : u8
+    {
       payload = 0,
       topic_info = 1,
       topic_request = 2,
@@ -80,21 +86,25 @@ private:
     static constexpr u8 version_major_check = GIT_VERSION_MAJOR;
     static constexpr u8 version_minor_check = GIT_VERSION_MINOR;
 
-    inline void init() {
+    inline void init()
+    {
       magic = magic_check;
       version_major = version_major_check;
       version_minor = version_minor_check;
     }
 
-    inline void finalize() {
+    inline void finalize()
+    {
       checksum = calculateChecksum();
     }
 
-    [[nodiscard]] inline bool check() const {
+    [[nodiscard]] inline bool check() const
+    {
       return checksum == calculateChecksum();
     }
 
-    [[nodiscard]] inline u16 calculateChecksum() const {
+    [[nodiscard]] inline u16 calculateChecksum() const
+    {
       crc_cpp::crc16_arc crc;
       const u8 *buffer = reinterpret_cast<const u8 *>(this);
 
@@ -107,23 +117,27 @@ private:
   };
 
   template <std::size_t Size>
-  class ChecksumBuffer : public std::array<u8, Size + sizeof(u16)> {
+  class ChecksumBuffer : public std::array<u8, Size + sizeof(u16)>
+  {
   public:
-    inline void finalize(std::size_t offset, u8 *buffer = nullptr) {
+    inline void finalize(std::size_t offset, u8 *buffer = nullptr)
+    {
       u8 *ptr = (buffer == nullptr) ? this->data() : buffer;
       u16 *checksum = reinterpret_cast<u16 *>(ptr + offset);
 
       *checksum = calculateChecksum(offset, ptr);
     }
 
-    inline bool check(std::size_t offset, const u8 *buffer = nullptr) const {
+    inline bool check(std::size_t offset, const u8 *buffer = nullptr) const
+    {
       const u8 *ptr = (buffer == nullptr) ? this->data() : buffer;
       const u16 *checksum = reinterpret_cast<const u16 *>(ptr + offset);
 
       return *checksum == calculateChecksum(offset, ptr);
     }
 
-    inline u16 calculateChecksum(std::size_t offset, const u8 *buffer) const {
+    inline u16 calculateChecksum(std::size_t offset, const u8 *buffer) const
+    {
       crc_cpp::crc16_arc crc;
 
       for (std::size_t i = 0; i < offset; ++i) {
@@ -134,7 +148,8 @@ private:
     }
   };
 
-  struct TopicWire {
+  struct TopicWire
+  {
     HeaderWire header;
 
     u16 topic_name_end;
@@ -145,7 +160,8 @@ private:
 
   static_assert(sizeof(TopicWire) <= buffer_size);
 
-  struct PayloadWire {
+  struct PayloadWire
+  {
     HeaderWire header;
 
     ChecksumBuffer<payload_size> data;
@@ -191,21 +207,26 @@ private:
   static constexpr u8 esc_offset = 0x10;
 };
 
-SerialBridge::SerialBridge(const std::string &port, u64 baud_rate) : Plugin() {
+SerialBridge::SerialBridge(const std::string &port, u64 baud_rate) :
+  Plugin()
+{
   node = addNode<SerialBridge::Node>(getName(), port, baud_rate);
 }
 
 SerialBridge::~SerialBridge() = default;
 
-SerialBridge::Node::Node(const std::string &port, u64 baud_rate) {
+SerialBridge::Node::Node(const std::string &port, u64 baud_rate)
+{
   priv = new SerialBridge::NodePrivate(port, baud_rate, *this);
 }
 
-SerialBridge::Node::~Node() {
+SerialBridge::Node::~Node()
+{
   delete priv;
 }
 
-void SerialBridge::Node::registerGenericSender(Node::GenericSender<SerialBridge::Node::PayloadInfo>::Ptr &&sender) {
+void SerialBridge::Node::registerGenericSender(Node::GenericSender<SerialBridge::Node::PayloadInfo>::Ptr &&sender)
+{
   if (!priv->sender.map
          .try_emplace(sender->getTopicInfo().topic_name, std::forward<Node::GenericSender<SerialBridge::Node::PayloadInfo>::Ptr>(sender))
          .second) {
@@ -213,15 +234,19 @@ void SerialBridge::Node::registerGenericSender(Node::GenericSender<SerialBridge:
   }
 }
 
-void SerialBridge::Node::registerGenericReceiver(Node::GenericReceiver<SerialBridge::Node::PayloadInfo>::Ptr &&receiver) {
+void SerialBridge::Node::registerGenericReceiver(Node::GenericReceiver<SerialBridge::Node::PayloadInfo>::Ptr &&receiver)
+{
   priv->receiver.vector.emplace_back(std::forward<Node::GenericReceiver<SerialBridge::Node::PayloadInfo>::Ptr>(receiver));
 }
 
-void SerialBridge::Node::receiverCallback(const SerialBridge::Node::PayloadInfo &message, SerialBridge::NodePrivate *node) {
+void SerialBridge::Node::receiverCallback(const SerialBridge::Node::PayloadInfo &message, SerialBridge::NodePrivate *node)
+{
   node->writePayloadMessage(message);
 }
 
-SerialBridge::NodePrivate::NodePrivate(const std::string &port, u64 baud_rate, SerialBridge::Node &node) : node(node) {
+SerialBridge::NodePrivate::NodePrivate(const std::string &port, u64 baud_rate, SerialBridge::Node &node) :
+  node(node)
+{
   file_descriptor = open(port.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
 
   if (file_descriptor == -1) {
@@ -285,14 +310,16 @@ SerialBridge::NodePrivate::NodePrivate(const std::string &port, u64 baud_rate, S
 
 SerialBridge::NodePrivate::~NodePrivate() = default;
 
-void SerialBridge::NodePrivate::readLoop() {
+void SerialBridge::NodePrivate::readLoop()
+{
   std::array<u8, buffer_size> buffer;
   const std::size_t size = read(buffer.data(), buffer_size);
 
   unescapeAndProcessMessage(buffer.data(), size);
 }
 
-void SerialBridge::NodePrivate::unescapeAndProcessMessage(const u8 *buffer, std::size_t size) {
+void SerialBridge::NodePrivate::unescapeAndProcessMessage(const u8 *buffer, std::size_t size)
+{
   for (std::size_t i = 0; i < size; ++i) {
     u8 current_byte = buffer[i];
 
@@ -317,7 +344,8 @@ void SerialBridge::NodePrivate::unescapeAndProcessMessage(const u8 *buffer, std:
   }
 }
 
-void SerialBridge::NodePrivate::escapeAndWriteMessage(const u8 *buffer, std::size_t size) {
+void SerialBridge::NodePrivate::escapeAndWriteMessage(const u8 *buffer, std::size_t size)
+{
   std::array<u8, buffer_size> encode_buffer;
   std::size_t encode_index = 0;
 
@@ -342,7 +370,8 @@ void SerialBridge::NodePrivate::escapeAndWriteMessage(const u8 *buffer, std::siz
   write(encode_buffer.data(), encode_index);
 }
 
-void SerialBridge::NodePrivate::processMessage(u8 *buffer, std::size_t size) {
+void SerialBridge::NodePrivate::processMessage(u8 *buffer, std::size_t size)
+{
   HeaderWire *header = reinterpret_cast<HeaderWire *>(buffer);
 
   if (size > buffer_size) {
@@ -438,7 +467,8 @@ void SerialBridge::NodePrivate::processMessage(u8 *buffer, std::size_t size) {
   }
 }
 
-void SerialBridge::NodePrivate::readPayloadMessage(const SerialBridge::Node::PayloadInfo &message) {
+void SerialBridge::NodePrivate::readPayloadMessage(const SerialBridge::Node::PayloadInfo &message)
+{
   auto iterator = sender.adapter.find(message.topic_hash);
 
   if (iterator == sender.adapter.end()) {
@@ -451,7 +481,8 @@ void SerialBridge::NodePrivate::readPayloadMessage(const SerialBridge::Node::Pay
   iterator->second->put(message);
 }
 
-void SerialBridge::NodePrivate::readTopicInfoMessage(const TopicInfo &message) {
+void SerialBridge::NodePrivate::readTopicInfoMessage(const TopicInfo &message)
+{
   auto iterator = sender.map.find(std::string(message.topic_name));
 
   if (iterator == sender.map.end()) {
@@ -468,7 +499,8 @@ void SerialBridge::NodePrivate::readTopicInfoMessage(const TopicInfo &message) {
   sender.adapter.try_emplace(message.topic_hash, iterator->second);
 }
 
-void SerialBridge::NodePrivate::readTopicRequestMessage(std::size_t topic_hash) {
+void SerialBridge::NodePrivate::readTopicRequestMessage(std::size_t topic_hash)
+{
   for (const Node::GenericReceiver<SerialBridge::Node::PayloadInfo>::Ptr &receiver : receiver.vector) {
     if (receiver->getTopicInfo().topic_hash == topic_hash) {
       TopicInfo message;
@@ -484,7 +516,8 @@ void SerialBridge::NodePrivate::readTopicRequestMessage(std::size_t topic_hash) 
   node.getLogger().logDebug() << "Requested topic hash receiver not found (topic hash: " << topic_hash << ").";
 }
 
-void SerialBridge::NodePrivate::writePayloadMessage(const SerialBridge::Node::PayloadInfo &message) {
+void SerialBridge::NodePrivate::writePayloadMessage(const SerialBridge::Node::PayloadInfo &message)
+{
   PayloadWire raw;
 
   if (message.payload.size() > payload_size) {
@@ -509,7 +542,8 @@ void SerialBridge::NodePrivate::writePayloadMessage(const SerialBridge::Node::Pa
   escapeAndWriteMessage(reinterpret_cast<u8 *>(&raw), length);
 }
 
-void SerialBridge::NodePrivate::writeTopicInfoMessage(const TopicInfo &message) {
+void SerialBridge::NodePrivate::writeTopicInfoMessage(const TopicInfo &message)
+{
   if (message.topic_name.empty()) {
     node.getLogger().logError() << "The sent topic name must not be empty.";
     return;
@@ -551,7 +585,8 @@ void SerialBridge::NodePrivate::writeTopicInfoMessage(const TopicInfo &message) 
   escapeAndWriteMessage(reinterpret_cast<u8 *>(&raw), length);
 }
 
-void SerialBridge::NodePrivate::writeTopicRequestMessage(std::size_t topic_hash) {
+void SerialBridge::NodePrivate::writeTopicRequestMessage(std::size_t topic_hash)
+{
   HeaderWire raw;
 
   raw.init();
@@ -566,7 +601,8 @@ void SerialBridge::NodePrivate::writeTopicRequestMessage(std::size_t topic_hash)
   escapeAndWriteMessage(reinterpret_cast<u8 *>(&raw), sizeof(HeaderWire));
 }
 
-std::size_t SerialBridge::NodePrivate::write(const u8 *buffer, std::size_t size) const {
+std::size_t SerialBridge::NodePrivate::write(const u8 *buffer, std::size_t size) const
+{
   const ssize_t result = ::write(file_descriptor, buffer, size);
 
   if (result < 0 && errno != EAGAIN) {
@@ -579,7 +615,8 @@ std::size_t SerialBridge::NodePrivate::write(const u8 *buffer, std::size_t size)
   return result;
 }
 
-std::size_t SerialBridge::NodePrivate::read(u8 *buffer, std::size_t size) const {
+std::size_t SerialBridge::NodePrivate::read(u8 *buffer, std::size_t size) const
+{
   {
     epoll_event event;
     const ssize_t result = epoll_pwait(epoll_handle, &event, 1, timeout, &signal_mask);

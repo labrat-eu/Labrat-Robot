@@ -28,16 +28,21 @@
 inline namespace labrat {
 namespace lbot::plugins {
 
-class McapRecorderPrivate {
+class McapRecorderPrivate
+{
 public:
-  McapRecorderPrivate() : logger("mcap") {
+  McapRecorderPrivate() :
+    logger("mcap")
+  {
     Config::Ptr config = Config::get();
     const std::string filename =
       config
-        ->getParameterFallback("/lbot/plugins/mcap/tracefile",
+        ->getParameterFallback(
+          "/lbot/plugins/mcap/tracefile",
           "trace_"
             + std::to_string(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count())
-            + ".mcap")
+            + ".mcap"
+        )
         .get<std::string>();
 
     const mcap::McapWriterOptions options("");
@@ -50,15 +55,19 @@ public:
     enable_callbacks.test_and_set();
   }
 
-  ~McapRecorderPrivate() {
+  ~McapRecorderPrivate()
+  {
     writer.close();
   }
 
-  struct ChannelInfo {
+  struct ChannelInfo
+  {
     mcap::Channel channel;
     u64 index = 0;
 
-    ChannelInfo(const std::string_view topic, const std::string_view encoding, mcap::SchemaId schema) : channel(topic, encoding, schema) {}
+    ChannelInfo(const std::string_view topic, const std::string_view encoding, mcap::SchemaId schema) :
+      channel(topic, encoding, schema)
+    {}
   };
 
   using ChannelMap = std::unordered_map<std::size_t, ChannelInfo>;
@@ -79,38 +88,51 @@ private:
   Logger logger;
 };
 
-McapRecorder::McapRecorder() : UniquePlugin("mcap") {
+McapRecorder::McapRecorder() :
+  UniquePlugin("mcap")
+{
   priv = new McapRecorderPrivate();
 }
 
-McapRecorder::~McapRecorder() {
+McapRecorder::~McapRecorder()
+{
   delete priv;
 }
 
-void McapRecorder::topicCallback(const TopicInfo &info) {
+void McapRecorder::topicCallback(const TopicInfo &info)
+{
   if (priv->enable_callbacks.test()) {
     (void)priv->handleTopic(info);
   }
 }
 
-void McapRecorder::messageCallback(const MessageInfo &info) {
+void McapRecorder::messageCallback(const MessageInfo &info)
+{
   if (priv->enable_callbacks.test()) {
     (void)priv->handleMessage(info);
   }
 }
 
-McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleTopic(const TopicInfo &info) {
+McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleTopic(const TopicInfo &info)
+{
   SchemaMap::iterator schema_iterator = schema_map.find(info.type_hash);
   if (schema_iterator == schema_map.end()) {
-    schema_iterator = schema_map.emplace_hint(schema_iterator, std::piecewise_construct, std::forward_as_tuple(info.type_hash),
-      std::forward_as_tuple(info.type_name, "flatbuffer", info.type_reflection));
+    schema_iterator = schema_map.emplace_hint(
+      schema_iterator,
+      std::piecewise_construct,
+      std::forward_as_tuple(info.type_hash),
+      std::forward_as_tuple(info.type_name, "flatbuffer", info.type_reflection)
+    );
 
     std::lock_guard guard(mutex);
     writer.addSchema(schema_iterator->second);
   }
 
-  const std::pair<ChannelMap::iterator, bool> result = channel_map.emplace(std::piecewise_construct, std::forward_as_tuple(info.topic_hash),
-    std::forward_as_tuple(info.topic_name, "flatbuffer", schema_iterator->second.id));
+  const std::pair<ChannelMap::iterator, bool> result = channel_map.emplace(
+    std::piecewise_construct,
+    std::forward_as_tuple(info.topic_hash),
+    std::forward_as_tuple(info.topic_name, "flatbuffer", schema_iterator->second.id)
+  );
 
   if (result.second) {
     std::lock_guard guard(mutex);
@@ -120,7 +142,8 @@ McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleTopic(const
   return result.first;
 }
 
-inline McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleMessage(const MessageInfo &info) {
+inline McapRecorderPrivate::ChannelMap::iterator McapRecorderPrivate::handleMessage(const MessageInfo &info)
+{
   ChannelMap::iterator channel_iterator = channel_map.find(info.topic_info.topic_hash);
   if (channel_iterator == channel_map.end()) {
     channel_iterator = handleTopic(info.topic_info);

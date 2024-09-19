@@ -27,7 +27,8 @@ namespace lbot::plugins {
  * In addition, servers are provided to issue commands and read out parameters.
  *
  */
-class Mavlink final : public Plugin {
+class Mavlink final : public Plugin
+{
 public:
   /**
    * @brief Construct a new Mavlink object.
@@ -47,7 +48,8 @@ public:
    * @param id Message ID of the underlying MAVLink message.
    */
   template <typename MessageType>
-  void registerSender(std::string topic_name, u16 id) {
+  void registerSender(std::string topic_name, u16 id)
+  {
     node->registerSender<MessageType>(std::forward<std::string>(topic_name), id);
   }
 
@@ -59,28 +61,35 @@ public:
    * @param conversion_function Conversion function used by the receiver.
    */
   template <typename MessageType>
-  void registerReceiver(std::string topic_name) {
+  void registerReceiver(std::string topic_name)
+  {
     node->registerReceiver<MessageType>(std::forward<std::string>(topic_name));
   }
 
 private:
   class NodePrivate;
 
-  struct SystemInfo {
+  struct SystemInfo
+  {
     NodePrivate *node;
     u8 channel_id;
     u8 system_id;
     u8 component_id;
   };
 
-  class Node final : public lbot::Node {
+  class Node final : public lbot::Node
+  {
   private:
     template <typename FlatbufferType>
-    class MavlinkMessage : public MessageBase<FlatbufferType, mavlink_message_t> {
+    class MavlinkMessage : public MessageBase<FlatbufferType, mavlink_message_t>
+    {
     public:
       static void convertFrom(const mavlink_message_t &source, MessageBase<FlatbufferType, mavlink_message_t> &destination);
-      static void convertTo(const MessageBase<FlatbufferType, mavlink_message_t> &source, mavlink_message_t &destination,
-        const Mavlink::SystemInfo *info);
+      static void convertTo(
+        const MessageBase<FlatbufferType, mavlink_message_t> &source,
+        mavlink_message_t &destination,
+        const Mavlink::SystemInfo *info
+      );
     };
 
   public:
@@ -108,7 +117,8 @@ private:
      * @param id Message ID of the underlying MAVLink message.
      */
     template <typename MessageType>
-    void registerSender(std::string &&topic_name, u16 id) {
+    void registerSender(std::string &&topic_name, u16 id)
+    {
       registerGenericSender(addSender<MessageType>(topic_name), id);
     }
 
@@ -120,7 +130,8 @@ private:
      * @param conversion_function Conversion function used by the receiver.
      */
     template <typename MessageType>
-    void registerReceiver(std::string &&topic_name) {
+    void registerReceiver(std::string &&topic_name)
+    {
       typename Node::Receiver<MessageType>::Ptr receiver = addReceiver<MessageType>(topic_name, &getSystemInfo());
       receiver->setCallback(&Node::receiverCallback, &getSystemInfo());
 
