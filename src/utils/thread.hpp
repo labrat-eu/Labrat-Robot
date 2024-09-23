@@ -126,6 +126,19 @@ public:
     }, std::forward<Function>(function), std::forward<Args>(args)...);
   }
 
+  ~LoopThread()
+  {
+    stop();
+  }
+
+  void stop()
+  {
+    if (thread.joinable()) {
+      thread.request_stop();
+      thread.join();
+    }
+  }
+
   void operator=(LoopThread &&rhs) noexcept
   {
     thread = std::move(rhs.thread);
@@ -205,12 +218,22 @@ public:
 
   ~TimerThread()
   {
+    stop();
+  }
+
+  void stop()
+  {
     if (exit_flag) {
       *exit_flag = true;
     }
 
     if (condition) {
       condition->notifyOne();
+    }
+
+    if (thread.joinable()) {
+      thread.request_stop();
+      thread.join();
     }
   }
 
