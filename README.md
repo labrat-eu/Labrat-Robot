@@ -64,5 +64,6 @@ conan export-pkg .
 ## Automatically format the code
 You may automatically format the code by running the following command.
 ```
+shopt -s globstar
 clang-format -i --style=file:build/Debug/.clang-format src/*.cpp src/*.hpp src/**/*.cpp src/**/*.hpp
 ```
