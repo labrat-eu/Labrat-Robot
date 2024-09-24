@@ -501,10 +501,18 @@ public:
      * @details This call might block. However, it is guaranteed that successive calls will yield different messages.
      * Subsequent calls to latest() are unsafe.
      *
+     * @param timeout_duration Duration of the timeout after which an exception will be thrown.
      * @return ConvertedType The next message sent over the topic.
      * @throw TopicNoDataAvailableException When the topic has no valid data available.
+     * @throw TopicTimeoutException When the timeout is exceeded.
      */
-    virtual ConvertedType next() = 0;
+    virtual ConvertedType next(const std::chrono::nanoseconds &timeout_duration = std::chrono::nanoseconds::zero()) = 0;
+
+    template <typename R, typename P>
+    ConvertedType next(const std::chrono::duration<R, P> &timeout_duration = std::chrono::nanoseconds::zero())
+    {
+      return next(std::chrono::duration_cast<std::chrono::nanoseconds>(timeout_duration));
+    }
 
     /**
      * @brief Get the internal buffer size.
@@ -835,10 +843,12 @@ public:
      * @details This call might block. However, it is guaranteed that successive calls will yield different messages.
      * Subsequent calls to latest() are unsafe.
      *
+     * @param timeout_duration Duration of the timeout after which an exception will be thrown.
      * @return Converted The next message sent over the topic.
      * @throw TopicNoDataAvailableException When the topic has no valid data available.
+     * @throw TopicTimeoutException When the timeout is exceeded.
      */
-    Converted next() override
+    Converted next(const std::chrono::nanoseconds &timeout_duration = std::chrono::nanoseconds::zero()) override
     {
       if constexpr (is_const_message<MessageType>) {
         throw BadUsageException("You cannot call next() in const messages.", GenericReceiver<Converted>::node.getLogger());
@@ -847,6 +857,8 @@ public:
       if (GenericReceiver<Converted>::flush_flag) {
         throw TopicNoDataAvailableException("Topic was flushed.", GenericReceiver<Converted>::node.getLogger());
       }
+
+      const std::chrono::steady_clock::time_point timeout_point = std::chrono::steady_clock::now() + timeout_duration;
 
       Converted result;
 
@@ -872,7 +884,13 @@ public:
             break;
           }
 
-          GenericReceiver<Converted>::condition.wait(lock);
+          if (timeout_duration == std::chrono::nanoseconds::zero()) {
+            GenericReceiver<Converted>::condition.wait(lock);
+          } else {
+            if (GenericReceiver<Converted>::condition.wait_until(lock, timeout_point) == std::cv_status::timeout) {
+              throw TopicTimeoutException("Receiver topic timeout.", GenericReceiver<Converted>::node.getLogger());
+            }
+          }
         }
 
         if constexpr (can_move_from<MessageType>) {
@@ -1411,8 +1429,7 @@ public:
      * @throw ServiceUnavailableException When no server is handling requests to the relevant service.
      * @throw ServiceTimeoutException When the timeout is exceeded.
      */
-    template <typename R, typename P>
-    ResponseConverted callSync(const RequestConverted &request, const std::chrono::duration<R, P> &timeout_duration)
+    ResponseConverted callSync(const RequestConverted &request, const std::chrono::nanoseconds &timeout_duration)
     {
       Future future = callAsync(request, ExecutionPolicy::parallel);
 
@@ -1421,6 +1438,12 @@ public:
       }
 
       return future.get();
+    }
+
+    template <typename R, typename P>
+    ResponseConverted callSync(const RequestConverted &request, const std::chrono::duration<R, P> &timeout_duration)
+    {
+      return callSync(request, std::chrono::duration_cast<std::chrono::nanoseconds>(timeout_duration));
     }
   };
 

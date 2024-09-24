@@ -23,6 +23,7 @@
 #include <labrat/lbot/plugins/mavlink/msg/esc_info.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/esc_status.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/estimator_status.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/event.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/extended_sys_state.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/global_position_int.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/gps_global_origin.hpp>
@@ -34,7 +35,14 @@
 #include <labrat/lbot/plugins/mavlink/msg/link_node_status.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/local_position_ned.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/local_position_ned_system_global_offset.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_ack.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_clear_all.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_count.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/mission_current.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_item_int.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_item_reached.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_request_int.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_request_list.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/nav_controller_output.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/odometry.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/open_drone_id_location.hpp>
@@ -117,6 +125,8 @@ public:
     ServerInfo<mavlink::common::ParamRequestRead, mavlink::common::ParamValue>::Ptr param_request_read;
     ServerInfo<mavlink::common::CommandInt, mavlink::common::CommandAck>::Ptr command_int;
     ServerInfo<mavlink::common::CommandLong, mavlink::common::CommandAck>::Ptr command_long;
+    ServerInfo<mavlink::common::MissionRequestList, mavlink::common::MissionCount>::Ptr command_mission_request_list;
+    ServerInfo<mavlink::common::MissionRequestInt, mavlink::common::MissionItemInt>::Ptr command_mission_request_int;
   } server;
 
   NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::Node &node);
@@ -181,10 +191,12 @@ Mavlink::NodePrivate::MavlinkServer::handle<mavlink::common::ParamRequestRead, m
     info->sender->put(request);
 
     try {
-      result = info->receiver->next();
-
+      result = info->receiver->next(std::chrono::seconds(1));
     } catch (TopicNoDataAvailableException &) {
       throw ServiceUnavailableException("MAVLink parameter request failed due to flushed topic.", info->node->getLogger());
+    } catch (TopicTimeoutException &) {
+      throw ServiceTimeoutException("MAVLink  parameter request failed due to timeout.", info->node->getLogger());
+      ;
     }
   } while (result.param_id != request.param_id);
 
@@ -203,10 +215,12 @@ Message<mavlink::common::CommandAck> Mavlink::NodePrivate::MavlinkServer::handle
     info->sender->put(request);
 
     try {
-      result = info->receiver->next();
-
+      result = info->receiver->next(std::chrono::seconds(1));
     } catch (TopicNoDataAvailableException &) {
       throw ServiceUnavailableException("MAVLink command failed due to flushed topic.", info->node->getLogger());
+    } catch (TopicTimeoutException &) {
+      throw ServiceTimeoutException("MAVLink command failed due to timeout.", info->node->getLogger());
+      ;
     }
   } while (result.command != request.command);
 
@@ -225,12 +239,64 @@ Message<mavlink::common::CommandAck> Mavlink::NodePrivate::MavlinkServer::handle
     info->sender->put(request);
 
     try {
-      result = info->receiver->next();
-
+      result = info->receiver->next(std::chrono::seconds(1));
     } catch (TopicNoDataAvailableException &) {
       throw ServiceUnavailableException("MAVLink command failed due to flushed topic.", info->node->getLogger());
+    } catch (TopicTimeoutException &) {
+      throw ServiceTimeoutException("MAVLink command failed due to timeout.", info->node->getLogger());
+      ;
     }
   } while (result.command != request.command);
+
+  return result;
+}
+
+template <>
+Message<mavlink::common::MissionCount>
+Mavlink::NodePrivate::MavlinkServer::handle<mavlink::common::MissionRequestList, mavlink::common::MissionCount>(
+  const Message<mavlink::common::MissionRequestList> &request,
+  ServerInfo<mavlink::common::MissionRequestList, mavlink::common::MissionCount> *info
+)
+{
+  Message<mavlink::common::MissionCount> result;
+
+  do {
+    info->sender->put(request);
+
+    try {
+      result = info->receiver->next(std::chrono::seconds(1));
+    } catch (TopicNoDataAvailableException &) {
+      throw ServiceUnavailableException("MAVLink mission list request failed due to flushed topic.", info->node->getLogger());
+    } catch (TopicTimeoutException &) {
+      throw ServiceTimeoutException("MAVLink mission list request failed due to timeout.", info->node->getLogger());
+      ;
+    }
+  } while (result.mission_type != request.mission_type);
+
+  return result;
+}
+
+template <>
+Message<mavlink::common::MissionItemInt>
+Mavlink::NodePrivate::MavlinkServer::handle<mavlink::common::MissionRequestInt, mavlink::common::MissionItemInt>(
+  const Message<mavlink::common::MissionRequestInt> &request,
+  ServerInfo<mavlink::common::MissionRequestInt, mavlink::common::MissionItemInt> *info
+)
+{
+  Message<mavlink::common::MissionItemInt> result;
+
+  do {
+    info->sender->put(request);
+
+    try {
+      result = info->receiver->next(std::chrono::seconds(1));
+    } catch (TopicNoDataAvailableException &) {
+      throw ServiceUnavailableException("MAVLink mission item request failed due to flushed topic.", info->node->getLogger());
+    } catch (TopicTimeoutException &) {
+      throw ServiceTimeoutException("MAVLink mission item request failed due to timeout.", info->node->getLogger());
+      ;
+    }
+  } while (result.seq != request.seq);
 
   return result;
 }
@@ -345,6 +411,13 @@ Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::
   addSender<mavlink::common::EscInfo>("/" + node.getName() + "/in/esc_info", MAVLINK_MSG_ID_ESC_INFO);
   addSender<mavlink::common::EscStatus>("/" + node.getName() + "/in/esc_status", MAVLINK_MSG_ID_ESC_STATUS);
   addSender<mavlink::common::MissionCurrent>("/" + node.getName() + "/in/mission_current", MAVLINK_MSG_ID_MISSION_CURRENT);
+  addSender<mavlink::common::MissionRequestList>("/" + node.getName() + "/in/mission_request_list", MAVLINK_MSG_ID_MISSION_REQUEST_LIST);
+  addSender<mavlink::common::MissionRequestInt>("/" + node.getName() + "/in/mission_request_int", MAVLINK_MSG_ID_MISSION_REQUEST_INT);
+  addSender<mavlink::common::MissionCount>("/" + node.getName() + "/in/mission_count", MAVLINK_MSG_ID_MISSION_COUNT);
+  addSender<mavlink::common::MissionClearAll>("/" + node.getName() + "/in/mission_clear_all", MAVLINK_MSG_ID_MISSION_CLEAR_ALL);
+  addSender<mavlink::common::MissionItemReached>("/" + node.getName() + "/in/mission_item_reached", MAVLINK_MSG_ID_MISSION_ITEM_REACHED);
+  addSender<mavlink::common::MissionItemInt>("/" + node.getName() + "/in/mission_item_int", MAVLINK_MSG_ID_MISSION_ITEM_INT);
+  addSender<mavlink::common::MissionAck>("/" + node.getName() + "/in/mission_ack", MAVLINK_MSG_ID_MISSION_ACK);
   addSender<mavlink::common::Odometry>("/" + node.getName() + "/in/odometry", MAVLINK_MSG_ID_ODOMETRY);
   addSender<mavlink::common::UtmGlobalPosition>("/" + node.getName() + "/in/utm_global_position", MAVLINK_MSG_ID_UTM_GLOBAL_POSITION);
   addSender<mavlink::common::TimeEstimateToTarget>(
@@ -358,6 +431,7 @@ Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::
   );
   addSender<mavlink::common::OpenDroneIdSystem>("/" + node.getName() + "/in/open_drone_id_system", MAVLINK_MSG_ID_OPEN_DRONE_ID_SYSTEM);
   addSender<mavlink::common::WindCov>("/" + node.getName() + "/in/wind_cov", MAVLINK_MSG_ID_WIND_COV);
+  addSender<mavlink::common::Event>("/" + node.getName() + "/in/event", MAVLINK_MSG_ID_EVENT);
 
   addReceiver<mavlink::common::ParamRequestRead>("/" + node.getName() + "/out/param_request_read");
   addReceiver<mavlink::common::SetPositionTargetLocalNed>("/" + node.getName() + "/out/set_position_target_local_ned");
@@ -366,6 +440,9 @@ Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::
   addReceiver<mavlink::common::Timesync>("/" + node.getName() + "/out/timesync");
   addReceiver<mavlink::common::SystemTime>("/" + node.getName() + "/out/system_time");
   addReceiver<mavlink::common::RcChannelsOverride>("/" + node.getName() + "/out/rc_channels_override");
+  addReceiver<mavlink::common::MissionRequestList>("/" + node.getName() + "/out/mission_request_list");
+  addReceiver<mavlink::common::MissionRequestInt>("/" + node.getName() + "/out/mission_request_int");
+  addReceiver<mavlink::common::MissionAck>("/" + node.getName() + "/out/mission_ack");
 
   server.param_request_read = addServer<mavlink::common::ParamRequestRead, mavlink::common::ParamValue>(
     "/" + node.getName() + "/srv/param_request_read",
@@ -377,6 +454,16 @@ Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::
   );
   server.command_long = addServer<mavlink::common::CommandLong, mavlink::common::CommandAck>(
     "/" + node.getName() + "/srv/command_long", "/" + node.getName() + "/out/command_long", "/" + node.getName() + "/in/command_ack"
+  );
+  server.command_mission_request_list = addServer<mavlink::common::MissionRequestList, mavlink::common::MissionCount>(
+    "/" + node.getName() + "/srv/mission_request_list",
+    "/" + node.getName() + "/out/mission_request_list",
+    "/" + node.getName() + "/in/mission_count"
+  );
+  server.command_mission_request_int = addServer<mavlink::common::MissionRequestInt, mavlink::common::MissionItemInt>(
+    "/" + node.getName() + "/srv/mission_request_int",
+    "/" + node.getName() + "/out/mission_request_int",
+    "/" + node.getName() + "/in/mission_item_int"
   );
 
   read_thread = LoopThread(&Mavlink::NodePrivate::readLoop, "mavlink read", 1, this);

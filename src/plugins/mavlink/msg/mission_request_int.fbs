@@ -6,7 +6,7 @@ table MissionRequestInt {
   seq:ushort;
   target_system:ubyte;
   target_component:ubyte;
-  mission_type:ubyte;
+  mission_type:MissionType;
 }
 
 root_type MissionRequestInt;

@@ -22,6 +22,7 @@
 #include <labrat/lbot/plugins/mavlink/msg/esc_info.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/esc_status.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/estimator_status.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/event.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/extended_sys_state.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/global_position_int.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/gps_global_origin.hpp>
@@ -33,7 +34,14 @@
 #include <labrat/lbot/plugins/mavlink/msg/link_node_status.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/local_position_ned.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/local_position_ned_system_global_offset.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_ack.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_clear_all.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_count.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/mission_current.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_item_int.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_item_reached.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_request_int.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/mission_request_list.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/nav_controller_output.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/odometry.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/open_drone_id_location.hpp>
@@ -751,6 +759,78 @@ void Mavlink::Node::MavlinkMessage<mavlink::common::MissionCurrent>::convertFrom
 }
 
 template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::MissionRequestList>::convertFrom(const Converted &source, Storage &destination)
+{
+  destination.target_system = mavlink_msg_mission_request_list_get_target_system(&source);
+  destination.target_component = mavlink_msg_mission_request_list_get_target_component(&source);
+  destination.mission_type = static_cast<mavlink::common::MissionType>(mavlink_msg_mission_request_list_get_mission_type(&source));
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::MissionRequestInt>::convertFrom(const Converted &source, Storage &destination)
+{
+  destination.target_system = mavlink_msg_mission_request_int_get_target_system(&source);
+  destination.target_component = mavlink_msg_mission_request_int_get_target_component(&source);
+  destination.seq = mavlink_msg_mission_request_int_get_seq(&source);
+  destination.mission_type = static_cast<mavlink::common::MissionType>(mavlink_msg_mission_request_int_get_mission_type(&source));
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::MissionCount>::convertFrom(const Converted &source, Storage &destination)
+{
+  destination.target_system = mavlink_msg_mission_count_get_target_system(&source);
+  destination.target_component = mavlink_msg_mission_count_get_target_component(&source);
+  destination.count = mavlink_msg_mission_count_get_count(&source);
+  destination.mission_type = static_cast<mavlink::common::MissionType>(mavlink_msg_mission_count_get_mission_type(&source));
+  destination.opaque_id = mavlink_msg_mission_count_get_opaque_id(&source);
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::MissionClearAll>::convertFrom(const Converted &source, Storage &destination)
+{
+  destination.target_system = mavlink_msg_mission_clear_all_get_target_system(&source);
+  destination.target_component = mavlink_msg_mission_clear_all_get_target_component(&source);
+  destination.mission_type = static_cast<mavlink::common::MissionType>(mavlink_msg_mission_clear_all_get_mission_type(&source));
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::MissionItemReached>::convertFrom(const Converted &source, Storage &destination)
+{
+  destination.seq = mavlink_msg_mission_item_reached_get_seq(&source);
+  ;
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::MissionItemInt>::convertFrom(const Converted &source, Storage &destination)
+{
+  destination.target_system = mavlink_msg_mission_item_int_get_target_system(&source);
+  destination.target_component = mavlink_msg_mission_item_int_get_target_component(&source);
+  destination.seq = mavlink_msg_mission_item_int_get_seq(&source);
+  destination.frame = static_cast<mavlink::common::Frame>(mavlink_msg_mission_item_int_get_frame(&source));
+  destination.command = static_cast<mavlink::common::Cmd>(mavlink_msg_mission_item_int_get_command(&source));
+  destination.current = mavlink_msg_mission_item_int_get_current(&source);
+  destination.autocontinue = mavlink_msg_mission_item_int_get_autocontinue(&source);
+  destination.param1 = mavlink_msg_mission_item_int_get_param1(&source);
+  destination.param2 = mavlink_msg_mission_item_int_get_param2(&source);
+  destination.param3 = mavlink_msg_mission_item_int_get_param3(&source);
+  destination.param4 = mavlink_msg_mission_item_int_get_param4(&source);
+  destination.x = mavlink_msg_mission_item_int_get_x(&source);
+  destination.y = mavlink_msg_mission_item_int_get_y(&source);
+  destination.z = mavlink_msg_mission_item_int_get_z(&source);
+  destination.mission_type = static_cast<mavlink::common::MissionType>(mavlink_msg_mission_item_int_get_mission_type(&source));
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::MissionAck>::convertFrom(const Converted &source, Storage &destination)
+{
+  destination.target_system = mavlink_msg_mission_count_get_target_system(&source);
+  destination.target_component = mavlink_msg_mission_count_get_target_component(&source);
+  destination.type = static_cast<mavlink::common::MissionResult>(mavlink_msg_mission_count_get_count(&source));
+  destination.mission_type = static_cast<mavlink::common::MissionType>(mavlink_msg_mission_count_get_mission_type(&source));
+  destination.opaque_id = mavlink_msg_mission_count_get_opaque_id(&source);
+}
+
+template <>
 void Mavlink::Node::MavlinkMessage<mavlink::common::Odometry>::convertFrom(const Converted &source, Storage &destination)
 {
   destination.x = mavlink_msg_odometry_get_x(&source);
@@ -892,6 +972,20 @@ void Mavlink::Node::MavlinkMessage<mavlink::common::WindCov>::convertFrom(const 
   destination.wind_alt = mavlink_msg_wind_cov_get_wind_alt(&source);
   destination.horiz_accuracy = mavlink_msg_wind_cov_get_horiz_accuracy(&source);
   destination.vert_accuracy = mavlink_msg_wind_cov_get_vert_accuracy(&source);
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::Event>::convertFrom(const Converted &source, Storage &destination)
+{
+  destination.destination_component = mavlink_msg_event_get_destination_component(&source);
+  destination.destination_system = mavlink_msg_event_get_destination_system(&source);
+  destination.id = mavlink_msg_event_get_id(&source);
+  destination.event_time_boot_ms = mavlink_msg_event_get_event_time_boot_ms(&source);
+  destination.sequence = mavlink_msg_event_get_sequence(&source);
+  destination.log_levels = mavlink_msg_event_get_log_levels(&source);
+
+  destination.arguments.resize(40);
+  mavlink_msg_event_get_arguments(&source, destination.arguments.data());
 }
 
 template <>
@@ -1065,6 +1159,63 @@ void Mavlink::Node::MavlinkMessage<mavlink::common::RcChannelsOverride>::convert
     source.chan16_raw,
     source.chan17_raw,
     source.chan18_raw
+  );
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::MissionRequestList>::convertTo(
+  const Storage &source,
+  Converted &destination,
+  const Mavlink::SystemInfo *info
+)
+{
+  mavlink_msg_mission_request_list_pack_chan(
+    info->system_id,
+    info->component_id,
+    info->channel_id,
+    &destination,
+    source.target_system,
+    source.target_component,
+    static_cast<u8>(source.mission_type)
+  );
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::MissionRequestInt>::convertTo(
+  const Storage &source,
+  Converted &destination,
+  const Mavlink::SystemInfo *info
+)
+{
+  mavlink_msg_mission_request_int_pack_chan(
+    info->system_id,
+    info->component_id,
+    info->channel_id,
+    &destination,
+    source.target_system,
+    source.target_component,
+    source.seq,
+    static_cast<u8>(source.mission_type)
+  );
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::MissionAck>::convertTo(
+  const Storage &source,
+  Converted &destination,
+  const Mavlink::SystemInfo *info
+)
+{
+  mavlink_msg_mission_ack_pack_chan(
+    info->system_id,
+    info->component_id,
+    info->channel_id,
+    &destination,
+    source.target_system,
+    source.target_component,
+    static_cast<u8>(source.type),
+    static_cast<u8>(source.mission_type),
+    source.opaque_id
   );
 }
 

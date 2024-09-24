@@ -151,6 +151,11 @@ class TopicNoDataAvailableException : public Exception
   using Exception::Exception;
 };
 
+class TopicTimeoutException : public Exception
+{
+  using Exception::Exception;
+};
+
 class ServiceUnavailableException : public Exception
 {
   using Exception::Exception;
