@@ -116,9 +116,8 @@ public:
         sender = node->addSender<T>(sender_topic);
         receiver = node->addReceiver<U>(receiver_topic);
 
-        Message<U> (*ptr)(const Message<T> &, ServerInfo<T, U> *) = handle<T, U>;
         server = node->addServer<T, U>(service);
-        server->setHandler(ptr, this);
+        server->setHandler(MavlinkServer::handle<T, U>, this);
       }
     };
 
