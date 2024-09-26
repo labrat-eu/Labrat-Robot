@@ -16,6 +16,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <list>
 #include <mutex>
 #include <queue>
 #include <thread>
@@ -97,8 +98,10 @@ public:
     server = foxglove::ServerFactory::createServer<websocketpp::connection_hdl>(name, log_handler, options);
 
     foxglove::ServerHandlers<websocketpp::connection_hdl> handlers;
-    handlers.subscribeHandler = [&](foxglove::ChannelId channel_id, websocketpp::connection_hdl) -> void {
+    handlers.subscribeHandler = [&](foxglove::ChannelId channel_id, websocketpp::connection_hdl handle) -> void {
       logger.logInfo() << "Client subscribed to " << channel_id;
+
+      handleSubscription(channel_id, handle);
     };
     handlers.unsubscribeHandler = [&](foxglove::ChannelId channel_id, websocketpp::connection_hdl) -> void {
       logger.logInfo() << "Client unsubscribed from " << channel_id;
@@ -130,18 +133,42 @@ public:
         (void)exit_mutex.try_lock_until(time + std::chrono::milliseconds(10));
       }
     });
+
+    housekeeping_thread = std::jthread([this](std::stop_token token) {
+      while (!token.stop_requested()) {
+        const std::chrono::steady_clock::time_point time = std::chrono::steady_clock::now();
+
+        for (std::list<std::jthread>::iterator iter = cache_threads.begin(); iter != cache_threads.end();) {
+          const std::list<std::jthread>::iterator current_iter = iter;
+          ++iter;
+
+          if (!current_iter->joinable()) {
+            continue;
+          }
+
+          current_iter->join();
+
+          std::lock_guard guard(mutex);
+          cache_threads.erase(current_iter);
+        }
+
+        (void)exit_mutex.try_lock_until(time + std::chrono::seconds(1));
+      }
+    });
   }
 
   ~FoxgloveServerPrivate()
   {
     time_thread.request_stop();
+    housekeeping_thread.request_stop();
     exit_mutex.unlock();
 
-    for (const std::pair<std::size_t, foxglove::ChannelId> channel : channel_id_map) {
-      server->removeChannels({channel.second});
+    for (std::pair<std::size_t, const ChannelInfo &> channel : channel_map) {
+      server->removeChannels({channel.second.id});
     }
 
     time_thread.join();
+    housekeeping_thread.join();
 
     server->stop();
   }
@@ -157,17 +184,29 @@ public:
     {}
   };
 
-  using SchemaMap = std::unordered_map<std::size_t, SchemaInfo>;
-  using ChannelIdMap = std::unordered_map<std::size_t, foxglove::ChannelId>;
+  struct ChannelInfo
+  {
+    foxglove::ChannelId id;
+    Clock::time_point last_message_timestamp;
+    std::vector<u8> last_message_data;
 
-  ChannelIdMap::iterator handleTopic(const TopicInfo &info);
-  ChannelIdMap::iterator handleMessage(const MessageInfo &info);
+    ChannelInfo(foxglove::ChannelId id) :
+      id(id)
+    {}
+  };
+
+  using SchemaMap = std::unordered_map<std::size_t, SchemaInfo>;
+  using ChannelMap = std::unordered_map<std::size_t, ChannelInfo>;
+  using ChannelIdMap = std::unordered_map<foxglove::ChannelId, ChannelInfo &>;
+
+  ChannelMap::iterator handleTopic(const TopicInfo &info);
+  ChannelMap::iterator handleMessage(const MessageInfo &info);
 
   std::atomic_flag enable_callbacks;
-  std::jthread time_thread;
 
 private:
   SchemaMap::iterator handleSchema(std::string_view type_name, std::size_t type_hash, std::string_view type_reflection);
+  void handleSubscription(foxglove::ChannelId channel_id, websocketpp::connection_hdl handle);
   void handleParameterRequest(
     const std::vector<std::string> &names,
     const std::optional<std::string> &command,
@@ -175,6 +214,7 @@ private:
   );
 
   SchemaMap schema_map;
+  ChannelMap channel_map;
   ChannelIdMap channel_id_map;
 
   std::unique_ptr<foxglove::ServerInterface<websocketpp::connection_hdl>> server;
@@ -182,6 +222,10 @@ private:
   std::timed_mutex exit_mutex;
 
   Logger logger;
+
+  std::list<std::jthread> cache_threads;
+  std::jthread time_thread;
+  std::jthread housekeeping_thread;
 };
 
 FoxgloveServer::FoxgloveServer() :
@@ -227,15 +271,15 @@ FoxgloveServerPrivate::handleSchema(std::string_view type_name, const std::size_
   return schema_iterator;
 }
 
-FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleTopic(const TopicInfo &info)
+FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleTopic(const TopicInfo &info)
 {
-  SchemaMap::iterator schema_iterator = handleSchema(info.type_name, info.type_hash, info.type_reflection);
+  const SchemaMap::iterator schema_iterator = handleSchema(info.type_name, info.type_hash, info.type_reflection);
 
   std::lock_guard guard(mutex);
 
-  ChannelIdMap::iterator channel_id_iterator = channel_id_map.find(info.topic_hash);
-  if (channel_id_iterator == channel_id_map.end()) {
-    std::vector<foxglove::ChannelId> channel_ids = server->addChannels({{
+  ChannelMap::iterator channel_iterator = channel_map.find(info.topic_hash);
+  if (channel_iterator == channel_map.end()) {
+    const std::vector<foxglove::ChannelId> channel_ids = server->addChannels({{
       .topic = info.topic_name,
       .encoding = "flatbuffer",
       .schemaName = schema_iterator->second.name,
@@ -246,28 +290,75 @@ FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleTopic
       throw RuntimeException("Failed to add channel.", logger);
     }
 
-    channel_id_iterator = channel_id_map.emplace_hint(channel_id_iterator, std::make_pair(info.topic_hash, channel_ids.front()));
+    const foxglove::ChannelId channel_id = channel_ids.front();
+
+    channel_iterator = channel_map.emplace_hint(channel_iterator, std::make_pair(info.topic_hash, channel_id));
+    channel_id_map.emplace(channel_id, channel_iterator->second);
   }
 
-  return channel_id_iterator;
+  return channel_iterator;
 }
 
-FoxgloveServerPrivate::ChannelIdMap::iterator FoxgloveServerPrivate::handleMessage(const MessageInfo &info)
+FoxgloveServerPrivate::ChannelMap::iterator FoxgloveServerPrivate::handleMessage(const MessageInfo &info)
 {
-  ChannelIdMap::iterator channel_id_iterator = channel_id_map.find(info.topic_info.topic_hash);
-  if (channel_id_iterator == channel_id_map.end()) {
-    channel_id_iterator = handleTopic(info.topic_info);
+  ChannelMap::iterator channel_iterator = channel_map.find(info.topic_info.topic_hash);
+  if (channel_iterator == channel_map.end()) {
+    channel_iterator = handleTopic(info.topic_info);
   }
 
   std::lock_guard guard(mutex);
   server->broadcastMessage(
-    channel_id_iterator->second,
+    channel_iterator->second.id,
     std::chrono::duration_cast<std::chrono::nanoseconds>(info.timestamp.time_since_epoch()).count(),
     info.serialized_message.data(),
     info.serialized_message.size()
   );
 
-  return channel_id_iterator;
+  // Cache infrequently sent messages.
+  if (info.timestamp - channel_iterator->second.last_message_timestamp > std::chrono::seconds(1)
+      || channel_iterator->second.last_message_timestamp == Clock::time_point()) {
+    channel_iterator->second.last_message_data.assign(info.serialized_message.begin(), info.serialized_message.end());
+  }
+
+  channel_iterator->second.last_message_timestamp = info.timestamp;
+
+  return channel_iterator;
+}
+
+void FoxgloveServerPrivate::handleSubscription(foxglove::ChannelId channel_id, websocketpp::connection_hdl handle)
+{
+  const ChannelIdMap::iterator channel_id_iterator = channel_id_map.find(channel_id);
+  if (channel_id_iterator == channel_id_map.end()) {
+    throw RuntimeException("Failed to find channel.", logger);
+  }
+
+  const Clock::time_point cache_message_timestamp = channel_id_iterator->second.last_message_timestamp;
+
+  std::lock_guard guard(mutex);
+
+  cache_threads.emplace_back(std::jthread([this, channel_id, handle, channel_id_iterator, cache_message_timestamp]() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    std::lock_guard guard(mutex);
+
+    // Send out infrequently published messages.
+    if (cache_message_timestamp != channel_id_iterator->second.last_message_timestamp
+        && channel_id_iterator->second.last_message_timestamp != Clock::time_point()) {
+      return;
+    }
+
+    if (channel_id_iterator->second.last_message_data.empty()) {
+      return;
+    }
+
+    server->sendMessage(
+      handle,
+      channel_id,
+      std::chrono::duration_cast<std::chrono::nanoseconds>(channel_id_iterator->second.last_message_timestamp.time_since_epoch()).count(),
+      channel_id_iterator->second.last_message_data.data(),
+      channel_id_iterator->second.last_message_data.size()
+    );
+  }));
 }
 
 void FoxgloveServerPrivate::handleParameterRequest(
