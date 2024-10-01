@@ -19,6 +19,7 @@
 #include <labrat/lbot/plugins/mavlink/msg/command_int.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/command_long.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/current_event_sequence.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/distance_sensor.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/esc_info.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/esc_status.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/estimator_status.hpp>
@@ -901,6 +902,25 @@ void Mavlink::Node::MavlinkMessage<mavlink::common::CurrentEventSequence>::conve
 {
   destination.sequence = mavlink_msg_current_event_sequence_get_sequence(&source);
   destination.flags = static_cast<mavlink::common::EventCurrentSequenceFlags>(mavlink_msg_current_event_sequence_get_flags(&source));
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::DistanceSensor>::convertFrom(const Converted &source, Storage &destination)
+{
+  destination.time_boot_ms = mavlink_msg_distance_sensor_get_time_boot_ms(&source);
+  destination.min_distance = mavlink_msg_distance_sensor_get_min_distance(&source);
+  destination.max_distance = mavlink_msg_distance_sensor_get_max_distance(&source);
+  destination.current_distance = mavlink_msg_distance_sensor_get_current_distance(&source);
+  destination.type = static_cast<mavlink::common::DistanceSensorType>(mavlink_msg_distance_sensor_get_type(&source));
+  destination.id = mavlink_msg_distance_sensor_get_id(&source);
+  destination.orientation = static_cast<mavlink::common::SensorOrientation>(mavlink_msg_distance_sensor_get_orientation(&source));
+  destination.covariance = mavlink_msg_distance_sensor_get_covariance(&source);
+  destination.horizontal_fov = mavlink_msg_distance_sensor_get_horizontal_fov(&source);
+  destination.vertical_fov = mavlink_msg_distance_sensor_get_vertical_fov(&source);
+  destination.signal_quality = mavlink_msg_distance_sensor_get_signal_quality(&source);
+
+  destination.quaternion.resize(4);
+  mavlink_msg_distance_sensor_get_quaternion(&source, destination.quaternion.data());
 }
 
 template <>

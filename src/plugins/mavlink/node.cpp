@@ -20,6 +20,7 @@
 #include <labrat/lbot/plugins/mavlink/msg/command_int.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/command_long.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/current_event_sequence.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/distance_sensor.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/esc_info.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/esc_status.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/estimator_status.hpp>
@@ -425,6 +426,7 @@ Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::
   addSender<mavlink::common::CurrentEventSequence>(
     "/" + node.getName() + "/in/current_event_sequence", MAVLINK_MSG_ID_CURRENT_EVENT_SEQUENCE
   );
+  addSender<mavlink::common::DistanceSensor>("/" + node.getName() + "/in/distance_sensor", MAVLINK_MSG_ID_DISTANCE_SENSOR);
   addSender<mavlink::common::OpenDroneIdLocation>(
     "/" + node.getName() + "/in/open_drone_id_location", MAVLINK_MSG_ID_OPEN_DRONE_ID_LOCATION
   );
