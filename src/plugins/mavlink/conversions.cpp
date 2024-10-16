@@ -80,8 +80,8 @@ namespace lbot::plugins {
 template <>
 void Mavlink::Node::MavlinkMessage<mavlink::common::Heartbeat>::convertFrom(const Converted &source, Storage &destination)
 {
-  destination.type = mavlink_msg_heartbeat_get_type(&source);
-  destination.autopilot = mavlink_msg_heartbeat_get_autopilot(&source);
+  destination.type = static_cast<mavlink::common::Type>(mavlink_msg_heartbeat_get_type(&source));
+  destination.autopilot = static_cast<mavlink::common::Autopilot>(mavlink_msg_heartbeat_get_autopilot(&source));
   destination.base_mode = mavlink_msg_heartbeat_get_base_mode(&source);
   destination.custom_mode = mavlink_msg_heartbeat_get_custom_mode(&source);
   destination.system_status = mavlink_msg_heartbeat_get_system_status(&source);

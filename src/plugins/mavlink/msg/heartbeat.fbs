@@ -4,8 +4,8 @@ namespace mavlink.common;
 
 table Heartbeat {
   custom_mode:uint;
-  type:ubyte;
-  autopilot:ubyte;
+  type:Type;
+  autopilot:Autopilot;
   base_mode:ubyte;
   system_status:ubyte;
   mavlink_version:ubyte;
