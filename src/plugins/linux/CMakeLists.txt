@@ -27,14 +27,13 @@ set(TARGET_MESSAGES
 add_library(${TARGET_NAME} OBJECT ${TARGET_HEADERS} ${TARGET_SOURCES})
 target_sources(lbot_plugins PRIVATE $<TARGET_OBJECTS:${TARGET_NAME}>)
 
-set(TARGET_NAME_MESSAGE ${TARGET_NAME}_msg)
-lbot_generate_flatbuffer(TARGET ${TARGET_NAME_MESSAGE} SCHEMAS ${TARGET_MESSAGES} TARGET_PATH ${LOCAL_PROJECT_PATH_FULL}/${TARGET_RELATIVE_PATH}/msg)
+add_subdirectory(msg)
 
 # Set library properties.
 set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # Link external libraries to the library target.
-target_link_libraries(${TARGET_NAME} PRIVATE ${TARGET_NAME}_msg)
+target_link_libraries(${TARGET_NAME} PRIVATE linux_msg)
 # Link internal libraries to the library target.
 target_link_libraries(${TARGET_NAME} PUBLIC ${LOCAL_PROJECT_NAME}_core)
 

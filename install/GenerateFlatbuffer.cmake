@@ -60,6 +60,7 @@ function(lbot_generate_flatbuffer)
 
     set(generated_include "${generated_include_dir}/${filename}.${extension}")
     set(generated_reflection "${generated_include_dir}/${filename}_bfbs.${extension}")
+
     add_custom_command(
       OUTPUT ${generated_include} ${generated_reflection}
       COMMAND ${FLATC} ${FLATC_ARGS}
@@ -73,23 +74,13 @@ function(lbot_generate_flatbuffer)
       DEPENDS ${FLATC_TARGET} ${schema}
       WORKING_DIRECTORY "${working_dir}"
       COMMENT "Generating flatbuffer ${schema}")
+
     list(APPEND all_generated_header_files ${generated_include} ${generated_reflection})
   endforeach()
 
   # Set up interface library
-  add_library(${INT_TARGET} INTERFACE)
-  target_sources(
-    ${INT_TARGET}
-    INTERFACE
-      ${all_generated_header_files}
-      ${INT_SCHEMAS})
-  add_dependencies(
-    ${INT_TARGET}
-    ${FLATC}
-    ${INT_SCHEMAS})
-  target_include_directories(
-    ${INT_TARGET}
-    INTERFACE ${generated_target_dir}/include)
+  add_library(${INT_TARGET} INTERFACE ${all_generated_header_files})
+  target_include_directories(${INT_TARGET} INTERFACE ${generated_target_dir}/include)
 
   install(FILES ${INT_SCHEMAS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${INT_TARGET_PATH})
   install(FILES ${all_generated_header_files} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${INT_TARGET_PATH})
