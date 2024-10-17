@@ -119,7 +119,7 @@ TEST_P(ClockTest, setup)
 
     std::shared_ptr<SynchronizedTimeNode> node_synchronized = manager->addNode<SynchronizedTimeNode>("test");
 
-    Clock::waitUntilInitialized();
+    Clock::waitUntilInitializedOrExit();
     ASSERT_TRUE(lbot::Clock::initialized());
 
     lbot::Clock::time_point t3 = lbot::Clock::now();
@@ -175,7 +175,7 @@ TEST_P(ClockTest, sleep)
   if (GetParam() == "synchronized") {
     node_synchronized = manager->addNode<SynchronizedTimeNode>("test");
 
-    Clock::waitUntilInitialized();
+    Clock::waitUntilInitializedOrExit();
     ASSERT_TRUE(lbot::Clock::initialized());
   }
 
@@ -263,7 +263,7 @@ TEST_P(ClockTest, condition)
   if (GetParam() == "synchronized") {
     node_synchronized = manager->addNode<SynchronizedTimeNode>("test");
 
-    Clock::waitUntilInitialized();
+    Clock::waitUntilInitializedOrExit();
     ASSERT_TRUE(lbot::Clock::initialized());
   }
 

@@ -62,7 +62,7 @@ public:
    *
    * @details The function may also return after a spurious wakeup or when the program is shutting down.
    */
-  static void waitUntilInitialized();
+  static void waitUntilInitializedOrExit();
 
   /**
    * @brief Get the current time.

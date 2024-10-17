@@ -192,7 +192,7 @@ public:
       std::unique_lock lock(mutex);
 
       while (!(token.stop_requested() || Clock::initialized())) {
-        Clock::waitUntilInitialized();
+        Clock::waitUntilInitializedOrExit();
       }
 
       while (!token.stop_requested()) {

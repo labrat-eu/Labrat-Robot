@@ -295,9 +295,9 @@ void Clock::initialize()
   priv.nodes.emplace_back(Manager::get()->addNode<Private::SenderNode>("time sender"));
 }
 
-void Clock::waitUntilInitialized()
+void Clock::waitUntilInitializedOrExit()
 {
-  if (!priv.is_initialized) {
+  if (!priv.is_initialized && !priv.exit_flag.test(std::memory_order_seq_cst)) {
     std::mutex mutex;
     std::unique_lock lock(mutex);
 
@@ -436,9 +436,10 @@ Clock::WaiterRegistration Clock::registerWaiter(const time_point wakeup_time, st
 
 void Clock::cleanup()
 {
-  priv.nodes.clear();
-
   priv.exit_flag.test_and_set(std::memory_order_seq_cst);
+  priv.is_initialized_condition.notify_all();
+
+  priv.nodes.clear();
 
   if (priv.mode == Mode::stepped) {
     std::lock_guard guard(priv.mutex);
@@ -458,7 +459,7 @@ void Clock::Private::synchronize(duration offset, i32 drift, std::chrono::steady
   priv.current_drift = drift;
   priv.last_sync.store(now, std::memory_order_release);
 
-  if (!(priv.is_initialized || priv.exit_flag.test(std::memory_order_acquire))) {
+  if (!priv.is_initialized && !priv.exit_flag.test(std::memory_order_acquire)) {
     priv.is_initialized = true;
     priv.is_initialized_condition.notify_all();
   }
@@ -472,7 +473,7 @@ void Clock::Private::setTime(time_point time)
 
   priv.current_time.store(time, std::memory_order_seq_cst);
 
-  if (!(priv.is_initialized || priv.exit_flag.test(std::memory_order_acquire))) {
+  if (!priv.is_initialized && !priv.exit_flag.test(std::memory_order_acquire)) {
     priv.is_initialized = true;
     priv.is_initialized_condition.notify_all();
   }
