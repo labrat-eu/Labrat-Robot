@@ -12,24 +12,17 @@ Lbot is tightly integrated with the package manager [Conan](https://conan.io/). 
 @note
 If you experience problems while installing Conan, please refer to the official [documentation](https://docs.conan.io/2/installation.html).
 
-To install conan, you need to install [Python](https://www.python.org/)(>=3.10) with pip first. You may use a system package manager of your choice to install it. In this guide we will use apt.
-```shell
-apt install gcc g++ python3 python3-pip python3-regex git cmake
-```
-
-Afterwards you can install Conan with pip.
-```shell
-pip3 install --break-system-packages conan
-```
-
-You may need to update your `PATH` 
-```
-source ~/.profile
-```
+Download the conan package from the [downloads page](https://conan.io/downloads) and install it.
 
 Please make sure that you installed Conan 2.0 or higher.
 ```shell
 conan -v
+```
+
+Furthermore you need to install a compiler, CMake, [Python](https://www.python.org/)(>=3.10) and other build tools. You may use a system package manager of your choice to install it. In this guide we will use apt.
+```shell
+apt update
+apt install gcc g++ python3 git cmake
 ```
 
 Before you can use Conan, you need to create a default build profile. You can create one automatically.

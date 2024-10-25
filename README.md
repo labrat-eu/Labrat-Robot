@@ -3,20 +3,17 @@
 Minimal robot framework to provide an alternative to ROS.
 
 ## Install dependencies
-Install the conan package manager alongside other build dependencies.
-```
-apt install gcc g++ python3 python3-pip python3-regex git cmake
-pip3 install --break-system-packages conan
-```
-
-You may need to update your `PATH` 
-```
-source ~/.profile
-```
+Download the conan package from the [downloads page](https://conan.io/downloads) and install it.
 
 Please make sure that you installed Conan 2.0 or higher.
 ```shell
 conan -v
+```
+
+Now install other build tools. You may use a system package manager of your choice to install it.
+```shell
+apt update
+apt install gcc g++ python3 git cmake
 ```
 
 Before you can use Conan, you need to create a default build profile. You can create one automatically.

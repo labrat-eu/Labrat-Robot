@@ -3,7 +3,7 @@ from conan.tools import build
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 from conan.tools.files import copy, update_conandata
 from conan.tools.scm import Git
-import regex
+import re
 import os
 
 
@@ -20,7 +20,7 @@ class VersionInfo(dict):
         super().__setitem__("hash_short", self["hash"][:7])
         super().__setitem__("ref", self["tag"] if at_tag else self["hash_short"] )
 
-        pattern = regex.compile('^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')
+        pattern = re.compile('^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$')
         search = pattern.search(self["tag"])
         super().__setitem__("version_major", search.group(1))
         super().__setitem__("version_minor", search.group(2))

@@ -35,7 +35,7 @@ private:
   {
     ++i;
 
-    for (uint64_t j = 2; j < std::sqrt(i); ++j) {
+    for (int j = 2; j < std::sqrt(i); ++j) {
       if (i % j == 0) {
         return;
       }
@@ -54,8 +54,8 @@ private:
   lbot::LoopThread loop_thread;
   lbot::TimerThread timer_thread;
 
-  volatile uint64_t max_prime = 2;
-  uint64_t i = 2;
+  volatile int max_prime = 2;
+  int i = 2;
 };
 
 int main(int argc, char **argv)
