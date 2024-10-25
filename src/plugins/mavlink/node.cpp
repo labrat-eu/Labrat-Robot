@@ -61,6 +61,7 @@
 #include <labrat/lbot/plugins/mavlink/msg/scaled_imu.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/scaled_pressure.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/servo_output_raw.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/set_attitude_target.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/set_position_target_local_ned.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/sys_status.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/system_time.hpp>
@@ -435,6 +436,7 @@ Mavlink::NodePrivate::NodePrivate(MavlinkConnection::Ptr &&connection, Mavlink::
   addSender<mavlink::common::Event>("/" + node.getName() + "/in/event", MAVLINK_MSG_ID_EVENT);
 
   addReceiver<mavlink::common::ParamRequestRead>("/" + node.getName() + "/out/param_request_read");
+  addReceiver<mavlink::common::SetAttitudeTarget>("/" + node.getName() + "/out/set_attitude_target");
   addReceiver<mavlink::common::SetPositionTargetLocalNed>("/" + node.getName() + "/out/set_position_target_local_ned");
   addReceiver<mavlink::common::CommandInt>("/" + node.getName() + "/out/command_int");
   addReceiver<mavlink::common::CommandLong>("/" + node.getName() + "/out/command_long");

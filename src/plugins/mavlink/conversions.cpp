@@ -60,6 +60,7 @@
 #include <labrat/lbot/plugins/mavlink/msg/scaled_imu.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/scaled_pressure.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/servo_output_raw.hpp>
+#include <labrat/lbot/plugins/mavlink/msg/set_attitude_target.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/set_position_target_local_ned.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/sys_status.hpp>
 #include <labrat/lbot/plugins/mavlink/msg/system_time.hpp>
@@ -1028,6 +1029,34 @@ void Mavlink::Node::MavlinkMessage<mavlink::common::ParamRequestRead>::convertTo
     source.target_component,
     source.param_id.c_str(),
     source.param_index
+  );
+}
+
+template <>
+void Mavlink::Node::MavlinkMessage<mavlink::common::SetAttitudeTarget>::convertTo(
+  const Storage &source,
+  Converted &destination,
+  const Mavlink::SystemInfo *info
+)
+{
+  static const std::array<float, 4> q_alt = {1, 0, 0, 0};
+  static const std::array<float, 3> thrust_body_alt = {0, 0, 0};
+
+  mavlink_msg_set_attitude_target_pack_chan(
+    info->system_id,
+    info->component_id,
+    info->channel_id,
+    &destination,
+    source.time_boot_ms,
+    source.target_system,
+    source.target_component,
+    static_cast<u8>(source.type_mask),
+    source.q.size() >= 4 ? source.q.data() : q_alt.data(),
+    source.body_roll_rate,
+    source.body_pitch_rate,
+    source.body_yaw_rate,
+    source.thrust,
+    source.thrust_body.size() >= 3 ? source.thrust_body.data() : thrust_body_alt.data()
   );
 }
 
